@@ -28,7 +28,7 @@ function AuthLayout() {
     <div className="relative grid h-screen w-screen place-content-center overflow-hidden bg-background px-8 text-foreground">
       {activeWorkspace && (
         <Button
-          className="fixed top-4 left-4"
+          className="fixed top-4 right-4"
           render={
             <Link
               params={{
@@ -40,14 +40,10 @@ function AuthLayout() {
           variant="ghost"
         >
           <Icons.ChevronLeft />
-          Return to Recount
+          You are already logged in as{" "}
+          <span className="text-foreground">{user.email}</span>
         </Button>
       )}
-      <p className="fixed top-4 right-4 text-muted-foreground text-sm">
-        You are already logged in as{" "}
-        <span className="text-foreground">{user.email}</span>
-      </p>
-
       <Outlet />
     </div>
   );

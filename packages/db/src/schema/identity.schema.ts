@@ -1,5 +1,7 @@
+import { UserSettings } from "@recount/core/modules/identity";
 import {
   boolean,
+  pgEnum,
   pgTable,
   timestamp,
   uuid,
@@ -18,6 +20,28 @@ export const usersTable = pgTable("users", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   /** @deprecated Moved to `workspace_member`. Kept for Better Auth compatibility.  */
   imageUrl: varchar("image_url"),
+  // Metadata
+  ...tableMetadata,
+});
+
+export const DateFormatEnum = pgEnum(
+  "date_format_enum",
+  UserSettings.fields.dateFormat.literals
+);
+export const TimeFormatEnum = pgEnum(
+  "time_format_enum",
+  UserSettings.fields.timeFormat.literals
+);
+
+export const userSettingsTable = pgTable("user_settings", {
+  id: tableId,
+  // References
+  userId: uuid("user_id")
+    .references(() => usersTable.id, { onDelete: "cascade" })
+    .notNull(),
+  // General
+  dateFormat: DateFormatEnum("date_format").default("DD/MM/YYYY").notNull(),
+  timeFormat: TimeFormatEnum("time_format").default("24h").notNull(),
   // Metadata
   ...tableMetadata,
 });

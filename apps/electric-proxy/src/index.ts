@@ -7,9 +7,11 @@ import {
 import {
   SessionRepositoryLayer,
   UserRepositoryLayer,
+  UserSettingsRepositoryLayer,
 } from "@recount/core-server/modules/identity";
 import { WorkspaceRepositoryLayer } from "@recount/core-server/modules/workspace";
 import { WorkspaceMemberRepositoryLayer } from "@recount/core-server/modules/workspace-member";
+import { IdentityModuleLayer } from "@recount/core/modules/identity";
 import {
   matchesAllowedOrigin,
   parseOrigins,
@@ -24,23 +26,45 @@ import {
   HttpServerResponse,
 } from "effect/unstable/http";
 
+import { UserSettingsMeRouteLayer } from "./routes/me/user-settings";
+import { WorkspacesMeRouteLayer } from "./routes/me/workspaces";
 import { ProjectsRouteLayer } from "./routes/projects";
+import { WorkspaceIntegrationsRouteLayer } from "./routes/workspace-integrations";
 import { WorkspaceMembersRouteLayer } from "./routes/workspace-members";
-import { WorkspacesRouteLayer } from "./routes/workspaces";
 
-const RepositoriesLayer = Layer.mergeAll(
+const PersistenceServicesLayer = Layer.mergeAll(
   SessionRepositoryLayer,
   UserRepositoryLayer,
+  UserSettingsRepositoryLayer,
   WorkspaceMemberRepositoryLayer,
   WorkspaceRepositoryLayer
 ).pipe(Layer.provideMerge(DatabaseLayer));
 
+const InfrastructureServicesLayer = Layer.mergeAll(
+  PersistenceServicesLayer,
+  Mailer.layerDev
+);
+
+const DomainServicesLayer = IdentityModuleLayer.pipe(
+  Layer.provide(InfrastructureServicesLayer)
+);
+
+const BetterAuthLayer = BetterAuth.layer.pipe(
+  Layer.provide(BetterAuthConfig.layer),
+  Layer.provide(DomainServicesLayer),
+  Layer.provide(InfrastructureServicesLayer)
+);
+
 const RequestContextLayer = RequestContextResolver.layer.pipe(
-  Layer.provideMerge(
-    BetterAuth.layer.pipe(Layer.provide(BetterAuthConfig.layer))
-  ),
-  Layer.provideMerge(Mailer.layerDev),
-  Layer.provideMerge(RepositoriesLayer)
+  Layer.provide(BetterAuthLayer),
+  Layer.provideMerge(PersistenceServicesLayer)
+);
+
+const ApplicationServicesLayer = Layer.mergeAll(
+  InfrastructureServicesLayer,
+  DomainServicesLayer,
+  BetterAuthLayer,
+  RequestContextLayer
 );
 
 const HealthRouteLayer = HttpRouter.add("GET", "/health", () =>
@@ -66,19 +90,23 @@ const CorsLayer = HttpRouter.middleware(
   }
 );
 
-const allRoutesLayer = Layer.mergeAll(
+const HttpRoutesLayer = Layer.mergeAll(
   HealthRouteLayer,
-  WorkspacesRouteLayer,
-  WorkspaceMembersRouteLayer,
-  ProjectsRouteLayer
+  // Me
+  UserSettingsMeRouteLayer,
+  WorkspacesMeRouteLayer,
+  // General
+  ProjectsRouteLayer,
+  WorkspaceIntegrationsRouteLayer,
+  WorkspaceMembersRouteLayer
 ).pipe(Layer.provide(CorsLayer));
 
 const ObservabilityLayer = makeObservabilityLayer({
   serviceName: "recount-electric-proxy",
 });
 
-const ServerLayer = HttpRouter.serve(allRoutesLayer).pipe(
-  Layer.provide(RequestContextLayer),
+const ServerLayer = HttpRouter.serve(HttpRoutesLayer).pipe(
+  Layer.provide(ApplicationServicesLayer),
   Layer.provide(ObservabilityLayer),
   Layer.provide(BunHttpClient.layer),
   Layer.provide(

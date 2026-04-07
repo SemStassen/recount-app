@@ -4,9 +4,6 @@ import {
   type QueryBuilder,
   useLiveQuery as useTanstackLiveQuery,
 } from "@tanstack/react-db";
-import { use } from "react";
-
-import { Route as WorkspaceRoute } from "~/routes/_app/$workspaceSlug/route";
 
 import type { WorkspaceCollections } from "./collections";
 import { getWorkspaceCollections } from "./workspace-collections";
@@ -17,8 +14,7 @@ export function useWorkspaceLiveQuery<TContext extends Context>(
     db: WorkspaceCollections
   ) => QueryBuilder<TContext>
 ) {
-  const { workspace } = WorkspaceRoute.useRouteContext();
-  const db = use(getWorkspaceCollections(workspace.id));
+  const db = getWorkspaceCollections();
 
   return useTanstackLiveQuery<TContext>((q) => queryFn(q, db));
 }

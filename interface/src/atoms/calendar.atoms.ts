@@ -1,6 +1,7 @@
 import { addDays, isEqual, subDays } from "date-fns";
-import { Atom, AtomRef } from "effect/unstable/reactivity";
+import { Atom } from "effect/unstable/reactivity";
 
+import { currentTimeAtom } from "./current-time.atom";
 import { atomRegistry } from "./registry";
 
 interface ICalendarAtom {
@@ -15,27 +16,17 @@ interface ICalendarAtom {
   isDragSelectionActive: boolean;
 }
 
-const startOfMinute = (date: Date) => {
-  const nextDate = new Date(date);
-  nextDate.setSeconds(0, 0);
-  return nextDate;
-};
-
-const calendarAtom = AtomRef.make<ICalendarAtom>({
-  view: "days",
-  daysInView: 7,
-  selectedDate: new Date(),
-  currentTime: startOfMinute(new Date()),
-  dragSelection: null,
-  isDragSelectionActive: false,
-});
-
-export const calendarViewAtom = calendarAtom.prop("view");
-export const calendarDaysInViewAtom = calendarAtom.prop("daysInView");
-export const calendarSelectedDateAtom = calendarAtom.prop("selectedDate");
-export const calendarCurrentTimeAtom = calendarAtom.prop("currentTime");
-export const calendarDragSelectionAtom = calendarAtom.prop("dragSelection");
-export const calendarSortedDragSelectionAtom = calendarDragSelectionAtom.map(
+export const calendarViewAtom = Atom.make<ICalendarAtom["view"]>("days");
+export const calendarDaysInViewAtom = Atom.make<ICalendarAtom["daysInView"]>(7);
+export const calendarSelectedDateAtom = Atom.make<ICalendarAtom["selectedDate"]>(
+  new Date()
+);
+export const calendarCurrentTimeAtom = currentTimeAtom;
+export const calendarDragSelectionAtom = Atom.make<ICalendarAtom["dragSelection"]>(
+  null
+);
+export const calendarSortedDragSelectionAtom = Atom.map(
+  calendarDragSelectionAtom,
   (dragSelection) => {
     if (!dragSelection) {
       return null;
@@ -52,81 +43,58 @@ export const calendarSortedDragSelectionAtom = calendarDragSelectionAtom.map(
         };
   }
 );
-export const calendarIsDragSelectionActiveAtom = calendarAtom.prop(
-  "isDragSelectionActive"
-);
+export const calendarIsDragSelectionActiveAtom = Atom.make<
+  ICalendarAtom["isDragSelectionActive"]
+>(false);
 
 export function setCalendarView(view: ICalendarAtom["view"]) {
-  calendarAtom.update((value) => ({
-    ...value,
-    view: view,
-  }));
+  atomRegistry.set(calendarViewAtom, view);
 }
+
 export function setCalendarDaysInView(daysInView: ICalendarAtom["daysInView"]) {
-  calendarAtom.update((value) => ({
-    ...value,
-    daysInView: daysInView,
-  }));
+  atomRegistry.set(calendarDaysInViewAtom, daysInView);
 }
+
 export function setCalendarSelectedDate(date: ICalendarAtom["selectedDate"]) {
-  calendarAtom.update((value) => ({
-    ...value,
-    selectedDate: date,
-  }));
+  atomRegistry.set(calendarSelectedDateAtom, date);
 }
+
 export function goToNextPeriod() {
-  calendarAtom.update((value) => ({
-    ...value,
-    selectedDate: addDays(value.selectedDate, value.daysInView),
-  }));
+  atomRegistry.update(calendarSelectedDateAtom, (selectedDate) =>
+    addDays(selectedDate, atomRegistry.get(calendarDaysInViewAtom))
+  );
 }
 
 export function goToPreviousPeriod() {
-  calendarAtom.update((value) => ({
-    ...value,
-    selectedDate: subDays(value.selectedDate, value.daysInView),
-  }));
+  atomRegistry.update(calendarSelectedDateAtom, (selectedDate) =>
+    subDays(selectedDate, atomRegistry.get(calendarDaysInViewAtom))
+  );
 }
 
 export function resetDragSelection() {
-  calendarAtom.update((value) => ({
-    ...value,
-    dragSelection: null,
-  }));
+  atomRegistry.set(calendarDragSelectionAtom, null);
 }
 
 export function setDragSelectionFirst(firstSelected: Date) {
-  calendarAtom.update((value) => ({
-    ...value,
-    dragSelection: {
-      firstSelected: firstSelected,
-      secondSelected: firstSelected,
-    },
-  }));
+  atomRegistry.set(calendarDragSelectionAtom, {
+    firstSelected,
+    secondSelected: firstSelected,
+  });
 }
 
 export function setDragSelectionSecond(secondSelected: Date) {
-  calendarAtom.update((value) => {
-    if (
-      !value.dragSelection ||
-      isEqual(value.dragSelection.secondSelected, secondSelected)
-    ) {
-      return value; // no change → no re-render
+  atomRegistry.update(calendarDragSelectionAtom, (dragSelection) => {
+    if (!dragSelection || isEqual(dragSelection.secondSelected, secondSelected)) {
+      return dragSelection;
     }
 
     return {
-      ...value,
-      dragSelection: {
-        ...value.dragSelection,
-        secondSelected: secondSelected,
-      },
+      ...dragSelection,
+      secondSelected,
     };
   });
 }
 
 export function setIsDragSelectionActive(isDragSelectionActive: boolean) {
-  calendarAtom.update((value) => ({
-    ...value,
-    isDragSelectionActive: isDragSelectionActive,
-  }));
+  atomRegistry.set(calendarIsDragSelectionActiveAtom, isDragSelectionActive);
 }

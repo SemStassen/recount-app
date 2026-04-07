@@ -51,7 +51,10 @@ function RouteComponent() {
             slug: value.slug,
           });
 
-          // navigate({ to: ""})
+          navigate({
+            to: "/$workspaceSlug",
+            params: { workspaceSlug: res.slug },
+          });
         })
       );
     }),
@@ -92,7 +95,7 @@ function RouteComponent() {
         />
         <form.AppField
           children={(field) => (
-            <field.AppField
+            <field.CustomField
               control={{
                 render: (props) => (
                   <InputGroup>

@@ -5,5 +5,5 @@ export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/")({
 });
 
 function RouteComponent() {
-  return <div>Hello "/_app/$workspaceSlug/_sidebar/"!</div>;
+  return <div></div>;
 }

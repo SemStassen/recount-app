@@ -2,10 +2,7 @@ import { RegistryContext } from "@effect/atom-react";
 import { AnchoredToastProvider, ToastProvider } from "@recount/ui/toast";
 import { TooltipProvider } from "@recount/ui/tooltip";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import {
-  formDevtoolsPlugin,
-  FormDevtoolsPanel,
-} from "@tanstack/react-form-devtools";
+import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 

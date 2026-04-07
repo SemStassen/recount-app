@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { LeftSidebar } from "./-components";
-import { LeftSidebarToggle } from "./-components/left-sidebar-toggle";
+import { NavigationSidebar } from "./-components/navigation-sidebar/navigation-sidebar";
+import { NavigationSidebarToggle } from "./-components/navigation-sidebar/navigation-sidebar-toggle";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar")({
   component: Layout,
@@ -11,9 +11,9 @@ function Layout() {
   return (
     <>
       <div className="relative">
-        <LeftSidebar />
+        <NavigationSidebar />
         <div className="absolute top-1.5 left-1.5">
-          <LeftSidebarToggle />
+          <NavigationSidebarToggle />
         </div>
       </div>
       <Outlet />

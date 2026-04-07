@@ -1,3 +1,5 @@
+import { UserSettings } from "@recount/core/modules/identity";
+import { WorkspaceIntegration } from "@recount/core/modules/integration";
 import { Project } from "@recount/core/modules/project";
 import { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
@@ -25,6 +27,28 @@ export async function createWorkspaceCollections(workspaceId: string) {
     dbName: `recount-${workspaceId}`,
   });
 
+  const muUserSettingsCollection = createCollectionTemp({
+    persistence: createBrowserWASQLitePersistence<
+      typeof UserSettings.json.Type,
+      string | number
+    >({
+      database,
+      coordinator,
+    }),
+    schemaVersion: 1,
+    id: "my-user-settings",
+    schema: Schema.toStandardSchemaV1(UserSettings.json),
+    getKey: (wm) => wm.id,
+    shapeOptions: {
+      url: `${env.VITE_ELECTRIC_PROXY_URL}/me/user-settings`,
+      fetchClient: (url, options) =>
+        fetch(url, {
+          ...options,
+          credentials: "include",
+        }),
+    },
+  });
+
   const workspaceMembersCollection = createCollectionTemp({
     persistence: createBrowserWASQLitePersistence<
       typeof WorkspaceMember.json.Type,
@@ -39,6 +63,32 @@ export async function createWorkspaceCollections(workspaceId: string) {
     getKey: (wm) => wm.id,
     shapeOptions: {
       url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-members`,
+      fetchClient: (url, options) =>
+        fetch(url, {
+          ...options,
+          credentials: "include",
+          headers: {
+            ...options?.headers,
+            [WORKSPACE_ID_HEADER]: workspaceId,
+          },
+        }),
+    },
+  });
+
+  const workspaceIntegrationsCollection = createCollectionTemp({
+    persistence: createBrowserWASQLitePersistence<
+      typeof WorkspaceIntegration.json.Type,
+      string | number
+    >({
+      database,
+      coordinator,
+    }),
+    schemaVersion: 1,
+    id: "workspace-integrations",
+    schema: Schema.toStandardSchemaV1(WorkspaceIntegration.json),
+    getKey: (wm) => wm.id,
+    shapeOptions: {
+      url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-integrations`,
       fetchClient: (url, options) =>
         fetch(url, {
           ...options,
@@ -79,6 +129,7 @@ export async function createWorkspaceCollections(workspaceId: string) {
 
   return {
     workspaceMembersCollection,
+    workspaceIntegrationsCollection,
     projectsCollection,
     close: async () => {
       coordinator.dispose();

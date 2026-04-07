@@ -5,6 +5,11 @@ export const UserId = Schema.String.check(Schema.isUUID(7)).pipe(
   Schema.brand("UserId")
 );
 
+export type UserSettingsId = typeof UserSettingsId.Type;
+export const UserSettingsId = Schema.String.check(Schema.isUUID(7)).pipe(
+  Schema.brand("UserSettingsId")
+);
+
 export type SessionId = typeof SessionId.Type;
 export const SessionId = Schema.String.check(Schema.isUUID(7)).pipe(
   Schema.brand("SessionId")

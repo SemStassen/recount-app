@@ -1,6 +1,7 @@
 import {
   AuthRpcGroup,
   UserRpcGroup,
+  WorkspaceIntegrationRpcGroup,
   WorkspaceRpcGroup,
 } from "@recount/core/rpc";
 import { Layer } from "effect";
@@ -14,7 +15,11 @@ import { RpcClient, RpcSerialization } from "effect/unstable/rpc";
 
 import { RpcSessionMiddlewareLayerClient } from "./middleware";
 
-const allRpcGroups = AuthRpcGroup.merge(UserRpcGroup, WorkspaceRpcGroup);
+const allRpcGroups = AuthRpcGroup.merge(
+  UserRpcGroup,
+  WorkspaceIntegrationRpcGroup,
+  WorkspaceRpcGroup
+);
 
 const RpcProtocolHttpLayer = RpcClient.layerProtocolHttp({
   url: `${import.meta.env.VITE_BACKEND_URL}/rpc`,

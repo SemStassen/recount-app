@@ -1,6 +1,7 @@
 import { Effect, Layer, Option } from "effect";
 
 import * as sessionTransitions from "./domain/session.transitions";
+import * as userSettingsTransitions from "./domain/user-settings.transitions";
 import * as userTransitions from "./domain/user.transitions";
 import {
   IdentityModule,
@@ -9,12 +10,14 @@ import {
 } from "./identity-module.service";
 import { SessionRepository } from "./session-repository.service";
 import { UserRepository } from "./user-repository.service";
+import { UserSettingsRepository } from "./user-settings-repository.service";
 
 export const IdentityModuleLayer = Layer.effect(
   IdentityModule,
   Effect.gen(function* () {
     const sessionRepo = yield* SessionRepository;
     const userRepo = yield* UserRepository;
+    const userSettingsRepo = yield* UserSettingsRepository;
 
     return {
       setLastActiveWorkspace: Effect.fn("identity.setLastActiveWorkspace")(
@@ -46,6 +49,18 @@ export const IdentityModuleLayer = Layer.effect(
           return persistedSession;
         }
       ),
+
+      afterCreateUser: Effect.fn("identity.afterCreateUser")(
+        function* (userId) {
+          const userSettings =
+            yield* userSettingsTransitions.createUserSettings(userId);
+
+          yield* userSettingsRepo.insert(userSettings);
+
+          return undefined;
+        }
+      ),
+
       updateUser: Effect.fn("identity.updateUser")(function* (params) {
         const user = yield* userRepo.findById(params.userId).pipe(
           Effect.flatMap(
@@ -71,6 +86,41 @@ export const IdentityModuleLayer = Layer.effect(
 
         return persistedUser;
       }),
+
+      updateUserSettings: Effect.fn("identity.updateUserSettings")(
+        function* (params) {
+          const userSettings = yield* userSettingsRepo
+            .findByUserId(params.userId)
+            .pipe(
+              Effect.flatMap(
+                Option.match({
+                  onNone: () =>
+                    Effect.die(
+                      new Error(
+                        `UserSettings missing for userId ${params.userId} — invariant violated`
+                      )
+                    ),
+                  onSome: Effect.succeed,
+                })
+              )
+            );
+
+          const { entity, changes } = yield* Effect.fromResult(
+            userSettingsTransitions.updateUserSettings({
+              userSettings: userSettings,
+              data: params.data,
+            })
+          );
+
+          const persistedUserSettings = yield* userSettingsRepo.update({
+            id: entity.id,
+            update: changes,
+          });
+
+          return persistedUserSettings;
+        }
+      ),
+
       retrieveUserByEmail: Effect.fn("identity.retrieveUserByEmail")(
         function* (email) {
           return yield* userRepo.findByEmail(email);

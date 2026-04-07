@@ -5,8 +5,9 @@ import {
 
 let activeWorkspaceId: string | null = null;
 let activeWorkspacePromise: Promise<WorkspaceCollections> | null = null;
+let activeWorkspaceCollections: WorkspaceCollections | null = null;
 
-export function getWorkspaceCollections(
+export function ensureWorkspaceCollections(
   workspaceId: string
 ): Promise<WorkspaceCollections> {
   if (workspaceId === activeWorkspaceId && activeWorkspacePromise !== null) {
@@ -14,7 +15,21 @@ export function getWorkspaceCollections(
   }
 
   activeWorkspaceId = workspaceId;
-  activeWorkspacePromise = createWorkspaceCollections(workspaceId);
+  activeWorkspaceCollections = null;
+  activeWorkspacePromise = createWorkspaceCollections(workspaceId).then(
+    (collections) => {
+      activeWorkspaceCollections = collections;
+      return collections;
+    }
+  );
 
   return activeWorkspacePromise;
+}
+
+export function getWorkspaceCollections(): WorkspaceCollections {
+  if (activeWorkspaceCollections === null) {
+    throw new Error("Workspace collections have not been initialized");
+  }
+
+  return activeWorkspaceCollections;
 }

@@ -16,7 +16,7 @@
     "@tiptap/react": "^3.4.1",
     "@tiptap/starter-kit": "^3.4.1",
     "chrono-node": "^2.9.0",
-    "class-variance-authority": "^0.7.1",
+    "class-variance-authority": "catalog:frontend",
     "clsx": "^2.1.1",
     "input-otp": "^1.4.2",
     "react": "catalog:frontend",

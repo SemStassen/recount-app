@@ -2,42 +2,42 @@ import { Effect, Schema } from "effect";
 
 export class InvalidFrontendOriginsError extends Schema.TaggedErrorClass<InvalidFrontendOriginsError>()(
   "InvalidFrontendOriginsError",
-  {
-    message: Schema.String,
-  }
+  { message: Schema.String }
 ) {}
 
-const isWildcardOriginPattern = (origin: string) => origin.includes("*");
-
-const wildcardOriginPatternRegex =
-  /^(https?):\/\/([A-Za-z0-9-]+)\*\.([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)(?::(\d+))?$/i;
+// Matches patterns like https://*.example.com or https://preview*.example.com:3000
+const wildcardPatternRegex =
+  /^(https?):\/\/([A-Za-z0-9-]*)\*\.([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)(?::(\d+))?$/i;
 
 const escapeRegex = (value: string) =>
   value.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
+
+// ------------------------------------------------------------------
+// Matching
+// ------------------------------------------------------------------
 
 export const matchesAllowedOrigin = (
   origin: string,
   patterns: ReadonlyArray<string>
 ) =>
   patterns.some((pattern) => {
-    if (!isWildcardOriginPattern(pattern)) {
-      return origin === pattern;
-    }
+    if (!pattern.includes("*")) return origin === pattern;
 
-    const patternMatch = pattern.match(wildcardOriginPatternRegex);
+    const match = pattern.match(wildcardPatternRegex);
+    if (!match) return false;
 
-    if (!patternMatch) {
-      return false;
-    }
-
-    const [, protocol, prefix, hostname, port] = patternMatch;
+    const [, protocol, prefix, hostname, port] = match;
     const regex = new RegExp(
-      `^${protocol}:\\/\\/${escapeRegex(prefix)}[^.]+\\.${escapeRegex(hostname)}${port === undefined ? "" : `:${port}`}$`,
+      `^${protocol}:\\/\\/${escapeRegex(prefix)}[^.]+\\.${escapeRegex(hostname)}${port ? `:${port}` : ""}$`,
       "i"
     );
 
     return regex.test(origin);
   });
+
+// ------------------------------------------------------------------
+// Parsing & validation
+// ------------------------------------------------------------------
 
 export const parseOrigins = (rawOrigins: string) =>
   Effect.gen(function* () {
@@ -45,7 +45,7 @@ export const parseOrigins = (rawOrigins: string) =>
       ...new Set(
         rawOrigins
           .split(",")
-          .map((value) => value.trim())
+          .map((s) => s.trim())
           .filter(Boolean)
       ),
     ];
@@ -56,120 +56,51 @@ export const parseOrigins = (rawOrigins: string) =>
       });
     }
 
-    return yield* Effect.all(
-      origins.map((rawOrigin) =>
-        Effect.gen(function* () {
-          if (rawOrigin.includes("?")) {
+    return yield* Effect.forEach(origins, (raw) =>
+      Effect.gen(function* () {
+        if (raw.includes("*")) {
+          const match = raw.match(wildcardPatternRegex);
+          if (!match) {
             return yield* new InvalidFrontendOriginsError({
-              message: `Origin patterns must not include ?: ${rawOrigin}`,
+              message: `Invalid wildcard origin pattern: ${raw}. Expected format: https://*.example.com`,
             });
           }
 
-          if (rawOrigin.includes("#")) {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin patterns must not include a hash fragment: ${rawOrigin}`,
-            });
-          }
+          const [, protocol, prefix, hostname, port] = match;
+          return `${protocol}://${prefix}*.${hostname}${port ? `:${port}` : ""}`;
+        }
 
-          if (rawOrigin.includes("/", rawOrigin.indexOf("://") + 3)) {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin patterns must not include a path: ${rawOrigin}`,
-            });
-          }
+        const url = yield* Effect.try({
+          try: () => new URL(raw),
+          catch: () => null,
+        });
 
-          if (isWildcardOriginPattern(rawOrigin)) {
-            const wildcardMatch = rawOrigin.match(wildcardOriginPatternRegex);
+        if (!url) {
+          return yield* new InvalidFrontendOriginsError({
+            message: `Invalid origin: ${raw}`,
+          });
+        }
 
-            if (!wildcardMatch) {
-              return yield* new InvalidFrontendOriginsError({
-                message: `Invalid origin pattern in FRONTEND_ORIGINS: ${rawOrigin}`,
-              });
-            }
+        if (!["http:", "https:", "tauri:"].includes(url.protocol)) {
+          return yield* new InvalidFrontendOriginsError({
+            message: `Origin must use http, https, or tauri: ${raw}`,
+          });
+        }
 
-            const wildcardUrl = yield* Effect.try({
-              try: () => new URL(rawOrigin.replace("*", "preview")),
-              catch: () =>
-                new InvalidFrontendOriginsError({
-                  message: `Invalid origin pattern in FRONTEND_ORIGINS: ${rawOrigin}`,
-                }),
-            });
+        if (!url.host) {
+          return yield* new InvalidFrontendOriginsError({
+            message: `Origin must include a host: ${raw}`,
+          });
+        }
 
-            if (
-              wildcardUrl.protocol !== "http:" &&
-              wildcardUrl.protocol !== "https:"
-            ) {
-              return yield* new InvalidFrontendOriginsError({
-                message: `Wildcard origin patterns must use http or https: ${rawOrigin}`,
-              });
-            }
+        if (url.username || url.password) {
+          return yield* new InvalidFrontendOriginsError({
+            message: `Origin must not include credentials: ${raw}`,
+          });
+        }
 
-            if (
-              wildcardUrl.username.length > 0 ||
-              wildcardUrl.password.length > 0
-            ) {
-              return yield* new InvalidFrontendOriginsError({
-                message: `Origin patterns must not include credentials: ${rawOrigin}`,
-              });
-            }
-
-            const [, protocol, prefix, hostname, port] = wildcardMatch;
-
-            return `${protocol}://${prefix}*.${hostname}${port === undefined ? "" : `:${port}`}`;
-          }
-
-          const url = yield* Schema.decodeUnknownEffect(Schema.URLFromString)(
-            rawOrigin
-          ).pipe(
-            Effect.mapError(
-              () =>
-                new InvalidFrontendOriginsError({
-                  message: `Invalid origin in FRONTEND_ORIGINS: ${rawOrigin}`,
-                })
-            )
-          );
-
-          if (url.host.length === 0) {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin must include a host: ${rawOrigin}`,
-            });
-          }
-
-          if (
-            url.protocol !== "http:" &&
-            url.protocol !== "https:" &&
-            url.protocol !== "tauri:"
-          ) {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin must use http, https, or tauri: ${rawOrigin}`,
-            });
-          }
-
-          if (url.username.length > 0 || url.password.length > 0) {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin must not include credentials: ${rawOrigin}`,
-            });
-          }
-
-          if (url.pathname !== "" && url.pathname !== "/") {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin must not include a path: ${rawOrigin}`,
-            });
-          }
-
-          if (url.search.length > 0) {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin must not include query parameters: ${rawOrigin}`,
-            });
-          }
-
-          if (url.hash.length > 0) {
-            return yield* new InvalidFrontendOriginsError({
-              message: `Origin must not include a hash fragment: ${rawOrigin}`,
-            });
-          }
-
-          return `${url.protocol}//${url.host}`;
-        })
-      )
+        // Normalize: strip trailing slash, ignore any path/query/hash the user accidentally included
+        return `${url.protocol}//${url.host}`;
+      })
     );
   });

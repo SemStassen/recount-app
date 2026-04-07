@@ -1,4 +1,5 @@
-import { Email } from "@recount/core/shared/schemas";
+import { IdentityModule } from "@recount/core/modules/identity";
+import { Email, UserId } from "@recount/core/shared/schemas";
 import { Database, schema } from "@recount/db";
 import { Mailer } from "@recount/notifications/mailer";
 import { betterAuth } from "better-auth";
@@ -23,8 +24,11 @@ export class BetterAuth extends ServiceMap.Service<BetterAuth>()(
 
       const db = yield* Database;
       const mailer = yield* Mailer;
+      const identityModule = yield* IdentityModule;
 
-      const services = yield* Effect.services<Database | Mailer>();
+      const services = yield* Effect.services<
+        Database | Mailer | IdentityModule
+      >();
       const runPromise = Effect.runPromiseWith(services);
 
       const betterAuthClient = betterAuth({
@@ -35,6 +39,20 @@ export class BetterAuth extends ServiceMap.Service<BetterAuth>()(
           schema: schema,
         }),
         trustedOrigins: betterAuthConfig.trustedOrigins,
+        databaseHooks: {
+          user: {
+            create: {
+              after: (user) =>
+                runPromise(
+                  Effect.gen(function* () {
+                    const userId = UserId.makeUnsafe(user.id);
+
+                    yield* identityModule.afterCreateUser(userId);
+                  })
+                ),
+            },
+          },
+        },
         advanced: {
           database: {
             generateId: false,

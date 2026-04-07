@@ -1,5 +1,7 @@
+import type { SelectItemProps } from "@base-ui/react";
 import { Button } from "@recount/ui/button";
 import type { ButtonProps } from "@recount/ui/button";
+import { Calendar } from "@recount/ui/calendar";
 import {
   Combobox,
   ComboboxEmpty,
@@ -18,42 +20,51 @@ import {
 import type {
   FieldControlProps,
   FieldDescriptionProps,
+  FieldErrorProps,
   FieldLabelProps,
   FieldProps,
 } from "@recount/ui/field";
+import { Icons } from "@recount/ui/icons";
 import { Input } from "@recount/ui/input";
 import type { InputProps } from "@recount/ui/input";
 import { InputTime } from "@recount/ui/input-time";
 import type { InputTimeProps } from "@recount/ui/input-time";
+import { Popover, PopoverPopup, PopoverTrigger } from "@recount/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
+  SelectPopup,
   SelectTrigger,
   SelectValue,
 } from "@recount/ui/select";
 import { Textarea } from "@recount/ui/textarea";
 import type { TextareaProps } from "@recount/ui/textarea";
 import type { TimePickerProps } from "@recount/ui/time-picker";
+import { cn } from "@recount/ui/utils";
 import {
   createFormHook,
   createFormHookContexts,
   useStore,
 } from "@tanstack/react-form";
+import { cva, type VariantProps } from "class-variance-authority";
+import type { PropsWithChildren } from "react";
+import type React from "react";
 
 import { formatter } from "~/lib/utils/date-time";
 
 const { fieldContext, formContext, useFieldContext, useFormContext } =
   createFormHookContexts();
 
-const { useAppForm } = createFormHook({
+export const { useAppForm } = createFormHook({
   fieldComponents: {
-    AppField: AppField,
+    CustomField: CustomField,
     TextField: TextField,
     TextareaField: TextareaField,
-    TimeField: TimeField,
+    DateField: DateField,
+    // TimeField: TimeField,
     SelectField: SelectField,
-    ComboBoxField: ComboBoxField,
+    // ComboBoxField: ComboBoxField,
   },
   formComponents: {
     SubmitButton: SubmitButton,
@@ -62,230 +73,159 @@ const { useAppForm } = createFormHook({
   formContext,
 });
 
-function AppField({
-  label,
-  field,
-  description,
-  control,
-}: {
+const baseFieldVariants = cva("", {
+  variants: {
+    direction: {
+      vertical: "flex-col",
+      horizontal: "flex-row",
+    },
+  },
+});
+
+interface BaseFieldProps extends PropsWithChildren {
+  direction: "vertical" | "horizontal";
   label: FieldLabelProps;
   field?: FieldProps;
   description?: FieldDescriptionProps;
-  control?: FieldControlProps;
-}) {
-  const fieldCtx = useFieldContext<string>();
-  const errors = useStore(fieldCtx.store, (state) => state.meta.errors);
+  error?: FieldErrorProps;
+}
+
+function BaseField({
+  label,
+  field,
+  description,
+  error,
+  children,
+  direction,
+}: BaseFieldProps) {
+  const { className, ...fieldProps } = field ?? {};
 
   return (
-    <Field {...field}>
-      <FieldLabel {...label} />
-      <FieldControl
-        defaultValue={fieldCtx.options.defaultValue}
-        onBlur={fieldCtx.handleBlur}
-        onChange={(e) => fieldCtx.handleChange(e.target.value)}
-        value={fieldCtx.state.value}
-        {...control}
-      />
-      <FieldDescription {...description} />
-      <FieldError errors={errors} />
+    <Field
+      className={cn(baseFieldVariants({ direction, className }))}
+      {...fieldProps}
+    >
+      {direction === "horizontal" && (
+        <>
+          <div>
+            <FieldLabel {...label} />
+            {description && <FieldDescription {...description} />}
+          </div>
+          <div>
+            {children}
+            <FieldError {...error} />
+          </div>
+        </>
+      )}
+      {direction === "vertical" && (
+        <>
+          <FieldLabel {...label} />
+          {description && <FieldDescription {...description} />}
+          {children}
+          <FieldError {...error} />
+        </>
+      )}
     </Field>
   );
 }
 
-function TextField({
-  label,
-  field,
-  description,
-  input,
-}: {
-  label: FieldLabelProps;
-  field?: FieldProps;
-  description?: FieldDescriptionProps;
+interface CustomFieldProps extends BaseFieldProps {
+  control: FieldControlProps;
+}
+function CustomField({ control, ...props }: CustomFieldProps) {
+  return (
+    <BaseField {...props}>
+      <FieldControl {...control} />
+    </BaseField>
+  );
+}
+
+interface InputFieldProps extends BaseFieldProps {
   input?: InputProps;
-}) {
-  const fieldCtx = useFieldContext<string>();
-  const errors = useStore(fieldCtx.store, (state) => state.meta.errors);
+}
+function TextField({ input, ...props }: InputFieldProps) {
+  // const fieldContext = useFieldContext<string>();
 
   return (
-    <Field {...field}>
-      <FieldLabel {...label} />
+    <BaseField {...props}>
       <Input
-        onBlur={fieldCtx.handleBlur}
-        type="text"
-        value={fieldCtx.state.value}
-        onValueChange={(value) => fieldCtx.handleChange(value)}
+        // onBlur={fieldContext.handleBlur}
+        // value={fieldContext.state.value}
+        // onValueChange={fieldContext.handleChange}
         {...input}
+        type="text"
       />
-      <FieldDescription {...description} />
-      <FieldError errors={errors} />
-    </Field>
+    </BaseField>
   );
 }
 
-function TextareaField({
-  label,
-  field,
-  description,
-  textarea,
-}: {
-  label: FieldLabelProps;
-  field?: FieldProps;
-  description?: FieldDescriptionProps;
+interface TextareaFieldProps extends BaseFieldProps {
   textarea?: TextareaProps;
-}) {
-  const fieldCtx = useFieldContext<string>();
-  const errors = useStore(fieldCtx.store, (state) => state.meta.errors);
+}
+function TextareaField({ textarea, ...props }: TextareaFieldProps) {
+  // const fieldContext = useFieldContext<string>();
 
   return (
-    <Field {...field}>
-      <FieldLabel {...label} />
+    <BaseField {...props}>
       <Textarea
-        onChange={(e) => fieldCtx.handleChange(e.target.value)}
-        value={fieldCtx.state.value}
-        onBlur={fieldCtx.handleBlur}
+        // onBlur={fieldContext.handleBlur}
+        // value={fieldContext.state.value}
+        // onChange={(e) => fieldContext.handleChange(e.target.value)}
         {...textarea}
       />
-      <FieldDescription {...description} />
-      <FieldError errors={errors} />
-    </Field>
+    </BaseField>
   );
 }
 
-function TimeField({
-  label,
-  field,
-  description,
-  input,
-  step,
-}: {
-  label: FieldLabelProps;
-  field?: FieldProps;
-  description?: FieldDescriptionProps;
-  input?: InputTimeProps;
-  step?: TimePickerProps["step"];
-}) {
-  const fieldCtx = useFieldContext<string | null>();
-  const errors = useStore(fieldCtx.store, (state) => state.meta.errors);
-
-  return (
-    <Field {...field}>
-      <FieldLabel {...label} />
-      <InputTime
-        format={formatter.time}
-        onBlur={fieldCtx.handleBlur}
-        onChange={(value: Date | null) => {
-          fieldCtx.handleChange(value ? value.toISOString() : null);
-        }}
-        step={step}
-        value={fieldCtx.state.value ? new Date(fieldCtx.state.value) : null}
-        {...input}
-      />
-      <FieldDescription {...description} />
-      <FieldError errors={errors} />
-    </Field>
-  );
+interface SelectFieldProps extends BaseFieldProps {
+  items: Array<SelectItemProps>;
 }
-
-function SelectField<
-  Item extends { label: React.ReactNode; value: string | null },
->({
-  label,
-  items,
-  field,
-  description,
-}: {
-  label: FieldLabelProps;
-  items: Array<Item>;
-  field?: FieldProps;
-  description?: FieldDescriptionProps;
-}) {
-  const fieldCtx = useFieldContext<string | null>();
-  const errors = useStore(fieldCtx.store, (state) => state.meta.errors);
-
+function SelectField({ items, ...props }: SelectFieldProps) {
   return (
-    <Field {...field}>
-      <FieldLabel {...label} />
-      <Select
-        items={items}
-        onValueChange={(value) => fieldCtx.handleChange(value)}
-        value={fieldCtx.state.value}
-      >
-        <SelectTrigger onBlur={fieldCtx.handleBlur}>
+    <BaseField {...props}>
+      <Select>
+        <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectPopup>
           {items.map(({ label, value }) => (
             <SelectItem key={value} value={value}>
               {label}
             </SelectItem>
           ))}
-        </SelectContent>
+        </SelectPopup>
       </Select>
-      <FieldDescription {...description} />
-      <FieldError errors={errors} />
-    </Field>
+    </BaseField>
   );
 }
 
-function ComboBoxField<
-  Item extends { label: React.ReactNode; value: string | null },
->({
-  label,
-  items,
-  field,
-  description,
-  placeholder = "Select an item...",
-  emptyMessage = "No results found.",
-}: {
-  label: FieldLabelProps;
-  items: Array<Item>;
-  field?: FieldProps;
-  description?: FieldDescriptionProps;
-  placeholder?: string;
-  emptyMessage?: string;
-}) {
-  const fieldCtx = useFieldContext<string | null>();
-  const errors = useStore(fieldCtx.store, (state) => state.meta.errors);
-
+function DateField({ ...props }: BaseFieldProps) {
   return (
-    <Field {...field}>
-      <FieldLabel {...label} />
-      {/* We need to map the value to the actual item object and onValueChange to the item value */}
-      <Combobox
-        items={items}
-        onValueChange={(item) => {
-          fieldCtx.handleChange(item.value);
-        }}
-        value={items.find((item) => item.value === fieldCtx.state.value)}
-      >
-        <ComboboxInput placeholder={placeholder} onBlur={fieldCtx.handleBlur} />
-        <ComboboxPopup>
-          <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
-          <ComboboxList>
-            {(item: Item) => (
-              <ComboboxItem key={item.value} value={item}>
-                {item.label}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxPopup>
-      </Combobox>
-      <FieldDescription {...description} />
-      <FieldError errors={errors} />
-    </Field>
+    <BaseField {...props}>
+      <Popover>
+        <PopoverTrigger
+          render={
+            <Button variant="outline">
+              <Icons.Calendar />
+            </Button>
+          }
+        />
+        <PopoverPopup align="start">
+          <Calendar mode="single" />
+        </PopoverPopup>
+      </Popover>
+    </BaseField>
   );
 }
 
-function SubmitButton(props: ButtonProps) {
+interface SubmitButtonProps extends ButtonProps {}
+function SubmitButton({ ...props }: SubmitButtonProps) {
   const form = useFormContext();
-
   return (
     <form.Subscribe selector={(state) => state.isSubmitting}>
       {(isSubmitting) => (
-        <Button disabled={isSubmitting} type="submit" {...props} />
+        <Button type="submit" disabled={isSubmitting} {...props} />
       )}
     </form.Subscribe>
   );
 }
-
-export { useAppForm };

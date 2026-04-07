@@ -1,4 +1,4 @@
-import { updateUserMeFlow } from "@recount/core-server/modules/identity";
+import { updateMeUserFlow } from "@recount/core-server/modules/identity";
 import { UserRpcGroup } from "@recount/core/rpc";
 import { Effect } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";
@@ -7,7 +7,7 @@ export const UserRpcGroupLayer = UserRpcGroup.toLayer(
   Effect.succeed({
     "User.UpdateMe": Effect.fn("rpc.user.updateMe")(
       function* (payload) {
-        const user = yield* updateUserMeFlow(payload);
+        const user = yield* updateMeUserFlow(payload);
 
         return user;
       },
