@@ -1,52 +1,84 @@
 import { format } from "date-fns";
-import { enUS, nl } from "date-fns/locale";
 
-const locales = {
-  en: enUS,
-  nl: nl,
+import { useUserLiveQuery } from "~/db/user-collections";
+
+const DATE_FORMATS = {
+  "MM/DD/YYYY": "MM/dd/yyyy",
+  "DD/MM/YYYY": "dd/MM/yyyy",
+  "YYYY-MM-DD": "yyyy-MM-dd",
 } as const;
-
-type Locale = keyof typeof locales;
 
 const TIME_FORMATS = {
-  HOURS_12: "12h",
-  HOURS_24: "24h",
+  "12h": "h:mm a",
+  "24h": "HH:mm",
 } as const;
 
-type TimeFormat = (typeof TIME_FORMATS)[keyof typeof TIME_FORMATS];
+const DEFAULT_TIME_ZONE: string | null = null;
+const DEFAULT_DATE_FORMAT: DateFormat = "DD/MM/YYYY";
+const DEFAULT_TIME_FORMAT: TimeFormat = "24h";
 
-interface DateTimeConfig {
-  locale: Locale;
+export type DateFormat = keyof typeof DATE_FORMATS;
+export type TimeFormat = keyof typeof TIME_FORMATS;
+
+export type DateTimeSettings = {
+  dateFormat: DateFormat;
   timeFormat: TimeFormat;
+  timeZone: string | null;
+};
+
+type DateTimeSettingsInput = {
+  dateFormat?: string;
+  timeFormat?: string;
+};
+
+function normalizeDateTimeSettings(
+  userSettings?: DateTimeSettingsInput | null
+): DateTimeSettings {
+  const dateFormat = userSettings?.dateFormat;
+  const timeFormat = userSettings?.timeFormat;
+
+  return {
+    dateFormat:
+      dateFormat !== undefined && dateFormat in DATE_FORMATS
+        ? (dateFormat as DateFormat)
+        : DEFAULT_DATE_FORMAT,
+    timeFormat:
+      timeFormat !== undefined && timeFormat in TIME_FORMATS
+        ? (timeFormat as TimeFormat)
+        : DEFAULT_TIME_FORMAT,
+    timeZone: DEFAULT_TIME_ZONE,
+  };
 }
 
-const defaultConfig: DateTimeConfig = {
-  locale: "en",
-  timeFormat: "24h",
-};
+export type DateTimeFormatter = ReturnType<typeof createDateTimeFormatter>;
 
-export const formatter = {
-  // Time formatting
-  time: (date: Date): string => {
-    // TODO: make dynamic
-    // const currentConfig = { ...getCurrentConfig(), ...config };
-    const currentConfig = defaultConfig;
+export function createDateTimeFormatter(
+  input?: DateTimeSettingsInput | null
+) {
+  const settings = normalizeDateTimeSettings(input);
 
-    const timeFormat = {
-      "12h": "h:mm a",
-      "24h": "HH:mm",
-    }[currentConfig.timeFormat];
+  return {
+    time: (date: Date): string => format(date, TIME_FORMATS[settings.timeFormat]),
+    date: (date: Date): string => format(date, DATE_FORMATS[settings.dateFormat]),
+    dateTime: (date: Date): string =>
+      format(
+        date,
+        `${DATE_FORMATS[settings.dateFormat]}, ${TIME_FORMATS[settings.timeFormat]}`
+      ),
+    monthYear: (date: Date): string => format(date, "MMM yyyy"),
+    day: (date: Date): string => format(date, "d"),
+    weekday: (date: Date): string => format(date, "EEEE"),
+    weekdayShort: (date: Date): string => format(date, "EEE"),
+  };
+}
 
-    return format(date, timeFormat, { locale: locales[currentConfig.locale] });
-  },
-  // Composed
-  date: (date: Date): string => format(date, "MMM d"),
-  // TODO: make dynamic
-  dateTime: (date: Date): string => format(date, "MMM d, HH:mm"),
-  monthYear: (date: Date): string => format(date, "MMM yyyy"),
+export function useDateTimeFormatter(): DateTimeFormatter {
+  const { data: userSettings } = useUserLiveQuery((q, collections) =>
+    q.from({ userSettings: collections.userSettingsCollection }).findOne()
+  );
 
-  // Individual
-  day: (date: Date): string => format(date, "d"),
-  weekday: (date: Date): string => format(date, "EEEE"),
-  weekdayShort: (date: Date): string => format(date, "EEE"),
-};
+  return createDateTimeFormatter({
+    dateFormat: userSettings?.dateFormat,
+    timeFormat: userSettings?.timeFormat,
+  });
+}

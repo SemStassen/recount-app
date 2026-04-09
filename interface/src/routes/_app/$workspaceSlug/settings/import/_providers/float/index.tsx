@@ -1,12 +1,9 @@
-import { Button } from "@recount/ui/button";
 import { Frame, FrameHeader, FramePanel, FrameTitle } from "@recount/ui/frame";
 import { eq } from "@tanstack/react-db";
 import { createFileRoute } from "@tanstack/react-router";
-import { useTransition } from "react";
 
-import { useWorkspaceLiveQuery } from "~/db/use-workspace-live-query";
+import { useWorkspaceLiveQuery } from "~/db/workspace-collections";
 // import { RecountAtomClient } from "~/lib/rpc/atom-client";
-import { formatter } from "~/lib/utils/date-time";
 
 import { CreateWorkspaceIntegrationForm } from "../-components/create-workspace-integration-form";
 
@@ -20,16 +17,15 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  const { data: integration } = useWorkspaceLiveQuery((q, db) =>
+  const { data: integration } = useWorkspaceLiveQuery((q, collections) =>
     q
-      .from({ wi: db.workspaceIntegrationsCollection })
+      .from({ wi: collections.workspaceIntegrationsCollection })
       .where(({ wi }) => eq(wi.provider, "float"))
       .findOne()
   );
   // const workspaceIntegrations = useAtomValue(workspaceIntegrationsAtom);
   // const integration = workspaceIntegrations.find((i) => i.provider === "float");
 
-  const [isPending, startTransition] = useTransition();
   // const syncProjects = useAtomSet(
   //   RecountAtomClient.mutation("FloatWorkspaceIntegration", "Sync"),
   //   {

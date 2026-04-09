@@ -3,7 +3,7 @@ import { cn } from "@recount/ui/utils";
 import { isSameDay } from "date-fns";
 
 import { calendarCurrentTimeAtom } from "~/atoms/calendar.atoms";
-import { formatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
 import {
   CALENDAR_DAY_HEADER_HEIGHT_VAR,
@@ -12,6 +12,7 @@ import {
 
 function Header({ weekdays }: { weekdays: Array<Date> }) {
   const currentTime = useAtomValue(calendarCurrentTimeAtom);
+  const formatter = useDateTimeFormatter();
 
   return (
     <div

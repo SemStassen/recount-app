@@ -32,8 +32,8 @@ export const TaskRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("Task.Update", {
     payload: UpdateTaskCommand,
@@ -46,8 +46,8 @@ export const TaskRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("Task.Archive", {
     payload: ArchiveTaskCommand,
@@ -60,8 +60,8 @@ export const TaskRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("Task.Restore", {
     payload: RestoreTaskCommand,
@@ -74,6 +74,6 @@ export const TaskRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
     .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware)
 );

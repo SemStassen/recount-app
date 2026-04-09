@@ -10,10 +10,12 @@ import {
   goToPreviousPeriod,
   setCalendarSelectedDate,
 } from "~/atoms/calendar.atoms";
-import { formatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
 function DateNavigator() {
   const selectedDate = useAtomValue(calendarSelectedDateAtom);
+  const formatter = useDateTimeFormatter();
+
   return (
     <>
       <Popover>

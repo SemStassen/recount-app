@@ -1,0 +1,26 @@
+{
+  "name": "@recount/editor",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
+    "format": "oxfmt --write .",
+    "lint": "oxlint -A import/no-namespace -c ../../.oxlintrc.json .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@recount/ui": "workspace:*",
+    "@tiptap/pm": "^3.22.2",
+    "@tiptap/react": "^3.22.2",
+    "@tiptap/starter-kit": "^3.22.2"
+  },
+  "devDependencies": {
+    "@recount/config": "workspace:*",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  },
+  "imports": {},
+  "exports": {
+    ".": "./src/index.tsx"
+  }
+}

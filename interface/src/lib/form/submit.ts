@@ -13,7 +13,6 @@ export const decodeUnknownToResult =
   <T, E>(schema: Schema.Codec<T, E>) =>
   (value: unknown) =>
     Schema.decodeUnknownEffect(schema)(value).pipe(
-      // oxlint-disable-next-line eslint-plugin-promise/prefer-await-to-callbacks
       Effect.mapError((error) => error.message),
       Effect.result,
       Effect.runPromise

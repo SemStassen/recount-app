@@ -2,6 +2,8 @@
 
 /* biome-ignore lint/suspicious/noUnknownAtRules: This is necessary for tailwind to work */
 @source "../src";
+/* biome-ignore lint/suspicious/noUnknownAtRules: This is necessary for tailwind to work */
+@source "../../packages";
 
 /* https://base-ui.com/react/overview/quick-start */
 .root {

@@ -9,7 +9,7 @@ import {
   workspaceIntegrationsAtom,
 } from "~/atoms/api";
 import { RecountAtomClient } from "~/lib/rpc/atom-client";
-import { formatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
 import { CreateWorkspaceIntegrationForm } from "../-components/create-workspace-integration-form";
 
@@ -24,6 +24,7 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   const workspaceIntegrations = useAtomValue(workspaceIntegrationsAtom);
+  const formatter = useDateTimeFormatter();
   const integration = workspaceIntegrations.find((i) => i.provider === "float");
 
   const [isPending, startTransition] = useTransition();

@@ -4,7 +4,7 @@ import { Icons } from "@recount/ui/icons";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { projectSidebarAtom } from "~/atoms/ui-atoms";
-import { useWorkspaceLiveQuery } from "~/db/use-workspace-live-query";
+import { useWorkspaceLiveQuery } from "~/db/workspace-collections";
 
 import { ProjectSidebar } from "./-components/project-sidebar";
 
@@ -17,8 +17,8 @@ export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
 function RouteComponent() {
   const setProjectSidebar = useAtomSet(projectSidebarAtom);
 
-  const { data: projects } = useWorkspaceLiveQuery((q, db) =>
-    q.from({ project: db.projectsCollection })
+  const { data: projects } = useWorkspaceLiveQuery((q, collections) =>
+    q.from({ project: collections.projectsCollection })
   );
 
   return (

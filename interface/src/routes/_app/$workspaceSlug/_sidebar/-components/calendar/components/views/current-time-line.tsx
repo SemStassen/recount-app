@@ -1,11 +1,12 @@
 import { useAtomValue } from "@effect/atom-react";
 
 import { calendarCurrentTimeAtom } from "~/atoms/calendar.atoms";
-import { formatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
 import { FIRST_VISIBLE_HOUR, LAST_VISIBLE_HOUR } from "../..";
 
 function CurrentTimeLine() {
   const currentTime = useAtomValue(calendarCurrentTimeAtom);
+  const formatter = useDateTimeFormatter();
 
   const getCurrentTimePosition = () => {
     const minutes = currentTime.getHours() * 60 + currentTime.getMinutes();

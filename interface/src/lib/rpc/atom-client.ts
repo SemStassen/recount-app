@@ -1,6 +1,8 @@
 import {
   AuthRpcGroup,
+  ProjectRpcGroup,
   UserRpcGroup,
+  UserSettingsRpcGroup,
   WorkspaceIntegrationRpcGroup,
   WorkspaceRpcGroup,
 } from "@recount/core/rpc";
@@ -16,6 +18,8 @@ import { RpcClient, RpcSerialization } from "effect/unstable/rpc";
 import { RpcSessionMiddlewareLayerClient } from "./middleware";
 
 const allRpcGroups = AuthRpcGroup.merge(
+  ProjectRpcGroup,
+  UserSettingsRpcGroup,
   UserRpcGroup,
   WorkspaceIntegrationRpcGroup,
   WorkspaceRpcGroup

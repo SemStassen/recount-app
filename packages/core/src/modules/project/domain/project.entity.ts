@@ -27,7 +27,7 @@ export class Project extends Model.Class<Project>("Project")(
         defaultValue: () => null,
       }
     ),
-    endDate: Model.ServerMutableClientMutableOptionalCreateDefault(
+    targetDate: Model.ServerMutableClientMutableOptionalCreateDefault(
       Schema.DateTimeUtcFromDate,
       {
         defaultValue: () => null,

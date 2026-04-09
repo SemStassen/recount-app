@@ -18,7 +18,7 @@ import {
   setIsDragSelectionActive,
 } from "~/atoms/calendar.atoms";
 import { atomRegistry } from "~/atoms/registry";
-import { formatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
 import {
   CALENDAR_DAY_HEADER_HEIGHT_VAR,
@@ -70,6 +70,7 @@ const handlePointerUp = () => {
 function CalendarMultiDayView() {
   const selectedDate = useAtomValue(calendarSelectedDateAtom);
   const daysInView = useAtomValue(calendarDaysInViewAtom);
+  const formatter = useDateTimeFormatter();
   const weekdays = Array.from({ length: daysInView }).map((_, dayIndex) =>
     addDays(selectedDate, dayIndex)
   );

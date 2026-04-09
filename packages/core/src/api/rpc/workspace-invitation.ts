@@ -33,8 +33,8 @@ export const WorkspaceInvitationRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("WorkspaceInvitation.Cancel", {
     payload: CancelWorkspaceInvitationCommand,
@@ -47,8 +47,8 @@ export const WorkspaceInvitationRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("WorkspaceInvitation.Accept", {
     payload: AcceptWorkspaceInvitationCommand,

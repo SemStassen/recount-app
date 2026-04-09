@@ -21,6 +21,6 @@ export const WorkspaceIntegrationRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
     .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware)
 );

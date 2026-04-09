@@ -19,5 +19,12 @@
     "auth_signUp_enterEmail_submit": "Continue with Email",
     "auth_signUp_verifyEmail_heading": "Check your email",
     "auth_signUp_verifyEmail_otp_label": "One time password",
-    "auth_signUp_verifyEmail_submit": "Continue with login code"
+    "auth_signUp_verifyEmail_submit": "Continue with login code",
+    "project_form_name_label": "Name",
+    "project_form_color_label": "Color",
+    "project_form_startDate_label": "Start date",
+    "project_form_targetDate_label": "Target date",
+    "project_form_billable_label": "Billable",
+    "project_form_notes_label": "Notes",
+    "project_create_submit": "Create project"
   }

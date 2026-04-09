@@ -25,7 +25,7 @@ export const projectsTable = pgTable("projects", {
     withTimezone: true,
     precision: 0,
   }),
-  endDate: timestamp("end_date", {
+  targetDate: timestamp("target_date", {
     withTimezone: true,
     precision: 0,
   }),

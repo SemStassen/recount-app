@@ -2,7 +2,7 @@ export { Project } from "./domain/project.entity";
 
 export {
   ProjectArchivedError,
-  ProjectEndDateBeforeStartDateError,
+  ProjectTargetDateBeforeStartDateError,
 } from "./domain/project.errors";
 
 export { Task } from "./domain/task.entity";

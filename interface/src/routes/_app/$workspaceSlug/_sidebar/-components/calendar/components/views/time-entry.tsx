@@ -1,12 +1,13 @@
 import { differenceInMinutes } from "date-fns";
 
-import { formatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
 import { CALENDAR_HOUR_HEIGHT_VAR } from "../..";
 import type { ITimeEntry } from "../../types";
 import { DraggableTimeEntry } from "../dnd/draggable-time-entry";
 
 function TimeEntry({ timeEntry }: { timeEntry: ITimeEntry }) {
   const { project, startedAt, stoppedAt, id } = timeEntry;
+  const formatter = useDateTimeFormatter();
 
   const durationInMinutes = differenceInMinutes(stoppedAt, startedAt);
 

@@ -5,7 +5,7 @@ export class ProjectArchivedError extends Schema.TaggedErrorClass<ProjectArchive
   {}
 ) {}
 
-export class ProjectEndDateBeforeStartDateError extends Schema.TaggedErrorClass<ProjectEndDateBeforeStartDateError>()(
-  "project/ProjectEndDateBeforeStartDateError",
+export class ProjectTargetDateBeforeStartDateError extends Schema.TaggedErrorClass<ProjectTargetDateBeforeStartDateError>()(
+  "project/ProjectTargetDateBeforeStartDateError",
   {}
 ) {}

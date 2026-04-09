@@ -62,6 +62,7 @@ function EnterEmailStep({
           <form.AppField
             children={(field) => (
               <field.TextField
+                direction="vertical"
                 input={{
                   autoComplete: "off",
                   autoFocus: true,

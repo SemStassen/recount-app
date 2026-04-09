@@ -30,8 +30,8 @@ export const TimeEntryRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("TimeEntry.Update", {
     payload: UpdateTimeEntryCommand,
@@ -44,8 +44,8 @@ export const TimeEntryRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("TimeEntry.Delete", {
     payload: DeleteTimeEntryCommand,
@@ -56,6 +56,6 @@ export const TimeEntryRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
     .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware)
 );

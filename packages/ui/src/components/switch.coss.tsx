@@ -3,10 +3,11 @@ import type React from "react";
 
 import { cn } from "#utils/cn";
 
+export type SwitchProps = SwitchPrimitive.Root.Props;
 export function Switch({
   className,
   ...props
-}: SwitchPrimitive.Root.Props): React.ReactElement {
+}: SwitchProps): React.ReactElement {
   return (
     <SwitchPrimitive.Root
       className={cn(

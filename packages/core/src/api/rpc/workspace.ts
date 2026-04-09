@@ -42,8 +42,8 @@ export const WorkspaceRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("Workspace.CheckSlugIsUnique", {
     payload: CheckWorkspaceSlugIsUniqueCommand,

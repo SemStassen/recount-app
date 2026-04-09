@@ -72,7 +72,7 @@ export const RpcWorkspaceMiddlewareLayer = Layer.effect(
         const workspaceContext =
           yield* requestContextResolver.resolveWorkspaceContext({
             userId: sessionContext.user.id,
-            workspaceId: workspaceId,
+            workspaceId,
           });
 
         return yield* Effect.provideService(
@@ -162,7 +162,7 @@ export const HttpWorkspaceMiddleware = HttpRouter.middleware<{
         const workspaceContext =
           yield* requestContextResolver.resolveWorkspaceContext({
             userId: sessionContext.user.id,
-            workspaceId: workspaceId,
+            workspaceId,
           });
 
         return yield* Effect.provideService(

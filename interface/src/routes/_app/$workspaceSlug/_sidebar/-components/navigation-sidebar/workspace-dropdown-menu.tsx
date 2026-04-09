@@ -14,13 +14,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@recount/ui/menu";
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouteContext } from "@tanstack/react-router";
 
-import { Route as WorkspaceRoute } from "~/routes/_app/$workspaceSlug/route";
-
-function WorkspaceDropdownMenu() {
-  const router = useRouter();
-  const { workspace, workspaces } = WorkspaceRoute.useRouteContext();
+export function WorkspaceDropdownMenu() {
+  const { workspace, workspaces } = useRouteContext({
+    from: "/_app/$workspaceSlug",
+  });
 
   // const handleSetActiveWorkspace = async (workspaceId: string) => {
   //   await Effect.runPromise(
@@ -82,5 +81,3 @@ function WorkspaceDropdownMenu() {
     </DropdownMenu>
   );
 }
-
-export { WorkspaceDropdownMenu };

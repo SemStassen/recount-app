@@ -5,7 +5,7 @@ import { Icons } from "@recount/ui/icons";
 import { eq } from "@tanstack/react-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { useWorkspaceLiveQuery } from "~/db/use-workspace-live-query";
+import { useWorkspaceLiveQuery } from "~/db/workspace-collections";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/settings/import/")({
   beforeLoad: () => ({
@@ -58,9 +58,9 @@ function IntegrationCard({
   icon: React.ReactNode;
   disabled?: boolean;
 }) {
-  const { data: integration } = useWorkspaceLiveQuery((q, db) =>
+  const { data: integration } = useWorkspaceLiveQuery((q, collections) =>
     q
-      .from({ wi: db.workspaceIntegrationsCollection })
+      .from({ wi: collections.workspaceIntegrationsCollection })
       .where(({ wi }) => eq(wi.provider, provider))
       .findOne()
   );

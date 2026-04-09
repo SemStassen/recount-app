@@ -7,7 +7,7 @@ import { ProjectId, TaskId } from "#shared/schemas/index";
 import type { Project } from "./domain/project.entity";
 import type {
   ProjectArchivedError,
-  ProjectEndDateBeforeStartDateError,
+  ProjectTargetDateBeforeStartDateError,
 } from "./domain/project.errors";
 import type { Task } from "./domain/task.entity";
 
@@ -31,7 +31,7 @@ interface ProjectModuleShape {
     data: ReadonlyArray<typeof Project.jsonCreate.Type>;
   }) => Effect.Effect<
     ReadonlyArray<Project>,
-    ProjectEndDateBeforeStartDateError | RepositoryError
+    ProjectTargetDateBeforeStartDateError | RepositoryError
   >;
   readonly updateProject: (params: {
     id: Project["id"];
@@ -41,7 +41,7 @@ interface ProjectModuleShape {
     Project,
     | ProjectNotFoundError
     | ProjectArchivedError
-    | ProjectEndDateBeforeStartDateError
+    | ProjectTargetDateBeforeStartDateError
     | RepositoryError
   >;
   readonly archiveProject: (params: {

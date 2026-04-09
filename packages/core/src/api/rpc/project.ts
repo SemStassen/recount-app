@@ -14,7 +14,7 @@ import {
 } from "#api/contracts/index";
 import {
   ProjectArchivedError,
-  ProjectEndDateBeforeStartDateError,
+  ProjectTargetDateBeforeStartDateError,
   ProjectNotFoundError,
 } from "#modules/project/index";
 import { AuthorizationError } from "#shared/authorization/index";
@@ -27,12 +27,12 @@ export const ProjectRpcGroup = RpcGroup.make(
     success: CreateProjectResult,
     error: Schema.Union([
       AuthorizationError,
-      ProjectEndDateBeforeStartDateError,
+      ProjectTargetDateBeforeStartDateError,
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("Project.Update", {
     payload: UpdateProjectCommand,
@@ -41,12 +41,12 @@ export const ProjectRpcGroup = RpcGroup.make(
       AuthorizationError,
       ProjectNotFoundError,
       ProjectArchivedError,
-      ProjectEndDateBeforeStartDateError,
+      ProjectTargetDateBeforeStartDateError,
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("Project.Archive", {
     payload: ArchiveProjectCommand,
@@ -57,8 +57,8 @@ export const ProjectRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
-    .middleware(RpcWorkspaceMiddleware),
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
 
   Rpc.make("Project.Restore", {
     payload: RestoreProjectCommand,
@@ -69,6 +69,6 @@ export const ProjectRpcGroup = RpcGroup.make(
       HttpApiError.InternalServerError,
     ]),
   })
-    .middleware(RpcSessionMiddleware)
     .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware)
 );

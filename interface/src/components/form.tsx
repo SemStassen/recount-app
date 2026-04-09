@@ -1,15 +1,9 @@
 import type { SelectItemProps } from "@base-ui/react";
+import { RichTextEditor } from "@recount/editor";
+import type { RichTextContent } from "@recount/editor";
 import { Button } from "@recount/ui/button";
 import type { ButtonProps } from "@recount/ui/button";
 import { Calendar } from "@recount/ui/calendar";
-import {
-  Combobox,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxPopup,
-} from "@recount/ui/combobox";
 import {
   Field,
   FieldControl,
@@ -27,47 +21,43 @@ import type {
 import { Icons } from "@recount/ui/icons";
 import { Input } from "@recount/ui/input";
 import type { InputProps } from "@recount/ui/input";
-import { InputTime } from "@recount/ui/input-time";
-import type { InputTimeProps } from "@recount/ui/input-time";
 import { Popover, PopoverPopup, PopoverTrigger } from "@recount/ui/popover";
 import {
   Select,
-  SelectContent,
   SelectItem,
   SelectPopup,
   SelectTrigger,
   SelectValue,
 } from "@recount/ui/select";
+import { Switch } from "@recount/ui/switch";
+import type { SwitchProps } from "@recount/ui/switch";
 import { Textarea } from "@recount/ui/textarea";
 import type { TextareaProps } from "@recount/ui/textarea";
-import type { TimePickerProps } from "@recount/ui/time-picker";
 import { cn } from "@recount/ui/utils";
-import {
-  createFormHook,
-  createFormHookContexts,
-  useStore,
-} from "@tanstack/react-form";
-import { cva, type VariantProps } from "class-variance-authority";
+import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
+import { cva } from "class-variance-authority";
 import type { PropsWithChildren } from "react";
-import type React from "react";
+import { fi } from "zod/v4/locales";
 
-import { formatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
 const { fieldContext, formContext, useFieldContext, useFormContext } =
   createFormHookContexts();
 
 export const { useAppForm } = createFormHook({
   fieldComponents: {
-    CustomField: CustomField,
-    TextField: TextField,
-    TextareaField: TextareaField,
-    DateField: DateField,
+    CustomField,
+    TextField,
+    TextareaField,
+    SwitchField,
+    DateField,
     // TimeField: TimeField,
-    SelectField: SelectField,
+    SelectField,
     // ComboBoxField: ComboBoxField,
+    EditorField,
   },
   formComponents: {
-    SubmitButton: SubmitButton,
+    SubmitButton,
   },
   fieldContext,
   formContext,
@@ -98,7 +88,11 @@ function BaseField({
   children,
   direction,
 }: BaseFieldProps) {
+  const fieldCtx = useFieldContext();
+
+  const errorMessage = fieldCtx.state.meta.errors[0]?.message;
   const { className, ...fieldProps } = field ?? {};
+  console.log(fieldCtx, errorMessage);
 
   return (
     <Field
@@ -113,7 +107,7 @@ function BaseField({
           </div>
           <div>
             {children}
-            <FieldError {...error} />
+            <FieldError {...error}>{errorMessage}</FieldError>
           </div>
         </>
       )}
@@ -122,7 +116,7 @@ function BaseField({
           <FieldLabel {...label} />
           {description && <FieldDescription {...description} />}
           {children}
-          <FieldError {...error} />
+          <FieldError {...error}>{errorMessage}</FieldError>
         </>
       )}
     </Field>
@@ -144,14 +138,14 @@ interface InputFieldProps extends BaseFieldProps {
   input?: InputProps;
 }
 function TextField({ input, ...props }: InputFieldProps) {
-  // const fieldContext = useFieldContext<string>();
+  const fieldCtx = useFieldContext<string>();
 
   return (
     <BaseField {...props}>
       <Input
-        // onBlur={fieldContext.handleBlur}
-        // value={fieldContext.state.value}
-        // onValueChange={fieldContext.handleChange}
+        onBlur={fieldCtx.handleBlur}
+        value={fieldCtx.state.value}
+        onValueChange={fieldCtx.handleChange}
         {...input}
         type="text"
       />
@@ -163,15 +157,31 @@ interface TextareaFieldProps extends BaseFieldProps {
   textarea?: TextareaProps;
 }
 function TextareaField({ textarea, ...props }: TextareaFieldProps) {
-  // const fieldContext = useFieldContext<string>();
+  const fieldCtx = useFieldContext<string>();
 
   return (
     <BaseField {...props}>
       <Textarea
-        // onBlur={fieldContext.handleBlur}
-        // value={fieldContext.state.value}
-        // onChange={(e) => fieldContext.handleChange(e.target.value)}
+        onBlur={fieldCtx.handleBlur}
+        value={fieldCtx.state.value}
+        onChange={(e) => fieldCtx.handleChange(e.target.value)}
         {...textarea}
+      />
+    </BaseField>
+  );
+}
+interface SwitchFieldProps extends BaseFieldProps {
+  switch?: SwitchProps;
+}
+function SwitchField({ switch: switchProps, ...props }: SwitchFieldProps) {
+  const fieldCtx = useFieldContext<boolean>();
+
+  return (
+    <BaseField {...props}>
+      <Switch
+        checked={fieldCtx.state.value}
+        onCheckedChange={fieldCtx.handleChange}
+        {...switchProps}
       />
     </BaseField>
   );
@@ -181,9 +191,14 @@ interface SelectFieldProps extends BaseFieldProps {
   items: Array<SelectItemProps>;
 }
 function SelectField({ items, ...props }: SelectFieldProps) {
+  const fieldCtx = useFieldContext<string | undefined>();
+
   return (
     <BaseField {...props}>
-      <Select>
+      <Select
+        value={fieldCtx.state.value}
+        onValueChange={(value) => fieldCtx.handleChange(value ?? undefined)}
+      >
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
@@ -200,6 +215,9 @@ function SelectField({ items, ...props }: SelectFieldProps) {
 }
 
 function DateField({ ...props }: BaseFieldProps) {
+  const fieldCtx = useFieldContext<Date | undefined>();
+  const formatter = useDateTimeFormatter();
+
   return (
     <BaseField {...props}>
       <Popover>
@@ -207,13 +225,34 @@ function DateField({ ...props }: BaseFieldProps) {
           render={
             <Button variant="outline">
               <Icons.Calendar />
+              {fieldCtx.state.value
+                ? formatter.date(fieldCtx.state.value)
+                : "Select date"}
             </Button>
           }
         />
         <PopoverPopup align="start">
-          <Calendar mode="single" />
+          <Calendar
+            mode="single"
+            selected={fieldCtx.state.value}
+            onSelect={fieldCtx.handleChange}
+          />
         </PopoverPopup>
       </Popover>
+    </BaseField>
+  );
+}
+
+interface EditorFieldProps extends BaseFieldProps {}
+function EditorField(props: EditorFieldProps) {
+  const fieldCtx = useFieldContext<RichTextContent>();
+
+  return (
+    <BaseField {...props}>
+      <RichTextEditor
+        content={fieldCtx.state.value}
+        onChange={fieldCtx.handleChange}
+      />
     </BaseField>
   );
 }
@@ -221,6 +260,7 @@ function DateField({ ...props }: BaseFieldProps) {
 interface SubmitButtonProps extends ButtonProps {}
 function SubmitButton({ ...props }: SubmitButtonProps) {
   const form = useFormContext();
+
   return (
     <form.Subscribe selector={(state) => state.isSubmitting}>
       {(isSubmitting) => (

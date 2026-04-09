@@ -6,7 +6,7 @@ import { generateUUID } from "#shared/utils/index";
 import { Project } from "./project.entity";
 import {
   ProjectArchivedError,
-  ProjectEndDateBeforeStartDateError,
+  ProjectTargetDateBeforeStartDateError,
 } from "./project.errors";
 
 export const ensureProjectNotArchived = (
@@ -18,14 +18,14 @@ export const ensureProjectNotArchived = (
 
 const ensureValidDateRange = (params: {
   startDate: Project["startDate"];
-  endDate: Project["endDate"];
-}): Result.Result<void, ProjectEndDateBeforeStartDateError> => {
+  targetDate: Project["targetDate"];
+}): Result.Result<void, ProjectTargetDateBeforeStartDateError> => {
   if (
     Option.isSome(params.startDate) &&
-    Option.isSome(params.endDate) &&
-    DateTime.isLessThan(params.endDate.value, params.startDate.value)
+    Option.isSome(params.targetDate) &&
+    DateTime.isLessThan(params.targetDate.value, params.startDate.value)
   ) {
-    return Result.fail(new ProjectEndDateBeforeStartDateError());
+    return Result.fail(new ProjectTargetDateBeforeStartDateError());
   }
 
   return Result.succeed(undefined);
@@ -34,7 +34,7 @@ const ensureValidDateRange = (params: {
 export const createProject = (params: {
   workspaceId: Project["workspaceId"];
   data: typeof Project.jsonCreate.Type;
-}): Result.Result<Project, ProjectEndDateBeforeStartDateError> =>
+}): Result.Result<Project, ProjectTargetDateBeforeStartDateError> =>
   Result.gen(function* () {
     const { id, ...rest } = params.data;
 
@@ -47,7 +47,7 @@ export const createProject = (params: {
 
     yield* ensureValidDateRange({
       startDate: project.startDate,
-      endDate: project.endDate,
+      targetDate: project.targetDate,
     });
 
     return project;
@@ -58,7 +58,7 @@ export const updateProject = (params: {
   data: typeof Project.jsonUpdate.Type;
 }): Result.Result<
   { entity: Project; changes: typeof Project.update.Type },
-  ProjectArchivedError | ProjectEndDateBeforeStartDateError
+  ProjectArchivedError | ProjectTargetDateBeforeStartDateError
 > =>
   Result.gen(function* () {
     yield* ensureProjectNotArchived(params.project);
@@ -70,7 +70,7 @@ export const updateProject = (params: {
 
     yield* ensureValidDateRange({
       startDate: updatedProject.startDate,
-      endDate: updatedProject.endDate,
+      targetDate: updatedProject.targetDate,
     });
 
     return {
