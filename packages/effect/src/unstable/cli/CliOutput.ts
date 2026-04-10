@@ -2,9 +2,9 @@
  * @since 4.0.0
  */
 
+import * as Context from "../../Context.ts"
 import * as Layer from "../../Layer.ts"
 import * as Option from "../../Option.ts"
-import * as ServiceMap from "../../ServiceMap.ts"
 import type * as CliError from "./CliError.ts"
 import type { HelpDoc } from "./HelpDoc.ts"
 
@@ -210,7 +210,7 @@ export interface Formatter {
  * @since 4.0.0
  * @category services
  */
-export const Formatter: ServiceMap.Reference<Formatter> = ServiceMap.Reference(
+export const Formatter: Context.Reference<Formatter> = Context.Reference(
   "effect/cli/CliOutput",
   { defaultValue: () => defaultFormatter() }
 )
@@ -406,8 +406,9 @@ interface Row {
  * Renders a table with aligned columns.
  * @internal
  */
-const renderTable = (rows: ReadonlyArray<Row>, widthCap: number) => {
-  const col = Math.min(Math.max(...rows.map((r) => visualLength(r.left))) + 4, widthCap)
+const renderTable = (rows: ReadonlyArray<Row>, widthCap?: number) => {
+  const maxColumn = Math.max(...rows.map((r) => visualLength(r.left))) + 4
+  const col = widthCap === undefined ? maxColumn : Math.min(maxColumn, widthCap)
   return rows.map(({ left, right }) => `  ${pad(left, col)}${right}`).join("\n")
 }
 
@@ -497,7 +498,7 @@ const formatHelpDocImpl = (doc: HelpDoc, colors: ColorFunctions): string => {
       }
     })
 
-    sections.push(renderTable(flagRows, 30))
+    sections.push(renderTable(flagRows))
     sections.push("")
   }
 
@@ -525,7 +526,7 @@ const formatHelpDocImpl = (doc: HelpDoc, colors: ColorFunctions): string => {
       }
     })
 
-    sections.push(renderTable(globalFlagRows, 30))
+    sections.push(renderTable(globalFlagRows))
     sections.push("")
   }
 

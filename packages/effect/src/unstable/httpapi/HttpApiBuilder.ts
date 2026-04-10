@@ -1,6 +1,7 @@
 /**
  * @since 4.0.0
  */
+import * as Context from "../../Context.ts"
 import * as Effect from "../../Effect.ts"
 import * as Encoding from "../../Encoding.ts"
 import * as Fiber from "../../Fiber.ts"
@@ -18,7 +19,6 @@ import type * as AST from "../../SchemaAST.ts"
 import * as Issue from "../../SchemaIssue.ts"
 import * as Transformation from "../../SchemaTransformation.ts"
 import type * as Scope from "../../Scope.ts"
-import * as ServiceMap from "../../ServiceMap.ts"
 import * as Stream from "../../Stream.ts"
 import type { Covariant, NoInfer } from "../../Types.ts"
 import * as UndefinedOr from "../../UndefinedOr.ts"
@@ -64,7 +64,7 @@ export const layer = <Id extends string, Groups extends HttpApiGroup.Any>(
   | HttpApiGroup.ToService<Id, Groups>
 > =>
   HttpRouter.use(Effect.fnUntraced(function*(router) {
-    const services = yield* Effect.services<
+    const services = yield* Effect.context<
       | Etag.Generator
       | HttpRouter.HttpRouter
       | FileSystem
@@ -119,8 +119,8 @@ export const group = <
   Handlers.Error<Return>,
   Exclude<Handlers.Context<Return>, Scope.Scope>
 > =>
-  Layer.effectServices(Effect.gen(function*() {
-    const services = yield* Effect.services<any>()
+  Layer.effectContext(Effect.gen(function*() {
+    const services = yield* Effect.context<any>()
     const group = api.groups[groupName]!
     const result = build(makeHandlers(group))
     const handlers: Handlers<any, any> = Effect.isEffect(result)
@@ -130,7 +130,7 @@ export const group = <
     for (const item of handlers.handlers) {
       routes.push(handlerToRoute(group as any, item, services))
     }
-    return ServiceMap.makeUnsafe(new Map([[group.key, routes]]))
+    return Context.makeUnsafe(new Map([[group.key, routes]]))
   })) as any
 
 /**
@@ -330,10 +330,10 @@ export const endpoint = <
   | HttpPlatform
   | Path
 > =>
-  Effect.servicesWith((services: ServiceMap.ServiceMap<any>) => {
+  Effect.contextWith((context: Context.Context<any>) => {
     const group = api.groups[groupName] as unknown as HttpApiGroup.AnyWithProps
     const endpoint = group.endpoints[endpointName] as unknown as HttpApiEndpoint.AnyWithProps
-    return Effect.succeed(handlerToHttpEffect(group, endpoint, services, handler as any, false))
+    return Effect.succeed(handlerToHttpEffect(group, endpoint, context, handler as any, false))
   })
 
 /**
@@ -521,14 +521,14 @@ function decodePayload(
         return Effect.flatMap(
           Effect.orDie(UndefinedOr.match(existing.limits, {
             onUndefined: () => httpRequest.multipart,
-            onDefined: (limits) => Effect.provideServices(httpRequest.multipart, Multipart.limitsServices(limits))
+            onDefined: (limits) => Effect.provideContext(httpRequest.multipart, Multipart.limitsServices(limits))
           })),
           decode
         )
       }
       return Effect.succeed(UndefinedOr.match(existing.limits, {
         onUndefined: () => httpRequest.multipartStream,
-        onDefined: (limits) => Stream.provideServices(httpRequest.multipartStream, Multipart.limitsServices(limits))
+        onDefined: (limits) => Stream.provideContext(httpRequest.multipartStream, Multipart.limitsServices(limits))
       }))
     }
     case "Json":
@@ -552,7 +552,7 @@ function decodePayload(
 function handlerToHttpEffect(
   group: HttpApiGroup.AnyWithProps,
   endpoint: HttpApiEndpoint.AnyWithProps,
-  services: ServiceMap.ServiceMap<any>,
+  context: Context.Context<any>,
   handler: HttpApiEndpoint.Handler<any, any, any>,
   isRaw: boolean
 ) {
@@ -568,13 +568,13 @@ function handlerToHttpEffect(
   return applyMiddleware(
     group,
     endpoint,
-    services,
+    context,
     Effect.gen(function*() {
       const fiber = Fiber.getCurrent()!
-      const services = fiber.services
-      const httpRequest = ServiceMap.getUnsafe(services, HttpServerRequest)
-      const routeContext = ServiceMap.getUnsafe(services, HttpRouter.RouteContext)
-      const query = ServiceMap.getUnsafe(services, Request.ParsedSearchParams)
+      const context = fiber.context
+      const httpRequest = Context.getUnsafe(context, HttpServerRequest)
+      const routeContext = Context.getUnsafe(context, HttpRouter.RouteContext)
+      const query = Context.getUnsafe(context, Request.ParsedSearchParams)
       const request: any = {
         request: httpRequest,
         endpoint,
@@ -604,20 +604,20 @@ function handlerToHttpEffect(
   ).pipe(
     Effect.withErrorReporting,
     Effect.catch((error) => Effect.orDie(encodeError(error))),
-    Effect.provideServices(services)
+    Effect.provideContext(context)
   )
 }
 
 function handlerToRoute(
   group: HttpApiGroup.AnyWithProps,
   handler: Handlers.Item<any>,
-  services: ServiceMap.ServiceMap<any>
+  context: Context.Context<any>
 ): HttpRouter.Route<any, any> {
   const endpoint = handler.endpoint
   return HttpRouter.route(
     endpoint.method,
     endpoint.path as HttpRouter.PathInput,
-    handlerToHttpEffect(group, endpoint, services, handler.handler, handler.isRaw),
+    handlerToHttpEffect(group, endpoint, context, handler.handler, handler.isRaw),
     { uninterruptible: handler.uninterruptible }
   )
 }
@@ -636,13 +636,13 @@ const getRequestMediaType = (request: HttpServerRequest): string => {
 const applyMiddleware = <A extends Effect.Effect<any, any, any>>(
   group: HttpApiGroup.AnyWithProps,
   endpoint: HttpApiEndpoint.AnyWithProps,
-  services: ServiceMap.ServiceMap<any>,
+  context: Context.Context<any>,
   handler: A
 ) => {
   const options = { group, endpoint }
   for (const key_ of endpoint.middlewares) {
     const key = key_ as any as HttpApiMiddleware.AnyService
-    const service = ServiceMap.getUnsafe(services, key as any) as HttpApiMiddleware.HttpApiMiddleware<any, any, any>
+    const service = Context.getUnsafe(context, key as any) as HttpApiMiddleware.HttpApiMiddleware<any, any, any>
     const apply = HttpApiMiddleware.isSecurity(key)
       ? makeSecurityMiddleware(key, service as any)
       : service
@@ -652,7 +652,7 @@ const applyMiddleware = <A extends Effect.Effect<any, any, any>>(
 }
 
 const securityMiddlewareCache = new WeakMap<
-  any,
+  object,
   (effect: Effect.Effect<any, any, any>, options: any) => Effect.Effect<any, any, any>
 >()
 
@@ -660,13 +660,14 @@ const makeSecurityMiddleware = (
   key: HttpApiMiddleware.AnyServiceSecurity,
   service: HttpApiMiddleware.HttpApiMiddlewareSecurity<any, any, any, any>
 ): (effect: Effect.Effect<any, any, any>, options: any) => Effect.Effect<any, any, any> => {
-  if (securityMiddlewareCache.has(key)) {
-    return securityMiddlewareCache.get(key)!
+  const cached = securityMiddlewareCache.get(service)
+  if (cached !== undefined) {
+    return cached
   }
 
-  const entries = Object.entries(key.security).map(([key, security]) => ({
+  const entries = Object.entries(key.security).map(([securityKey, security]) => ({
     decode: securityDecode(security),
-    middleware: service[key]
+    middleware: service[securityKey]
   }))
   if (entries.length === 0) {
     return identity
@@ -694,7 +695,7 @@ const makeSecurityMiddleware = (
     return yield* lastResult!.asEffect()
   })
 
-  securityMiddlewareCache.set(key, middleware)
+  securityMiddlewareCache.set(service, middleware)
   return middleware
 }
 
@@ -734,7 +735,11 @@ function getResponseTransformation(
   schema: Schema.Top
 ): Transformation.Transformation<unknown, Response.HttpServerResponse> {
   const ast = schema.ast
-  const encode = getResponseEncode(getStatus(ast), HttpApiSchema.getResponseEncoding(ast))
+  const encode = getResponseEncode(
+    getStatus(ast),
+    HttpApiSchema.getResponseEncoding(ast),
+    HttpApiSchema.isNoContent(ast)
+  )
 
   return Transformation.transformOrFail({
     decode: (res) => Effect.fail(new Issue.Forbidden(Option.some(res), { message: "Encode only schema" })),
@@ -744,12 +749,13 @@ function getResponseTransformation(
 
 function getResponseEncode<E>(
   status: number,
-  encoding: HttpApiSchema.ResponseEncoding
+  encoding: HttpApiSchema.ResponseEncoding,
+  isNoContent: boolean
 ): (e: E) => Effect.Effect<Response.HttpServerResponse, Issue.InvalidValue, never> {
   switch (encoding._tag) {
     case "Json": {
       return ((e) => {
-        if (e === undefined) {
+        if (e === undefined || isNoContent) {
           return Effect.succeed(Response.empty({ status }))
         }
         try {

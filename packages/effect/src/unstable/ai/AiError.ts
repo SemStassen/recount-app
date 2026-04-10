@@ -79,6 +79,7 @@
  * @since 1.0.0
  */
 import * as Duration from "../../Duration.ts"
+import * as Effect from "../../Effect.ts"
 import * as Option from "../../Option.ts"
 import * as Predicate from "../../Predicate.ts"
 import { redact } from "../../Redactable.ts"
@@ -91,8 +92,8 @@ const ReasonTypeId = "~effect/unstable/ai/AiError/Reason" as const
 
 const providerMetadataWithDefaults = <Metadata extends ProviderMetadata>() =>
   (ProviderMetadata as unknown as typeof ProviderMetadata & Schema.Schema<Metadata>).pipe(
-    Schema.withConstructorDefault(() => Option.some({} as Metadata)),
-    Schema.withDecodingDefault(() => ({} as Metadata))
+    Schema.withConstructorDefault(Effect.succeed({})),
+    Schema.withDecodingDefault(Effect.succeed({}))
   )
 
 const redactHeaders = (headers: Record<string, string>): Record<string, string> => {
@@ -1532,11 +1533,13 @@ export const reasonFromHttpStatus = (params: {
   readonly body?: unknown
   readonly http?: typeof HttpContext.Type
   readonly metadata?: typeof ProviderMetadata.Type
+  readonly description?: string | undefined
 }): AiErrorReason => {
-  const { status, http, metadata } = params
+  const { status, http, metadata, description } = params
   const common = {
     http,
-    ...(Predicate.isNotUndefined(metadata) ? { metadata } : {})
+    ...(metadata ? { metadata } : undefined),
+    ...(description ? { description } : undefined)
   }
   switch (status) {
     case 400:

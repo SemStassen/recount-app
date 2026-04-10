@@ -2,17 +2,17 @@
  * @since 4.0.0
  */
 import * as Msgpackr from "msgpackr"
+import * as Context from "../../Context.ts"
 import * as Layer from "../../Layer.ts"
 import * as Predicate from "../../Predicate.ts"
 import { hasProperty } from "../../Predicate.ts"
-import * as ServiceMap from "../../ServiceMap.ts"
 import type * as RpcMessage from "./RpcMessage.ts"
 
 /**
  * @since 4.0.0
  * @category serialization
  */
-export class RpcSerialization extends ServiceMap.Service<RpcSerialization, {
+export class RpcSerialization extends Context.Service<RpcSerialization, {
   makeUnsafe(): Parser
   readonly contentType: string
   readonly includesFraming: boolean
@@ -175,12 +175,12 @@ function decodeJsonRpcRaw(
     }
     return messages
   }
-  return Array.isArray(decoded) ? decoded.map(decodeJsonRpcMessage) : [decodeJsonRpcMessage(decoded)]
+  return [decodeJsonRpcMessage(decoded)]
 }
 
 function decodeJsonRpcMessage(decoded: JsonRpcMessage): RpcMessage.FromClientEncoded | RpcMessage.FromServerEncoded {
   if ("method" in decoded) {
-    if (!decoded.id && decoded.method.startsWith("@effect/rpc/")) {
+    if (Predicate.isNullish(decoded.id) && decoded.method.startsWith("@effect/rpc/")) {
       const tag = decoded.method.slice("@effect/rpc/".length) as
         | RpcMessage.FromServerEncoded["_tag"]
         | Exclude<RpcMessage.FromClientEncoded["_tag"], "Request">
@@ -194,7 +194,7 @@ function decodeJsonRpcMessage(decoded: JsonRpcMessage): RpcMessage.FromClientEnc
     }
     return {
       _tag: "Request",
-      id: decoded.id ? String(decoded.id) : "",
+      id: Predicate.isNotNullish(decoded.id) ? String(decoded.id) : "",
       tag: decoded.method,
       payload: decoded.params ?? null,
       headers: decoded.headers ?? [],
@@ -308,7 +308,7 @@ function encodeJsonRpcMessage(response: RpcMessage.FromServerEncoded | RpcMessag
         jsonrpc: "2.0",
         method: response.tag,
         params: response.payload,
-        id: response.id && Number(response.id),
+        id: response.id !== "" ? Number(response.id) : "",
         headers: response.headers,
         traceId: response.traceId,
         spanId: response.spanId,
@@ -335,14 +335,14 @@ function encodeJsonRpcMessage(response: RpcMessage.FromServerEncoded | RpcMessag
       if (response.exit._tag === "Success") {
         return {
           jsonrpc: "2.0",
-          id: response.requestId ? Number(response.requestId) : undefined,
+          id: response.requestId !== "" ? Number(response.requestId) : undefined,
           result: response.exit.value
         } as any
       }
       const error = response.exit.cause.find((failure) => failure._tag === "Fail")
       return {
         jsonrpc: "2.0",
-        id: response.requestId ? Number(response.requestId) : undefined,
+        id: response.requestId !== "" ? Number(response.requestId) : undefined,
         error: response.exit._tag === "Failure" ?
           {
             _tag: "Cause",
