@@ -3,6 +3,7 @@
  */
 /** @effect-diagnostics preferSchemaOverJson:skip-file */
 import * as Arr from "effect/Array"
+import * as Context from "effect/Context"
 import * as DateTime from "effect/DateTime"
 import * as Effect from "effect/Effect"
 import * as Encoding from "effect/Encoding"
@@ -13,7 +14,6 @@ import * as Predicate from "effect/Predicate"
 import * as Redactable from "effect/Redactable"
 import * as Schema from "effect/Schema"
 import * as SchemaAST from "effect/SchemaAST"
-import * as ServiceMap from "effect/ServiceMap"
 import * as Stream from "effect/Stream"
 import type { Span } from "effect/Tracer"
 import type { Mutable, Simplify } from "effect/Types"
@@ -54,7 +54,7 @@ export type Model = typeof Generated.Model.Type
  * @since 1.0.0
  * @category configuration
  */
-export class Config extends ServiceMap.Service<
+export class Config extends Context.Service<
   Config,
   Simplify<
     & Partial<
@@ -213,15 +213,6 @@ declare module "effect/unstable/ai/Prompt" {
   }
 
   export interface ToolApprovalRequestPartOptions extends ProviderOptions {
-    readonly anthropic?: {
-      /**
-       * A breakpoint which marks the end of reusable content eligible for caching.
-       */
-      readonly cacheControl?: typeof Generated.CacheControlEphemeral.Encoded | null
-    } | null
-  }
-
-  export interface ToolApprovalResponsePartOptions extends ProviderOptions {
     readonly anthropic?: {
       /**
        * A breakpoint which marks the end of reusable content eligible for caching.
@@ -424,7 +415,7 @@ export const make = Effect.fnUntraced(function*({ model, config: providerConfig 
   const client = yield* AnthropicClient
 
   const makeConfig: Effect.Effect<typeof Config.Service & { readonly model: string }> = Effect.gen(function*() {
-    const services = yield* Effect.services<never>()
+    const services = yield* Effect.context<never>()
     return { model, ...providerConfig, ...services.mapUnsafe.get(Config.key) }
   })
 
@@ -1010,9 +1001,9 @@ const prepareTools = Effect.fnUntraced(
     const providerTools: Array<AnthropicProviderDefinedTool> = []
 
     for (const tool of options.tools) {
-      if (Tool.isUserDefined(tool)) {
+      if (Tool.isUserDefined(tool) || Tool.isDynamic(tool)) {
         const description = Tool.getDescription(tool)
-        const input_schema = yield* tryJsonSchema(tool.parametersSchema, "prepareTools")
+        const input_schema = yield* tryToolJsonSchema(tool, "prepareTools")
         const toolStrict = Tool.getStrictMode(tool)
         const strict = capabilities.supportsStructuredOutput
           ? (toolStrict ?? config.strictJsonSchema ?? true)
@@ -2746,6 +2737,12 @@ const tryCodecTransform = <S extends Schema.Top>(schema: S, method: string) =>
 const tryJsonSchema = <S extends Schema.Top>(schema: S, method: string) =>
   Effect.try({
     try: () => Tool.getJsonSchemaFromSchema(schema, { transformer: toCodecAnthropic }),
+    catch: (error) => unsupportedSchemaError(error, method)
+  })
+
+const tryToolJsonSchema = <T extends Tool.Any | Tool.AnyDynamic>(tool: T, method: string) =>
+  Effect.try({
+    try: () => Tool.getJsonSchema(tool, { transformer: toCodecAnthropic }),
     catch: (error) => unsupportedSchemaError(error, method)
   })
 

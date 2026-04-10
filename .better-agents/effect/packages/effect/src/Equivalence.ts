@@ -18,7 +18,7 @@
  * - Using strict equality (`===`) → {@link strictEqual}
  * - Combining multiple equivalences (AND logic) → {@link combine}, {@link combineAll}
  * - Transforming input before comparison → {@link mapInput}
- * - Creating equivalences for structured types → {@link Struct}, {@link Tuple}, {@link Array}, {@link Record}
+ * - Creating equivalences for structured types → {@link Struct}, {@link Tuple}, {@link Array_}, {@link Record}
  *
  * ## Gotchas
  *
@@ -46,7 +46,7 @@
  * ## See also
  *
  * - {@link Equal} - For structural equality (can convert to Equivalence)
- * - {@link Array.dedupeWith} - Remove duplicates using an equivalence
+ * - {@link Array_.dedupeWith} - Remove duplicates using an equivalence
  * - {@link Chunk} - Collections that use equivalences for operations
  *
  * @since 2.0.0
@@ -561,7 +561,7 @@ export const mapInput: {
  * ) // true
  * ```
  *
- * See also: {@link Array}, {@link Struct}
+ * See also: {@link Array_}, {@link Struct}
  *
  * @category combinators
  * @since 4.0.0
@@ -583,56 +583,9 @@ export function Tuple<const Elements extends ReadonlyArray<Equivalence<any>>>(
 }
 
 /**
- * Creates an equivalence for arrays where all elements are compared using the same equivalence.
- *
- * When to use this:
- * - When comparing arrays with homogeneous element types
- * - When all elements should use the same equivalence logic
- * - When working with variable-length arrays (not fixed tuples)
- * - Prefer over `Tuple` when you have arrays of the same type
- *
- * Behavior:
- * - Does not mutate inputs
- * - Requires arrays to have the same length; different lengths are never equivalent
- * - Compares elements positionally (index 0 with index 0, etc.)
- * - Returns `true` only if all corresponding elements are equivalent
- * - Empty arrays are considered equivalent
- * - The result is also an equivalence (satisfies reflexive, symmetric, transitive properties)
- *
- * **Example** (Number array equivalence)
- *
- * ```ts
- * import { Equivalence } from "effect"
- *
- * const numberArrayEq = Equivalence.Array(Equivalence.strictEqual<number>())
- *
- * console.log(numberArrayEq([1, 2, 3], [1, 2, 3])) // true
- * console.log(numberArrayEq([1, 2, 3], [1, 2, 4])) // false
- * console.log(numberArrayEq([1, 2], [1, 2, 3])) // false (different length)
- * ```
- *
- * **Example** (Case-insensitive string array)
- *
- * ```ts
- * import { Equivalence } from "effect"
- *
- * const caseInsensitive = Equivalence.mapInput(
- *   Equivalence.strictEqual<string>(),
- *   (s: string) => s.toLowerCase()
- * )
- * const stringArrayEq = Equivalence.Array(caseInsensitive)
- *
- * console.log(stringArrayEq(["Hello", "World"], ["HELLO", "WORLD"])) // true
- * console.log(stringArrayEq(["Hello"], ["Hi"])) // false
- * console.log(stringArrayEq([], [])) // true (empty arrays)
- * ```
- *
- * See also: {@link Tuple}, {@link Record}
- *
- * @category combinators
  * @since 4.0.0
  */
-export function Array<A>(item: Equivalence<A>): Equivalence<ReadonlyArray<A>> {
+function Array_<A>(item: Equivalence<A>): Equivalence<ReadonlyArray<A>> {
   return make((self, that) => {
     if (self.length !== that.length) return false
 
@@ -642,6 +595,59 @@ export function Array<A>(item: Equivalence<A>): Equivalence<ReadonlyArray<A>> {
 
     return true
   })
+}
+export {
+  /**
+   * Creates an equivalence for arrays where all elements are compared using the same equivalence.
+   *
+   * When to use this:
+   * - When comparing arrays with homogeneous element types
+   * - When all elements should use the same equivalence logic
+   * - When working with variable-length arrays (not fixed tuples)
+   * - Prefer over `Tuple` when you have arrays of the same type
+   *
+   * Behavior:
+   * - Does not mutate inputs
+   * - Requires arrays to have the same length; different lengths are never equivalent
+   * - Compares elements positionally (index 0 with index 0, etc.)
+   * - Returns `true` only if all corresponding elements are equivalent
+   * - Empty arrays are considered equivalent
+   * - The result is also an equivalence (satisfies reflexive, symmetric, transitive properties)
+   *
+   * **Example** (Number array equivalence)
+   *
+   * ```ts
+   * import { Equivalence } from "effect"
+   *
+   * const numberArrayEq = Equivalence.Array(Equivalence.strictEqual<number>())
+   *
+   * console.log(numberArrayEq([1, 2, 3], [1, 2, 3])) // true
+   * console.log(numberArrayEq([1, 2, 3], [1, 2, 4])) // false
+   * console.log(numberArrayEq([1, 2], [1, 2, 3])) // false (different length)
+   * ```
+   *
+   * **Example** (Case-insensitive string array)
+   *
+   * ```ts
+   * import { Equivalence } from "effect"
+   *
+   * const caseInsensitive = Equivalence.mapInput(
+   *   Equivalence.strictEqual<string>(),
+   *   (s: string) => s.toLowerCase()
+   * )
+   * const stringArrayEq = Equivalence.Array(caseInsensitive)
+   *
+   * console.log(stringArrayEq(["Hello", "World"], ["HELLO", "WORLD"])) // true
+   * console.log(stringArrayEq(["Hello"], ["Hi"])) // false
+   * console.log(stringArrayEq([], [])) // true (empty arrays)
+   * ```
+   *
+   * See also: {@link Tuple}, {@link Record}
+   *
+   * @category combinators
+   * @since 4.0.0
+   */
+  Array_ as Array
 }
 
 /**
@@ -774,7 +780,7 @@ export function Struct<R extends Record<string, Equivalence<any>>>(
  * console.log(numberRecordEq(scores1, scores3)) // false
  * ```
  *
- * See also: {@link Struct}, {@link Array}
+ * See also: {@link Struct}, {@link Array_}
  *
  * @category combinators
  * @since 4.0.0
@@ -842,3 +848,59 @@ export function makeReducer<A>() {
     combineAll
   )
 }
+
+/**
+ * An `Equivalence` instance for `Date` objects.
+ *
+ * Dates are compared by their time value (milliseconds since the Unix epoch),
+ * using {@link Date.prototype.getTime}.
+ *
+ * When to use this:
+ * - When comparing `Date` objects by their exact point in time
+ * - When you need value-based equality instead of reference equality
+ * - When working with collections that contain `Date` values
+ *
+ * Behavior:
+ * - Does not mutate inputs
+ * - Two dates are equivalent if `self.getTime() === that.getTime()`
+ * - Internally uses {@link Number} equivalence
+ * - Different `Date` instances representing the same time are considered equivalent
+ *
+ * **Example**
+ *
+ * ```ts
+ * import { Equivalence } from "effect"
+ *
+ * const d1 = new Date("2020-01-01T00:00:00.000Z")
+ * const d2 = new Date("2020-01-01T00:00:00.000Z")
+ * const d3 = new Date("2021-01-01T00:00:00.000Z")
+ * const invalidDate1 = new Date("foo")
+ * const invalidDate2 = new Date("bar")
+ *
+ * console.log(Equivalence.Date(d1, d2)) // true
+ * console.log(Equivalence.Date(d1, d3)) // false
+ * console.log(Equivalence.Date(invalidDate1, invalidDate2)) // true
+ * console.log(Equivalence.Date(invalidDate1, d1)) // false
+ * ```
+ *
+ * **Example** (Reference vs value equality)
+ *
+ * ```ts
+ * import { Equivalence } from "effect"
+ *
+ * const d1 = new Date(0)
+ * const d2 = new Date(0)
+ *
+ * console.log(d1 === d2) // false (different references)
+ * console.log(Equivalence.Date(d1, d2)) // true (same time value)
+ * ```
+ *
+ * See also: {@link Number}, {@link mapInput}, {@link strictEqual}
+ *
+ * @category instances
+ * @since 4.0.0
+ */
+export const Date: Equivalence<Date> = mapInput(
+  Number,
+  (d: Date) => d.getTime()
+)

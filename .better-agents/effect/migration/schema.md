@@ -63,16 +63,15 @@ This document maps v3 Schema APIs to their v4 equivalents. Simple renames and ar
 | `attachPropertySignature("k", "v")`             | `mapFields(f => ({...f, k: tagDefaultOmit("v")}))`                            | restructure       |
 | `validate*`                                     | removed (use `decode*` + `toType`)                                            | removed           |
 | `keyof`                                         | —                                                                             | removed           |
-| `ArrayEnsure`                                   | —                                                                             | removed           |
 | `NonEmptyArrayEnsure`                           | —                                                                             | removed           |
 | `withDefaults`                                  | —                                                                             | removed           |
-| `fromKey`                                       | —                                                                             | removed           |
 | `Data(schema)`                                  | —                                                                             | removed           |
 | `optionalWith(schema, opts)`                    | varies by options (see [optionalWith](#optionalwith))                         | manual            |
 | `optionalToOptional`                            | see [optional field transformations](#optional-field-transformations)         | manual            |
 | `optionalToRequired`                            | see [optional field transformations](#optional-field-transformations)         | manual            |
 | `requiredToOptional`                            | see [optional field transformations](#optional-field-transformations)         | manual            |
 | `filterEffect`                                  | see [filterEffect](#filtereffect)                                             | manual            |
+| `fromKey`                                       | see [rename](#rename)                                                         | manual            |
 | `rename({ a: "c" })`                            | see [rename](#rename)                                                         | manual            |
 | `format(schema)`                                | see [format](#format)                                                         | manual            |
 | `ParseResult.ArrayFormatter.formatError(error)` | see [ParseResult formatters](#parseresult-formatters)                         | manual            |
@@ -425,21 +424,21 @@ const schema = Schema.Struct({
 
 #### Decision tree
 
-| v3 options                                 | v4 pattern                                                                       |
-| ------------------------------------------ | -------------------------------------------------------------------------------- |
-| `{ exact: true }`                          | `optionalKey(schema)`                                                            |
-| `{ default }`                              | `optional(schema)` + `decodeTo(toType(schema), { decode: withDefault(...) })`    |
-| `{ exact: true, default }`                 | `optionalKey(schema)` + `decodeTo(toType(schema), { decode: withDefault(...) })` |
-| `{ nullable: true }`                       | `optional(NullOr(schema))` + `decodeTo` + filter null                            |
-| `{ nullable: true, exact: true }`          | `optionalKey(NullOr(schema))` + `decodeTo` + filter null                         |
-| `{ nullable: true, default }`              | `optional(NullOr(schema))` + `decodeTo` + filter null + `orElseSome`             |
-| `{ nullable: true, exact: true, default }` | `optionalKey(NullOr(schema))` + `decodeTo` + filter null + `orElseSome`          |
+| v3 options                                 | v4 pattern                                                              |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| `{ exact: true }`                          | `optionalKey(schema)`                                                   |
+| `{ default }`                              | `schema.pipe(withDecodingDefault(...))`                                 |
+| `{ exact: true, default }`                 | `schema.pipe(withDecodingDefaultKey(...))`                              |
+| `{ nullable: true }`                       | `optional(NullOr(schema))` + `decodeTo` + filter null                   |
+| `{ nullable: true, exact: true }`          | `optionalKey(NullOr(schema))` + `decodeTo` + filter null                |
+| `{ nullable: true, default }`              | `optional(NullOr(schema))` + `decodeTo` + filter null + `orElseSome`    |
+| `{ nullable: true, exact: true, default }` | `optionalKey(NullOr(schema))` + `decodeTo` + filter null + `orElseSome` |
 
 Key rules:
 
 - `exact: true` → use `optionalKey` instead of `optional`
 - `nullable: true` → wrap inner schema in `NullOr` and filter nulls via `Option.filter(Predicate.isNotNull)`
-- `default` → use `SchemaGetter.withDefault(defaultValue)` and decode to non-optional type
+- `default` → use `withDecodingDefault` (or `withDecodingDefaultKey` with `exact: true`)
 
 #### Example: `{ exact: true }` (simplest case)
 
@@ -463,6 +462,50 @@ const schema = Schema.Struct({
 })
 ```
 
+#### Example: `{ default }`
+
+v3
+
+```ts
+import { Schema } from "effect"
+
+const schema = Schema.Struct({
+  a: Schema.optionalWith(Schema.String, { default: () => "" })
+})
+```
+
+v4
+
+```ts
+import { Effect, Schema } from "effect"
+
+const schema = Schema.Struct({
+  a: Schema.String.pipe(Schema.withDecodingDefault(Effect.succeed("")))
+})
+```
+
+#### Example: `{ exact: true, default }`
+
+v3
+
+```ts
+import { Schema } from "effect"
+
+const schema = Schema.Struct({
+  a: Schema.optionalWith(Schema.String, { exact: true, default: () => "" })
+})
+```
+
+v4
+
+```ts
+import { Effect, Schema } from "effect"
+
+const schema = Schema.Struct({
+  a: Schema.String.pipe(Schema.withDecodingDefaultKey(Effect.succeed("")))
+})
+```
+
 #### Example: `{ nullable: true, exact: true, default }` (most complex case)
 
 v3
@@ -482,7 +525,7 @@ import { Option, Predicate, Schema, SchemaGetter } from "effect"
 
 const schema = Schema.Struct({
   a: Schema.optionalKey(Schema.NullOr(Schema.NumberFromString)).pipe(
-    Schema.decodeTo(Schema.toType(Schema.NumberFromString), {
+    Schema.decodeTo(Schema.Number, {
       decode: SchemaGetter.transformOptional((o) =>
         o.pipe(Option.filter(Predicate.isNotNull), Option.orElseSome(() => -1))
       ),
@@ -913,9 +956,3 @@ function split(separator: string) {
   )
 }
 ```
-
-## Not covered
-
-The following v3 APIs are not yet documented in this migration guide. If you encounter them, check the v4 source or open an issue.
-
-`suspend`, `brand` / `fromBrand`, `Enum`, `instanceOf`, `is` / `asserts`, `mutable`, `TaggedStruct`, `withConstructorDefault`

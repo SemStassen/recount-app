@@ -7,10 +7,9 @@
  * @since 1.0.0
  */
 import * as Array from "effect/Array"
-import * as Cause from "effect/Cause"
 import type * as Config from "effect/Config"
+import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
 import { identity } from "effect/Function"
 import * as Function from "effect/Function"
 import * as Layer from "effect/Layer"
@@ -18,11 +17,9 @@ import * as Predicate from "effect/Predicate"
 import * as Queue from "effect/Queue"
 import * as RcRef from "effect/RcRef"
 import * as Redacted from "effect/Redacted"
-import * as Schedule from "effect/Schedule"
 import * as Schema from "effect/Schema"
 import * as Scope from "effect/Scope"
 import * as Semaphore from "effect/Semaphore"
-import * as ServiceMap from "effect/ServiceMap"
 import * as Stream from "effect/Stream"
 import * as AiError from "effect/unstable/ai/AiError"
 import * as ResponseIdTracker from "effect/unstable/ai/ResponseIdTracker"
@@ -94,7 +91,7 @@ export interface Service {
  * @since 1.0.0
  * @category service
  */
-export class OpenAiClient extends ServiceMap.Service<OpenAiClient, Service>()(
+export class OpenAiClient extends Context.Service<OpenAiClient, Service>()(
   "@effect/ai-openai/OpenAiClient"
 ) {}
 
@@ -234,8 +231,8 @@ export const make = Effect.fnUntraced(
     }
 
     const createResponseStream: Service["createResponseStream"] = (payload) =>
-      Effect.servicesWith((services) => {
-        const socket = ServiceMap.getOrUndefined(services, OpenAiSocket)
+      Effect.contextWith((services) => {
+        const socket = Context.getOrUndefined(services, OpenAiSocket)
         if (socket) return socket.createResponseStream(payload)
         return httpClientOk.execute(
           HttpClientRequest.post("/responses", {
@@ -358,7 +355,7 @@ export type ResponseStreamEvent = typeof Generated.ResponseStreamEvent.Type
  * @since 1.0.0
  * @category Websocket mode
  */
-export class OpenAiSocket extends ServiceMap.Service<OpenAiSocket, {
+export class OpenAiSocket extends Context.Service<OpenAiSocket, {
   /**
    * Create a streaming response using the OpenAI responses endpoint.
    */
@@ -376,32 +373,41 @@ export class OpenAiSocket extends ServiceMap.Service<OpenAiSocket, {
 const makeSocket = Effect.gen(function*() {
   const client = yield* OpenAiClient
   const tracker = yield* ResponseIdTracker.make
-  const request = yield* Effect.orDie(client.client.httpClient.preprocess(HttpClientRequest.post("/responses")))
+  const socketScope = yield* Effect.scope
+  const makeRequest = Effect.orDie(client.client.httpClient.preprocess(HttpClientRequest.post("/responses")))
+  const makeWebSocket = yield* Socket.WebSocketConstructor
 
-  const socket = yield* Socket.makeWebSocket(request.url.replace(/^http/, "ws")).pipe(
-    Effect.updateService(Socket.WebSocketConstructor, (f) => (url) =>
-      f(url, {
-        headers: request.headers
-      } as any))
-  )
+  const decoder = new TextDecoder()
 
-  const queueRef = yield* RcRef.make({
+  const queueRef: RcRef.RcRef<
+    {
+      readonly send: (message: typeof Generated.CreateResponse.Encoded) => Effect.Effect<void, AiError.AiError>
+      readonly incoming: Queue.Dequeue<ResponseStreamEvent, AiError.AiError>
+    }
+  > = yield* RcRef.make({
     idleTimeToLive: 60_000,
     acquire: Effect.gen(function*() {
+      const scope = yield* Effect.scope
+      const request = yield* makeRequest
+      const socket = yield* Socket.makeWebSocket(request.url.replace(/^http/, "ws")).pipe(
+        Effect.provideService(Socket.WebSocketConstructor, (url) =>
+          makeWebSocket(url, {
+            headers: request.headers
+          } as any))
+      )
       const write = yield* socket.writer
 
-      let currentQueue: Queue.Enqueue<ResponseStreamEvent, AiError.AiError | Cause.Done> | null = null
-      const send = (
-        queue: Queue.Enqueue<ResponseStreamEvent, AiError.AiError | Cause.Done>,
-        message: typeof Generated.CreateResponse.Encoded
-      ) =>
-        Effect.suspend(() => {
-          currentQueue = queue
-          return write(JSON.stringify({
-            type: "response.create",
-            ...message
-          }))
-        }).pipe(
+      yield* Scope.addFinalizerExit(scope, () => {
+        tracker.clearUnsafe()
+        return Effect.void
+      })
+
+      const incoming = yield* Queue.unbounded<ResponseStreamEvent, AiError.AiError>()
+      const send = (message: typeof Generated.CreateResponse.Encoded) =>
+        write(JSON.stringify({
+          type: "response.create",
+          ...message
+        })).pipe(
           Effect.mapError((_error) =>
             AiError.make({
               module: "OpenAiClient",
@@ -421,111 +427,99 @@ const makeSocket = Effect.gen(function*() {
           )
         )
 
-      const cancel = Effect.suspend(() => write(JSON.stringify({ type: "response.cancel" }))).pipe(
-        Effect.ignore
-      )
-      const reset = () => {
-        currentQueue = null
-      }
-
-      const decoder = new TextDecoder()
       yield* socket.runRaw((msg) => {
-        if (!currentQueue) return
         const text = typeof msg === "string" ? msg : decoder.decode(msg)
         try {
           const event = decodeEvent(text)
-          if (event.type === "error") {
-            tracker.clearUnsafe()
-          }
           if (event.type === "error" && "status" in event) {
-            return Queue.fail(
-              currentQueue,
+            const json = JSON.stringify(event.error)
+            return Effect.fail(
               AiError.make({
                 module: "OpenAiClient",
                 method: "createResponseStream",
                 reason: AiError.reasonFromHttpStatus({
+                  description: json,
                   status: event.status,
-                  metadata: {
-                    ...event.error,
-                    description: event.error.message
+                  metadata: event.error,
+                  http: {
+                    body: json,
+                    request: {
+                      method: "POST",
+                      url: request.url,
+                      urlParams: [],
+                      hash: undefined,
+                      headers: request.headers
+                    }
                   }
                 })
               })
             )
           }
-          Queue.offerUnsafe(currentQueue, event)
+          Queue.offerUnsafe(incoming, event)
         } catch {}
       }).pipe(
-        Effect.catchCause((cause) => {
-          tracker.clearUnsafe()
-          return currentQueue ?
-            Queue.fail(
-              currentQueue,
-              AiError.make({
-                module: "OpenAiClient",
-                method: "createResponseStream",
-                reason: new AiError.NetworkError({
-                  reason: "TransportError",
-                  request: {
-                    method: "POST",
-                    url: request.url,
-                    urlParams: [],
-                    hash: undefined,
-                    headers: request.headers
-                  },
-                  description: Cause.pretty(cause)
-                })
-              })
-            ) :
-            Effect.void
-        }),
-        Effect.repeat(
-          Schedule.exponential(100, 1.5).pipe(
-            Schedule.either(Schedule.spaced({ seconds: 5 })),
-            Schedule.jittered
-          )
-        ),
-        Effect.forkScoped
+        Effect.catchTag("SocketError", (error) =>
+          AiError.make({
+            module: "OpenAiClient",
+            method: "createResponseStream",
+            reason: new AiError.NetworkError({
+              reason: "TransportError",
+              request: {
+                method: "POST",
+                url: request.url,
+                urlParams: [],
+                hash: undefined,
+                headers: request.headers
+              },
+              description: error.message
+            })
+          }).asEffect()),
+        Effect.catchCause((cause) => Queue.failCause(incoming, cause)),
+        Effect.ensuring(Effect.forkIn(RcRef.invalidate(queueRef), socketScope, {
+          startImmediately: true
+        })),
+        Effect.forkScoped({ startImmediately: true })
       )
 
-      return { send, cancel, reset } as const
+      return { send, incoming } as const
     })
   })
 
+  // Prime the websocket
+  yield* Effect.scoped(RcRef.get(queueRef))
+
   // Websocket mode only allows one request at a time
   const semaphore = Semaphore.makeUnsafe(1)
+  const request = yield* makeRequest
 
-  return OpenAiSocket.serviceMap({
+  return OpenAiSocket.context({
     createResponseStream(options) {
-      const stream = Effect.gen(function*() {
+      const stream = Stream.unwrap(Effect.gen(function*() {
+        const scope = yield* Effect.scope
         yield* Effect.acquireRelease(
           semaphore.take(1),
           () => semaphore.release(1),
           { interruptible: true }
         )
-        const { send, cancel, reset } = yield* RcRef.get(queueRef)
-        const incoming = yield* Queue.unbounded<ResponseStreamEvent, AiError.AiError | Cause.Done>()
+        const { send, incoming } = yield* RcRef.get(queueRef)
         let done = false
 
-        yield* Effect.acquireRelease(
-          send(incoming, options),
-          (_, exit) => {
-            reset()
-            if (Exit.isFailure(exit) && !Exit.hasInterrupts(exit)) return Effect.void
-            else if (done) return Effect.void
-            return cancel
-          },
-          { interruptible: true }
-        ).pipe(
+        yield* Scope.addFinalizerExit(
+          scope,
+          () => done ? Effect.void : RcRef.invalidate(queueRef)
+        )
+
+        yield* send(options).pipe(
           Effect.forkScoped({ startImmediately: true })
         )
+
         return Stream.fromQueue(incoming).pipe(
           Stream.takeUntil((e) => {
             done = e.type === "response.completed" || e.type === "response.incomplete"
             return done
           })
         )
-      }).pipe(Stream.unwrap)
+      }))
 
       return Effect.succeed([
         HttpClientResponse.fromWeb(request, new Response()),
@@ -533,20 +527,22 @@ const makeSocket = Effect.gen(function*() {
       ])
     }
   }).pipe(
-    ServiceMap.add(ResponseIdTracker.ResponseIdTracker, tracker)
+    Context.add(ResponseIdTracker.ResponseIdTracker, tracker)
   )
 })
 
 const ErrorEvent = Schema.Struct({
   type: Schema.Literal("error"),
-  status: Schema.Number,
+  status: Schema.Number.pipe(
+    Schema.withDecodingDefault(Effect.succeed(500))
+  ),
   error: Schema.Struct({
     type: Schema.String,
     message: Schema.String
   })
 })
 
-const AllEvents = Schema.Union([Generated.ResponseStreamEvent, ErrorEvent])
+const AllEvents = Schema.Union([ErrorEvent, Generated.ResponseStreamEvent])
 const decodeEvent = Schema.decodeUnknownSync(Schema.fromJsonString(AllEvents))
 
 /**
@@ -573,7 +569,7 @@ export const withWebSocketMode = <A, E, R>(
   Effect.scopedWith((scope) =>
     Effect.flatMap(
       Scope.provide(makeSocket, scope),
-      (services) => Effect.provideServices(effect, services)
+      (services) => Effect.provideContext(effect, services)
     )
   )
 
@@ -595,4 +591,4 @@ export const layerWebSocketMode: Layer.Layer<
   OpenAiSocket | ResponseIdTracker.ResponseIdTracker,
   never,
   OpenAiClient | Socket.WebSocketConstructor
-> = Layer.effectServices(makeSocket)
+> = Layer.effectContext(makeSocket)

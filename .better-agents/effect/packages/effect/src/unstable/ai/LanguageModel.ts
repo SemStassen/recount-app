@@ -49,6 +49,7 @@
  * @since 4.0.0
  */
 import type * as Cause from "../../Cause.ts"
+import * as Context from "../../Context.ts"
 import * as Effect from "../../Effect.ts"
 import * as FiberSet from "../../FiberSet.ts"
 import { constFalse, identity, pipe } from "../../Function.ts"
@@ -59,7 +60,6 @@ import * as Queue from "../../Queue.ts"
 import { CurrentConcurrency } from "../../References.ts"
 import * as Schema from "../../Schema.ts"
 import * as AST from "../../SchemaAST.ts"
-import * as ServiceMap from "../../ServiceMap.ts"
 import * as Sink from "../../Sink.ts"
 import * as Stream from "../../Stream.ts"
 import type { Span } from "../../Tracer.ts"
@@ -103,7 +103,7 @@ import * as Toolkit from "./Toolkit.ts"
  * @since 4.0.0
  * @category services
  */
-export class LanguageModel extends ServiceMap.Service<LanguageModel, Service>()(
+export class LanguageModel extends Context.Service<LanguageModel, Service>()(
   "effect/unstable/ai/LanguageModel"
 ) {}
 
@@ -120,16 +120,42 @@ export interface Service {
   /**
    * Generate text using the language model.
    */
-  readonly generateText: <
-    Options extends NoExcessProperties<GenerateTextOptions<any>, Options>,
-    Tools extends Record<string, Tool.Any> = {}
-  >(
-    options: Options & GenerateTextOptions<Tools>
-  ) => Effect.Effect<
-    GenerateTextResponse<Tools>,
-    ExtractError<Options>,
-    ExtractServices<Options>
-  >
+  readonly generateText: {
+    // No toolkit: force `{}` instead of falling back to `Record<string, Tool.Any>`.
+    <Options extends NoExcessProperties<GenerateTextOptionsWithoutToolkit, Options>>(
+      options: Options & GenerateTextOptionsWithoutToolkit
+    ): Effect.Effect<
+      GenerateTextResponse<{}>,
+      ExtractError<Options>,
+      ExtractServices<Options>
+    >
+    // Generic toolkit: preserve caller-supplied `Tools` in helpers like `<Tools>(toolkit: WithHandler<Tools>) => ...`.
+    <
+      Tools extends Record<string, Tool.Any>,
+      Options extends NoExcessProperties<
+        GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> },
+        Options
+      >
+    >(
+      options: Options & GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> }
+    ): Effect.Effect<
+      GenerateTextResponse<Tools>,
+      ExtractError<Options>,
+      ExtractServices<Options>
+    >
+    // Toolkit unions: recover distributive `ExtractTools<Options>` inference for `toolkitA | toolkitB` call sites.
+    <
+      Options extends {
+        readonly toolkit: ToolkitOption<any>
+      } & NoExcessProperties<GenerateTextOptions<any>, Options>
+    >(
+      options: Options & GenerateTextOptions<ExtractTools<Options>> & { readonly toolkit: Options["toolkit"] }
+    ): Effect.Effect<
+      GenerateTextResponse<ExtractTools<Options>>,
+      ExtractError<Options>,
+      ExtractServices<Options>
+    >
+  }
 
   /**
    * Generate a structured object from a schema using the language model.
@@ -153,16 +179,42 @@ export interface Service {
   /**
    * Generate text using the language model with streaming output.
    */
-  readonly streamText: <
-    Options extends NoExcessProperties<GenerateTextOptions<any>, Options>,
-    Tools extends Record<string, Tool.Any> = {}
-  >(
-    options: Options & GenerateTextOptions<Tools>
-  ) => Stream.Stream<
-    Response.StreamPart<Tools>,
-    ExtractError<Options>,
-    ExtractServices<Options>
-  >
+  readonly streamText: {
+    // No toolkit: force `{}` instead of falling back to `Record<string, Tool.Any>`.
+    <Options extends NoExcessProperties<GenerateTextOptionsWithoutToolkit, Options>>(
+      options: Options & GenerateTextOptionsWithoutToolkit
+    ): Stream.Stream<
+      Response.StreamPart<{}>,
+      ExtractError<Options>,
+      ExtractServices<Options>
+    >
+    // Generic toolkit: preserve caller-supplied `Tools` in helpers like `<Tools>(toolkit: WithHandler<Tools>) => ...`.
+    <
+      Tools extends Record<string, Tool.Any>,
+      Options extends NoExcessProperties<
+        GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> },
+        Options
+      >
+    >(
+      options: Options & GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> }
+    ): Stream.Stream<
+      Response.StreamPart<Tools>,
+      ExtractError<Options>,
+      ExtractServices<Options>
+    >
+    // Toolkit unions: recover distributive `ExtractTools<Options>` inference for `toolkitA | toolkitB` call sites.
+    <
+      Options extends {
+        readonly toolkit: ToolkitOption<any>
+      } & NoExcessProperties<GenerateTextOptions<any>, Options>
+    >(
+      options: Options & GenerateTextOptions<ExtractTools<Options>> & { readonly toolkit: Options["toolkit"] }
+    ): Stream.Stream<
+      Response.StreamPart<ExtractTools<Options>>,
+      ExtractError<Options>,
+      ExtractServices<Options>
+    >
+  }
 }
 
 /**
@@ -206,7 +258,7 @@ export interface GenerateTextOptions<Tools extends Record<string, Tool.Any>> {
    * A toolkit containing both the tools and the tool call handler to use to
    * augment text generation.
    */
-  readonly toolkit?: ToolkitOption<Tools> | undefined
+  readonly toolkit?: ToolkitInput<Tools> | undefined
 
   /**
    * The tool choice mode for the language model.
@@ -244,6 +296,10 @@ export interface GenerateTextOptions<Tools extends Record<string, Tool.Any>> {
    *      instead of having the framework handle tool call resolution
    */
   readonly disableToolCallResolution?: boolean | undefined
+}
+
+type GenerateTextOptionsWithoutToolkit = Omit<GenerateTextOptions<{}>, "toolkit"> & {
+  readonly toolkit?: undefined
 }
 
 /**
@@ -480,6 +536,30 @@ export type ToolkitOption<
     >
   )
   : never
+
+/**
+ * The supported toolkit input shapes for language model operation options.
+ *
+ * Unlike `ToolkitOption`, this type does not distribute over unions. It is
+ * intended for call-site assignability, while `ToolkitOption` remains the
+ * distributive helper used for extraction and inference.
+ *
+ * @since 4.0.0
+ * @category utility types
+ */
+export type ToolkitInput<
+  Tools extends Record<string, Tool.Any>,
+  E = never,
+  R = any
+> =
+  | ToolkitOption<Tools, E, R>
+  | Toolkit.WithHandler<Tools>
+  | Effect.Yieldable<
+    Toolkit.Toolkit<Tools>,
+    Toolkit.WithHandler<Tools>,
+    E,
+    R
+  >
 
 type ExtractToolsFromToolkitOption<ToolkitValue> = ToolkitValue extends Toolkit.WithHandler<infer Tools> ? Tools
   : ToolkitValue extends Effect.Yieldable<
@@ -937,19 +1017,23 @@ export const make: (params: {
     const tracker = Option.getOrUndefined(yield* Effect.serviceOption(ResponseIdTracker.ResponseIdTracker))
     const toolChoice = options.toolChoice ?? "auto"
 
-    const withNonIncrementalFallback = <R>(
-      effect: Effect.Effect<Array<Response.PartEncoded>, AiError.AiError, R>
-    ): Effect.Effect<Array<Response.PartEncoded>, AiError.AiError, R | IdGenerator> =>
-      providerOptions.incrementalPrompt ?
-        effect.pipe(
-          Effect.catchReason("AiError", "InvalidRequestError", (_) =>
-            params.generateText({
-              ...providerOptions,
-              incrementalPrompt: undefined,
-              previousResponseId: undefined
-            }))
-        ) :
-        effect
+    const generateWithNonIncrementalFallback = () => {
+      const requestOptions: ProviderOptions = {
+        ...providerOptions
+      }
+      const fallbackPrompt = requestOptions.prompt
+      const fallbackOptions: ProviderOptions = {
+        ...requestOptions,
+        prompt: fallbackPrompt,
+        incrementalPrompt: undefined,
+        previousResponseId: undefined
+      }
+      return requestOptions.incrementalPrompt
+        ? params.generateText(requestOptions).pipe(
+          Effect.catchReason("AiError", "InvalidRequestError", (_) => params.generateText(fallbackOptions))
+        )
+        : params.generateText(requestOptions)
+    }
 
     // Check for pending approvals that need resolution
     const { approved, denied } = collectToolApprovals(
@@ -982,7 +1066,7 @@ export const make: (params: {
       const ResponseSchema = Schema.mutable(
         Schema.Array(Response.Part(Toolkit.empty))
       )
-      const rawContent = yield* withNonIncrementalFallback(params.generateText(providerOptions))
+      const rawContent = yield* generateWithNonIncrementalFallback()
       const content = yield* Schema.decodeEffect(ResponseSchema)(rawContent)
       if (tracker) {
         const responseMetadata = content.find((part) => part.type === "response-metadata")
@@ -1020,7 +1104,7 @@ export const make: (params: {
       const ResponseSchema = Schema.mutable(
         Schema.Array(Response.Part(Toolkit.empty))
       )
-      const rawContent = yield* withNonIncrementalFallback(params.generateText(providerOptions))
+      const rawContent = yield* generateWithNonIncrementalFallback()
       const content = yield* Schema.decodeEffect(ResponseSchema)(rawContent)
       if (tracker) {
         const responseMetadata = content.find((part) => part.type === "response-metadata")
@@ -1099,7 +1183,7 @@ export const make: (params: {
     // If tool call resolution is disabled, return the response without
     // resolving the tool calls that were generated
     if (options.disableToolCallResolution === true) {
-      const rawContent = yield* withNonIncrementalFallback(params.generateText(providerOptions))
+      const rawContent = yield* generateWithNonIncrementalFallback()
       const content = yield* Schema.decodeEffect(ResponseSchema)(rawContent)
       if (tracker) {
         const responseMetadata = content.find((part) => part.type === "response-metadata")
@@ -1110,7 +1194,7 @@ export const make: (params: {
       return content as Array<Response.Part<Tools>>
     }
 
-    const rawContent = yield* withNonIncrementalFallback(params.generateText(providerOptions))
+    const rawContent = yield* generateWithNonIncrementalFallback()
 
     // Resolve the generated tool calls
     const toolResults = yield* resolveToolCalls(
@@ -1168,19 +1252,23 @@ export const make: (params: {
     const tracker = Option.getOrUndefined(yield* Effect.serviceOption(ResponseIdTracker.ResponseIdTracker))
     const toolChoice = options.toolChoice ?? "auto"
 
-    const withNonIncrementalFallback = <R>(
-      stream: Stream.Stream<Response.StreamPartEncoded, AiError.AiError, R>
-    ): Stream.Stream<Response.StreamPartEncoded, AiError.AiError, R | IdGenerator> =>
-      providerOptions.incrementalPrompt ?
-        stream.pipe(
-          Stream.catchReason("AiError", "InvalidRequestError", (_) =>
-            params.streamText({
-              ...providerOptions,
-              incrementalPrompt: undefined,
-              previousResponseId: undefined
-            }))
-        ) :
-        stream
+    const streamWithNonIncrementalFallback = () => {
+      const requestOptions: ProviderOptions = {
+        ...providerOptions
+      }
+      const fallbackPrompt = requestOptions.prompt
+      const fallbackOptions: ProviderOptions = {
+        ...requestOptions,
+        prompt: fallbackPrompt,
+        incrementalPrompt: undefined,
+        previousResponseId: undefined
+      }
+      return requestOptions.incrementalPrompt
+        ? params.streamText(requestOptions).pipe(
+          Stream.catchReason("AiError", "InvalidRequestError", (_) => params.streamText(fallbackOptions))
+        )
+        : params.streamText(requestOptions)
+    }
 
     // Check for pending approvals that need resolution
     const { approved: pendingApproved, denied: pendingDenied } = collectToolApprovals(providerOptions.prompt.content, {
@@ -1212,8 +1300,7 @@ export const make: (params: {
       const schema = Schema.NonEmptyArray(Response.StreamPart(Toolkit.empty))
       const decodeParts = Schema.decodeEffect(schema)
       return pipe(
-        params.streamText(providerOptions),
-        withNonIncrementalFallback,
+        streamWithNonIncrementalFallback(),
         Stream.mapArrayEffect((parts) =>
           decodeParts(parts).pipe(
             tracker ?
@@ -1262,8 +1349,7 @@ export const make: (params: {
       const schema = Schema.NonEmptyArray(Response.StreamPart(Toolkit.empty))
       const decodeParts = Schema.decodeEffect(schema)
       return pipe(
-        params.streamText(providerOptions),
-        withNonIncrementalFallback,
+        streamWithNonIncrementalFallback(),
         Stream.mapArrayEffect((parts) =>
           decodeParts(parts).pipe(
             tracker ?
@@ -1369,8 +1455,7 @@ export const make: (params: {
     if (options.disableToolCallResolution === true) {
       const schema = Schema.NonEmptyArray(Response.StreamPart(toolkit))
       const decodeParts = Schema.decodeEffect(schema)
-      return params.streamText(providerOptions).pipe(
-        withNonIncrementalFallback,
+      return streamWithNonIncrementalFallback().pipe(
         Stream.mapArrayEffect((parts) =>
           decodeParts(parts).pipe(
             tracker ?
@@ -1402,6 +1487,7 @@ export const make: (params: {
       | Cause.Done
       | Schema.SchemaError
     >()
+    const deferredFinishParts: Array<Response.StreamPart<Tools>> = []
 
     // Emit pre-resolved tool results so Chat.streamText persists them to
     // history. This ensures collectToolApprovals({ excludeResolved }) can
@@ -1449,8 +1535,7 @@ export const make: (params: {
       )
     })
 
-    yield* params.streamText(providerOptions).pipe(
-      withNonIncrementalFallback,
+    yield* streamWithNonIncrementalFallback().pipe(
       Stream.runForEachArray(
         Effect.fnUntraced(function*(chunk) {
           const parts = yield* decodeParts(chunk)
@@ -1461,8 +1546,19 @@ export const make: (params: {
               }
             }
           }
-          // Add decoded response parts to the output queue
-          yield* Queue.offerAll(queue, parts)
+          // Defer finish parts until all tool handlers complete. This guarantees
+          // tool results are emitted before finish in streaming mode.
+          const immediateParts: Array<Response.StreamPart<Tools>> = []
+          for (const part of parts) {
+            if (part.type === "finish") {
+              deferredFinishParts.push(part)
+            } else {
+              immediateParts.push(part)
+            }
+          }
+          if (immediateParts.length > 0) {
+            yield* Queue.offerAll(queue, immediateParts)
+          }
           // Fork tool call handlers - use the raw chunk for encoded params
           for (const part of chunk) {
             if (part.type === "tool-call" && part.providerExecuted !== true) {
@@ -1480,6 +1576,9 @@ export const make: (params: {
           FiberSet.awaitEmpty(toolCallFibers)
         )
       ),
+      Effect.andThen(
+        Queue.offerAll(queue, deferredFinishParts)
+      ),
       // And then end the queue
       Effect.andThen(Queue.end(queue)),
       Effect.tapCause((cause) => Queue.failCause(queue, cause)),
@@ -1490,9 +1589,9 @@ export const make: (params: {
   }) as any
 
   return {
-    generateText,
+    generateText: generateText as Service["generateText"],
     generateObject,
-    streamText
+    streamText: streamText as Service["streamText"]
   } as const
 })
 
@@ -1524,27 +1623,49 @@ export const make: (params: {
  * @since 4.0.0
  * @category text generation
  */
-export function generateText<
-  Options extends NoExcessProperties<GenerateTextOptions<any>, Options>
->(
-  options: Options & GenerateTextOptions<ExtractTools<Options>>
-): Effect.Effect<
-  GenerateTextResponse<ExtractTools<Options>>,
-  ExtractError<Options>,
-  LanguageModel | ExtractServices<Options>
->
-export function generateText(
-  options: GenerateTextOptions<any>
-): Effect.Effect<
+export const generateText: {
+  // No toolkit: force `{}` instead of falling back to `Record<string, Tool.Any>`.
+  <
+    Options extends NoExcessProperties<GenerateTextOptionsWithoutToolkit, Options>
+  >(
+    options: Options & GenerateTextOptionsWithoutToolkit
+  ): Effect.Effect<
+    GenerateTextResponse<{}>,
+    ExtractError<Options>,
+    LanguageModel | ExtractServices<Options>
+  >
+  // Generic toolkit: preserve caller-supplied `Tools` in helpers like `<Tools>(toolkit: WithHandler<Tools>) => ...`.
+  <
+    Tools extends Record<string, Tool.Any>,
+    Options extends NoExcessProperties<GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> }, Options>
+  >(
+    options: Options & GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> }
+  ): Effect.Effect<
+    GenerateTextResponse<Tools>,
+    ExtractError<Options>,
+    LanguageModel | ExtractServices<Options>
+  >
+  // Toolkit unions: recover distributive `ExtractTools<Options>` inference for `toolkitA | toolkitB` call sites.
+  <
+    Options extends {
+      readonly toolkit: ToolkitOption<any>
+    } & NoExcessProperties<GenerateTextOptions<any>, Options>
+  >(
+    options: Options & GenerateTextOptions<ExtractTools<Options>> & { readonly toolkit: Options["toolkit"] }
+  ): Effect.Effect<
+    GenerateTextResponse<ExtractTools<Options>>,
+    ExtractError<Options>,
+    ExtractServices<Options> | LanguageModel
+  >
+} = (options: GenerateTextOptions<any>): Effect.Effect<
   GenerateTextResponse<any>,
   AiError.AiError,
   LanguageModel
-> {
-  return Effect.flatMap(
+> =>
+  Effect.flatMap(
     Effect.service(LanguageModel),
     (model) => model.generateText(options as any)
   )
-}
 
 /**
  * Generate a structured object from a schema using a language model.
@@ -1578,7 +1699,7 @@ export function generateText(
  * @since 4.0.0
  * @category object generation
  */
-export function generateObject<
+export const generateObject = <
   ObjectEncoded extends Record<string, any>,
   StructuredOutputSchema extends Schema.Encoder<ObjectEncoded, unknown>,
   Options extends NoExcessProperties<
@@ -1591,19 +1712,11 @@ export function generateObject<
   GenerateObjectResponse<ExtractTools<Options>, StructuredOutputSchema["Type"]>,
   ExtractError<Options>,
   ExtractServices<Options> | StructuredOutputSchema["DecodingServices"] | LanguageModel
->
-export function generateObject(
-  options: GenerateObjectOptions<any, Schema.Top>
-): Effect.Effect<
-  GenerateObjectResponse<any, any>,
-  AiError.AiError,
-  LanguageModel
-> {
-  return Effect.flatMap(
+> =>
+  Effect.flatMap(
     Effect.service(LanguageModel),
     (model) => model.generateObject(options as any)
   ) as any
-}
 
 /**
  * Generate text using a language model with streaming output.
@@ -1629,27 +1742,49 @@ export function generateObject(
  * @since 4.0.0
  * @category text generation
  */
-export function streamText<
-  Options extends NoExcessProperties<GenerateTextOptions<any>, Options>
->(
-  options: Options & GenerateTextOptions<ExtractTools<Options>>
-): Stream.Stream<
-  Response.StreamPart<ExtractTools<Options>>,
-  ExtractError<Options>,
-  ExtractServices<Options> | LanguageModel
->
-export function streamText(
-  options: GenerateTextOptions<any>
-): Stream.Stream<
-  Response.StreamPart<any>,
+export const streamText: {
+  // No toolkit: force `{}` instead of falling back to `Record<string, Tool.Any>`.
+  <
+    Options extends NoExcessProperties<GenerateTextOptionsWithoutToolkit, Options>
+  >(
+    options: Options & GenerateTextOptionsWithoutToolkit
+  ): Stream.Stream<
+    Response.StreamPart<{}>,
+    ExtractError<Options>,
+    ExtractServices<Options> | LanguageModel
+  >
+  // Generic toolkit: preserve caller-supplied `Tools` in helpers like `<Tools>(toolkit: WithHandler<Tools>) => ...`.
+  <
+    Tools extends Record<string, Tool.Any>,
+    Options extends NoExcessProperties<GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> }, Options>
+  >(
+    options: Options & GenerateTextOptions<Tools> & { readonly toolkit: ToolkitInput<Tools> }
+  ): Stream.Stream<
+    Response.StreamPart<Tools>,
+    ExtractError<Options>,
+    ExtractServices<Options> | LanguageModel
+  >
+  // Toolkit unions: recover distributive `ExtractTools<Options>` inference for `toolkitA | toolkitB` call sites.
+  <
+    Options extends {
+      readonly toolkit: ToolkitOption<any>
+    } & NoExcessProperties<GenerateTextOptions<any>, Options>
+  >(
+    options: Options & GenerateTextOptions<ExtractTools<Options>> & { readonly toolkit: Options["toolkit"] }
+  ): Stream.Stream<
+    Response.StreamPart<ExtractTools<Options>>,
+    ExtractError<Options>,
+    ExtractServices<Options> | LanguageModel
+  >
+} = (options: GenerateTextOptions<any>): Stream.Stream<
+  Response.StreamPart<{}>,
   AiError.AiError,
   LanguageModel
-> {
-  return Stream.unwrap(Effect.map(
+> =>
+  Stream.unwrap(Effect.map(
     Effect.service(LanguageModel),
     (model) => model.streamText(options as any)
   )) as any
-}
 
 // =============================================================================
 // Tool Approval Helpers
@@ -2026,7 +2161,7 @@ const resolveToolCalls = <Tools extends Record<string, Tool.Any>>(
 // =============================================================================
 
 const resolveToolkit = <Tools extends Record<string, Tool.Any>, E, R>(
-  toolkit: ToolkitOption<Tools, E, R>
+  toolkit: ToolkitInput<Tools, E, R>
 ): Effect.Effect<Toolkit.WithHandler<Tools>, E, R> =>
   ("asEffect" in toolkit
     ? toolkit.asEffect()
