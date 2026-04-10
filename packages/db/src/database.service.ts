@@ -1,5 +1,5 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { Schema, ServiceMap } from "effect";
+import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type * as schema from "./schema";
@@ -104,6 +104,6 @@ export interface DatabaseShape {
   ) => Effect.Effect<A, E | DatabaseError, Exclude<R, Database>>;
 }
 
-export class Database extends ServiceMap.Service<Database, DatabaseShape>()(
+export class Database extends Context.Service<Database, DatabaseShape>()(
   "@recount/db/Database"
 ) {}

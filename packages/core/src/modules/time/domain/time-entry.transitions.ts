@@ -27,8 +27,8 @@ export const createTimeEntry = (params: {
   Result.gen(function* () {
     const { id, ...rest } = params.data;
 
-    const createdTimeEntry = TimeEntry.makeUnsafe({
-      id: Option.getOrElse(id, () => TimeEntryId.makeUnsafe(generateUUID())),
+    const createdTimeEntry = TimeEntry.make({
+      id: Option.getOrElse(id, () => TimeEntryId.make(generateUUID())),
       workspaceId: params.workspaceId,
       workspaceMemberId: params.workspaceMemberId,
       startedAt: params.data.startedAt ?? params.now,
@@ -51,7 +51,7 @@ export const updateTimeEntry = (params: {
   TimeEntryStoppedAtBeforeStartedAtError
 > =>
   Result.gen(function* () {
-    const updatedTimeEntry = TimeEntry.makeUnsafe({
+    const updatedTimeEntry = TimeEntry.make({
       ...params.timeEntry,
       ...params.data,
     });

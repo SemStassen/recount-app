@@ -1,11 +1,11 @@
 import { RecountApi } from "@recount/core/http";
-import { Effect, Layer, ServiceMap } from "effect";
+import { Effect, Layer, Context } from "effect";
 import { HttpClient, HttpClientError } from "effect/unstable/http";
 import { HttpApiClient } from "effect/unstable/httpapi";
 
 import { env } from "../env";
 
-export class RecountApiClient extends ServiceMap.Service<RecountApiClient>()(
+export class RecountApiClient extends Context.Service<RecountApiClient>()(
   "@recount/interface/RecountApiClient",
   {
     make: Effect.succeed(

@@ -22,7 +22,7 @@ export const IntegrationModuleLayer = Layer.effect(
     ) {
       const encrypted = yield* crypto.encrypt(Redacted.value(apiKey));
 
-      return EncryptedApiKey.makeUnsafe(Redacted.make(encrypted));
+      return EncryptedApiKey.make(Redacted.make(encrypted));
     });
 
     const decryptApiKey = Effect.fn("integration.decryptApiKey")(function* (
@@ -30,7 +30,7 @@ export const IntegrationModuleLayer = Layer.effect(
     ) {
       const decrypted = yield* crypto.decrypt(Redacted.value(encryptedApiKey));
 
-      return PlainApiKey.makeUnsafe(Redacted.make(decrypted));
+      return PlainApiKey.make(Redacted.make(decrypted));
     });
 
     return {

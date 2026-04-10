@@ -1,4 +1,4 @@
-import { Schema, ServiceMap } from "effect";
+import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -45,7 +45,7 @@ interface WorkspaceModuleShape {
   ) => Effect.Effect<ReadonlyArray<Workspace>, RepositoryError>;
 }
 
-export class WorkspaceModule extends ServiceMap.Service<
+export class WorkspaceModule extends Context.Service<
   WorkspaceModule,
   WorkspaceModuleShape
 >()("@recount/workspace/WorkspaceModule") {}

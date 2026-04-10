@@ -1,5 +1,5 @@
 import { parseOrigins } from "@recount/core/shared/config";
-import { Config, Effect, Layer, ServiceMap } from "effect";
+import { Config, Effect, Layer, Context } from "effect";
 
 export interface BetterAuthConfigShape {
   secret: string;
@@ -8,7 +8,7 @@ export interface BetterAuthConfigShape {
   trustedOrigins: Array<string>;
 }
 
-export class BetterAuthConfig extends ServiceMap.Service<
+export class BetterAuthConfig extends Context.Service<
   BetterAuthConfig,
   BetterAuthConfigShape
 >()("@recount/auth/BetterAuthConfig") {

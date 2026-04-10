@@ -2,7 +2,7 @@ import { WorkspaceIntegration } from "@recount/core/modules/integration";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq } from "drizzle-orm";
-import { Effect, Layer, Redacted, Schema, ServiceMap } from "effect";
+import { Effect, Layer, Redacted, Schema, Context } from "effect";
 import type { Option } from "effect";
 import { SqlSchema } from "effect/unstable/sql";
 
@@ -29,7 +29,7 @@ export interface WorkspaceIntegrationRepositoryShape {
   }) => Effect.Effect<Option.Option<WorkspaceIntegration>, RepositoryError>;
 }
 
-export class WorkspaceIntegrationRepository extends ServiceMap.Service<
+export class WorkspaceIntegrationRepository extends Context.Service<
   WorkspaceIntegrationRepository,
   WorkspaceIntegrationRepositoryShape
 >()("@recount/integration/WorkspaceIntegrationRepository") {

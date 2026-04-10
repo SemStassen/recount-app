@@ -1,4 +1,4 @@
-import { Schema, ServiceMap } from "effect";
+import { Schema, Context } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -47,7 +47,7 @@ interface IdentityModuleShape {
   ) => Effect.Effect<Option.Option<User>, RepositoryError>;
 }
 
-export class IdentityModule extends ServiceMap.Service<
+export class IdentityModule extends Context.Service<
   IdentityModule,
   IdentityModuleShape
 >()("@recount/identity/IdentityModule") {}

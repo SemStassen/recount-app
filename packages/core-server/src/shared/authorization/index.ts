@@ -3,9 +3,9 @@ import {
   isAllowed,
 } from "@recount/core/shared/authorization";
 import type { Action, WorkspaceRole } from "@recount/core/shared/authorization";
-import { Effect, Layer, ServiceMap } from "effect";
+import { Effect, Layer, Context } from "effect";
 
-export class Authorization extends ServiceMap.Service<
+export class Authorization extends Context.Service<
   Authorization,
   {
     ensureAllowed: (params: {

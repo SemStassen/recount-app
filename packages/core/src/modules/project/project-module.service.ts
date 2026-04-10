@@ -1,4 +1,4 @@
-import { Schema, ServiceMap } from "effect";
+import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -93,7 +93,7 @@ interface ProjectModuleShape {
   >;
 }
 
-export class ProjectModule extends ServiceMap.Service<
+export class ProjectModule extends Context.Service<
   ProjectModule,
   ProjectModuleShape
 >()("@recount/project/ProjectModule") {}

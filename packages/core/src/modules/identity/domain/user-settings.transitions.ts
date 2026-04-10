@@ -9,9 +9,9 @@ export const createUserSettings = (
   userId: UserSettings["userId"]
 ): Result.Result<UserSettings, never> =>
   Result.succeed(
-    UserSettings.makeUnsafe({
-      id: UserSettingsId.makeUnsafe(generateUUID()),
-      userId: userId,
+    UserSettings.make({
+      id: UserSettingsId.make(generateUUID()),
+      userId,
       dateFormat: "DD/MM/YYYY",
       timeFormat: "24h",
     })
@@ -25,6 +25,6 @@ export const updateUserSettings = (params: {
   never
 > =>
   Result.succeed({
-    entity: UserSettings.makeUnsafe({ ...params.userSettings, ...params.data }),
+    entity: UserSettings.make({ ...params.userSettings, ...params.data }),
     changes: params.data,
   });

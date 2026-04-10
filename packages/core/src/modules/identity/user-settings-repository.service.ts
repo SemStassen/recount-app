@@ -1,4 +1,4 @@
-import { ServiceMap } from "effect";
+import { Context } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -18,7 +18,7 @@ export interface UserSettingsRepositoryShape {
   ) => Effect.Effect<Option.Option<UserSettings>, RepositoryError>;
 }
 
-export class UserSettingsRepository extends ServiceMap.Service<
+export class UserSettingsRepository extends Context.Service<
   UserSettingsRepository,
   UserSettingsRepositoryShape
 >()("@recount/identity/UserSettingsRepository") {}

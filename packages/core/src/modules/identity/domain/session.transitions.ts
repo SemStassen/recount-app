@@ -10,7 +10,7 @@ export const updateSession = (params: {
   never
 > =>
   Result.succeed({
-    entity: Session.makeUnsafe({ ...params.session, ...params.data }),
+    entity: Session.make({ ...params.session, ...params.data }),
     changes: params.data,
   });
 
@@ -22,7 +22,7 @@ export const updateSessionLastActiveWorkspace = (params: {
   never
 > =>
   Result.succeed({
-    entity: Session.makeUnsafe({
+    entity: Session.make({
       ...params.session,
       lastActiveWorkspaceId: params.lastActiveWorkspaceId,
     }),

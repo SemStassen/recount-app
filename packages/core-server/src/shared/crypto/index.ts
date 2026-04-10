@@ -1,4 +1,4 @@
-import { ServiceMap } from "effect";
+import { Context } from "effect";
 import type { Effect } from "effect";
 
 export interface CryptoShape {
@@ -7,6 +7,6 @@ export interface CryptoShape {
   readonly hash: (str: string) => string;
 }
 
-export class Crypto extends ServiceMap.Service<Crypto, CryptoShape>()(
+export class Crypto extends Context.Service<Crypto, CryptoShape>()(
   "@recount/shared/Crypto"
 ) {}

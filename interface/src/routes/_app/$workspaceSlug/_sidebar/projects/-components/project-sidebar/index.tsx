@@ -41,21 +41,12 @@ export function ProjectSidebar() {
               </Button>
             </header>
             {projectSidebar.mode === "create" && <CreateProjectForm />}
-            {/* <div className="flex items-center gap-2">
-              <Button onClick={onClose} size="icon" variant="ghost">
-                <Icons.X size={16} />
-              </Button>
-              <h4 className="line-clamp-3 whitespace-normal font-semibold text-lg">
-                {selectedProject.name}
-              </h4>
-            </div>
-            <div>
-              <ul>
-                {selectedProject.tasks.map((task) => (
-                  <li key={task.id}>{task.name}</li>
-                ))}
-              </ul>
-            </div> */}
+            {projectSidebar.mode === "edit" && (
+              <div>
+                <div>{projectSidebar.projectId}</div>
+                <CreateProjectForm />
+              </div>
+            )}
           </div>
         </motion.aside>
       )}

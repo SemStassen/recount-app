@@ -1,4 +1,4 @@
-import { ServiceMap } from "effect";
+import { Context } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -27,7 +27,7 @@ export interface WorkspaceInvitationRepositoryShape {
   }) => Effect.Effect<Option.Option<WorkspaceInvitation>, RepositoryError>;
 }
 
-export class WorkspaceInvitationRepository extends ServiceMap.Service<
+export class WorkspaceInvitationRepository extends Context.Service<
   WorkspaceInvitationRepository,
   WorkspaceInvitationRepositoryShape
 >()("@recount/workspace-invitation/WorkspaceInvitationRepository") {}

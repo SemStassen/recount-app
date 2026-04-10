@@ -1,4 +1,4 @@
-import { ServiceMap } from "effect";
+import { Context } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -28,7 +28,7 @@ export interface TimeEntryRepositoryShape {
   }) => Effect.Effect<Option.Option<TimeEntry>, RepositoryError>;
 }
 
-export class TimeEntryRepository extends ServiceMap.Service<
+export class TimeEntryRepository extends Context.Service<
   TimeEntryRepository,
   TimeEntryRepositoryShape
 >()("@recount/time/TimeEntryRepository") {}

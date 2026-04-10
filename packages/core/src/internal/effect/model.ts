@@ -341,7 +341,7 @@ export interface ServerMutableClientMutableCreateDefault<
  * Mutable field that can be omitted on create and defaults during decoding.
  *
  * @example
- * hexColor: ServerMutableClientMutableCreateDefault(HexColor, { defaultValue: () => HexColor.makeUnsafe("#000000") })
+ * hexColor: ServerMutableClientMutableCreateDefault(HexColor, { defaultValue: () => HexColor.make("#000000") })
  */
 export const ServerMutableClientMutableCreateDefault = <S extends Schema.Top>(
   schema: S,

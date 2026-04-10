@@ -5,7 +5,7 @@ import { Mailer } from "@recount/notifications/mailer";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, emailOTP } from "better-auth/plugins";
-import { Effect, Layer, Schema, ServiceMap } from "effect";
+import { Effect, Layer, Schema, Context } from "effect";
 
 import { BetterAuthConfig } from "./better-auth-config";
 
@@ -16,7 +16,7 @@ export class BetterAuthError extends Schema.TaggedErrorClass<BetterAuthError>()(
   }
 ) {}
 
-export class BetterAuth extends ServiceMap.Service<BetterAuth>()(
+export class BetterAuth extends Context.Service<BetterAuth>()(
   "@recount/auth/BetterAuth",
   {
     make: Effect.gen(function* () {
@@ -26,7 +26,7 @@ export class BetterAuth extends ServiceMap.Service<BetterAuth>()(
       const mailer = yield* Mailer;
       const identityModule = yield* IdentityModule;
 
-      const services = yield* Effect.services<
+      const services = yield* Effect.context<
         Database | Mailer | IdentityModule
       >();
       const runPromise = Effect.runPromiseWith(services);
@@ -36,7 +36,7 @@ export class BetterAuth extends ServiceMap.Service<BetterAuth>()(
         secret: betterAuthConfig.secret,
         database: drizzleAdapter(db.unsafeDrizzle, {
           provider: "pg",
-          schema: schema,
+          schema,
         }),
         trustedOrigins: betterAuthConfig.trustedOrigins,
         databaseHooks: {
@@ -45,7 +45,7 @@ export class BetterAuth extends ServiceMap.Service<BetterAuth>()(
               after: (user) =>
                 runPromise(
                   Effect.gen(function* () {
-                    const userId = UserId.makeUnsafe(user.id);
+                    const userId = yield* UserId.makeEffect(user.id);
 
                     yield* identityModule.afterCreateUser(userId);
                   })
@@ -98,7 +98,7 @@ export class BetterAuth extends ServiceMap.Service<BetterAuth>()(
             sendVerificationOTP: ({ email: rawEmail, otp, type }) =>
               runPromise(
                 Effect.gen(function* () {
-                  const email = Email.makeUnsafe(rawEmail);
+                  const email = yield* Email.makeEffect(rawEmail);
 
                   switch (type) {
                     case "sign-in": {

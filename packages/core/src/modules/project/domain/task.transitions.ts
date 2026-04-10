@@ -12,8 +12,8 @@ export const createTask = (params: {
   const { id, ...rest } = params.data;
 
   return Result.succeed(
-    Task.makeUnsafe({
-      id: Option.getOrElse(id, () => TaskId.makeUnsafe(generateUUID())),
+    Task.make({
+      id: Option.getOrElse(id, () => TaskId.make(generateUUID())),
       workspaceId: params.workspaceId,
       archivedAt: Option.none(),
       ...rest,
@@ -26,7 +26,7 @@ export const updateTask = (params: {
   data: typeof Task.jsonUpdate.Type;
 }): Result.Result<{ entity: Task; changes: typeof Task.update.Type }, never> =>
   Result.succeed({
-    entity: Task.makeUnsafe({
+    entity: Task.make({
       ...params.task,
       ...params.data,
     }),

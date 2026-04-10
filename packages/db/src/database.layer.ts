@@ -1,5 +1,5 @@
 import { drizzle as makeDrizzle } from "drizzle-orm/node-postgres";
-import { Config, Effect, Layer, ServiceMap } from "effect";
+import { Config, Effect, Layer, Context } from "effect";
 import { Pool } from "pg";
 
 import { Database, DatabaseError } from "./database.service";
@@ -47,7 +47,7 @@ const DatabaseLayerBase = Layer.effect(
       schema,
     });
 
-    const ActiveConnection = ServiceMap.Reference<ActiveConnection>(
+    const ActiveConnection = Context.Reference<ActiveConnection>(
       "@recount/db/ActiveConnection",
       {
         defaultValue: () => drizzle,

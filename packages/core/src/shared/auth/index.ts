@@ -1,4 +1,4 @@
-import { ServiceMap } from "effect";
+import { Context } from "effect";
 
 import type { Session, User } from "#modules/identity/index";
 import type { WorkspaceMember } from "#modules/workspace-member/index";
@@ -9,7 +9,7 @@ export interface SessionContextShape {
   user: User;
 }
 
-export class SessionContext extends ServiceMap.Service<
+export class SessionContext extends Context.Service<
   SessionContext,
   SessionContextShape
 >()("@recount/shared/SessionContext") {}
@@ -19,7 +19,7 @@ export interface WorkspaceContextShape {
   workspace: Workspace;
 }
 
-export class WorkspaceContext extends ServiceMap.Service<
+export class WorkspaceContext extends Context.Service<
   WorkspaceContext,
   WorkspaceContextShape
 >()("@recount/shared/WorkspaceContext") {}

@@ -1,7 +1,7 @@
 import type { User } from "@recount/core/modules/identity";
 import type { Workspace } from "@recount/core/modules/workspace";
 import type { WorkspaceInvitation } from "@recount/core/modules/workspace-invitation";
-import { Layer, ServiceMap, Effect } from "effect";
+import { Layer, Context, Effect } from "effect";
 
 interface MailerShape {
   sendSignInOtp: (params: {
@@ -27,7 +27,7 @@ interface MailerShape {
   }) => Effect.Effect<void>;
 }
 
-export class Mailer extends ServiceMap.Service<Mailer, MailerShape>()(
+export class Mailer extends Context.Service<Mailer, MailerShape>()(
   "@recount/shared/Mailer"
 ) {
   static readonly layerDev = Layer.effect(

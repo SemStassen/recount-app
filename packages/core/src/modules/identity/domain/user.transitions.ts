@@ -7,6 +7,6 @@ export const updateUser = (params: {
   data: typeof User.jsonUpdate.Type;
 }): Result.Result<{ entity: User; changes: typeof User.update.Type }, never> =>
   Result.succeed({
-    entity: User.makeUnsafe({ ...params.user, ...params.data }),
+    entity: User.make({ ...params.user, ...params.data }),
     changes: params.data,
   });

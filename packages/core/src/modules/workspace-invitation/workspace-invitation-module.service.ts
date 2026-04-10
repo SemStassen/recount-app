@@ -1,4 +1,4 @@
-import { Schema, ServiceMap } from "effect";
+import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -58,7 +58,7 @@ export interface WorkspaceInvitationModuleShape {
   >;
 }
 
-export class WorkspaceInvitationModule extends ServiceMap.Service<
+export class WorkspaceInvitationModule extends Context.Service<
   WorkspaceInvitationModule,
   WorkspaceInvitationModuleShape
 >()("@recount/workspace-invitation/WorkspaceInvitationModule") {}

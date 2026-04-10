@@ -8,7 +8,7 @@ import type {
   PlainApiKey,
   WorkspaceIntegrationId,
 } from "@recount/core/shared/schemas";
-import { ServiceMap } from "effect";
+import { Context } from "effect";
 import type { Effect } from "effect";
 
 export interface IntegrationModuleShape {
@@ -44,7 +44,7 @@ export interface IntegrationModuleShape {
   >;
 }
 
-export class IntegrationModule extends ServiceMap.Service<
+export class IntegrationModule extends Context.Service<
   IntegrationModule,
   IntegrationModuleShape
 >()("@recount/integration/IntegrationModule") {}

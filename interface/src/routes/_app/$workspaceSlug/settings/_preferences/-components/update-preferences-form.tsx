@@ -1,4 +1,5 @@
 import { UserSettings } from "@recount/core/modules/identity";
+import { Form } from "@recount/ui/form";
 import { toastManager } from "@recount/ui/toast";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { Effect } from "effect";
@@ -41,18 +42,13 @@ export function UpdatePreferencesForm() {
             dateFormat: value.dateFormat,
             timeFormat: value.timeFormat,
           });
-
-          toastManager.add({
-            type: "success",
-            title: "Updated",
-          });
         })
       );
     }),
   });
 
   return (
-    <form
+    <Form
       onSubmit={(e) => {
         e.preventDefault();
         form.handleSubmit();
@@ -89,6 +85,6 @@ export function UpdatePreferencesForm() {
           Update preferences
         </form.SubmitButton>
       </form.AppForm>
-    </form>
+    </Form>
   );
 }

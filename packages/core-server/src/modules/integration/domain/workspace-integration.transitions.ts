@@ -14,7 +14,7 @@ export const createWorkspaceIntegration = (params: {
 
   return Result.succeed(
     WorkspaceIntegration.make({
-      id: WorkspaceIntegration.fields.id.makeUnsafe(generateUUID()),
+      id: WorkspaceIntegration.fields.id.make(generateUUID()),
       workspaceId: params.workspaceId,
       createdByWorkspaceMemberId: params.createdByWorkspaceMemberId,
       apiKey: params.apiKey,

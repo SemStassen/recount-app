@@ -59,6 +59,7 @@
     "./input": "./src/components/input.coss.tsx",
     "./kbd": "./src/components/kbd.coss.tsx",
     "./label": "./src/components/label.coss.tsx",
+    "./list": "./src/components/list.tsx",
     "./menu": "./src/components/menu.coss.tsx",
     "./popover": "./src/components/popover.coss.tsx",
     "./resizable": "./src/components/resizable.9ui.tsx",

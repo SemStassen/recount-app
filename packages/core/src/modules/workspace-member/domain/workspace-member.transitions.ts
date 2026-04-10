@@ -12,8 +12,8 @@ export const createWorkspaceMember = (params: {
   data: typeof WorkspaceMember.jsonCreate.Type;
 }): Result.Result<WorkspaceMember, never> =>
   Result.succeed(
-    WorkspaceMember.makeUnsafe({
-      id: WorkspaceMemberId.makeUnsafe(generateUUID()),
+    WorkspaceMember.make({
+      id: WorkspaceMemberId.make(generateUUID()),
       workspaceId: params.workspaceId,
       userId: params.userId,
       role: params.role,

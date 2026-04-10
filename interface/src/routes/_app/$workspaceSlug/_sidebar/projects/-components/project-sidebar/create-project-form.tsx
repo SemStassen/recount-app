@@ -1,8 +1,9 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Project } from "@recount/core/modules/project";
-import type { RichTextContent } from "@recount/editor";
+import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import { Form } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
+import { useRouteContext } from "@tanstack/react-router";
 
 import { useAppForm } from "~/components/form";
 import {
@@ -15,9 +16,7 @@ import { m } from "~/paraglide/messages";
 
 const schema = Project.jsonCreate;
 
-const defaultValues: Omit<(typeof schema)["Encoded"], "notes"> & {
-  notes?: RichTextContent | null;
-} = {
+const defaultValues: typeof schema.Encoded = {
   name: "",
   startDate: null,
   targetDate: null,
@@ -27,6 +26,8 @@ const defaultValues: Omit<(typeof schema)["Encoded"], "notes"> & {
 };
 
 export function CreateProjectForm() {
+  const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
+
   const createProject = useAtomSet(
     RecountAtomRpcClient.mutation("Project.Create"),
     {
@@ -45,10 +46,12 @@ export function CreateProjectForm() {
     onSubmit: createParsedSubmitHandler(schema, ({ value }) => {
       createProject({
         payload: value,
+        headers: {
+          [WORKSPACE_ID_HEADER]: workspace.id,
+        },
       });
     }),
   });
-
   return (
     <Form
       onSubmit={(e) => {
@@ -75,7 +78,7 @@ export function CreateProjectForm() {
         )}
         name="hexColor"
       />
-      <div className="flex flex-row justify-between">
+      <div className="flex flex-row justify-between gap-4">
         <form.AppField
           children={(field) => (
             <field.DateField

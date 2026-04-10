@@ -19,7 +19,7 @@ import type {
 import type { RepositoryError } from "@recount/core/shared/repository";
 import type { WorkspaceId } from "@recount/core/shared/schemas";
 import { SessionId, UserId } from "@recount/core/shared/schemas";
-import { Effect, Layer, Schema, ServiceMap, Option } from "effect";
+import { Effect, Layer, Schema, Context, Option } from "effect";
 
 import type { BetterAuthError } from "./better-auth";
 import { BetterAuth } from "./better-auth";
@@ -29,7 +29,7 @@ export class InvalidSessionError extends Schema.TaggedErrorClass<InvalidSessionE
   {}
 ) {}
 
-export class RequestContextResolver extends ServiceMap.Service<
+export class RequestContextResolver extends Context.Service<
   RequestContextResolver,
   {
     resolveSessionContext: (params: {
@@ -100,7 +100,7 @@ export class RequestContextResolver extends ServiceMap.Service<
                   onNone: () =>
                     Effect.fail(
                       new SessionNotFoundError({
-                        sessionId: sessionId,
+                        sessionId,
                       })
                     ),
                   onSome: Effect.succeed,
@@ -109,7 +109,7 @@ export class RequestContextResolver extends ServiceMap.Service<
                   onNone: () =>
                     Effect.fail(
                       new UserNotFoundError({
-                        userId: userId,
+                        userId,
                       })
                     ),
                   onSome: Effect.succeed,

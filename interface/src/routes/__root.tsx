@@ -8,6 +8,7 @@ import { runtime } from "~/lib/runtime";
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
+    console.log("auth");
     const auth = await runtime.runPromise(
       AtomRegistry.getResult(atomRegistry, sessionAtom, {
         suspendOnWaiting: true,
@@ -17,6 +18,7 @@ export const Route = createRootRoute({
         })
       )
     );
+    console.log("after auth");
 
     return { auth };
   },

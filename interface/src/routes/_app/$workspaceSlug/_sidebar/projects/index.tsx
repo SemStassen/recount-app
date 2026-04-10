@@ -4,9 +4,9 @@ import { Icons } from "@recount/ui/icons";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { projectSidebarAtom } from "~/atoms/ui-atoms";
-import { useWorkspaceLiveQuery } from "~/db/workspace-collections";
 
 import { ProjectSidebar } from "./-components/project-sidebar";
+import { ProjectsList } from "./-components/projects-list";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
   {
@@ -17,22 +17,22 @@ export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
 function RouteComponent() {
   const setProjectSidebar = useAtomSet(projectSidebarAtom);
 
-  const { data: projects } = useWorkspaceLiveQuery((q, collections) =>
-    q.from({ project: collections.projectsCollection })
-  );
-
   return (
     <>
       <div className="flex flex-col flex-1">
-        <header className="flex flex-row items-end justify-end">
+        <header className="flex flex-row items-center justify-between py-2 px-4">
+          {/* Breadcrumb */}
+          <div>
+            <span>Projects</span>
+          </div>
           <Button
             variant="ghost"
             onClick={() => setProjectSidebar({ mode: "create" })}
           >
-            New project <Icons.Plus />
+            <Icons.Plus /> New project
           </Button>
         </header>
-        <div>{projects?.length ?? 0} projects</div>
+        <ProjectsList />
       </div>
       <ProjectSidebar />
     </>

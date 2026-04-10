@@ -37,7 +37,6 @@ import { cn } from "@recount/ui/utils";
 import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
 import { cva } from "class-variance-authority";
 import type { PropsWithChildren } from "react";
-import { fi } from "zod/v4/locales";
 
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
@@ -63,7 +62,7 @@ export const { useAppForm } = createFormHook({
   formContext,
 });
 
-const baseFieldVariants = cva("", {
+const baseFieldVariants = cva("flex-1", {
   variants: {
     direction: {
       vertical: "flex-col",
@@ -92,7 +91,6 @@ function BaseField({
 
   const errorMessage = fieldCtx.state.meta.errors[0]?.message;
   const { className, ...fieldProps } = field ?? {};
-  console.log(fieldCtx, errorMessage);
 
   return (
     <Field

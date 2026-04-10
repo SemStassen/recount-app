@@ -1,4 +1,4 @@
-import { Schema, ServiceMap } from "effect";
+import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
@@ -45,7 +45,6 @@ interface TimeModuleShape {
   }) => Effect.Effect<void, RepositoryError>;
 }
 
-export class TimeModule extends ServiceMap.Service<
-  TimeModule,
-  TimeModuleShape
->()("@recount/time/TimeModule") {}
+export class TimeModule extends Context.Service<TimeModule, TimeModuleShape>()(
+  "@recount/time/TimeModule"
+) {}
