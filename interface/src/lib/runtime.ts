@@ -12,15 +12,11 @@ export const runtimeLayer = Layer.mergeAll(
 );
 
 /**
- * Managed runtime for imperative Effect execution
+ * Managed runtime for imperative Effect execution.
  *
- * Uses Atom.defaultMemoMap to ensure layer memoization is shared with
- * Atom.runtime() calls. This prevents duplicate WebSocket connections by
- * ensuring both the ManagedRuntime (for collections) and AtomRuntime (for
- * mutations) build layers with the same MemoMap, allowing Effect to reuse
- * already-built layer instances.
- *
- * Used by collections.ts and other imperative code that calls runtime.runPromise().
+ * Uses `Atom.defaultMemoMap` so this runtime and `Atom.runtime(...)` share
+ * layer memoization when they build overlapping services. That allows shared
+ * dependencies to be reused instead of rebuilt independently.
  */
 export const runtime = ManagedRuntime.make(runtimeLayer, {
   memoMap: Atom.defaultMemoMap,

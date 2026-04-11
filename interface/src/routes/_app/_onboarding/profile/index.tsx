@@ -1,6 +1,6 @@
 import { User } from "@recount/core/modules/identity";
 import { defaultValidationLogic } from "@tanstack/react-form";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Effect, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
@@ -21,7 +21,6 @@ const schema = Schema.Struct({
 });
 
 function RouteComponent() {
-  const navigate = useNavigate();
   const form = useAppForm({
     formId: "profile",
     defaultValues: {
@@ -37,11 +36,9 @@ function RouteComponent() {
         Effect.gen(function* () {
           const client = yield* RecountAtomRpcClient;
 
-          const res = yield* client("User.UpdateMe", {
+          yield* client("User.UpdateMe", {
             fullName: value.fullName,
           });
-
-          // navigate({ to: ""})
         })
       );
     }),

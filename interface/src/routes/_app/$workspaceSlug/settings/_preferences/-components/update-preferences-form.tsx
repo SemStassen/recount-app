@@ -1,6 +1,5 @@
 import { UserSettings } from "@recount/core/modules/identity";
 import { Form } from "@recount/ui/form";
-import { toastManager } from "@recount/ui/toast";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { Effect } from "effect";
 

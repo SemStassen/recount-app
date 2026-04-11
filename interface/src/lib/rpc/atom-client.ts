@@ -63,4 +63,10 @@ export class RecountAtomRpcClient extends AtomRpc.Service<RecountAtomRpcClient>(
     group: allRpcGroups,
     protocol: AtomRpcProtocolLayer,
   }
-) {}
+) {
+  /** Note: not sure if this is the idiomatic way to use and construct this layer */
+  static readonly layer = Layer.effect(
+    RecountAtomRpcClient,
+    RpcClient.make(allRpcGroups, { flatten: true })
+  ).pipe(Layer.provide(AtomRpcProtocolLayer));
+}
