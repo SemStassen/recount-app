@@ -66,7 +66,7 @@ const baseFieldVariants = cva("flex-1", {
   variants: {
     direction: {
       vertical: "flex-col",
-      horizontal: "flex-row",
+      horizontal: "flex-row justify-between gap-2",
     },
   },
 });
@@ -122,7 +122,7 @@ function BaseField({
 }
 
 interface CustomFieldProps extends BaseFieldProps {
-  control: FieldControlProps;
+  control?: FieldControlProps;
 }
 function CustomField({ control, ...props }: CustomFieldProps) {
   return (
@@ -132,10 +132,10 @@ function CustomField({ control, ...props }: CustomFieldProps) {
   );
 }
 
-interface InputFieldProps extends BaseFieldProps {
+interface TextFieldProps extends BaseFieldProps {
   input?: InputProps;
 }
-function TextField({ input, ...props }: InputFieldProps) {
+function TextField({ input, ...props }: TextFieldProps) {
   const fieldCtx = useFieldContext<string>();
 
   return (
@@ -221,7 +221,7 @@ function DateField({ ...props }: BaseFieldProps) {
       <Popover>
         <PopoverTrigger
           render={
-            <Button variant="outline">
+            <Button variant="outline" className="w-full justify-start">
               <Icons.Calendar />
               {fieldCtx.state.value
                 ? formatter.date(fieldCtx.state.value)

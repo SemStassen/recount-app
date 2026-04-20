@@ -1,6 +1,7 @@
+import { useLiveQuery } from "@tanstack/react-db";
 import { format } from "date-fns";
 
-import { useUserLiveQuery } from "~/db/user-collections";
+import { useUserDb } from "~/db/user/context";
 
 const DATE_FORMATS = {
   "MM/DD/YYYY": "MM/dd/yyyy",
@@ -20,16 +21,16 @@ const DEFAULT_TIME_FORMAT: TimeFormat = "24h";
 export type DateFormat = keyof typeof DATE_FORMATS;
 export type TimeFormat = keyof typeof TIME_FORMATS;
 
-export type DateTimeSettings = {
+export interface DateTimeSettings {
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
   timeZone: string | null;
-};
+}
 
-type DateTimeSettingsInput = {
+interface DateTimeSettingsInput {
   dateFormat?: string;
   timeFormat?: string;
-};
+}
 
 function normalizeDateTimeSettings(
   userSettings?: DateTimeSettingsInput | null
@@ -52,14 +53,14 @@ function normalizeDateTimeSettings(
 
 export type DateTimeFormatter = ReturnType<typeof createDateTimeFormatter>;
 
-export function createDateTimeFormatter(
-  input?: DateTimeSettingsInput | null
-) {
+export function createDateTimeFormatter(input?: DateTimeSettingsInput | null) {
   const settings = normalizeDateTimeSettings(input);
 
   return {
-    time: (date: Date): string => format(date, TIME_FORMATS[settings.timeFormat]),
-    date: (date: Date): string => format(date, DATE_FORMATS[settings.dateFormat]),
+    time: (date: Date): string =>
+      format(date, TIME_FORMATS[settings.timeFormat]),
+    date: (date: Date): string =>
+      format(date, DATE_FORMATS[settings.dateFormat]),
     dateTime: (date: Date): string =>
       format(
         date,
@@ -73,8 +74,9 @@ export function createDateTimeFormatter(
 }
 
 export function useDateTimeFormatter(): DateTimeFormatter {
-  const { data: userSettings } = useUserLiveQuery((q, collections) =>
-    q.from({ userSettings: collections.userSettingsCollection }).findOne()
+  const userDb = useUserDb();
+  const { data: userSettings } = useLiveQuery((q) =>
+    q.from({ us: userDb.collections.userSettingsCollection }).findOne()
   );
 
   return createDateTimeFormatter({

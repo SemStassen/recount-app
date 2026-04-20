@@ -1,10 +1,11 @@
 import { UserSettings } from "@recount/core/modules/identity";
 import { Form } from "@recount/ui/form";
+import { useLiveQuery } from "@tanstack/react-db";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { Effect } from "effect";
 
 import { useAppForm } from "~/components/form";
-import { useUserLiveQuery } from "~/db/user-collections";
+import { useUserDb } from "~/db/user/context";
 import {
   createDynamicValidator,
   createSubmitValidator,
@@ -16,13 +17,18 @@ import { runtime } from "~/lib/runtime";
 const schema = UserSettings.jsonUpdate;
 
 export function UpdatePreferencesForm() {
-  const { data: currentUserSettings } = useUserLiveQuery((q, collections) =>
-    q.from({ userSettings: collections.userSettingsCollection }).findOne()
+  const userDb = useUserDb();
+  const { data: currentUserSettings } = useLiveQuery((q) =>
+    q.from({ us: userDb.collections.userSettingsCollection }).findOne()
   );
 
   const defaultValues: (typeof schema)["Encoded"] = {
-    dateFormat: currentUserSettings?.dateFormat,
-    timeFormat: currentUserSettings?.timeFormat,
+    dateFormat:
+      currentUserSettings?.dateFormat ??
+      UserSettings.fields.dateFormat.literals[0],
+    timeFormat:
+      currentUserSettings?.timeFormat ??
+      UserSettings.fields.timeFormat.literals[0],
   };
 
   const form = useAppForm({
@@ -56,7 +62,7 @@ export function UpdatePreferencesForm() {
       <form.AppField
         children={(field) => (
           <field.SelectField
-            direction="vertical"
+            direction="horizontal"
             label={{ children: "Date Format" }}
             items={UserSettings.fields.dateFormat.literals.map((literal) => ({
               label: literal,
@@ -69,7 +75,7 @@ export function UpdatePreferencesForm() {
       <form.AppField
         children={(field) => (
           <field.SelectField
-            direction="vertical"
+            direction="horizontal"
             label={{ children: "Time Format" }}
             items={UserSettings.fields.timeFormat.literals.map((literal) => ({
               label: literal,

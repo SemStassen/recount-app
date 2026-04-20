@@ -72,7 +72,7 @@ const DatabaseLayerBase = Layer.effect(
         }),
       withTransaction: <A, E, R>(effect: Effect.Effect<A, E, R>) =>
         Effect.gen(function* () {
-          const services = yield* Effect.services<R>();
+          const services = yield* Effect.context<R>();
           const activeConnection = yield* ActiveConnection;
 
           return yield* Effect.tryPromise({

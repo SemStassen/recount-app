@@ -1,6 +1,7 @@
 import { Schema } from "effect";
 
 import { Model } from "#internal/effect/index";
+import { DataResidencyRegion } from "#shared/residency/index";
 import { NonEmptyTrimmedString, WorkspaceId } from "#shared/schemas/index";
 
 export class Workspace extends Model.Class<Workspace>("Workspace")(
@@ -13,6 +14,11 @@ export class Workspace extends Model.Class<Workspace>("Workspace")(
       NonEmptyTrimmedString.check(Schema.isMaxLength(100))
     ),
     logoUrl: Model.ServerMutableClientMutableOptional(NonEmptyTrimmedString),
+    dataResidencyRegion: Model.Field({
+      select: DataResidencyRegion,
+      insert: DataResidencyRegion,
+      jsonCreate: DataResidencyRegion,
+    }),
   },
   {
     identifier: "Workspace",

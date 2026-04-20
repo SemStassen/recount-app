@@ -18,9 +18,11 @@ import {
   ListHeader,
   ListRow,
 } from "@recount/ui/list";
+import { useLiveQuery } from "@tanstack/react-db";
 import {
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -28,7 +30,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMemo, useRef } from "react";
 
 import { projectSidebarAtom } from "~/atoms/ui-atoms";
-import { useWorkspaceLiveQuery } from "~/db/workspace-collections";
+import { useWorkspaceDb } from "~/db/workspace/context";
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
 const createColumns: (
@@ -37,46 +39,53 @@ const createColumns: (
   {
     accessorKey: "hexColor",
     header: undefined,
+    size: 48,
     cell: (info) => (
       <div
         className="size-4 rounded-sm"
         style={{ backgroundColor: `${info.getValue()}` }}
       />
     ),
-    size: 48,
+    enableSorting: false,
   },
   {
     accessorKey: "startDate",
     header: "Start Date",
-    cell: (info) => info.getValue() && formatDate(info.getValue<Date>()),
     size: 120,
+    cell: (info) => info.getValue() && formatDate(info.getValue<Date>()),
+    enableSorting: true,
   },
   {
     accessorKey: "targetDate",
     header: "Target Date",
-    cell: (info) => info.getValue() && formatDate(info.getValue<Date>()),
     size: 120,
+    cell: (info) => info.getValue() && formatDate(info.getValue<Date>()),
+    enableSorting: true,
   },
   {
     accessorKey: "name",
     header: "Name",
-    cell: (info) => info.getValue(),
-    meta: { grow: true },
     size: 200,
+    cell: (info) => info.getValue(),
+    enableSorting: true,
+    meta: { grow: true },
   },
   {
     accessorKey: "isBillable",
     header: "Billable",
-    cell: (info) => (info.getValue() ? "Yes" : "No"),
     size: 80,
+    cell: (info) => (info.getValue() ? "Yes" : "No"),
+    enableSorting: true,
   },
 ];
 
 export function ProjectsList() {
   const formatter = useDateTimeFormatter();
   const setProjectSidebar = useAtomSet(projectSidebarAtom);
-  const { data: projects } = useWorkspaceLiveQuery((q, db) =>
-    q.from({ p: db.projectsCollection })
+
+  const workspaceDb = useWorkspaceDb();
+  const { data: projects } = useLiveQuery((q) =>
+    q.from({ p: workspaceDb.collections.projectsCollection })
   );
 
   const columns = useMemo(() => createColumns(formatter.date), [formatter]);
@@ -85,6 +94,8 @@ export function ProjectsList() {
     data: projects ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    enableSorting: true,
   });
 
   const { rows } = table.getRowModel();
@@ -103,12 +114,17 @@ export function ProjectsList() {
     .join(" ");
 
   return projects && projects.length > 0 ? (
-    <List style={{ gridTemplateColumns }} ref={parentRef}>
+    <List style={{ gridTemplateColumns }}>
       <ListHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <ListRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              <ListHead key={header.id}>
+              <ListHead
+                key={header.id}
+                onClick={header.column.getToggleSortingHandler()}
+                isSorted={header.column.getIsSorted()}
+                canSort={header.column.getCanSort()}
+              >
                 {header.isPlaceholder
                   ? null
                   : flexRender(
@@ -120,7 +136,7 @@ export function ProjectsList() {
           </ListRow>
         ))}
       </ListHeader>
-      <ListBody>
+      <ListBody ref={parentRef}>
         {virtualizer.getVirtualItems().map((virtualRow, index) => {
           const row = rows[virtualRow.index];
           return (

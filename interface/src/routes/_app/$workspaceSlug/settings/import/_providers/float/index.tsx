@@ -1,9 +1,9 @@
 import { Frame, FrameHeader, FramePanel, FrameTitle } from "@recount/ui/frame";
-import { eq } from "@tanstack/react-db";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute } from "@tanstack/react-router";
-
-import { useWorkspaceLiveQuery } from "~/db/workspace-collections";
 // import { RecountAtomClient } from "~/lib/rpc/atom-client";
+
+import { useWorkspaceDb } from "~/db/workspace/context";
 
 import { CreateWorkspaceIntegrationForm } from "../-components/create-workspace-integration-form";
 
@@ -17,9 +17,10 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  const { data: integration } = useWorkspaceLiveQuery((q, collections) =>
+  const workspaceDb = useWorkspaceDb();
+  const { data: integration } = useLiveQuery((q) =>
     q
-      .from({ wi: collections.workspaceIntegrationsCollection })
+      .from({ wi: workspaceDb.collections.workspaceIntegrationsCollection })
       .where(({ wi }) => eq(wi.provider, "float"))
       .findOne()
   );

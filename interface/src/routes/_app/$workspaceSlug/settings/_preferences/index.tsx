@@ -1,3 +1,4 @@
+import { Card, CardPanel } from "@recount/ui/card";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { UpdatePreferencesForm } from "./-components/update-preferences-form";
@@ -14,7 +15,11 @@ export const Route = createFileRoute(
 function RouteComponent() {
   return (
     <div>
-      <UpdatePreferencesForm />
+      <Card>
+        <CardPanel>
+          <UpdatePreferencesForm />
+        </CardPanel>
+      </Card>
     </div>
   );
 }

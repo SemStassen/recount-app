@@ -18,6 +18,7 @@
     "react": "catalog:frontend",
     "react-day-picker": "^9.9.0",
     "react-dom": "catalog:frontend",
+    "react-dropzone": "^15.0.0",
     "react-resizable-panels": "^4.7.4",
     "tailwind-merge": "^3.0.2"
   },
@@ -47,6 +48,7 @@
     "./combobox": "./src/components/combobox.coss.tsx",
     "./command": "./src/components/command.coss.tsx",
     "./dialog": "./src/components/dialog.coss.tsx",
+    "./dropzone": "./src/components/dropzone.kibo.tsx",
     "./empty": "./src/components/empty.coss.tsx",
     "./field": "./src/components/field.coss.tsx",
     "./fieldset": "./src/components/fieldset.coss.tsx",

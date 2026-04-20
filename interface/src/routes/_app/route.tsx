@@ -3,7 +3,6 @@ import { AtomRegistry } from "effect/unstable/reactivity";
 
 import { workspacesAtom } from "~/atoms/auth.atoms";
 import { atomRegistry } from "~/atoms/registry";
-import { preloadUserCollections } from "~/db/user-collections";
 import { runtime } from "~/lib/runtime";
 
 import { AppProviders } from "./-app-providers";
@@ -33,7 +32,7 @@ export const Route = createFileRoute("/_app")({
     return { auth, workspaces };
   },
   loader: async () => {
-    await preloadUserCollections();
+    // await preloadUserCollections();
   },
 
   component: RouteComponent,

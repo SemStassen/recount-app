@@ -2,10 +2,10 @@ import { Avatar, AvatarFallback } from "@recount/ui/avatar";
 import { Badge } from "@recount/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@recount/ui/card";
 import { Icons } from "@recount/ui/icons";
-import { eq } from "@tanstack/react-db";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { useWorkspaceLiveQuery } from "~/db/workspace-collections";
+import { useWorkspaceDb } from "~/db/workspace/context";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/settings/import/")({
   beforeLoad: () => ({
@@ -58,9 +58,10 @@ function IntegrationCard({
   icon: React.ReactNode;
   disabled?: boolean;
 }) {
-  const { data: integration } = useWorkspaceLiveQuery((q, collections) =>
+  const workspaceDb = useWorkspaceDb();
+  const { data: integration } = useLiveQuery((q) =>
     q
-      .from({ wi: collections.workspaceIntegrationsCollection })
+      .from({ wi: workspaceDb.collections.workspaceIntegrationsCollection })
       .where(({ wi }) => eq(wi.provider, provider))
       .findOne()
   );

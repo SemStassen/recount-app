@@ -8,7 +8,7 @@ import {
 } from "@recount/ui/input-group";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 
 import { useAppForm } from "~/components/form";
 import {
@@ -23,10 +23,7 @@ export const Route = createFileRoute("/_app/_onboarding/create-workspace/")({
   component: RouteComponent,
 });
 
-const schema = Schema.Struct({
-  name: Workspace.fields.name,
-  slug: Workspace.fields.slug,
-});
+const schema = Workspace.jsonCreate;
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -73,6 +70,7 @@ function RouteComponent() {
         <form.AppField
           children={(field) => (
             <field.TextField
+              direction="vertical"
               input={{
                 autoComplete: "off",
                 autoFocus: true,
@@ -96,6 +94,7 @@ function RouteComponent() {
         <form.AppField
           children={(field) => (
             <field.CustomField
+              direction="vertical"
               control={{
                 render: (props) => (
                   <InputGroup>

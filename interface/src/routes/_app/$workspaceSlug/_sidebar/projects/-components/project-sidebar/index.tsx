@@ -42,10 +42,10 @@ export function ProjectSidebar() {
             </header>
             {projectSidebar.mode === "create" && <CreateProjectForm />}
             {projectSidebar.mode === "edit" && (
-              <div>
+              <>
                 <div>{projectSidebar.projectId}</div>
-                <CreateProjectForm />
-              </div>
+                <CreateProjectForm projectId={projectSidebar.projectId} />
+              </>
             )}
           </div>
         </motion.aside>

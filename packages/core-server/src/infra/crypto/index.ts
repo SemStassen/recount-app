@@ -36,7 +36,7 @@ export const CryptoLayer = Layer.effect(
           const iv = crypto.randomBytes(IV_LENGTH);
           const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
-          let encrypted = cipher.update(payload, "utf8", "hex");
+          let encrypted = cipher.update(payload, "utf-8", "hex");
           encrypted += cipher.final("hex");
 
           const authTag = cipher.getAuthTag();
@@ -67,9 +67,9 @@ export const CryptoLayer = Layer.effect(
           let decrypted = decipher.update(
             encryptedText.toString("hex"),
             "hex",
-            "utf8"
+            "utf-8"
           );
-          decrypted += decipher.final("utf8");
+          decrypted += decipher.final("utf-8");
 
           return decrypted;
         }),

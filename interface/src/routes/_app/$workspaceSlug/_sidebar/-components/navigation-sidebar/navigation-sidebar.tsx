@@ -4,14 +4,13 @@ import { Icons } from "@recount/ui/icons";
 import type { IconProps } from "@recount/ui/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
 
 import { isNavigationSidebarOpenAtom } from "~/atoms/ui-atoms";
 
 import { UserDropdownMenu } from "./user-dropdown-menu";
 import { WorkspaceDropdownMenu } from "./workspace-dropdown-menu";
 
-const DEFAULT_SIDEBAR_WIDTH = 240;
+const SIDEBAR_WIDTH = 240;
 
 const NAV_ITEMS = [
   {
@@ -35,17 +34,12 @@ const NAV_ITEMS = [
 
 export function NavigationSidebar() {
   const isOpen = useAtomValue(isNavigationSidebarOpenAtom);
-  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
-
-  const handleResize = (e: React.MouseEvent<HTMLDivElement>) => {
-    setSidebarWidth(e.clientX);
-  };
 
   return (
     <AnimatePresence initial={false}>
       {isOpen && (
         <motion.aside
-          animate={{ width: sidebarWidth }}
+          animate={{ width: SIDEBAR_WIDTH }}
           className="relative h-full overflow-hidden"
           exit={{ width: 0 }}
           initial={{ width: 0 }}
@@ -57,7 +51,7 @@ export function NavigationSidebar() {
           <nav
             className="flex h-full flex-col justify-between border-r px-4 pt-2 pb-4"
             style={{
-              width: sidebarWidth,
+              width: SIDEBAR_WIDTH,
             }}
           >
             <div className="space-y-4">
@@ -113,7 +107,7 @@ export function NavigationSidebar() {
           </nav>
           <div
             className="absolute inset-y-0 right-0 w-[7px] cursor-col-resize"
-            onMouseDown={handleResize}
+            // onMouseDown={handleResize}
             role="presentation"
           />
         </motion.aside>

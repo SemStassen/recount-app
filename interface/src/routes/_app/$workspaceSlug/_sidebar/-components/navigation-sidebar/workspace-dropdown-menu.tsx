@@ -14,28 +14,22 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@recount/ui/menu";
-import { Link, useRouteContext } from "@tanstack/react-router";
+import { Link, useNavigate, useRouteContext } from "@tanstack/react-router";
 
 export function WorkspaceDropdownMenu() {
+  const navigate = useNavigate();
   const { workspace, workspaces } = useRouteContext({
     from: "/_app/$workspaceSlug",
   });
 
-  // const handleSetActiveWorkspace = async (workspaceId: string) => {
-  //   await Effect.runPromise(
-  //     Effect.gen(function* () {
-  //       yield* RecountClient.Workspace.SetActive({
-  //         payload: {
-  //           workspaceId: workspaceId,
-  //         },
-  //       });
-
-  //       router.invalidate();
-  //     }).pipe(Effect.catchAll(() => Effect.succeed(null)))
-  //   );
-  // };
-
-  const handleSetActiveWorkspace = async (workspaceId: string) => {};
+  const handleSetActiveWorkspace = (workspaceSlug: string) => {
+    navigate({
+      to: "/$workspaceSlug",
+      params: {
+        workspaceSlug,
+      },
+    });
+  };
 
   return (
     <DropdownMenu>
@@ -60,7 +54,7 @@ export function WorkspaceDropdownMenu() {
                 {workspaces.map((w) => (
                   <DropdownMenuRadioItem
                     key={w.id}
-                    onClick={() => handleSetActiveWorkspace(w.id)}
+                    onClick={() => handleSetActiveWorkspace(w.slug)}
                     value={w.id}
                   >
                     {w.name}

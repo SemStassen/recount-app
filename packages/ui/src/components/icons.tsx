@@ -36,6 +36,7 @@ import {
   PencilSimpleIcon,
   PlugsIcon,
   PlusIcon,
+  SealWarningIcon,
   SidebarSimpleIcon,
   SignInIcon,
   SignOutIcon,
@@ -51,6 +52,7 @@ import {
   TextHTwoIcon,
   TextItalicIcon,
   TextStrikethroughIcon,
+  UploadIcon,
   UserIcon,
   UsersFourIcon,
   WallIcon,
@@ -59,7 +61,6 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import type { IconProps } from "@phosphor-icons/react";
-import { SealWarningIcon } from "@phosphor-icons/react/dist/ssr";
 
 export type { IconProps } from "@phosphor-icons/react";
 
@@ -119,6 +120,7 @@ const Icons = {
   StrikeThrough: TextStrikethroughIcon,
   Sun: SunIcon,
   Target: TargetIcon,
+  Upload: UploadIcon,
   User: UserIcon,
   Warning: WarningIcon,
   WarningCircle: WarningCircleIcon,

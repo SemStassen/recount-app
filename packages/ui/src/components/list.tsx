@@ -3,14 +3,19 @@ import type * as React from "react";
 
 import { cn } from "#utils/cn";
 
+import { Icons } from "./icons";
+
 export function List({
   className,
   ...props
 }: React.ComponentProps<"div">): React.ReactElement {
   return (
-    <div className="min-h-0 min-w-0 h-full">
+    <div className="min-h-0 min-w-0 h-full w-full">
       <div
-        className={cn("grid relative gap-y-0 h-80 content-start", className)}
+        className={cn(
+          "grid relative gap-y-0 content-start h-full grid-rows-[auto_1fr]",
+          className
+        )}
         data-slot="list-container"
         {...props}
       />
@@ -31,16 +36,36 @@ export function ListHeader({
   );
 }
 
+interface ListHeadProps extends React.ComponentProps<"div"> {
+  isSorted: "asc" | "desc" | false;
+  canSort: boolean;
+}
+
 export function ListHead({
+  children,
   className,
+  isSorted,
+  canSort,
   ...props
-}: React.ComponentProps<"div">): React.ReactElement {
+}: ListHeadProps): React.ReactElement {
   return (
     <div
-      className={cn("flex flex-row items-center justify-between", className)}
+      className={cn(
+        "flex flex-row items-center gap-2",
+        canSort && "cursor-pointer",
+        className
+      )}
       data-slot="list-head"
       {...props}
-    />
+    >
+      {children}
+      {isSorted && (
+        <span className="shrink-0 text-muted-foreground/60">
+          {isSorted === "asc" && <Icons.ChevronUp className="size-3.5" />}
+          {isSorted === "desc" && <Icons.ChevronDown className="size-3.5" />}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -51,7 +76,7 @@ export function ListBody({
   return (
     <div
       className={cn(
-        "relative grid grid-cols-subgrid col-span-full min-h-0",
+        "relative grid grid-cols-subgrid col-span-full min-h-0 overflow-y-scroll",
         className
       )}
       data-slot="list-body"
