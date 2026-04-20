@@ -18,7 +18,10 @@ export const Route = createRootRoute({
       )
     );
 
-    return { auth };
+    return {
+      session: auth?.session ?? null,
+      user: auth?.user ?? null,
+    };
   },
   component: RootLayout,
 });

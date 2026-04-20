@@ -5,11 +5,11 @@ import { AppCommandsProvider } from "~/components/app-commands-dialog";
 import { UserDbProvider } from "~/db/user/provider";
 
 function AppProviders({ children }: PropsWithChildren) {
-  const { auth } = useRouteContext({ from: "/_app" });
+  const { userDb } = useRouteContext({ from: "/_app" });
 
   return (
     <AppCommandsProvider>
-      <UserDbProvider userId={auth.user.id}>{children}</UserDbProvider>
+      <UserDbProvider userDb={userDb}>{children}</UserDbProvider>
     </AppCommandsProvider>
   );
 }

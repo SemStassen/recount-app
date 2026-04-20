@@ -18,9 +18,6 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
     const workspaceDb = await getWorkspaceDb(workspace.id);
 
     return {
-      session: context.auth.session,
-      user: context.auth.user,
-      workspaces: context.workspaces,
       workspace,
       workspaceDb,
     };

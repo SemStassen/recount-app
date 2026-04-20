@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { Header } from "./-components/header";
 import { NavigationSidebar } from "./-components/navigation-sidebar/navigation-sidebar";
 import { NavigationSidebarToggle } from "./-components/navigation-sidebar/navigation-sidebar-toggle";
 

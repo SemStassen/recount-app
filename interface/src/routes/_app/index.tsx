@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_app/")({
     }
 
     const lastActiveWorkspaceId = Option.getOrUndefined(
-      context.auth.session.lastActiveWorkspaceId
+      context.session.lastActiveWorkspaceId
     );
 
     const targetWorkspace =

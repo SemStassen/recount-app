@@ -6,7 +6,7 @@ import { Option } from "effect";
 export const Route = createFileRoute("/_app/_onboarding")({
   beforeLoad: ({ context }) => {
     const activeWorkspaceId = Option.getOrUndefined(
-      context.auth.session.lastActiveWorkspaceId
+      context.session.lastActiveWorkspaceId
     );
 
     return {
@@ -14,8 +14,8 @@ export const Route = createFileRoute("/_app/_onboarding")({
         context.workspaces.find(
           (workspace) => workspace.id === activeWorkspaceId
         ) ?? null,
-      session: context.auth.session,
-      user: context.auth.user,
+      session: context.session,
+      user: context.user,
     };
   },
   component: AuthLayout,

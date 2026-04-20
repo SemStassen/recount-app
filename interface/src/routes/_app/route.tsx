@@ -3,15 +3,16 @@ import { AtomRegistry } from "effect/unstable/reactivity";
 
 import { workspacesAtom } from "~/atoms/auth.atoms";
 import { atomRegistry } from "~/atoms/registry";
+import { getUserDb } from "~/db/user/get-user-db";
 import { runtime } from "~/lib/runtime";
 
 import { AppProviders } from "./-app-providers";
 
 export const Route = createFileRoute("/_app")({
   beforeLoad: async ({ context, location }) => {
-    const { auth } = context;
+    const { session, user } = context;
 
-    if (auth === null) {
+    if (session === null || user === null) {
       throw redirect({ to: "/sign-up" });
     }
 
@@ -21,18 +22,20 @@ export const Route = createFileRoute("/_app")({
       })
     );
 
-    if (!auth.user.fullName) {
+    const userDb = await getUserDb(user.id);
+
+    if (!user.fullName) {
       if (!location.pathname.startsWith("/profile")) {
         throw redirect({ to: "/profile" });
       }
 
-      return { auth, workspaces };
+      return { session, user, workspaces, userDb };
     }
 
-    return { auth, workspaces };
+    return { session, user, workspaces, userDb };
   },
-  loader: async () => {
-    // await preloadUserCollections();
+  loader: async ({ context }) => {
+    await context.userDb.preload();
   },
 
   component: RouteComponent,

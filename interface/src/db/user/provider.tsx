@@ -1,30 +1,14 @@
-import type { UserId } from "@recount/core/shared/schemas";
-import { useEffect, useState } from "react";
 import type { PropsWithChildren } from "react";
 
 import { UserDbContext } from "./context";
-import { openUserDb } from "./open-user-db";
+import type { UserDb } from "./open-user-db";
 
 interface UserDbProviderProps extends PropsWithChildren {
-  userId: UserId;
+  userDb: UserDb;
 }
 
-export function UserDbProvider({ userId, children }: UserDbProviderProps) {
-  const [db, setDb] = useState<UserDbContext | null>(null);
-
-  useEffect(() => {
-    const nextDb = openUserDb(userId);
-    setDb(nextDb);
-
-    return () => {
-      setDb(null);
-      nextDb.dispose();
-    };
-  }, [userId]);
-
-  if (!db) {
-    return null;
-  }
-
-  return <UserDbContext.Provider value={db}>{children}</UserDbContext.Provider>;
+export function UserDbProvider({ userDb, children }: UserDbProviderProps) {
+  return (
+    <UserDbContext.Provider value={userDb}>{children}</UserDbContext.Provider>
+  );
 }
