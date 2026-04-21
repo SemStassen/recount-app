@@ -294,19 +294,25 @@ If you want to extract the parts of a string that match a template, you can use 
 ```ts
 import { Schema } from "effect"
 
-const email = Schema.TemplateLiteralParser([
-  Schema.String.check(Schema.isMinLength(1)),
-  "@",
-  Schema.String.check(Schema.isMaxLength(64))
+const schema = Schema.TemplateLiteralParser([
+  Schema.String.check(Schema.isMinLength(2)),
+  ":",
+  Schema.Int
 ])
 
-// The inferred type is `readonly [string, "@", string]`
-export type Type = typeof email.Type
+// The inferred type is `readonly [string, ":", number]`
+export type Type = typeof schema.Type
 
-console.log(String(Schema.decodeUnknownExit(email)("a@b.com")))
-/*
-Success(["a","@","b.com"])
-*/
+console.log(String(Schema.decodeUnknownExit(schema)("aa:1")))
+// Success(["aa",":",1])
+
+console.log(String(Schema.decodeUnknownExit(schema)("a:1")))
+// Failure(Cause([Fail(SchemaError(Expected a value with a length of at least 2, got "a"
+//   at [0]))]))
+
+console.log(String(Schema.decodeUnknownExit(schema)("aa:1.2")))
+// Failure(Cause([Fail(SchemaError(Expected an integer, got 1.2
+//   at [2]))]))
 ```
 
 # Defining Composite Schemas
@@ -448,21 +454,75 @@ type Type = typeof schema.Type
 
 You can assign default values to fields during decoding using:
 
-- `Schema.withDecodingDefaultKey`: for optional fields
-- `Schema.withDecodingDefault`: for optional or undefined fields
+| API                                 | Encoded side              | Default value type |
+| ----------------------------------- | ------------------------- | ------------------ |
+| `Schema.withDecodingDefaultKey`     | key absent                | `Encoded`          |
+| `Schema.withDecodingDefault`        | key absent or `undefined` | `Encoded`          |
+| `Schema.withDecodingDefaultTypeKey` | key absent                | `Type`             |
+| `Schema.withDecodingDefaultType`    | key absent or `undefined` | `Type`             |
 
-In both cases, the provided value must be of the **encoded** type, and it is used when:
+The "Key" variants use `optionalKey` (the key may be absent but not `undefined`), while the non-"Key" variants use `optional` (the key may be absent **or** `undefined`).
 
-1. the field is missing, or
-2. the field is explicitly `undefined`
+The "Type" variants accept a default specified as a `Type` (decoded) value, which is useful when the schema has a transformation and you want to provide the default in the decoded representation.
 
-**Example** (Providing a default for a missing or undefined value)
+#### Encoded-Side Defaults
+
+`withDecodingDefaultKey` and `withDecodingDefault` accept a default specified as an
+**`Encoded` value** (before any decoding transformation). This is the most common
+case and works well when the Encoded and Type representations are the same, or
+when you already have the value in encoded form.
+
+**Example** (Default as an Encoded value)
+
+In `FiniteFromString`, the `Encoded` type is `string` and the `Type` is `number`.
+The default `"1"` is a **string** (the Encoded type), which is then decoded to `1`.
 
 ```ts
 import { Effect, Schema } from "effect"
 
 const schema = Schema.Struct({
+  //                                          ┌─── "1" is a string (Encoded type)
+  //                                          ▼
   a: Schema.FiniteFromString.pipe(Schema.withDecodingDefault(Effect.succeed("1")))
+})
+
+//     ┌─── { readonly a?: string | undefined; }
+//     ▼
+type Encoded = typeof schema.Encoded
+
+//     ┌─── { readonly a: number; }
+//     ▼
+type Type = typeof schema.Type
+
+console.log(Schema.decodeUnknownSync(schema)({}))
+// Output: { a: 1 }
+
+console.log(Schema.decodeUnknownSync(schema)({ a: undefined }))
+// Output: { a: 1 }
+
+console.log(Schema.decodeUnknownSync(schema)({ a: "2" }))
+// Output: { a: 2 }
+```
+
+#### Type-Side Defaults
+
+`withDecodingDefaultTypeKey` and `withDecodingDefaultType` accept a default
+specified as a **`Type` value** (the decoded representation). This is useful when
+the schema has a transformation and you want to provide the default directly as a
+decoded value, bypassing the decoding step.
+
+**Example** (Default as a Type value)
+
+Here the default `1` is a **number** (the Type), not a string. It does not go
+through the `FiniteFromString` decoding transformation.
+
+```ts
+import { Effect, Schema } from "effect"
+
+const schema = Schema.Struct({
+  //                                              ┌─── 1 is a number (Type)
+  //                                              ▼
+  a: Schema.FiniteFromString.pipe(Schema.withDecodingDefaultType(Effect.succeed(1)))
 })
 
 //     ┌─── { readonly a?: string | undefined; }
@@ -2336,6 +2396,58 @@ const schema = Schema.String.check(
 
 console.log(String(Schema.decodeUnknownExit(schema)("")))
 // Failure(Cause([Fail(SchemaError: length must be >= 3, got 0)]))
+```
+
+### Filter return shapes
+
+A filter predicate can return any of the shapes described by `Schema.FilterOutput`:
+
+- `undefined` or `true` — success.
+- `false` — generic failure (no custom message).
+- `string` — failure with the string used as the error message.
+- `SchemaIssue.Issue` — a fully-formed issue, returned as-is (escape hatch for `Composite`, `AnyOf`, etc.).
+- `{ path, issue }` — failure attached to a nested path. `issue` can be a `string` (wrapped in an `InvalidValue`) or a full `SchemaIssue.Issue`.
+- `ReadonlyArray<FilterIssue>` — several failures reported together. Empty arrays are success; a single element is unwrapped; multiple entries are grouped into an `Issue.Composite`.
+
+**Example** (Failure at a nested path)
+
+```ts
+import { Schema } from "effect"
+
+const schema = Schema.Struct({ password: Schema.String, confirmPassword: Schema.String }).check(
+  Schema.makeFilter((o) =>
+    o.password === o.confirmPassword
+      ? undefined
+      : { path: ["password"], issue: "password and confirmPassword must match" }
+  )
+)
+
+console.log(String(Schema.decodeUnknownExit(schema)({ password: "123456", confirmPassword: "1234567" })))
+// Failure(Cause([Fail(SchemaError: password and confirmPassword must match
+//   at ["password"])]))
+```
+
+**Example** (Reporting multiple failures at once)
+
+```ts
+import { Schema } from "effect"
+
+const schema = Schema.Struct({ a: Schema.Finite, b: Schema.Finite, c: Schema.Finite }).check(
+  Schema.makeFilter((o) => {
+    const issues: Array<Schema.FilterIssue> = []
+    if (o.a > 0) {
+      if (o.b <= 0) issues.push({ path: ["b"], issue: "b must be greater than 0" })
+      if (o.c <= 0) issues.push({ path: ["c"], issue: "c must be greater than 0" })
+    }
+    return issues
+  })
+)
+
+console.log(String(Schema.decodeUnknownExit(schema)({ a: 1, b: 0, c: 0 })))
+// Failure(Cause([Fail(SchemaError: b must be greater than 0
+//   at ["b"]
+// c must be greater than 0
+//   at ["c"])]))
 ```
 
 ## Preserving Schema Type After Filtering
@@ -5100,7 +5212,7 @@ console.log(JSON.stringify(document, null, 2))
 
 When a schema includes a transformation (e.g. `Schema.Trim`), the generated JSON Schema corresponds to the encoded side. Calling `.annotate(...)` on a transformation annotates the decoded side, so the annotations won't appear in the JSON Schema output.
 
-To annotate the encoded side, use `Schema.flip` twice: flip to expose the encoded side, annotate it, then flip back.
+To annotate the encoded side, use `Schema.annotateEncoded`.
 
 **Example** (Annotating the encoded side of `Trim`)
 
@@ -5108,12 +5220,10 @@ To annotate the encoded side, use `Schema.flip` twice: flip to expose the encode
 import { Schema } from "effect"
 
 const schema = Schema.Trim.pipe(
-  Schema.flip,
-  Schema.annotate({
+  Schema.annotateEncoded({
     description: "my description",
     title: "my title"
-  }),
-  Schema.flip
+  })
 )
 
 console.log(JSON.stringify(Schema.toJsonSchemaDocument(schema), null, 2))
@@ -6424,7 +6534,7 @@ export interface Bottom<
   readonly [TypeId]: typeof TypeId
 
   readonly ast: Ast
-  readonly "~rebuild.out": RebuildOut
+  readonly "Rebuild": RebuildOut
   readonly "~type.parameters": TypeParameters
 
   readonly Type: T
@@ -6442,10 +6552,10 @@ export interface Bottom<
   readonly "~encoded.mutability": EncodedMutability
   readonly "~encoded.optionality": EncodedOptionality
 
-  annotate(annotations: Annotations.Bottom<this["Type"], this["~type.parameters"]>): this["~rebuild.out"]
-  annotateKey(annotations: Annotations.Key<this["Type"]>): this["~rebuild.out"]
-  check(...checks: readonly [AST.Check<this["Type"]>, ...Array<AST.Check<this["Type"]>>]): this["~rebuild.out"]
-  rebuild(ast: this["ast"]): this["~rebuild.out"]
+  annotate(annotations: Annotations.Bottom<this["Type"], this["~type.parameters"]>): this["Rebuild"]
+  annotateKey(annotations: Annotations.Key<this["Type"]>): this["Rebuild"]
+  check(...checks: readonly [AST.Check<this["Type"]>, ...Array<AST.Check<this["Type"]>>]): this["Rebuild"]
+  rebuild(ast: this["ast"]): this["Rebuild"]
   /**
    * @throws {Error} The issue is contained in the error cause.
    */
