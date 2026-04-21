@@ -13,12 +13,24 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  Menu,
+  MenuGroup,
+  MenuGroupLabel,
+  MenuItem,
+  MenuPopup,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuSeparator,
+  MenuSub,
+  MenuSubPopup,
+  MenuSubTrigger,
+  MenuTrigger,
 } from "@recount/ui/menu";
 import { Link, useNavigate, useRouteContext } from "@tanstack/react-router";
 
 export function WorkspaceDropdownMenu() {
   const navigate = useNavigate();
-  const { workspace, workspaces } = useRouteContext({
+  const { workspace, workspaces, user } = useRouteContext({
     from: "/_app/$workspaceSlug",
   });
 
@@ -32,8 +44,8 @@ export function WorkspaceDropdownMenu() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
+    <Menu>
+      <MenuTrigger
         render={
           <Button className="max-w-full" size="sm" variant="ghost">
             <Avatar>
@@ -45,33 +57,34 @@ export function WorkspaceDropdownMenu() {
           </Button>
         }
       />
-      <DropdownMenuContent align="start" side="bottom">
-        <DropdownMenuGroup>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Switch workspace</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuRadioGroup value={workspace.id}>
+      <MenuPopup align="start" side="bottom">
+        <MenuGroup>
+          <MenuSub>
+            <MenuSubTrigger>Switch workspace</MenuSubTrigger>
+            <MenuSubPopup>
+              <MenuRadioGroup value={workspace.id}>
+                <MenuGroupLabel>{user.email}</MenuGroupLabel>
                 {workspaces.map((w) => (
-                  <DropdownMenuRadioItem
+                  <MenuRadioItem
                     key={w.id}
                     onClick={() => handleSetActiveWorkspace(w.slug)}
                     value={w.id}
                   >
                     {w.name}
-                  </DropdownMenuRadioItem>
+                  </MenuRadioItem>
                 ))}
-              </DropdownMenuRadioGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem render={<Link to="/create-workspace" />}>
+              </MenuRadioGroup>
+              <MenuSeparator />
+              <MenuGroup>
+                <MenuItem render={<Link to="/create-workspace" />}>
                   <Icons.Plus />
                   Create a new workspace
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+                </MenuItem>
+              </MenuGroup>
+            </MenuSubPopup>
+          </MenuSub>
+        </MenuGroup>
+      </MenuPopup>
+    </Menu>
   );
 }

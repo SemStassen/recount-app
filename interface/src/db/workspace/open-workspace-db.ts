@@ -40,6 +40,8 @@ export async function openWorkspaceDb(workspaceId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-members`,
         columnMapper: snakeCamelMapper(),
+        // transformer: (row) =>
+        //   Schema.decodeUnknownSync(WorkspaceMember.json)(row),
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
@@ -54,6 +56,8 @@ export async function openWorkspaceDb(workspaceId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-integrations`,
         columnMapper: snakeCamelMapper(),
+        // transformer: (row) =>
+        //   Schema.decodeUnknownSync(WorkspaceIntegration.json)(row),
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
@@ -68,6 +72,7 @@ export async function openWorkspaceDb(workspaceId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/projects`,
         columnMapper: snakeCamelMapper(),
+        // transformer: (row) => Schema.decodeUnknownSync(Project.json)(row),
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },

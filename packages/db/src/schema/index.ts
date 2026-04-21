@@ -1,4 +1,3 @@
-/* oxlint-disable no-barrel-file */
 export * from "./identity.schema";
 export * from "./integration.schema";
 export * from "./project.schema";

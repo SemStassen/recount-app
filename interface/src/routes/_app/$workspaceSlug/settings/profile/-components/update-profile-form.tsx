@@ -6,12 +6,14 @@ import {
   DropzoneEmptyState,
 } from "@recount/ui/dropzone";
 import { Form } from "@recount/ui/form";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { useRouteContext } from "@tanstack/react-router";
-import { Effect, Schema } from "effect";
+import { Effect, Option, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
+import { useWorkspaceDb } from "~/db/workspace/context";
 import {
   createDynamicValidator,
   createSubmitValidator,
@@ -27,13 +29,21 @@ const schema = Schema.Struct({
 });
 
 export function UpdateProfileForm() {
-  const routeContext = useRouteContext({ from: "/_app/$workspaceSlug" });
+  const { user } = useRouteContext({ from: "/_app/$workspaceSlug" });
+
+  const workspaceDb = useWorkspaceDb();
+  const { data: workspaceMember, isLoading } = useLiveQuery((q) =>
+    q
+      .from({ wm: workspaceDb.collections.workspaceMembersCollection })
+      .where(({ wm }) => eq(wm.userId, user.id))
+      .findOne()
+  );
 
   const form = useAppForm({
     defaultValues: {
-      fullName: routeContext.user.fullName,
-      displayName: "",
-      imageUrl: "",
+      fullName: user.fullName,
+      displayName: workspaceMember?.displayName ?? "",
+      imageUrl: workspaceMember?.imageUrl ?? "",
     },
     validationLogic: defaultValidationLogic,
     validators: {
@@ -48,6 +58,10 @@ export function UpdateProfileForm() {
       );
     }),
   });
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <Form
@@ -65,7 +79,9 @@ export function UpdateProfileForm() {
               render: (
                 <Dropzone>
                   <WorkspaceMemberAvatar
-                    workspaceMemberId={routeContext.user.id}
+                    workspaceMemberId={Option.fromUndefinedOr(
+                      workspaceMember?.id
+                    )}
                   />
                   <DropzoneContent />
                   <DropzoneEmptyState />

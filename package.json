@@ -22,13 +22,13 @@
       "packages/*"
     ],
     "catalog": {
-      "@effect/atom-react": "^4.0.0-beta.48",
-      "@effect/opentelemetry": "^4.0.0-beta.48",
-      "@effect/platform-bun": "^4.0.0-beta.48",
-      "@effect/sql-pg": "^4.0.0-beta.48",
+      "@effect/atom-react": "^4.0.0-beta.52",
+      "@effect/opentelemetry": "^4.0.0-beta.52",
+      "@effect/platform-bun": "^4.0.0-beta.52",
+      "@effect/sql-pg": "^4.0.0-beta.52",
       "better-auth": "^1.6.5",
       "drizzle-orm": "1.0.0-beta.18-7eb39f0",
-      "effect": "^4.0.0-beta.48",
+      "effect": "^4.0.0-beta.52",
       "uuid": "^13.0.0"
     },
     "catalogs": {
@@ -57,7 +57,7 @@
     "@effect/vitest": "^0.29.0",
     "@types/bun": "^1.3.12",
     "lefthook": "^2.1.6",
-    "oxfmt": "^0.45.0",
+    "oxfmt": "^0.46.0",
     "oxlint": "^1.60.0",
     "turbo": "^2.9.6",
     "typescript": "catalog:dev",
@@ -67,6 +67,6 @@
     "@inlang/cli": "^3.0.0"
   },
   "dependencies": {
-    "alchemy": "^0.91.2"
+    "alchemy": "^0.92.2"
   }
 }

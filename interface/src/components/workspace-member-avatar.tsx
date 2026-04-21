@@ -6,7 +6,7 @@ import { Option } from "effect";
 import { useWorkspaceDb } from "~/db/workspace/context";
 
 interface WorkspaceMemberAvatarProps {
-  workspaceMemberId: WorkspaceMemberId;
+  workspaceMemberId: Option.Option<WorkspaceMemberId>;
 }
 
 export function WorkspaceMemberAvatar({
@@ -16,7 +16,7 @@ export function WorkspaceMemberAvatar({
   const { data: workspaceMember } = useLiveQuery((q) =>
     q
       .from({ wm: workspaceDb.collections.workspaceMembersCollection })
-      .where(({ wm }) => eq(wm.id, workspaceMemberId))
+      .where(({ wm }) => eq(wm.id, Option.getOrNull(workspaceMemberId)))
       .findOne()
   );
 

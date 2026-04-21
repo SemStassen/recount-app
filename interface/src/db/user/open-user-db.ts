@@ -33,6 +33,10 @@ export function openUserDb(userId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/me/user-settings`,
         columnMapper: snakeCamelMapper(),
+        transformer: (row) => {
+          console.log({ row });
+          return Schema.decodeUnknownSync(UserSettings.json)(row);
+        },
         fetchClient: userFetchClient,
         signal: abortController.signal,
       },
