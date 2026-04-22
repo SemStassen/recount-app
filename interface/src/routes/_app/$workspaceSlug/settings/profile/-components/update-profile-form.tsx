@@ -6,6 +6,7 @@ import {
   DropzoneEmptyState,
 } from "@recount/ui/dropzone";
 import { Form } from "@recount/ui/form";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@recount/ui/tooltip";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { useRouteContext } from "@tanstack/react-router";
@@ -77,15 +78,20 @@ export function UpdateProfileForm() {
             label={{ children: "Profile picture" }}
             control={{
               render: (
-                <Dropzone>
-                  <WorkspaceMemberAvatar
-                    workspaceMemberId={Option.fromUndefinedOr(
-                      workspaceMember?.id
-                    )}
-                  />
-                  <DropzoneContent />
-                  <DropzoneEmptyState />
-                </Dropzone>
+                <Tooltip>
+                  <TooltipTrigger render={<div />}>
+                    <Dropzone>
+                      <WorkspaceMemberAvatar
+                        workspaceMemberId={Option.fromUndefinedOr(
+                          workspaceMember?.id
+                        )}
+                      />
+                    </Dropzone>
+                  </TooltipTrigger>
+                  <TooltipContent align="start" side="inline-start">
+                    Upload an avatar
+                  </TooltipContent>
+                </Tooltip>
               ),
             }}
           />

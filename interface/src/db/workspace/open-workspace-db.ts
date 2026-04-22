@@ -5,7 +5,7 @@ import { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import { createCollection } from "@tanstack/react-db";
-import { Schema } from "effect";
+import { Schema, Struct } from "effect";
 
 import { env } from "~/lib/env";
 
@@ -40,8 +40,10 @@ export async function openWorkspaceDb(workspaceId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-members`,
         columnMapper: snakeCamelMapper(),
-        // transformer: (row) =>
-        //   Schema.decodeUnknownSync(WorkspaceMember.json)(row),
+        transformer: (row) =>
+          Schema.decodeUnknownSync(
+            WorkspaceMember.json.mapFields(Struct.map(Schema.optionalKey))
+          )(row),
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
@@ -56,8 +58,16 @@ export async function openWorkspaceDb(workspaceId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-integrations`,
         columnMapper: snakeCamelMapper(),
-        // transformer: (row) =>
-        //   Schema.decodeUnknownSync(WorkspaceIntegration.json)(row),
+        transformer: (row) =>
+          Schema.decodeUnknownSync(
+            WorkspaceIntegration.json
+              .mapFields(
+                Struct.evolve({
+                  createdAt: () => Schema.DateTimeUtcFromString,
+                })
+              )
+              .mapFields(Struct.map(Schema.optionalKey))
+          )(row),
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
@@ -72,7 +82,19 @@ export async function openWorkspaceDb(workspaceId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/projects`,
         columnMapper: snakeCamelMapper(),
-        // transformer: (row) => Schema.decodeUnknownSync(Project.json)(row),
+        transformer: (row) =>
+          Schema.decodeUnknownSync(
+            Project.json
+              .mapFields(
+                Struct.evolve({
+                  startDate: () =>
+                    Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
+                  targetDate: () =>
+                    Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
+                })
+              )
+              .mapFields(Struct.map(Schema.optionalKey))
+          )(row),
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },

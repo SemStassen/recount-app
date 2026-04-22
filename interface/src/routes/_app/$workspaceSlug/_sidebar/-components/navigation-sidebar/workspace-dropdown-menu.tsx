@@ -2,17 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@recount/ui/avatar";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
   Menu,
   MenuGroup,
   MenuGroupLabel,
@@ -27,6 +16,8 @@ import {
   MenuTrigger,
 } from "@recount/ui/menu";
 import { Link, useNavigate, useRouteContext } from "@tanstack/react-router";
+
+import { WorkspaceAvatar } from "~/components/workspace-avatar";
 
 export function WorkspaceDropdownMenu() {
   const navigate = useNavigate();
@@ -48,10 +39,7 @@ export function WorkspaceDropdownMenu() {
       <MenuTrigger
         render={
           <Button className="max-w-full" size="sm" variant="ghost">
-            <Avatar>
-              <AvatarImage />
-              <AvatarFallback>{workspace.name.charAt(0)}</AvatarFallback>
-            </Avatar>
+            <WorkspaceAvatar workspaceId={workspace.id} />
             <span className="truncate">{workspace.name}</span>
             <Icons.ChevronDown />
           </Button>

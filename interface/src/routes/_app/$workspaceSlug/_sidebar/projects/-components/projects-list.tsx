@@ -20,24 +20,24 @@ import {
 } from "@recount/ui/list";
 import { useLiveQuery } from "@tanstack/react-db";
 import {
+  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import type { ColumnDef } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { DateTime, Option } from "effect";
 import { useMemo, useRef } from "react";
 
 import { projectSidebarAtom } from "~/atoms/ui-atoms";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
-const createColumns: (
-  formatDate: (date: Date) => string
-) => Array<ColumnDef<Project>> = (formatDate) => [
-  {
-    accessorKey: "hexColor",
+const columnHelper = createColumnHelper<Project>();
+
+const createColumns = (formatDate: (date: Date) => string) => [
+  columnHelper.accessor("hexColor", {
     header: undefined,
     size: 48,
     cell: (info) => (
@@ -46,37 +46,45 @@ const createColumns: (
         style={{ backgroundColor: `${info.getValue()}` }}
       />
     ),
-    enableSorting: false,
-  },
-  {
-    accessorKey: "startDate",
-    header: "Start Date",
-    size: 120,
-    cell: (info) => info.getValue() && formatDate(info.getValue<Date>()),
     enableSorting: true,
-  },
-  {
-    accessorKey: "targetDate",
-    header: "Target Date",
-    size: 120,
-    cell: (info) => info.getValue() && formatDate(info.getValue<Date>()),
-    enableSorting: true,
-  },
-  {
-    accessorKey: "name",
+  }),
+  columnHelper.accessor("name", {
     header: "Name",
     size: 200,
     cell: (info) => info.getValue(),
     enableSorting: true,
     meta: { grow: true },
-  },
-  {
-    accessorKey: "isBillable",
+  }),
+  columnHelper.accessor("startDate", {
+    header: "Start Date",
+    size: 120,
+    cell: (info) => {
+      const value = info.getValue();
+      if (Option.isSome(value)) {
+        return formatDate(DateTime.toDateUtc(value.value));
+      }
+      return null;
+    },
+    enableSorting: true,
+  }),
+  columnHelper.accessor("targetDate", {
+    header: "Target Date",
+    size: 120,
+    cell: (info) => {
+      const value = info.getValue();
+      if (Option.isSome(value)) {
+        return formatDate(DateTime.toDateUtc(value.value));
+      }
+      return null;
+    },
+    enableSorting: true,
+  }),
+  columnHelper.accessor("isBillable", {
     header: "Billable",
     size: 80,
     cell: (info) => (info.getValue() ? "Yes" : "No"),
     enableSorting: true,
-  },
+  }),
 ];
 
 export function ProjectsList() {

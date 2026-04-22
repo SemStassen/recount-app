@@ -2,7 +2,7 @@ import { snakeCamelMapper } from "@electric-sql/client";
 import { UserSettings } from "@recount/core/modules/identity";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import { createCollection } from "@tanstack/react-db";
-import { Schema } from "effect";
+import { Schema, Struct } from "effect";
 
 import { env } from "~/lib/env";
 
@@ -33,10 +33,7 @@ export function openUserDb(userId: string) {
       shapeOptions: {
         url: `${env.VITE_ELECTRIC_PROXY_URL}/me/user-settings`,
         columnMapper: snakeCamelMapper(),
-        transformer: (row) => {
-          console.log({ row });
-          return Schema.decodeUnknownSync(UserSettings.json)(row);
-        },
+        transformer: (row) =>  Schema.decodeUnknownSync(UserSettings.json.mapFields(Struct.map(Schema.optionalKey)))(row),
         fetchClient: userFetchClient,
         signal: abortController.signal,
       },
