@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./file-upload";
 export * from "./project";
 export * from "./task";
 export * from "./time-entry";

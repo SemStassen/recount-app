@@ -3,7 +3,7 @@ import {
   createWorkspaceFlow,
   listWorkspacesFlow,
   updateWorkspaceFlow,
-} from "@recount/core-server/modules/workspace";
+} from "@recount/application/modules/workspace";
 import { WorkspaceRpcGroup } from "@recount/core/rpc";
 import { Effect } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";

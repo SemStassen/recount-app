@@ -1,4 +1,4 @@
-import { createWorkspaceIntegrationFlow } from "@recount/core-server/modules/integration";
+import { createWorkspaceIntegrationFlow } from "@recount/application/modules/integration";
 import { WorkspaceIntegrationRpcGroup } from "@recount/core/rpc";
 import { Effect } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";

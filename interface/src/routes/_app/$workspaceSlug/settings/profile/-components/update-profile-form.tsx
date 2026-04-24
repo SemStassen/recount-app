@@ -1,5 +1,7 @@
+import { useAtomSet } from "@effect/atom-react";
 import { User } from "@recount/core/modules/identity";
 import { WorkspaceMember } from "@recount/core/modules/workspace-member";
+import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import {
   Dropzone,
   DropzoneContent,
@@ -10,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@recount/ui/tooltip";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { useRouteContext } from "@tanstack/react-router";
-import { Effect, Option, Schema } from "effect";
+import { Effect, Exit, Option, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
@@ -30,7 +32,7 @@ const schema = Schema.Struct({
 });
 
 export function UpdateProfileForm() {
-  const { user } = useRouteContext({ from: "/_app/$workspaceSlug" });
+  const { user, workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
 
   const workspaceDb = useWorkspaceDb();
   const { data: workspaceMember, isLoading } = useLiveQuery((q) =>
@@ -60,6 +62,11 @@ export function UpdateProfileForm() {
     }),
   });
 
+  const prepareFileUpload = useAtomSet(
+    RecountAtomRpcClient.mutation("FileUpload.Prepare"),
+    { mode: "promiseExit" }
+  );
+
   if (isLoading) {
     return null;
   }
@@ -80,7 +87,44 @@ export function UpdateProfileForm() {
               render: (
                 <Tooltip>
                   <TooltipTrigger render={<div />}>
-                    <Dropzone>
+                    <Dropzone
+                      onDropAccepted={async (files) => {
+                        const file = files[0];
+                        if (!file) {
+                          return;
+                        }
+
+                        const preparedFileUpload = await prepareFileUpload({
+                          payload: {
+                            filename: file.name,
+                            contentType: file.type,
+                            size: file.size,
+                            target: {
+                              _tag: "workspaceMemberAvatar",
+                            },
+                          },
+                          headers: {
+                            [WORKSPACE_ID_HEADER]: workspace.id,
+                          },
+                        });
+
+                        return Exit.match(preparedFileUpload, {
+                          onFailure: () => undefined,
+                          onSuccess: async (prepared) => {
+                            await fetch(prepared.uploadUrl, {
+                              method: "PUT",
+                              headers: {
+                                "Content-Type": file.type,
+                              },
+                              body: file,
+                              credentials: "omit",
+                            });
+
+                            form.setFieldValue("imageUrl", prepared.assetUrl);
+                          },
+                        });
+                      }}
+                    >
                       <WorkspaceMemberAvatar
                         workspaceMemberId={Option.fromUndefinedOr(
                           workspaceMember?.id

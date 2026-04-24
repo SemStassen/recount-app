@@ -1,7 +1,7 @@
 import {
   HttpSessionMiddleware,
   HttpWorkspaceMiddleware,
-} from "@recount/core-server/shared/middleware";
+} from "@recount/application/shared/middleware";
 import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";

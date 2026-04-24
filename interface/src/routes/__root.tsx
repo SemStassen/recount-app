@@ -48,7 +48,6 @@ function RootLayout() {
           ]}
         />
       )}
-      ;
     </>
   );
 }

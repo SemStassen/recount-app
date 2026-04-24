@@ -1,5 +1,6 @@
 import {
   AuthRpcGroup,
+  FileUploadRpcGroup,
   ProjectRpcGroup,
   UserRpcGroup,
   UserSettingsRpcGroup,
@@ -9,6 +10,7 @@ import {
 import { Layer } from "effect";
 
 import { AuthRpcGroupLayer } from "./handlers/auth";
+import { FileUploadRpcGroupLayer } from "./handlers/file-upload";
 import { ProjectRpcGroupLayer } from "./handlers/project";
 import { UserRpcGroupLayer } from "./handlers/user";
 import { UserSettingsRpcGroupLayer } from "./handlers/user-settings";
@@ -16,6 +18,7 @@ import { WorkspaceRpcGroupLayer } from "./handlers/workspace";
 import { WorkspaceIntegrationRpcGroupLayer } from "./handlers/workspace-integration";
 
 export const AllRpcsGroup = AuthRpcGroup.merge(
+  FileUploadRpcGroup,
   ProjectRpcGroup,
   UserSettingsRpcGroup,
   UserRpcGroup,
@@ -25,6 +28,7 @@ export const AllRpcsGroup = AuthRpcGroup.merge(
 
 export const AllRpcsGroupLayer = Layer.mergeAll(
   AuthRpcGroupLayer,
+  FileUploadRpcGroupLayer,
   ProjectRpcGroupLayer,
   UserSettingsRpcGroupLayer,
   UserRpcGroupLayer,

@@ -1,0 +1,74 @@
+{
+  "kind": "cloudflare::R2Bucket",
+  "id": "euUploads",
+  "fqn": "recount/semstassen/uploads/euUploads",
+  "seq": 1,
+  "data": {},
+  "status": "updated",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::R2Bucket",
+    "Symbol(alchemy::ResourceID)": "euUploads",
+    "Symbol(alchemy::ResourceFQN)": "recount/semstassen/uploads/euUploads",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 1,
+    "name": "recount-eu-uploads-sandbox",
+    "location": "EEUR",
+    "creationDate": {
+      "@date": "2026-04-23T08:40:34.767Z"
+    },
+    "jurisdiction": "eu",
+    "type": "r2_bucket",
+    "accountId": "326fc55663ac0a752f64985c585bbdb9",
+    "cors": [
+      {
+        "allowed": {
+          "origins": [
+            "http://localhost:8002"
+          ],
+          "methods": [
+            "GET",
+            "PUT",
+            "HEAD"
+          ],
+          "headers": [
+            "*"
+          ]
+        }
+      }
+    ],
+    "dev": {
+      "id": "recount-eu-uploads-sandbox",
+      "remote": false,
+      "isDeployed": true
+    },
+    "devDomain": "pub-b7e4957983184cd48ebc42587e472109.r2.dev"
+  },
+  "props": {
+    "name": "recount-eu-uploads-sandbox",
+    "adopt": true,
+    "jurisdiction": "eu",
+    "devDomain": true,
+    "cors": [
+      {
+        "allowed": {
+          "origins": [
+            "http://localhost:8002"
+          ],
+          "methods": [
+            "GET",
+            "PUT",
+            "HEAD"
+          ],
+          "headers": [
+            "*"
+          ]
+        }
+      }
+    ],
+    "dev": {
+      "force": false
+    }
+  }
+}

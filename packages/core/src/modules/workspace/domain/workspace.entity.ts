@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 
 import { Model } from "#internal/effect/index";
-import { DataResidencyRegion } from "#shared/residency/index";
+import { DataResidencyRegion } from "#shared/data-residency/index";
 import { NonEmptyTrimmedString, WorkspaceId } from "#shared/schemas/index";
 
 export class Workspace extends Model.Class<Workspace>("Workspace")(

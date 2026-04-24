@@ -1,16 +1,16 @@
 import { BunHttpClient, BunHttpServer, BunRuntime } from "@effect/platform-bun";
 import {
+  SessionRepositoryLayer,
+  UserRepositoryLayer,
+  UserSettingsRepositoryLayer,
+} from "@recount/application/modules/identity";
+import { WorkspaceRepositoryLayer } from "@recount/application/modules/workspace";
+import { WorkspaceMemberRepositoryLayer } from "@recount/application/modules/workspace-member";
+import {
   BetterAuth,
   BetterAuthConfig,
   RequestContextResolver,
 } from "@recount/auth";
-import {
-  SessionRepositoryLayer,
-  UserRepositoryLayer,
-  UserSettingsRepositoryLayer,
-} from "@recount/core-server/modules/identity";
-import { WorkspaceRepositoryLayer } from "@recount/core-server/modules/workspace";
-import { WorkspaceMemberRepositoryLayer } from "@recount/core-server/modules/workspace-member";
 import { IdentityModuleLayer } from "@recount/core/modules/identity";
 import {
   matchesAllowedOrigin,

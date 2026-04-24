@@ -14,7 +14,7 @@
     "@effect/platform-bun": "catalog:",
     "@recount/auth": "workspace:*",
     "@recount/core": "workspace:*",
-    "@recount/core-server": "workspace:*",
+    "@recount/application": "workspace:*",
     "@recount/db": "workspace:*",
     "@recount/notifications": "workspace:*",
     "@recount/observability": "workspace:*",

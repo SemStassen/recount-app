@@ -1,0 +1,31 @@
+import type {
+  ArchiveTaskCommand,
+  ArchiveTaskResult,
+} from "@recount/core/contracts";
+import { ProjectModule } from "@recount/core/modules/project";
+import { WorkspaceContext } from "@recount/core/shared/auth";
+import { Effect } from "effect";
+
+import { Authorization } from "#shared/authorization";
+
+export const archiveTaskFlow = Effect.fn("flows.archiveTaskFlow")(function* (
+  request: typeof ArchiveTaskCommand.Type
+) {
+  const { workspaceMember, workspace } = yield* WorkspaceContext;
+
+  const authz = yield* Authorization;
+
+  const projectModule = yield* ProjectModule;
+
+  yield* authz.ensureAllowed({
+    action: "project:archive_task",
+    role: workspaceMember.role,
+  });
+
+  yield* projectModule.archiveTask({
+    id: request.id,
+    workspaceId: workspace.id,
+  });
+
+  return undefined satisfies typeof ArchiveTaskResult.Type;
+});

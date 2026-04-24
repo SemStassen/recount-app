@@ -1,4 +1,4 @@
-import { setLastActiveWorkspaceFlow } from "@recount/core-server/modules/identity";
+import { setLastActiveWorkspaceFlow } from "@recount/application/modules/identity";
 import { AuthRpcGroup } from "@recount/core/rpc";
 import { SessionContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";

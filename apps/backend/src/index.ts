@@ -1,32 +1,36 @@
 import { BunHttpClient, BunHttpServer, BunRuntime } from "@effect/platform-bun";
+import { CryptoLayer } from "@recount/application/infra/crypto";
+import {
+  FileUploadKeyPolicy,
+  ObjectStorageR2Layer,
+} from "@recount/application/infra/storage";
+import {
+  SessionRepositoryLayer,
+  UserRepositoryLayer,
+  UserSettingsRepositoryLayer,
+} from "@recount/application/modules/identity";
+import {
+  IntegrationModuleLayer,
+  WorkspaceIntegrationRepositoryLayer,
+} from "@recount/application/modules/integration";
+import {
+  ProjectRepositoryLayer,
+  TaskRepositoryLayer,
+} from "@recount/application/modules/project";
+import { TimeEntryRepositoryLayer } from "@recount/application/modules/time";
+import { WorkspaceRepositoryLayer } from "@recount/application/modules/workspace";
+import { WorkspaceInvitationRepositoryLayer } from "@recount/application/modules/workspace-invitation";
+import { WorkspaceMemberRepositoryLayer } from "@recount/application/modules/workspace-member";
+import { Authorization } from "@recount/application/shared/authorization";
+import {
+  RpcSessionMiddlewareLayer,
+  RpcWorkspaceMiddlewareLayer,
+} from "@recount/application/shared/middleware";
 import {
   BetterAuth,
   BetterAuthConfig,
   RequestContextResolver,
 } from "@recount/auth";
-import { CryptoLayer } from "@recount/core-server/infra/crypto";
-import {
-  SessionRepositoryLayer,
-  UserRepositoryLayer,
-  UserSettingsRepositoryLayer,
-} from "@recount/core-server/modules/identity";
-import {
-  IntegrationModuleLayer,
-  WorkspaceIntegrationRepositoryLayer,
-} from "@recount/core-server/modules/integration";
-import {
-  ProjectRepositoryLayer,
-  TaskRepositoryLayer,
-} from "@recount/core-server/modules/project";
-import { TimeEntryRepositoryLayer } from "@recount/core-server/modules/time";
-import { WorkspaceRepositoryLayer } from "@recount/core-server/modules/workspace";
-import { WorkspaceInvitationRepositoryLayer } from "@recount/core-server/modules/workspace-invitation";
-import { WorkspaceMemberRepositoryLayer } from "@recount/core-server/modules/workspace-member";
-import { Authorization } from "@recount/core-server/shared/authorization";
-import {
-  RpcSessionMiddlewareLayer,
-  RpcWorkspaceMiddlewareLayer,
-} from "@recount/core-server/shared/middleware";
 import { IdentityModuleLayer } from "@recount/core/modules/identity";
 import { ProjectModuleLayer } from "@recount/core/modules/project";
 import { TimeModuleLayer } from "@recount/core/modules/time";
@@ -69,7 +73,9 @@ const InfrastructureServicesLayer = Layer.mergeAll(
   CryptoLayer,
   Authorization.layer,
   Mailer.layerDev,
-  PersistenceServicesLayer
+  PersistenceServicesLayer,
+  ObjectStorageR2Layer,
+  FileUploadKeyPolicy.layer
 );
 
 const DomainServicesLayer = Layer.mergeAll(

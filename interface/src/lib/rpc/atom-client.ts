@@ -1,5 +1,6 @@
 import {
   AuthRpcGroup,
+  FileUploadRpcGroup,
   ProjectRpcGroup,
   UserRpcGroup,
   UserSettingsRpcGroup,
@@ -18,6 +19,7 @@ import { RpcClient, RpcSerialization } from "effect/unstable/rpc";
 import { RpcSessionMiddlewareLayerClient } from "./middleware";
 
 const allRpcGroups = AuthRpcGroup.merge(
+  FileUploadRpcGroup,
   ProjectRpcGroup,
   UserSettingsRpcGroup,
   UserRpcGroup,

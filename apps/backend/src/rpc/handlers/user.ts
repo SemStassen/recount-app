@@ -1,4 +1,4 @@
-import { updateMeUserFlow } from "@recount/core-server/modules/identity";
+import { updateMeUserFlow } from "@recount/application/modules/identity";
 import { UserRpcGroup } from "@recount/core/rpc";
 import { Effect } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";

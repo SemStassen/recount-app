@@ -15,7 +15,7 @@
     "@electric-sql/client": "^1.4.0",
     "@recount/auth": "workspace:*",
     "@recount/core": "workspace:*",
-    "@recount/core-server": "workspace:*",
+    "@recount/application": "workspace:*",
     "@recount/db": "workspace:*",
     "@recount/notifications": "workspace:*",
     "@recount/observability": "workspace:*",

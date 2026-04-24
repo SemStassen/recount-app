@@ -1,0 +1,74 @@
+{
+  "kind": "cloudflare::R2Bucket",
+  "id": "globalUploads",
+  "fqn": "recount/semstassen/uploads/globalUploads",
+  "seq": 0,
+  "data": {},
+  "status": "updated",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::R2Bucket",
+    "Symbol(alchemy::ResourceID)": "globalUploads",
+    "Symbol(alchemy::ResourceFQN)": "recount/semstassen/uploads/globalUploads",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 0,
+    "name": "recount-global-uploads-sandbox",
+    "location": "ENAM",
+    "creationDate": {
+      "@date": "2026-04-23T08:40:27.761Z"
+    },
+    "jurisdiction": "default",
+    "type": "r2_bucket",
+    "accountId": "326fc55663ac0a752f64985c585bbdb9",
+    "cors": [
+      {
+        "allowed": {
+          "origins": [
+            "http://localhost:8002"
+          ],
+          "methods": [
+            "GET",
+            "PUT",
+            "HEAD"
+          ],
+          "headers": [
+            "*"
+          ]
+        }
+      }
+    ],
+    "dev": {
+      "id": "recount-global-uploads-sandbox",
+      "remote": false,
+      "isDeployed": true
+    },
+    "devDomain": "pub-d97db932d4ca4de6983bb0dfdf497062.r2.dev"
+  },
+  "props": {
+    "name": "recount-global-uploads-sandbox",
+    "adopt": true,
+    "locationHint": "enam",
+    "devDomain": true,
+    "cors": [
+      {
+        "allowed": {
+          "origins": [
+            "http://localhost:8002"
+          ],
+          "methods": [
+            "GET",
+            "PUT",
+            "HEAD"
+          ],
+          "headers": [
+            "*"
+          ]
+        }
+      }
+    ],
+    "dev": {
+      "force": false
+    }
+  }
+}

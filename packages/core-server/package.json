@@ -9,13 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1030.0",
-    "@aws-sdk/s3-request-presigner": "^3.1030.0",
-    "@recount/auth": "workspace:*",
     "@recount/core": "workspace:*",
-    "@recount/db": "workspace:*",
-    "@recount/notifications": "workspace:*",
-    "drizzle-orm": "catalog:",
     "effect": "catalog:"
   },
   "devDependencies": {
@@ -23,11 +17,9 @@
     "typescript": "catalog:dev"
   },
   "imports": {
-    "#shared/*": "./src/shared/*.ts"
+    "#modules/*": "./src/modules/*.ts"
   },
   "exports": {
-    "./infra/*": "./src/infra/*/index.ts",
-    "./modules/*": "./src/modules/*/index.ts",
-    "./shared/*": "./src/shared/*/index.ts"
+    "./modules/*": "./src/modules/*/index.ts"
   }
 }

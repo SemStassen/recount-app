@@ -1,0 +1,19 @@
+{
+  "kind": "alchemy::Scope",
+  "id": "uploads",
+  "seq": 0,
+  "data": {},
+  "fqn": "",
+  "props": {},
+  "status": "created",
+  "output": {
+    "Symbol(alchemy::ResourceID)": "uploads",
+    "Symbol(alchemy::ResourceFQN)": "",
+    "Symbol(alchemy::ResourceKind)": "alchemy::Scope",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 0,
+    "Symbol(alchemy::DestroyStrategy)": "sequential"
+  }
+}

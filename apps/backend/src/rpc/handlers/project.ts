@@ -3,7 +3,7 @@ import {
   createProjectFlow,
   restoreProjectFlow,
   updateProjectFlow,
-} from "@recount/core-server/modules/project";
+} from "@recount/application/modules/project";
 import { ProjectRpcGroup } from "@recount/core/rpc";
 import { Effect } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";

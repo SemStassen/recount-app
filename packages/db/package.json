@@ -12,6 +12,7 @@
   "dependencies": {
     "@effect/sql-pg": "catalog:",
     "@recount/core": "workspace:*",
+    "@recount/core-server": "workspace:*",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "pg": "^8.19.0"

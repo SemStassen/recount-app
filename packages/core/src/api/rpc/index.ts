@@ -1,4 +1,5 @@
 export { AuthRpcGroup } from "./auth";
+export { FileUploadRpcGroup } from "./file-upload";
 export { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
 export { ProjectRpcGroup } from "./project";
 export { TaskRpcGroup } from "./task";

@@ -1,4 +1,4 @@
-import { HttpSessionMiddleware } from "@recount/core-server/shared/middleware";
+import { HttpSessionMiddleware } from "@recount/application/shared/middleware";
 import { SessionContext } from "@recount/core/shared/auth";
 import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
