@@ -10,6 +10,20 @@ Before substantial work:
 
 # Recount Agent Notes
 
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues for `SemStassen/recount-app`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage uses the default five-label vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This repo uses a single-context domain documentation layout. See `docs/agents/domain.md`.
+
 ## Repository Shape
 
 - Bun workspace monorepo; install with `bun install` and run commands from repo root unless a package script must run in that package.
