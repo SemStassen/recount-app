@@ -179,3 +179,4 @@ apps/desktop/assets/models/
 # Custom
 .better-agents/
 scratchpad.ts
+.agents
