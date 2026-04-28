@@ -5,6 +5,7 @@ import {
   UserRpcGroup,
   UserSettingsRpcGroup,
   WorkspaceIntegrationRpcGroup,
+  WorkspaceMemberRpcGroup,
   WorkspaceRpcGroup,
 } from "@recount/core/rpc";
 import { Layer } from "effect";
@@ -16,6 +17,7 @@ import { UserRpcGroupLayer } from "./handlers/user";
 import { UserSettingsRpcGroupLayer } from "./handlers/user-settings";
 import { WorkspaceRpcGroupLayer } from "./handlers/workspace";
 import { WorkspaceIntegrationRpcGroupLayer } from "./handlers/workspace-integration";
+import { WorkspaceMemberRpcGroupLayer } from "./handlers/workspace-member";
 
 export const AllRpcsGroup = AuthRpcGroup.merge(
   FileUploadRpcGroup,
@@ -23,7 +25,8 @@ export const AllRpcsGroup = AuthRpcGroup.merge(
   UserSettingsRpcGroup,
   UserRpcGroup,
   WorkspaceIntegrationRpcGroup,
-  WorkspaceRpcGroup
+  WorkspaceRpcGroup,
+  WorkspaceMemberRpcGroup
 );
 
 export const AllRpcsGroupLayer = Layer.mergeAll(
@@ -33,5 +36,6 @@ export const AllRpcsGroupLayer = Layer.mergeAll(
   UserSettingsRpcGroupLayer,
   UserRpcGroupLayer,
   WorkspaceIntegrationRpcGroupLayer,
-  WorkspaceRpcGroupLayer
+  WorkspaceRpcGroupLayer,
+  WorkspaceMemberRpcGroupLayer
 );

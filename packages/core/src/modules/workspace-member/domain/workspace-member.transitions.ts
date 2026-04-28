@@ -22,3 +22,24 @@ export const createWorkspaceMember = (params: {
       deletedAt: Option.none(),
     })
   );
+
+export const updateWorkspaceMember = (params: {
+  workspaceMember: WorkspaceMember;
+  data: typeof WorkspaceMember.jsonUpdate.Type;
+}): Result.Result<
+  {
+    entity: WorkspaceMember;
+    changes: typeof WorkspaceMember.update.Type;
+  },
+  never
+> => {
+  const updatedWorkspaceMember = WorkspaceMember.make({
+    ...params.workspaceMember,
+    ...params.data,
+  });
+
+  return Result.succeed({
+    entity: updatedWorkspaceMember,
+    changes: params.data,
+  });
+};

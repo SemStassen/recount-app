@@ -9,3 +9,4 @@ export { UserRpcGroup } from "./user";
 export { WorkspaceRpcGroup } from "./workspace";
 export { WorkspaceIntegrationRpcGroup } from "./workspace-integration";
 export { WorkspaceInvitationRpcGroup } from "./workspace-invitation";
+export { WorkspaceMemberRpcGroup } from "./workspace-member";

@@ -46,7 +46,7 @@ export function UpdateProfileForm() {
     defaultValues: {
       fullName: user.fullName,
       displayName: workspaceMember?.displayName ?? "",
-      imageUrl: workspaceMember?.imageUrl ?? "",
+      imageUrl: workspaceMember?.imageUrl.valueOrUndefined ?? "",
     },
     validationLogic: defaultValidationLogic,
     validators: {
@@ -64,6 +64,10 @@ export function UpdateProfileForm() {
 
   const prepareFileUpload = useAtomSet(
     RecountAtomRpcClient.mutation("FileUpload.Prepare"),
+    { mode: "promiseExit" }
+  );
+  const updateWorkspaceMember = useAtomSet(
+    RecountAtomRpcClient.mutation("WorkspaceMember.Update"),
     { mode: "promiseExit" }
   );
 
@@ -90,6 +94,7 @@ export function UpdateProfileForm() {
                     <Dropzone
                       onDropAccepted={async (files) => {
                         const file = files[0];
+
                         if (!file) {
                           return;
                         }
@@ -126,9 +131,10 @@ export function UpdateProfileForm() {
                       }}
                     >
                       <WorkspaceMemberAvatar
-                        workspaceMemberId={Option.fromUndefinedOr(
-                          workspaceMember?.id
+                        displayName={Option.fromUndefinedOr(
+                          workspaceMember?.displayName
                         )}
+                        avatarUrl={Option.fromUndefinedOr(field.state.value)}
                       />
                     </Dropzone>
                   </TooltipTrigger>
@@ -152,6 +158,7 @@ export function UpdateProfileForm() {
         )}
         name="fullName"
       />
+
       <form.AppField
         children={(field) => (
           <field.TextField

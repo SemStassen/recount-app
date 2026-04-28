@@ -48,6 +48,44 @@ export const WorkspaceMemberModuleLayer = Layer.effect(
 
         return persistedWorkspaceMember;
       }),
+
+      updateWorkspaceMember: Effect.fn(
+        "workspace-member.updateWorkspaceMember"
+      )(function* (params) {
+        const workspaceMember = yield* workspaceMemberRepo
+          .findById({ workspaceId: params.workspaceId, id: params.id })
+          .pipe(
+            Effect.flatMap(
+              Option.match({
+                onNone: () =>
+                  Effect.fail(
+                    new WorkspaceMemberNotFoundError({
+                      lookup: {
+                        workspaceMemberId: params.id,
+                      },
+                    })
+                  ),
+                onSome: Effect.succeed,
+              })
+            )
+          );
+
+        const { entity, changes } = yield* Effect.fromResult(
+          workspaceMemberTransitions.updateWorkspaceMember({
+            workspaceMember,
+            data: params.data,
+          })
+        );
+
+        const updatedWorkspaceMember = yield* workspaceMemberRepo.update({
+          id: entity.id,
+          workspaceId: entity.workspaceId,
+          update: changes,
+        });
+
+        return updatedWorkspaceMember;
+      }),
+
       assertUserWorkspaceMember: Effect.fn(
         "workspace-member.assertUserWorkspaceMember"
       )(function* (params: { workspaceId: WorkspaceId; userId: UserId }) {

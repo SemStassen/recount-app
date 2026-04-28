@@ -8,3 +8,4 @@ export * from "./user";
 export * from "./workspace";
 export * from "./workspace-integration";
 export * from "./workspace-invitation";
+export * from "./workspace-member";

@@ -36,10 +36,21 @@ interface WorkspaceMemberModuleShape {
     WorkspaceMember,
     WorkspaceMemberAlreadyExistsError | RepositoryError
   >;
+
+  readonly updateWorkspaceMember: (params: {
+    workspaceId: WorkspaceMember["workspaceId"];
+    id: WorkspaceMember["id"];
+    data: typeof WorkspaceMember.jsonUpdate.Type;
+  }) => Effect.Effect<
+    WorkspaceMember,
+    WorkspaceMemberNotFoundError | RepositoryError
+  >;
+
   readonly assertUserWorkspaceMember: (params: {
     workspaceId: WorkspaceMember["workspaceId"];
     userId: WorkspaceMember["userId"];
   }) => Effect.Effect<void, WorkspaceMemberNotFoundError | RepositoryError>;
+
   readonly assertUserNotWorkspaceMember: (params: {
     workspaceId: WorkspaceMember["workspaceId"];
     userId: WorkspaceMember["userId"];
@@ -47,6 +58,7 @@ interface WorkspaceMemberModuleShape {
     void,
     WorkspaceMemberAlreadyExistsError | RepositoryError
   >;
+
   readonly listByUserId: (
     userId: WorkspaceMember["userId"]
   ) => Effect.Effect<ReadonlyArray<WorkspaceMember>, RepositoryError>;

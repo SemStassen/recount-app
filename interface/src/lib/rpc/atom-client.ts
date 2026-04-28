@@ -5,6 +5,7 @@ import {
   UserRpcGroup,
   UserSettingsRpcGroup,
   WorkspaceIntegrationRpcGroup,
+  WorkspaceMemberRpcGroup,
   WorkspaceRpcGroup,
 } from "@recount/core/rpc";
 import { Layer } from "effect";
@@ -24,7 +25,8 @@ const allRpcGroups = AuthRpcGroup.merge(
   UserSettingsRpcGroup,
   UserRpcGroup,
   WorkspaceIntegrationRpcGroup,
-  WorkspaceRpcGroup
+  WorkspaceRpcGroup,
+  WorkspaceMemberRpcGroup
 );
 
 const RpcProtocolHttpLayer = RpcClient.layerProtocolHttp({
