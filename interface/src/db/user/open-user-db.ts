@@ -1,10 +1,8 @@
 import { snakeCamelMapper } from "@electric-sql/client";
-import { UserSettings } from "@recount/core/modules/identity";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import { createCollection } from "@tanstack/react-db";
-import { Schema, Struct } from "effect";
 
-import { env } from "~/lib/env";
+import { userShapes } from "../sync-shapes";
 
 export type UserDb = ReturnType<typeof openUserDb>;
 
@@ -27,13 +25,13 @@ export function openUserDb(userId: string) {
 
   const userSettingsCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId("current-user-settings"),
-      schema: Schema.toStandardSchemaV1(UserSettings.json),
-      getKey: (userSettings) => userSettings.id,
+      id: createCollectionId(userShapes.userSettings.name),
+      schema: userShapes.userSettings.schema,
+      getKey: userShapes.userSettings.getKey,
       shapeOptions: {
-        url: `${env.VITE_ELECTRIC_PROXY_URL}/me/user-settings`,
+        url: userShapes.userSettings.url,
         columnMapper: snakeCamelMapper(),
-        transformer: (row) =>  Schema.decodeUnknownSync(UserSettings.json.mapFields(Struct.map(Schema.optionalKey)))(row),
+        transformer: userShapes.userSettings.decodeRow,
         fetchClient: userFetchClient,
         signal: abortController.signal,
       },

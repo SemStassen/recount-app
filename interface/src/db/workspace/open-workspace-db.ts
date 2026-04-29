@@ -1,13 +1,9 @@
 import { snakeCamelMapper } from "@electric-sql/client";
-import { WorkspaceIntegration } from "@recount/core/modules/integration";
-import { Project } from "@recount/core/modules/project";
-import { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import { createCollection } from "@tanstack/react-db";
-import { Schema, Struct } from "effect";
 
-import { env } from "~/lib/env";
+import { workspaceShapes } from "../sync-shapes";
 
 export type WorkspaceDb = Awaited<ReturnType<typeof openWorkspaceDb>>;
 
@@ -34,16 +30,13 @@ export async function openWorkspaceDb(workspaceId: string) {
 
   const workspaceMembersCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId("workspace-members"),
-      schema: Schema.toStandardSchemaV1(WorkspaceMember.json),
-      getKey: (workspaceMember) => workspaceMember.id,
+      id: createCollectionId(workspaceShapes.workspaceMembers.name),
+      schema: workspaceShapes.workspaceMembers.schema,
+      getKey: workspaceShapes.workspaceMembers.getKey,
       shapeOptions: {
-        url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-members`,
+        url: workspaceShapes.workspaceMembers.url,
         columnMapper: snakeCamelMapper(),
-        transformer: (row) =>
-          Schema.decodeUnknownSync(
-            WorkspaceMember.json.mapFields(Struct.map(Schema.optionalKey))
-          )(row),
+        transformer: workspaceShapes.workspaceMembers.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
@@ -52,22 +45,13 @@ export async function openWorkspaceDb(workspaceId: string) {
 
   const workspaceIntegrationsCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId("workspace-integrations"),
-      schema: Schema.toStandardSchemaV1(WorkspaceIntegration.json),
-      getKey: (workspaceIntegration) => workspaceIntegration.id,
+      id: createCollectionId(workspaceShapes.workspaceIntegrations.name),
+      schema: workspaceShapes.workspaceIntegrations.schema,
+      getKey: workspaceShapes.workspaceIntegrations.getKey,
       shapeOptions: {
-        url: `${env.VITE_ELECTRIC_PROXY_URL}/workspace-integrations`,
+        url: workspaceShapes.workspaceIntegrations.url,
         columnMapper: snakeCamelMapper(),
-        transformer: (row) =>
-          Schema.decodeUnknownSync(
-            WorkspaceIntegration.json
-              .mapFields(
-                Struct.evolve({
-                  createdAt: () => Schema.DateTimeUtcFromString,
-                })
-              )
-              .mapFields(Struct.map(Schema.optionalKey))
-          )(row),
+        transformer: workspaceShapes.workspaceIntegrations.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
@@ -76,25 +60,13 @@ export async function openWorkspaceDb(workspaceId: string) {
 
   const projectsCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId("projects"),
-      schema: Schema.toStandardSchemaV1(Project.json),
-      getKey: (project) => project.id,
+      id: createCollectionId(workspaceShapes.projects.name),
+      schema: workspaceShapes.projects.schema,
+      getKey: workspaceShapes.projects.getKey,
       shapeOptions: {
-        url: `${env.VITE_ELECTRIC_PROXY_URL}/projects`,
+        url: workspaceShapes.projects.url,
         columnMapper: snakeCamelMapper(),
-        transformer: (row) =>
-          Schema.decodeUnknownSync(
-            Project.json
-              .mapFields(
-                Struct.evolve({
-                  startDate: () =>
-                    Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-                  targetDate: () =>
-                    Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-                })
-              )
-              .mapFields(Struct.map(Schema.optionalKey))
-          )(row),
+        transformer: workspaceShapes.projects.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
