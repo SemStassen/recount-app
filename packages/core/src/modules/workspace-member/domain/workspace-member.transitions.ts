@@ -18,7 +18,7 @@ export const createWorkspaceMember = (params: {
       userId: params.userId,
       role: params.role,
       displayName: params.data.displayName,
-      imageUrl: params.data.imageUrl ?? Option.none(),
+      avatarUrl: params.data.avatarUrl ?? Option.none(),
       deletedAt: Option.none(),
     })
   );

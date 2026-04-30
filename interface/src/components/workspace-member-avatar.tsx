@@ -1,19 +1,21 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@recount/ui/avatar";
-import { Option } from "effect";
 
 interface WorkspaceMemberAvatarProps {
-  displayName: Option.Option<string>;
-  avatarUrl: Option.Option<string>;
+  displayName: string | undefined;
+  avatarUrl: string | undefined;
 }
 
 export function WorkspaceMemberAvatar({
   displayName,
   avatarUrl,
 }: WorkspaceMemberAvatarProps) {
+  const fallback = displayName?.trim().charAt(0).toUpperCase() || "?";
+  const src = avatarUrl?.trim() || undefined;
+
   return (
     <Avatar>
-      <AvatarImage src={avatarUrl.valueOrUndefined} />
-      <AvatarFallback>{displayName.valueOrUndefined?.charAt(0)}</AvatarFallback>
+      <AvatarImage src={src} />
+      <AvatarFallback>{fallback}</AvatarFallback>
     </Avatar>
   );
 }

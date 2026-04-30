@@ -1,7 +1,8 @@
 import { Card, CardPanel } from "@recount/ui/card";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { UpdateProfileForm } from "./-components/update-profile-form";
+import { UpdateUserMeForm } from "./-components/update-user-me-form";
+import { UpdateWorkspaceMemberMeForm } from "./-components/update-workspace-member-me-form";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/settings/profile/")({
   beforeLoad: () => ({
@@ -12,10 +13,17 @@ export const Route = createFileRoute("/_app/$workspaceSlug/settings/profile/")({
 
 function RouteComponent() {
   return (
-    <Card>
-      <CardPanel>
-        <UpdateProfileForm />
-      </CardPanel>
-    </Card>
+    <>
+      <Card>
+        <CardPanel>
+          <UpdateUserMeForm />
+        </CardPanel>
+      </Card>
+      <Card>
+        <CardPanel>
+          <UpdateWorkspaceMemberMeForm />
+        </CardPanel>
+      </Card>
+    </>
   );
 }

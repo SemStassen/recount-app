@@ -6,6 +6,7 @@ import { Link, linkOptions } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 
 import { isNavigationSidebarOpenAtom } from "~/atoms/ui-atoms";
+import { m } from "~/paraglide/messages";
 
 import { UserDropdownMenu } from "./user-dropdown-menu";
 import { WorkspaceDropdownMenu } from "./workspace-dropdown-menu";
@@ -14,7 +15,7 @@ const SIDEBAR_WIDTH = 240;
 
 const NAV_ITEMS = [
   {
-    groupLabel: "Dashboards",
+    groupLabel: m.common_dashboard(),
     items: [
       linkOptions({
         to: "/$workspaceSlug",
@@ -25,7 +26,7 @@ const NAV_ITEMS = [
       linkOptions({
         to: "/$workspaceSlug/projects",
         from: "/$workspaceSlug",
-        label: "Projects",
+        label: m.project({ count: "plural" }),
         Icon: (props: IconProps) => <Icons.Folder {...props} />,
       }),
     ],
@@ -49,7 +50,7 @@ export function NavigationSidebar() {
           }}
         >
           <nav
-            className="flex h-full flex-col justify-between border-r px-4 pt-2 pb-4"
+            className="flex h-full flex-col justify-between border-r px-3 pt-2 pb-4"
             style={{
               width: SIDEBAR_WIDTH,
             }}
@@ -94,7 +95,7 @@ export function NavigationSidebar() {
                     to="/$workspaceSlug/settings"
                     {...props}
                   >
-                    <Icons.Settings /> Settings
+                    <Icons.Settings /> {m.common_settings()}
                   </Link>
                 )}
                 variant="ghost"

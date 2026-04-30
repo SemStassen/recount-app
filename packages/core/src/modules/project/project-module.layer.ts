@@ -1,6 +1,8 @@
-import { Effect, Layer, Option } from "effect";
+import { DateTime, Effect, Layer, Option } from "effect";
 
+import type { Project } from "./domain/project.entity";
 import * as projectTransitions from "./domain/project.transitions";
+import type { Task } from "./domain/task.entity";
 import * as taskTransitions from "./domain/task.transitions";
 import {
   ProjectModule,
@@ -15,6 +17,38 @@ export const ProjectModuleLayer = Layer.effect(
   Effect.gen(function* () {
     const projectRepo = yield* ProjectRepository;
     const taskRepo = yield* TaskRepository;
+
+    const getProjectById = (params: {
+      workspaceId: Project["workspaceId"];
+      id: Project["id"];
+    }) =>
+      projectRepo
+        .findById({ workspaceId: params.workspaceId, id: params.id })
+        .pipe(
+          Effect.flatMap(
+            Option.match({
+              onNone: () =>
+                Effect.fail(new ProjectNotFoundError({ projectId: params.id })),
+              onSome: Effect.succeed,
+            })
+          )
+        );
+
+    const getTaskById = (params: {
+      workspaceId: Task["workspaceId"];
+      id: Task["id"];
+    }) =>
+      taskRepo
+        .findById({ workspaceId: params.workspaceId, id: params.id })
+        .pipe(
+          Effect.flatMap(
+            Option.match({
+              onNone: () =>
+                Effect.fail(new TaskNotFoundError({ taskId: params.id })),
+              onSome: Effect.succeed,
+            })
+          )
+        );
 
     return {
       createProjects: Effect.fn("project.createProjects")(function* (params) {
@@ -36,21 +70,12 @@ export const ProjectModuleLayer = Layer.effect(
         return persistedProjects;
       }),
       updateProject: Effect.fn("project.updateProject")(function* (params) {
-        const project = yield* projectRepo
-          .findById({ workspaceId: params.workspaceId, id: params.id })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new ProjectNotFoundError({ projectId: params.id })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const project = yield* getProjectById({
+          workspaceId: params.workspaceId,
+          id: params.id,
+        });
 
-        const { entity, changes } = yield* Effect.fromResult(
+        const { entity, patch } = yield* Effect.fromResult(
           projectTransitions.updateProject({
             project,
             data: params.data,
@@ -58,51 +83,57 @@ export const ProjectModuleLayer = Layer.effect(
         );
 
         const persistedProject = yield* projectRepo.update({
-          id: entity.id,
           workspaceId: entity.workspaceId,
-          update: changes,
+          id: entity.id,
+          update: patch,
         });
 
         return persistedProject;
       }),
       archiveProject: Effect.fn("project.archiveProject")(function* (params) {
-        const project = yield* projectRepo
-          .findById({ workspaceId: params.workspaceId, id: params.id })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new ProjectNotFoundError({ projectId: params.id })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
-
-        yield* projectRepo.archiveMany({
+        const project = yield* getProjectById({
           workspaceId: params.workspaceId,
-          ids: [project.id],
+          id: params.id,
+        });
+
+        const now = yield* DateTime.now;
+        const { entity, patch } = yield* Effect.fromResult(
+          projectTransitions.archiveProject({
+            project,
+            now,
+          })
+        );
+
+        yield* Option.match(patch, {
+          onNone: () => Effect.void,
+          onSome: (update) =>
+            projectRepo.update({
+              workspaceId: entity.workspaceId,
+              id: entity.id,
+              update,
+            }),
         });
       }),
       restoreProject: Effect.fn("project.restoreProject")(function* (params) {
-        const project = yield* projectRepo
-          .findById({ workspaceId: params.workspaceId, id: params.id })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new ProjectNotFoundError({ projectId: params.id })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
-
-        yield* projectRepo.restoreMany({
+        const project = yield* getProjectById({
           workspaceId: params.workspaceId,
-          ids: [project.id],
+          id: params.id,
+        });
+
+        const { entity, patch } = yield* Effect.fromResult(
+          projectTransitions.restoreProject({
+            project,
+          })
+        );
+
+        yield* Option.match(patch, {
+          onNone: () => Effect.void,
+          onSome: (update) =>
+            projectRepo.update({
+              workspaceId: entity.workspaceId,
+              id: entity.id,
+              update,
+            }),
         });
       }),
       createTasks: Effect.fn("project.createTasks")(function* (params) {
@@ -115,30 +146,27 @@ export const ProjectModuleLayer = Layer.effect(
           workspaceId: params.workspaceId,
           ids: projectIds,
         });
-
-        const missingProjectId = projectIds.find(
-          (id) => !projects.some((p) => p.id === id)
-        );
-
-        if (missingProjectId) {
-          return yield* new ProjectNotFoundError({
-            projectId: missingProjectId,
-          });
-        }
-
-        yield* Effect.forEach(projects, (project) =>
-          Effect.fromResult(
-            projectTransitions.ensureProjectNotArchived(project)
-          )
+        const projectsById = new Map(
+          projects.map((project) => [project.id, project])
         );
 
         const tasks = yield* Effect.forEach(params.data, (data) =>
-          Effect.fromResult(
-            taskTransitions.createTask({
-              workspaceId: params.workspaceId,
-              data,
-            })
-          )
+          Effect.gen(function* () {
+            const project = projectsById.get(data.projectId);
+
+            if (!project) {
+              return yield* new ProjectNotFoundError({
+                projectId: data.projectId,
+              });
+            }
+
+            return yield* Effect.fromResult(
+              taskTransitions.createTask({
+                project,
+                data,
+              })
+            );
+          })
         );
 
         const persistedTasks = yield* taskRepo.insertMany(tasks);
@@ -146,118 +174,72 @@ export const ProjectModuleLayer = Layer.effect(
         return persistedTasks;
       }),
       updateTask: Effect.fn("project.updateTask")(function* (params) {
-        const task = yield* taskRepo
-          .findById({ workspaceId: params.workspaceId, id: params.id })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(new TaskNotFoundError({ taskId: params.id })),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const task = yield* getTaskById({
+          workspaceId: params.workspaceId,
+          id: params.id,
+        });
 
-        const project = yield* projectRepo
-          .findById({ workspaceId: params.workspaceId, id: task.projectId })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new ProjectNotFoundError({ projectId: task.projectId })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const project = yield* getProjectById({
+          workspaceId: params.workspaceId,
+          id: task.projectId,
+        });
 
-        yield* Effect.fromResult(
-          projectTransitions.ensureProjectNotArchived(project)
-        );
-
-        const { entity, changes } = yield* Effect.fromResult(
-          taskTransitions.updateTask({ task, data: params.data })
+        const { entity, patch } = yield* Effect.fromResult(
+          taskTransitions.updateTask({ task, project, data: params.data })
         );
 
         const persistedTask = yield* taskRepo.update({
           id: entity.id,
           workspaceId: entity.workspaceId,
-          update: changes,
+          update: patch,
         });
 
         return persistedTask;
       }),
       archiveTask: Effect.fn("project.archiveTask")(function* (params) {
-        const task = yield* taskRepo
-          .findById({ workspaceId: params.workspaceId, id: params.id })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(new TaskNotFoundError({ taskId: params.id })),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const task = yield* getTaskById({
+          workspaceId: params.workspaceId,
+          id: params.id,
+        });
 
-        const project = yield* projectRepo
-          .findById({ workspaceId: params.workspaceId, id: task.projectId })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new ProjectNotFoundError({ projectId: task.projectId })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
-
-        yield* Effect.fromResult(
-          projectTransitions.ensureProjectNotArchived(project)
+        const now = yield* DateTime.now;
+        const { entity, patch } = yield* Effect.fromResult(
+          taskTransitions.archiveTask({ task, now })
         );
 
-        yield* taskRepo.archiveMany({
-          workspaceId: params.workspaceId,
-          ids: [task.id],
+        yield* Option.match(patch, {
+          onNone: () => Effect.void,
+          onSome: (update) =>
+            taskRepo.update({
+              workspaceId: entity.workspaceId,
+              id: entity.id,
+              update,
+            }),
         });
       }),
       restoreTask: Effect.fn("project.restoreTask")(function* (params) {
-        const task = yield* taskRepo
-          .findById({ workspaceId: params.workspaceId, id: params.id })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(new TaskNotFoundError({ taskId: params.id })),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const task = yield* getTaskById({
+          workspaceId: params.workspaceId,
+          id: params.id,
+        });
 
-        const project = yield* projectRepo
-          .findById({ workspaceId: params.workspaceId, id: task.projectId })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new ProjectNotFoundError({ projectId: task.projectId })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const project = yield* getProjectById({
+          workspaceId: params.workspaceId,
+          id: task.projectId,
+        });
 
-        yield* Effect.fromResult(
-          projectTransitions.ensureProjectNotArchived(project)
+        const { entity, patch } = yield* Effect.fromResult(
+          taskTransitions.restoreTask({ task, project })
         );
 
-        yield* taskRepo.restoreMany({
-          workspaceId: params.workspaceId,
-          ids: [task.id],
+        yield* Option.match(patch, {
+          onNone: () => Effect.void,
+          onSome: (update) =>
+            taskRepo.update({
+              workspaceId: entity.workspaceId,
+              id: entity.id,
+              update,
+            }),
         });
       }),
     };

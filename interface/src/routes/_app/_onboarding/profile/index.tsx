@@ -4,11 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Effect, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
-import {
-  createDynamicValidator,
-  createParsedSubmitHandler,
-  createSubmitValidator,
-} from "~/lib/form";
+import { createSchemaForm } from "~/lib/form";
 import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
 import { runtime } from "~/lib/runtime";
 
@@ -16,22 +12,24 @@ export const Route = createFileRoute("/_app/_onboarding/profile/")({
   component: RouteComponent,
 });
 
-const schema = Schema.Struct({
-  fullName: User.fields.fullName,
-});
+const schema = createSchemaForm(
+  Schema.Struct({
+    fullName: User.fields.fullName,
+  })
+);
 
 function RouteComponent() {
   const form = useAppForm({
     formId: "profile",
     defaultValues: {
       fullName: "",
-    } satisfies (typeof schema)["Encoded"],
+    } satisfies typeof schema.validator.Encoded,
     validationLogic: defaultValidationLogic,
     validators: {
-      onDynamic: createDynamicValidator(schema),
-      onSubmitAsync: createSubmitValidator(schema),
+      onDynamic: schema.validator,
+      onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: createParsedSubmitHandler(schema, async ({ value }) => {
+    onSubmit: schema.handleSubmit(async ({ value }) => {
       await runtime.runPromise(
         Effect.gen(function* () {
           const client = yield* RecountAtomRpcClient;

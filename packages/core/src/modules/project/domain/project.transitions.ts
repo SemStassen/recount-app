@@ -57,7 +57,7 @@ export const updateProject = (params: {
   project: Project;
   data: typeof Project.jsonUpdate.Type;
 }): Result.Result<
-  { entity: Project; changes: typeof Project.update.Type },
+  { entity: Project; patch: typeof Project.update.Type },
   ProjectArchivedError | ProjectTargetDateBeforeStartDateError
 > =>
   Result.gen(function* () {
@@ -75,6 +75,57 @@ export const updateProject = (params: {
 
     return {
       entity: updatedProject,
-      changes: params.data,
+      patch: params.data,
     };
   });
+
+export const archiveProject = (params: {
+  project: Project;
+  now: DateTime.Utc;
+}): Result.Result<{
+  entity: Project;
+  patch: Option.Option<Pick<typeof Project.update.Type, "archivedAt">>;
+}> => {
+  if (Option.isSome(params.project.archivedAt)) {
+    return Result.succeed({
+      entity: params.project,
+      patch: Option.none(),
+    });
+  }
+
+  const archivedAt = Option.some(params.now);
+
+  const updatedProject = Project.make({
+    ...params.project,
+    archivedAt,
+  });
+
+  return Result.succeed({
+    entity: updatedProject,
+    patch: Option.some({ archivedAt }),
+  });
+};
+
+export const restoreProject = (params: {
+  project: Project;
+}): Result.Result<{
+  entity: Project;
+  patch: Option.Option<Pick<typeof Project.update.Type, "archivedAt">>;
+}> => {
+  if (Option.isNone(params.project.archivedAt)) {
+    return Result.succeed({
+      entity: params.project,
+      patch: Option.none(),
+    });
+  }
+
+  const updatedProject = Project.make({
+    ...params.project,
+    archivedAt: Option.none(),
+  });
+
+  return Result.succeed({
+    entity: updatedProject,
+    patch: Option.some({ archivedAt: Option.none() }),
+  });
+};

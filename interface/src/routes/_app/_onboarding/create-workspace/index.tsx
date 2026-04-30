@@ -1,5 +1,6 @@
 import { Workspace } from "@recount/core/modules/workspace";
 import { slugify } from "@recount/core/shared/utils";
+import { FieldControl } from "@recount/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -11,11 +12,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Effect } from "effect";
 
 import { useAppForm } from "~/components/form";
-import {
-  createDynamicValidator,
-  createParsedSubmitHandler,
-  createSubmitValidator,
-} from "~/lib/form";
+import { createSchemaForm } from "~/lib/form";
 import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
 import { runtime } from "~/lib/runtime";
 
@@ -23,7 +20,7 @@ export const Route = createFileRoute("/_app/_onboarding/create-workspace/")({
   component: RouteComponent,
 });
 
-const schema = Workspace.jsonCreate;
+const schema = createSchemaForm(Workspace.jsonCreate);
 
 function RouteComponent() {
   const navigate = useNavigate();
@@ -32,13 +29,13 @@ function RouteComponent() {
     defaultValues: {
       name: "",
       slug: "",
-    } satisfies (typeof schema)["Encoded"],
+    } satisfies typeof schema.validator.Encoded,
     validationLogic: defaultValidationLogic,
     validators: {
-      onDynamic: createDynamicValidator(schema),
-      onSubmitAsync: createSubmitValidator(schema),
+      onDynamic: schema.validator,
+      onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: createParsedSubmitHandler(schema, async ({ value }) => {
+    onSubmit: schema.handleSubmit(async ({ value }) => {
       await runtime.runPromise(
         Effect.gen(function* () {
           const client = yield* RecountAtomRpcClient;
@@ -95,8 +92,12 @@ function RouteComponent() {
           children={(field) => (
             <field.CustomField
               direction="vertical"
-              control={{
-                render: (props) => (
+              label={{
+                children: "Workspace URL",
+              }}
+            >
+              <FieldControl
+                render={(props) => (
                   <InputGroup>
                     <InputGroupInput
                       className="*:data-[slot=input]:pl-0!"
@@ -107,12 +108,9 @@ function RouteComponent() {
                       <InputGroupText>recount.app/</InputGroupText>
                     </InputGroupAddon>
                   </InputGroup>
-                ),
-              }}
-              label={{
-                children: "Workspace URL",
-              }}
-            />
+                )}
+              />
+            </field.CustomField>
           )}
           listeners={{
             onChange: ({ value, fieldApi }) => {

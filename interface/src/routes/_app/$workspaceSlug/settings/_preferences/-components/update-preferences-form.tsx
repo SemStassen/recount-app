@@ -6,15 +6,11 @@ import { Effect } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useUserDb } from "~/db/user/context";
-import {
-  createDynamicValidator,
-  createSubmitValidator,
-  createParsedSubmitHandler,
-} from "~/lib/form";
+import { createSchemaForm } from "~/lib/form";
 import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
 import { runtime } from "~/lib/runtime";
 
-const schema = UserSettings.jsonUpdate;
+const schema = createSchemaForm(UserSettings.jsonUpdate);
 
 export function UpdatePreferencesForm() {
   const userDb = useUserDb();
@@ -35,10 +31,10 @@ export function UpdatePreferencesForm() {
     defaultValues,
     validationLogic: defaultValidationLogic,
     validators: {
-      onDynamic: createDynamicValidator(schema),
-      onSubmitAsync: createSubmitValidator(schema),
+      onDynamic: schema.validator,
+      onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: createParsedSubmitHandler(schema, async ({ value }) => {
+    onSubmit: schema.handleSubmit(async ({ value }) => {
       await runtime.runPromise(
         Effect.gen(function* () {
           const client = yield* RecountAtomRpcClient;

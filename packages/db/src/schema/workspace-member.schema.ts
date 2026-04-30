@@ -17,7 +17,7 @@ export const workspaceMembersTable = pgTable("workspace_members", {
   // General
   displayName: varchar("display_name").notNull(),
   role: varchar("role").notNull(),
-  imageUrl: varchar("image_url"),
+  avatarUrl: varchar("avatar_url"),
   // Metadata
   ...tableSoftDelete,
   ...tableMetadata,

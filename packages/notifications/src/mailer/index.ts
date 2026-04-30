@@ -22,7 +22,7 @@ interface MailerShape {
       name: Workspace["name"];
       id: Workspace["id"];
     };
-    inviterName: User["displayName"];
+    inviterName: User["fullName"];
     invitationId: WorkspaceInvitation["id"];
   }) => Effect.Effect<void>;
 }

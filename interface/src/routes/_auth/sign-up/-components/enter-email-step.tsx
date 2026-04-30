@@ -7,18 +7,16 @@ import type { Dispatch, SetStateAction } from "react";
 
 import { useAppForm } from "~/components/form";
 import { betterAuthClient } from "~/lib/better-auth";
-import {
-  createDynamicValidator,
-  createSubmitValidator,
-  createParsedSubmitHandler,
-} from "~/lib/form";
+import { createSchemaForm } from "~/lib/form";
 import { m } from "~/paraglide/messages";
 
 import type { SignUpStep } from "..";
 
-const schema = Schema.Struct({
-  email: Schema.String.check(Schema.isPattern(regex.email)),
-});
+const schema = createSchemaForm(
+  Schema.Struct({
+    email: Schema.String.check(Schema.isPattern(regex.email)),
+  })
+);
 
 function EnterEmailStep({
   setCurrentStep,
@@ -30,13 +28,13 @@ function EnterEmailStep({
   const form = useAppForm({
     defaultValues: {
       email: "",
-    } satisfies (typeof schema)["Encoded"],
+    } satisfies typeof schema.validator.Encoded,
     validationLogic: revalidateLogic(),
     validators: {
-      onDynamic: createDynamicValidator(schema),
-      onSubmitAsync: createSubmitValidator(schema),
+      onDynamic: schema.validator,
+      onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: createParsedSubmitHandler(schema, async ({ value }) => {
+    onSubmit: schema.handleSubmit(async ({ value }) => {
       await betterAuthClient.emailOtp.sendVerificationOtp({
         type: "sign-in",
         email: value.email,

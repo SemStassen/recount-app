@@ -1,11 +1,10 @@
-import type { ReactNode } from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 import { createContext, useContext } from "react";
 import type { DropEvent, DropzoneOptions, FileRejection } from "react-dropzone";
 import { useDropzone } from "react-dropzone";
 
 import { cn } from "#utils/cn";
 
-import { Button } from "./button.coss";
 import { Icons } from "./icons";
 
 interface DropzoneContextType {
@@ -14,6 +13,7 @@ interface DropzoneContextType {
   maxSize?: DropzoneOptions["maxSize"];
   minSize?: DropzoneOptions["minSize"];
   maxFiles?: DropzoneOptions["maxFiles"];
+  open: () => void;
 }
 
 const renderBytes = (bytes: number) => {
@@ -57,7 +57,7 @@ export const Dropzone = ({
   children,
   ...props
 }: DropzoneProps) => {
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, open } = useDropzone({
     accept,
     maxFiles,
     maxSize,
@@ -79,9 +79,13 @@ export const Dropzone = ({
   return (
     <DropzoneContext.Provider
       key={JSON.stringify(src)}
-      value={{ src, accept, maxSize, minSize, maxFiles }}
+      value={{ src, accept, maxSize, minSize, maxFiles, open }}
     >
-      <button disabled={disabled} type="button" {...getRootProps()}>
+      <button
+        disabled={disabled}
+        type="button"
+        {...getRootProps({ className })}
+      >
         <input {...getInputProps()} disabled={disabled} />
         {children}
       </button>
@@ -97,6 +101,30 @@ const useDropzoneContext = () => {
   }
 
   return context;
+};
+
+export type DropzoneOpenProps = ComponentPropsWithRef<"button">;
+
+export const DropzoneOpen = ({
+  onClick,
+  type = "button",
+  ...props
+}: DropzoneOpenProps) => {
+  const { open } = useDropzoneContext();
+
+  return (
+    <button
+      {...props}
+      onClick={(event) => {
+        onClick?.(event);
+
+        if (!event.defaultPrevented) {
+          open();
+        }
+      }}
+      type={type}
+    />
+  );
 };
 
 export interface DropzoneContentProps {

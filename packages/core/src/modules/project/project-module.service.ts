@@ -74,13 +74,7 @@ interface ProjectModuleShape {
   readonly archiveTask: (params: {
     id: Task["id"];
     workspaceId: Task["workspaceId"];
-  }) => Effect.Effect<
-    void,
-    | TaskNotFoundError
-    | ProjectNotFoundError
-    | ProjectArchivedError
-    | RepositoryError
-  >;
+  }) => Effect.Effect<void, TaskNotFoundError | RepositoryError>;
   readonly restoreTask: (params: {
     id: Task["id"];
     workspaceId: Task["workspaceId"];

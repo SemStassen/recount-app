@@ -16,7 +16,7 @@
     "@dnd-kit/react": "^0.3.2",
     "@effect/atom-react": "catalog:",
     "@electric-sql/client": "^1.5.15",
-    "@inlang/paraglide-js": "^2.15.3",
+    "@inlang/paraglide-js": "^2.18.0",
     "@recount/core": "workspace:*",
     "@recount/editor": "workspace:*",
     "@recount/ui": "workspace:*",
@@ -29,11 +29,11 @@
     "@tanstack/react-devtools": "^0.10.2",
     "@tanstack/react-form": "catalog:frontend",
     "@tanstack/react-form-devtools": "^0.2.21",
-    "@tanstack/react-router": "^1.168.23",
+    "@tanstack/react-router": "^1.168.26",
     "@tanstack/react-router-devtools": "^1.166.13",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.24",
-    "@tanstack/router-plugin": "^1.167.22",
+    "@tanstack/router-plugin": "^1.167.29",
     "@vitejs/plugin-react": "catalog:dev",
     "babel-plugin-react-compiler": "catalog:dev",
     "better-auth": "catalog:",
@@ -46,7 +46,7 @@
     "react-dom": "catalog:frontend",
     "react-hotkeys-hook": "^5.1.0",
     "vite": "catalog:dev",
-    "zod": "^4.1.5"
+    "zod": "^4.4.1"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",

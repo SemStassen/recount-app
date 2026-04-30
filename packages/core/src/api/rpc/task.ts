@@ -55,8 +55,6 @@ export const TaskRpcGroup = RpcGroup.make(
     error: Schema.Union([
       AuthorizationError,
       TaskNotFoundError,
-      ProjectNotFoundError,
-      ProjectArchivedError,
       HttpApiError.InternalServerError,
     ]),
   })

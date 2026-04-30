@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 
 import { Config, Effect, Layer } from "effect";
 
-import { Crypto } from "#shared/crypto/index";
+import { Crypto } from "#shared/crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;

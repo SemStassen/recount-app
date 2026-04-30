@@ -2,7 +2,7 @@ import { Project, ProjectRepository } from "@recount/core/modules/project";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq, inArray } from "drizzle-orm";
-import { DateTime, Effect, Layer, Schema } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { SqlSchema } from "effect/unstable/sql";
 
 export const ProjectRepositoryLayer = Layer.effect(
@@ -39,54 +39,6 @@ export const ProjectRepositoryLayer = Layer.effect(
               and(
                 eq(schema.projectsTable.workspaceId, workspaceId),
                 eq(schema.projectsTable.id, id)
-              )
-            )
-            .returning()
-            .execute()
-        ),
-    });
-
-    const archiveManyProjects = SqlSchema.findAll({
-      Request: Schema.Struct({
-        workspaceId: Project.fields.workspaceId,
-        ids: Schema.Array(Project.fields.id),
-      }),
-      Result: Project,
-      execute: ({ workspaceId, ids }) =>
-        Effect.gen(function* () {
-          const now = yield* DateTime.now;
-
-          return yield* db.drizzle((drizzle) =>
-            drizzle
-              .update(schema.projectsTable)
-              .set({ archivedAt: DateTime.toDate(now) })
-              .where(
-                and(
-                  eq(schema.projectsTable.workspaceId, workspaceId),
-                  inArray(schema.projectsTable.id, ids)
-                )
-              )
-              .returning()
-              .execute()
-          );
-        }),
-    });
-
-    const restoreManyProjects = SqlSchema.findAll({
-      Request: Schema.Struct({
-        workspaceId: Project.fields.workspaceId,
-        ids: Schema.Array(Project.fields.id),
-      }),
-      Result: Project,
-      execute: ({ workspaceId, ids }) =>
-        db.drizzle((drizzle) =>
-          drizzle
-            .update(schema.projectsTable)
-            .set({ archivedAt: null })
-            .where(
-              and(
-                eq(schema.projectsTable.workspaceId, workspaceId),
-                inArray(schema.projectsTable.id, ids)
               )
             )
             .returning()
@@ -143,14 +95,6 @@ export const ProjectRepositoryLayer = Layer.effect(
         ),
       update: (params) =>
         updateProject(params).pipe(
-          Effect.mapError((e) => new RepositoryError({ cause: e }))
-        ),
-      archiveMany: (params) =>
-        archiveManyProjects(params).pipe(
-          Effect.mapError((e) => new RepositoryError({ cause: e }))
-        ),
-      restoreMany: (params) =>
-        restoreManyProjects(params).pipe(
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       findById: (params) =>

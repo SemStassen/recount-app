@@ -5,14 +5,14 @@ import type {
 import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization/index";
+import { Authorization } from "#shared/authorization";
 
 import { IntegrationModule } from "../integration-module.service";
 
 export const createWorkspaceIntegrationFlow = Effect.fn(
   "flows.createWorkspaceIntegrationFlow"
 )(function* (request: typeof CreateWorkspaceIntegrationCommand.Type) {
-  const { member, workspace } = yield* WorkspaceContext;
+  const { workspaceMember, workspace } = yield* WorkspaceContext;
 
   const authz = yield* Authorization;
 
@@ -20,13 +20,13 @@ export const createWorkspaceIntegrationFlow = Effect.fn(
 
   yield* authz.ensureAllowed({
     action: "workspace:create_integration",
-    role: member.role,
+    role: workspaceMember.role,
   });
 
   const createdWorkspaceIntegration =
     yield* integrationModule.createWorkspaceIntegration({
       workspaceId: workspace.id,
-      createdByWorkspaceMemberId: member.id,
+      createdByWorkspaceMemberId: workspaceMember.id,
       data: request,
     });
 

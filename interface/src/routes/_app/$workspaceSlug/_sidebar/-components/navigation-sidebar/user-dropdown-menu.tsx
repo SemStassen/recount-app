@@ -10,7 +10,6 @@ import {
 } from "@recount/ui/menu";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { Link, useRouteContext } from "@tanstack/react-router";
-import { Option } from "effect";
 
 import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
 import { useWorkspaceDb } from "~/db/workspace/context";
@@ -26,7 +25,6 @@ function UserDropdownMenu() {
     q
       .from({ wm: workspaceDb.collections.workspaceMembersCollection })
       .where(({ wm }) => eq(wm.userId, user.id))
-      .select(({ wm }) => ({ id: wm.id }))
       .findOne()
   );
 
@@ -38,11 +36,12 @@ function UserDropdownMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button className="h-fit w-full py-4" variant="ghost">
+          <Button className="w-full" variant="ghost">
             <WorkspaceMemberAvatar
-              workspaceMemberId={Option.fromUndefinedOr(workspaceMember?.id)}
+              displayName={workspaceMember?.displayName}
+              avatarUrl={workspaceMember?.avatarUrl.valueOrUndefined}
             />
-            <div className="grid flex-1 text-start">
+            <div className="grid flex-1 text-start -space-y-0.5">
               <div className="truncate text-sm">{user.fullName}</div>
               <div className="truncate font-normal text-xs">{user.email}</div>
             </div>

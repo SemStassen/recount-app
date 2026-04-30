@@ -14,14 +14,6 @@ export interface TaskRepositoryShape {
     id: Task["id"];
     update: typeof Task.update.Type;
   }) => Effect.Effect<Task, RepositoryError>;
-  readonly archiveMany: (params: {
-    workspaceId: Task["workspaceId"];
-    ids: ReadonlyArray<Task["id"]>;
-  }) => Effect.Effect<ReadonlyArray<Task>, RepositoryError>;
-  readonly restoreMany: (params: {
-    workspaceId: Task["workspaceId"];
-    ids: ReadonlyArray<Task["id"]>;
-  }) => Effect.Effect<ReadonlyArray<Task>, RepositoryError>;
   readonly findById: (params: {
     workspaceId: Task["workspaceId"];
     id: Task["id"];

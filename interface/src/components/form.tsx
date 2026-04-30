@@ -6,13 +6,11 @@ import type { ButtonProps } from "@recount/ui/button";
 import { Calendar } from "@recount/ui/calendar";
 import {
   Field,
-  FieldControl,
   FieldDescription,
   FieldError,
   FieldLabel,
 } from "@recount/ui/field";
 import type {
-  FieldControlProps,
   FieldDescriptionProps,
   FieldErrorProps,
   FieldLabelProps,
@@ -43,7 +41,7 @@ import { useDateTimeFormatter } from "~/lib/utils/date-time";
 const { fieldContext, formContext, useFieldContext, useFormContext } =
   createFormHookContexts();
 
-export const { useAppForm } = createFormHook({
+export const { useAppForm, withFieldGroup } = createFormHook({
   fieldComponents: {
     CustomField,
     TextField,
@@ -71,7 +69,7 @@ const baseFieldVariants = cva("flex-1", {
   },
 });
 
-interface BaseFieldProps extends PropsWithChildren {
+export interface BaseFieldProps extends PropsWithChildren {
   direction: "vertical" | "horizontal";
   label: FieldLabelProps;
   field?: FieldProps;
@@ -121,18 +119,12 @@ function BaseField({
   );
 }
 
-interface CustomFieldProps extends BaseFieldProps {
-  control?: FieldControlProps;
-}
-function CustomField({ control, ...props }: CustomFieldProps) {
-  return (
-    <BaseField {...props}>
-      <FieldControl {...control} />
-    </BaseField>
-  );
+export interface CustomFieldProps extends BaseFieldProps {}
+function CustomField(props: CustomFieldProps) {
+  return <BaseField {...props} />;
 }
 
-interface TextFieldProps extends BaseFieldProps {
+export interface TextFieldProps extends BaseFieldProps {
   input?: InputProps;
 }
 function TextField({ input, ...props }: TextFieldProps) {
@@ -151,7 +143,7 @@ function TextField({ input, ...props }: TextFieldProps) {
   );
 }
 
-interface TextareaFieldProps extends BaseFieldProps {
+export interface TextareaFieldProps extends BaseFieldProps {
   textarea?: TextareaProps;
 }
 function TextareaField({ textarea, ...props }: TextareaFieldProps) {
@@ -168,7 +160,7 @@ function TextareaField({ textarea, ...props }: TextareaFieldProps) {
     </BaseField>
   );
 }
-interface SwitchFieldProps extends BaseFieldProps {
+export interface SwitchFieldProps extends BaseFieldProps {
   switch?: SwitchProps;
 }
 function SwitchField({ switch: switchProps, ...props }: SwitchFieldProps) {
@@ -185,7 +177,7 @@ function SwitchField({ switch: switchProps, ...props }: SwitchFieldProps) {
   );
 }
 
-interface SelectFieldProps extends BaseFieldProps {
+export interface SelectFieldProps extends BaseFieldProps {
   items: Array<SelectItemProps>;
 }
 function SelectField({ items, ...props }: SelectFieldProps) {
@@ -212,7 +204,8 @@ function SelectField({ items, ...props }: SelectFieldProps) {
   );
 }
 
-function DateField({ ...props }: BaseFieldProps) {
+export interface DateFieldProps extends BaseFieldProps {}
+function DateField({ ...props }: DateFieldProps) {
   const fieldCtx = useFieldContext<Date | undefined>();
   const formatter = useDateTimeFormatter();
 
@@ -241,7 +234,7 @@ function DateField({ ...props }: BaseFieldProps) {
   );
 }
 
-interface EditorFieldProps extends BaseFieldProps {}
+export interface EditorFieldProps extends BaseFieldProps {}
 function EditorField(props: EditorFieldProps) {
   const fieldCtx = useFieldContext<RichTextContent>();
 
@@ -255,7 +248,7 @@ function EditorField(props: EditorFieldProps) {
   );
 }
 
-interface SubmitButtonProps extends ButtonProps {}
+export interface SubmitButtonProps extends ButtonProps {}
 function SubmitButton({ ...props }: SubmitButtonProps) {
   const form = useFormContext();
 

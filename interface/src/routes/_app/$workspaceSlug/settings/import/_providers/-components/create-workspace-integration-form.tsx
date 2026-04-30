@@ -2,17 +2,15 @@ import { defaultValidationLogic } from "@tanstack/react-form";
 import { Effect, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
-import {
-  createDynamicValidator,
-  createSubmitValidator,
-  createParsedSubmitHandler,
-} from "~/lib/form";
+import { createSchemaForm } from "~/lib/form";
 import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
 import { runtime } from "~/lib/runtime";
 
-const schema = Schema.Struct({
-  apiKey: Schema.String,
-});
+const schema = createSchemaForm(
+  Schema.Struct({
+    apiKey: Schema.String,
+  })
+);
 
 function CreateWorkspaceIntegrationForm({ provider }: { provider: "float" }) {
   // const createWorkspaceIntegration = useAtomSet(
@@ -25,13 +23,13 @@ function CreateWorkspaceIntegrationForm({ provider }: { provider: "float" }) {
   const form = useAppForm({
     defaultValues: {
       apiKey: "",
-    } satisfies (typeof schema)["Encoded"],
+    } satisfies typeof schema.validator.Encoded,
     validationLogic: defaultValidationLogic,
     validators: {
-      onDynamic: createDynamicValidator(schema),
-      onSubmitAsync: createSubmitValidator(schema),
+      onDynamic: schema.validator,
+      onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: createParsedSubmitHandler(schema, async ({ value }) => {
+    onSubmit: schema.handleSubmit(async ({ value }) => {
       await runtime.runPromise(
         Effect.gen(function* () {
           const client = yield* RecountAtomRpcClient;

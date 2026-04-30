@@ -5,7 +5,7 @@ import {
 import { EncryptedApiKey, PlainApiKey } from "@recount/core/shared/schemas";
 import { DateTime, Effect, Layer, Option, Redacted } from "effect";
 
-import { Crypto } from "#shared/crypto/index";
+import { Crypto } from "#shared/crypto";
 
 import * as workspaceIntegrationTransitions from "./domain/workspace-integration.transitions";
 import { IntegrationModule } from "./integration-module.service";

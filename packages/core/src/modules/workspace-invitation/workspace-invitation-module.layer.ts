@@ -1,5 +1,6 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
+import type { WorkspaceInvitation } from "./domain/workspace-invitation.entity";
 import * as workspaceInvitationTransitions from "./domain/workspace-invitation.transitions";
 import {
   WorkspaceInvitationModule,
@@ -11,6 +12,23 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
   WorkspaceInvitationModule,
   Effect.gen(function* () {
     const workspaceInvitationRepo = yield* WorkspaceInvitationRepository;
+
+    const findWorkspaceInvitationByInvitationId = (
+      id: WorkspaceInvitation["id"]
+    ) =>
+      workspaceInvitationRepo.findByInvitationId(id).pipe(
+        Effect.flatMap(
+          Option.match({
+            onNone: () =>
+              Effect.fail(
+                new WorkspaceInvitationNotFoundError({
+                  workspaceInvitationId: id,
+                })
+              ),
+            onSome: Effect.succeed,
+          })
+        )
+      );
 
     return {
       createOrRenewPendingWorkspaceInvitation: Effect.fn(
@@ -65,8 +83,6 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
       cancelWorkspaceInvitation: Effect.fn(
         "workspace-invitation.cancelWorkspaceInvitation"
       )(function* (params) {
-        const now = yield* DateTime.now;
-
         const workspaceInvitation = yield* workspaceInvitationRepo
           .findById({
             workspaceId: params.workspaceId,
@@ -86,6 +102,7 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
             )
           );
 
+        const now = yield* DateTime.now;
         const { changes, entity } = yield* Effect.fromResult(
           workspaceInvitationTransitions.cancelWorkspaceInvitation({
             workspaceInvitation: workspaceInvitation,
@@ -107,21 +124,8 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
       )(function* (params) {
         const now = yield* DateTime.now;
 
-        const workspaceInvitation = yield* workspaceInvitationRepo
-          .findByInvitationId(params.id)
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new WorkspaceInvitationNotFoundError({
-                      workspaceInvitationId: params.id,
-                    })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const workspaceInvitation =
+          yield* findWorkspaceInvitationByInvitationId(params.id);
 
         const { changes, entity } = yield* Effect.fromResult(
           workspaceInvitationTransitions.acceptWorkspaceInvitation({
@@ -145,21 +149,8 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
       )(function* (params) {
         const now = yield* DateTime.now;
 
-        const workspaceInvitation = yield* workspaceInvitationRepo
-          .findByInvitationId(params.id)
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new WorkspaceInvitationNotFoundError({
-                      workspaceInvitationId: params.id,
-                    })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const workspaceInvitation =
+          yield* findWorkspaceInvitationByInvitationId(params.id);
 
         const { changes, entity } = yield* Effect.fromResult(
           workspaceInvitationTransitions.rejectWorkspaceInvitation({
