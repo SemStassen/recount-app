@@ -12,8 +12,9 @@ import { defineConfig } from "vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export const createInterfaceViteConfig = () =>
-  defineConfig({
+export const createInterfaceViteConfig = () => {
+  console.log({ __dirname });
+  return defineConfig({
     publicDir: path.resolve(__dirname, "public"),
     plugins: [
       devtools(),
@@ -51,3 +52,4 @@ export const createInterfaceViteConfig = () =>
       }),
     ],
   });
+};

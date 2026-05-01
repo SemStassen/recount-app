@@ -21,18 +21,6 @@ export class Project extends Model.Class<Project>("Project")(
     isBillable: Model.ServerMutableClientMutableCreateDefault(Schema.Boolean, {
       defaultValue: () => false,
     }),
-    startDate: Model.ServerMutableClientMutableOptionalCreateDefault(
-      Schema.DateTimeUtcFromDate,
-      {
-        defaultValue: () => null,
-      }
-    ),
-    targetDate: Model.ServerMutableClientMutableOptionalCreateDefault(
-      Schema.DateTimeUtcFromDate,
-      {
-        defaultValue: () => null,
-      }
-    ),
     notes: Model.ServerMutableClientMutableOptionalCreateDefault(
       Schema.Json.pipe(Schema.fromJsonString),
       {

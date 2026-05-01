@@ -19,6 +19,7 @@ import {
   ListRow,
 } from "@recount/ui/list";
 import { useLiveQuery } from "@tanstack/react-db";
+import { Link } from "@tanstack/react-router";
 import {
   createColumnHelper,
   flexRender,
@@ -54,30 +55,6 @@ const createColumns = (formatDate: (date: Date) => string) => [
     cell: (info) => info.getValue(),
     enableSorting: true,
     meta: { grow: true },
-  }),
-  columnHelper.accessor("startDate", {
-    header: "Start Date",
-    size: 120,
-    cell: (info) => {
-      const value = info.getValue();
-      if (Option.isSome(value)) {
-        return formatDate(DateTime.toDateUtc(value.value));
-      }
-      return null;
-    },
-    enableSorting: true,
-  }),
-  columnHelper.accessor("targetDate", {
-    header: "Target Date",
-    size: 120,
-    cell: (info) => {
-      const value = info.getValue();
-      if (Option.isSome(value)) {
-        return formatDate(DateTime.toDateUtc(value.value));
-      }
-      return null;
-    },
-    enableSorting: true,
   }),
   columnHelper.accessor("isBillable", {
     header: "Billable",
@@ -151,14 +128,12 @@ export function ProjectsList() {
             <ListRow
               key={row.id}
               render={
-                <button
-                  onClick={() =>
-                    setProjectSidebar({
-                      mode: "edit",
-                      projectId: row.original.id,
-                    })
-                  }
-                  type="button"
+                <Link
+                  to="/$workspaceSlug/projects/$projectId"
+                  from="/$workspaceSlug"
+                  params={{
+                    projectId: row.original.id,
+                  }}
                 />
               }
               style={{

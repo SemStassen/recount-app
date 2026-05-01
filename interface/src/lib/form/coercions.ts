@@ -11,17 +11,15 @@ export const optionalFromEmptyString = <S extends Schema.Top>(schema: S) =>
   Schema.Union([emptyStringAsUndefined, schema]);
 
 export const optionDateTimeToDate = (
-  value: Option.Option<DateTime.Utc> | undefined
+  value: Option.Option<DateTime.Utc>
 ): Date | null =>
-  Option.match(value ?? Option.none(), {
+  Option.match(value, {
     onNone: () => null,
-    onSome: DateTime.toDateUtc,
+    onSome: DateTime.toDate,
   });
 
-export const optionToNullable = <T>(
-  value: Option.Option<T> | undefined
-): T | null =>
-  Option.match(value ?? Option.none<T>(), {
+export const optionToNullable = <T>(value: Option.Option<T>): T | null =>
+  Option.match(value, {
     onNone: () => null,
     onSome: (value) => value,
   });

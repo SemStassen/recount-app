@@ -39,16 +39,7 @@ export const workspaceShapes = {
     getKey: (project) => project.id,
     decodeRow: (row) =>
       Schema.decodeUnknownSync(
-        Project.json
-          .mapFields(
-            Struct.evolve({
-              startDate: () =>
-                Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-              targetDate: () =>
-                Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-            })
-          )
-          .mapFields(Struct.map(Schema.optionalKey))
+        Project.json.mapFields(Struct.map(Schema.optionalKey))
       )(row),
   }),
 };

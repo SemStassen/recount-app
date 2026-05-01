@@ -1,6 +1,7 @@
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 
 import { getWorkspaceDb } from "~/db/workspace/get-workspace-db";
+import { CommandMenu } from "~/features/command-menu";
 
 import { DebugSheet } from "./-components/debug-sheet";
 import { WorkspaceProviders } from "./-workspace-providers";
@@ -36,6 +37,7 @@ function WorkspaceLayout() {
         <main className="flex h-full">
           <Outlet />
         </main>
+        <CommandMenu />
         <DebugSheet />
       </div>
     </WorkspaceProviders>

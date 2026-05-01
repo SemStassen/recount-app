@@ -5,8 +5,8 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { projectSidebarAtom } from "~/atoms/ui-atoms";
 
-import { CreateProjectForm } from "./create-project-form";
-import { UpdateProjectForm } from "./update-project-form";
+import { CreateProjectForm } from "./create-project/create-project-form";
+import { UpdateProjectForm } from "./create-project/update-project-form";
 
 const SIDEBAR_WIDTH = 450;
 
@@ -43,10 +43,7 @@ export function ProjectSidebar() {
             </header>
             {projectSidebar.mode === "create" && <CreateProjectForm />}
             {projectSidebar.mode === "edit" && (
-              <UpdateProjectForm
-                key={projectSidebar.projectId}
-                projectId={projectSidebar.projectId}
-              />
+              <UpdateProjectForm projectId={projectSidebar.projectId} />
             )}
           </div>
         </motion.aside>

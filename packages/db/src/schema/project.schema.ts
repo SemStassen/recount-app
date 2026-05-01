@@ -19,16 +19,8 @@ export const projectsTable = pgTable("projects", {
     .notNull(),
   // General
   name: varchar("name").notNull(),
-  hexColor: varchar("hex_color").notNull(),
+  hexColor: varchar("color").notNull(),
   isBillable: boolean("is_billable").default(true).notNull(),
-  startDate: timestamp("start_date", {
-    withTimezone: true,
-    precision: 0,
-  }),
-  targetDate: timestamp("target_date", {
-    withTimezone: true,
-    precision: 0,
-  }),
   notes: jsonb("notes"),
   // Metadata
   ...tableArchive,

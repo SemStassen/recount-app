@@ -1,9 +1,6 @@
 export { Project } from "./domain/project.entity";
 
-export {
-  ProjectArchivedError,
-  ProjectTargetDateBeforeStartDateError,
-} from "./domain/project.errors";
+export { ProjectArchivedError } from "./domain/project.errors";
 
 export { Task } from "./domain/task.entity";
 export { ProjectModuleLayer } from "./project-module.layer";

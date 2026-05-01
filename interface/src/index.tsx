@@ -18,6 +18,12 @@ declare module "@tanstack/react-table" {
   }
 }
 
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
 export function renderRecountInterface() {
   const rootElement = document.querySelector("#root");
 

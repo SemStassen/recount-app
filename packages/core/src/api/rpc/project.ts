@@ -14,7 +14,6 @@ import {
 } from "#api/contracts/index";
 import {
   ProjectArchivedError,
-  ProjectTargetDateBeforeStartDateError,
   ProjectNotFoundError,
 } from "#modules/project/index";
 import { AuthorizationError } from "#shared/authorization/index";
@@ -25,11 +24,7 @@ export const ProjectRpcGroup = RpcGroup.make(
   Rpc.make("Project.Create", {
     payload: CreateProjectCommand,
     success: CreateProjectResult,
-    error: Schema.Union([
-      AuthorizationError,
-      ProjectTargetDateBeforeStartDateError,
-      HttpApiError.InternalServerError,
-    ]),
+    error: Schema.Union([AuthorizationError, HttpApiError.InternalServerError]),
   })
     .middleware(RpcWorkspaceMiddleware)
     .middleware(RpcSessionMiddleware),
@@ -41,7 +36,6 @@ export const ProjectRpcGroup = RpcGroup.make(
       AuthorizationError,
       ProjectNotFoundError,
       ProjectArchivedError,
-      ProjectTargetDateBeforeStartDateError,
       HttpApiError.InternalServerError,
     ]),
   })

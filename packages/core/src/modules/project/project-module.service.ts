@@ -5,10 +5,7 @@ import type { RepositoryError } from "#shared/repository/index";
 import { ProjectId, TaskId } from "#shared/schemas/index";
 
 import type { Project } from "./domain/project.entity";
-import type {
-  ProjectArchivedError,
-  ProjectTargetDateBeforeStartDateError,
-} from "./domain/project.errors";
+import type { ProjectArchivedError } from "./domain/project.errors";
 import type { Task } from "./domain/task.entity";
 
 export class ProjectNotFoundError extends Schema.TaggedErrorClass<ProjectNotFoundError>()(
@@ -29,20 +26,14 @@ interface ProjectModuleShape {
   readonly createProjects: (params: {
     workspaceId: Project["workspaceId"];
     data: ReadonlyArray<typeof Project.jsonCreate.Type>;
-  }) => Effect.Effect<
-    ReadonlyArray<Project>,
-    ProjectTargetDateBeforeStartDateError | RepositoryError
-  >;
+  }) => Effect.Effect<ReadonlyArray<Project>, RepositoryError>;
   readonly updateProject: (params: {
     id: Project["id"];
     workspaceId: Project["workspaceId"];
     data: typeof Project.jsonUpdate.Type;
   }) => Effect.Effect<
     Project,
-    | ProjectNotFoundError
-    | ProjectArchivedError
-    | ProjectTargetDateBeforeStartDateError
-    | RepositoryError
+    ProjectNotFoundError | ProjectArchivedError | RepositoryError
   >;
   readonly archiveProject: (params: {
     id: Project["id"];

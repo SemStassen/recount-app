@@ -7,8 +7,6 @@ import { m } from "~/paraglide/messages";
 export type ProjectFormValues = {
   name: string;
   hexColor: string;
-  startDate: Date | null;
-  targetDate: Date | null;
   isBillable: boolean;
   notes: RichTextContent | null;
 };
@@ -16,8 +14,6 @@ export type ProjectFormValues = {
 export const defaultValues: ProjectFormValues = {
   name: "",
   hexColor: "#000000",
-  startDate: null,
-  targetDate: null,
   isBillable: false,
   notes: null,
 };
@@ -25,8 +21,6 @@ export const defaultValues: ProjectFormValues = {
 export const projectFormFieldMap = {
   name: "name",
   hexColor: "hexColor",
-  startDate: "startDate",
-  targetDate: "targetDate",
   isBillable: "isBillable",
   notes: "notes",
 } as const;
@@ -59,26 +53,6 @@ export const ProjectFormFields = withFieldGroup({
           )}
           name="hexColor"
         />
-        <div className="flex flex-row justify-between gap-4">
-          <group.AppField
-            children={(field) => (
-              <field.DateField
-                direction="vertical"
-                label={{ children: m.project_form_startDate_label() }}
-              />
-            )}
-            name="startDate"
-          />
-          <group.AppField
-            children={(field) => (
-              <field.DateField
-                direction="vertical"
-                label={{ children: m.project_form_targetDate_label() }}
-              />
-            )}
-            name="targetDate"
-          />
-        </div>
         <group.AppField
           children={(field) => (
             <field.SwitchField

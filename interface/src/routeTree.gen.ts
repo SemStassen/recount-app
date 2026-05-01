@@ -26,6 +26,7 @@ import { Route as AppWorkspaceSlugSettingsImportIndexRouteImport } from './route
 import { Route as AppWorkspaceSlugSettingsPreferencesIndexRouteImport } from './routes/_app/$workspaceSlug/settings/_preferences/index'
 import { Route as AppWorkspaceSlugSidebarProjectsIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/projects/index'
 import { Route as AppWorkspaceSlugSettingsImportProvidersRouteRouteImport } from './routes/_app/$workspaceSlug/settings/import/_providers/route'
+import { Route as AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/projects/$projectId/index'
 import { Route as AppWorkspaceSlugSettingsImportProvidersFloatIndexRouteImport } from './routes/_app/$workspaceSlug/settings/import/_providers/float/index'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
@@ -119,6 +120,12 @@ const AppWorkspaceSlugSettingsImportProvidersRouteRoute =
     path: '/import',
     getParentRoute: () => AppWorkspaceSlugSettingsRouteRoute,
   } as any)
+const AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute =
+  AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport.update({
+    id: '/projects/$projectId/',
+    path: '/projects/$projectId/',
+    getParentRoute: () => AppWorkspaceSlugSidebarRouteRoute,
+  } as any)
 const AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute =
   AppWorkspaceSlugSettingsImportProvidersFloatIndexRouteImport.update({
     id: '/float/',
@@ -140,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/$workspaceSlug/settings/': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
   '/$workspaceSlug/settings/import/': typeof AppWorkspaceSlugSettingsImportIndexRoute
   '/$workspaceSlug/settings/profile/': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/$workspaceSlug/projects/$projectId/': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
   '/$workspaceSlug/settings/import/float/': typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute
 }
 export interface FileRoutesByTo {
@@ -153,6 +161,7 @@ export interface FileRoutesByTo {
   '/$workspaceSlug/projects': typeof AppWorkspaceSlugSidebarProjectsIndexRoute
   '/$workspaceSlug/settings': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
   '/$workspaceSlug/settings/profile': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/$workspaceSlug/projects/$projectId': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
   '/$workspaceSlug/settings/import/float': typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute
 }
 export interface FileRoutesById {
@@ -174,6 +183,7 @@ export interface FileRoutesById {
   '/_app/$workspaceSlug/settings/_preferences/': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
   '/_app/$workspaceSlug/settings/import/': typeof AppWorkspaceSlugSettingsImportIndexRoute
   '/_app/$workspaceSlug/settings/profile/': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/_app/$workspaceSlug/_sidebar/projects/$projectId/': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
   '/_app/$workspaceSlug/settings/import/_providers/float/': typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute
 }
 export interface FileRouteTypes {
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/$workspaceSlug/settings/'
     | '/$workspaceSlug/settings/import/'
     | '/$workspaceSlug/settings/profile/'
+    | '/$workspaceSlug/projects/$projectId/'
     | '/$workspaceSlug/settings/import/float/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/$workspaceSlug/projects'
     | '/$workspaceSlug/settings'
     | '/$workspaceSlug/settings/profile'
+    | '/$workspaceSlug/projects/$projectId'
     | '/$workspaceSlug/settings/import/float'
   id:
     | '__root__'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/_app/$workspaceSlug/settings/_preferences/'
     | '/_app/$workspaceSlug/settings/import/'
     | '/_app/$workspaceSlug/settings/profile/'
+    | '/_app/$workspaceSlug/_sidebar/projects/$projectId/'
     | '/_app/$workspaceSlug/settings/import/_providers/float/'
   fileRoutesById: FileRoutesById
 }
@@ -354,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkspaceSlugSettingsImportProvidersRouteRouteImport
       parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute
     }
+    '/_app/$workspaceSlug/_sidebar/projects/$projectId/': {
+      id: '/_app/$workspaceSlug/_sidebar/projects/$projectId/'
+      path: '/projects/$projectId'
+      fullPath: '/$workspaceSlug/projects/$projectId/'
+      preLoaderRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute
+    }
     '/_app/$workspaceSlug/settings/import/_providers/float/': {
       id: '/_app/$workspaceSlug/settings/import/_providers/float/'
       path: '/float'
@@ -367,6 +387,7 @@ declare module '@tanstack/react-router' {
 interface AppWorkspaceSlugSidebarRouteRouteChildren {
   AppWorkspaceSlugSidebarIndexRoute: typeof AppWorkspaceSlugSidebarIndexRoute
   AppWorkspaceSlugSidebarProjectsIndexRoute: typeof AppWorkspaceSlugSidebarProjectsIndexRoute
+  AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
 }
 
 const AppWorkspaceSlugSidebarRouteRouteChildren: AppWorkspaceSlugSidebarRouteRouteChildren =
@@ -374,6 +395,8 @@ const AppWorkspaceSlugSidebarRouteRouteChildren: AppWorkspaceSlugSidebarRouteRou
     AppWorkspaceSlugSidebarIndexRoute: AppWorkspaceSlugSidebarIndexRoute,
     AppWorkspaceSlugSidebarProjectsIndexRoute:
       AppWorkspaceSlugSidebarProjectsIndexRoute,
+    AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute:
+      AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute,
   }
 
 const AppWorkspaceSlugSidebarRouteRouteWithChildren =

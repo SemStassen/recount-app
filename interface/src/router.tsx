@@ -4,13 +4,6 @@ import { ErrorPage } from "./routes/-error";
 import { NotFoundPage } from "./routes/-not-found";
 import { routeTree } from "./routeTree.gen";
 
-// This is required for Tanstack router to work properly
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router;
-  }
-}
-
 export const router = createRouter({
   routeTree,
   context: {},
