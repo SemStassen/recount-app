@@ -2,84 +2,62 @@ import { useAtomValue } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
+  Menu,
+  MenuCheckboxItem,
+  MenuPopup,
+  MenuGroup,
+  MenuTrigger,
+  MenuSeparator,
+  MenuSubTrigger,
+  MenuSub,
+  MenuSubPopup,
 } from "@recount/ui/menu";
 
-import {
-  calendarDaysInViewAtom,
-  setCalendarDaysInView,
-} from "~/atoms/calendar.atoms";
+import { calendarDaysInViewAtom, setCalendarDaysInView } from "../../atoms";
 
 function OptionsDropdown() {
   const daysInView = useAtomValue(calendarDaysInViewAtom);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
+    <Menu>
+      <MenuTrigger
         render={(props) => (
           <Button size="icon" variant="ghost" {...props}>
             <Icons.DotsThreeHorizontal />
           </Button>
         )}
       />
-      <DropdownMenuContent>
-        <DropdownMenuGroup>
-          <DropdownMenuCheckboxItem
+      <MenuPopup>
+        <MenuGroup>
+          <MenuCheckboxItem
             checked={daysInView === 1}
             onCheckedChange={() => setCalendarDaysInView(1)}
           >
             Day view
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem
+          </MenuCheckboxItem>
+          <MenuCheckboxItem
             checked={daysInView === 7}
             onCheckedChange={() => setCalendarDaysInView(7)}
           >
             Week view
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Show number of days</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuCheckboxItem
-                checked={daysInView === 2}
-                onCheckedChange={() => setCalendarDaysInView(2)}
+          </MenuCheckboxItem>
+        </MenuGroup>
+        <MenuSeparator />
+        <MenuSub>
+          <MenuSubTrigger>Number of days</MenuSubTrigger>
+          <MenuSubPopup>
+            {[2, 3, 4, 5, 6].map((option) => (
+              <MenuCheckboxItem
+                checked={daysInView === option}
+                key={option}
+                onCheckedChange={() => setCalendarDaysInView(option)}
               >
-                2 Days
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={daysInView === 3}
-                onCheckedChange={() => setCalendarDaysInView(3)}
-              >
-                3 Days
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={daysInView === 4}
-                onCheckedChange={() => setCalendarDaysInView(4)}
-              >
-                4 Days
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={daysInView === 5}
-                onCheckedChange={() => setCalendarDaysInView(5)}
-              >
-                5 Days
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={daysInView === 6}
-                onCheckedChange={() => setCalendarDaysInView(6)}
-              >
-                6 Days
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+                {option} days
+              </MenuCheckboxItem>
+            ))}
+          </MenuSubPopup>
+        </MenuSub>
+      </MenuPopup>
+    </Menu>
   );
 }
 

@@ -1,19 +1,21 @@
 import { useAtomValue } from "@effect/atom-react";
+import { Button } from "@recount/ui/button";
+import { Icons } from "@recount/ui/icons";
 
-import { calendarViewAtom } from "~/atoms/calendar.atoms";
-
-import { CalendarHeader } from "./components/calendar-header";
+import { PageTopBar } from "../page";
+import { calendarViewAtom } from "./atoms";
+import { DateNavigator } from "./components/calendar-header/date-navigator";
+import { OptionsDropdown } from "./components/calendar-header/options-dropdown";
+import { TodayButton } from "./components/calendar-header/today-button";
 import { DndProvider } from "./components/dnd/dnd-provider";
 import { CalendarMultiDayView } from "./components/views/calendar-multi-day-view";
+import {
+  CALENDAR_DAY_HEADER_HEIGHT_VAR,
+  CALENDAR_HEADER_HEIGHT_VAR,
+  CALENDAR_HOUR_COLUMN_WIDTH_VAR,
+  CALENDAR_HOUR_HEIGHT_VAR,
+} from "./constants";
 import { RightSidebar } from "./right-sidebar";
-
-export const CALENDAR_HEADER_HEIGHT_VAR = "--calendar-header-height";
-export const CALENDAR_DAY_HEADER_HEIGHT_VAR = "--calendar-day-header-height";
-export const CALENDAR_HOUR_COLUMN_WIDTH_VAR = "--calendar-hour-column-width";
-export const CALENDAR_HOUR_HEIGHT_VAR = "--calendar-hour-height";
-
-export const FIRST_VISIBLE_HOUR = 0;
-export const LAST_VISIBLE_HOUR = 24;
 
 function Calendar() {
   const view = useAtomValue(calendarViewAtom);
@@ -31,7 +33,23 @@ function Calendar() {
           } as React.CSSProperties
         }
       >
-        <CalendarHeader />
+        <PageTopBar
+          left={
+            <>
+              <DateNavigator />
+              <TodayButton />
+            </>
+          }
+          right={
+            <>
+              <OptionsDropdown />
+              <Button variant="ghost">
+                <Icons.Plus />
+                Add entry (NI)
+              </Button>
+            </>
+          }
+        />
         <DndProvider>{view === "days" && <CalendarMultiDayView />}</DndProvider>
       </div>
       <div className="relative">

@@ -2,13 +2,13 @@ import { useAtomValue } from "@effect/atom-react";
 import { cn } from "@recount/ui/utils";
 import { isSameDay } from "date-fns";
 
-import { calendarCurrentTimeAtom } from "~/atoms/calendar.atoms";
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
+import { calendarCurrentTimeAtom } from "../../../atoms";
 import {
   CALENDAR_DAY_HEADER_HEIGHT_VAR,
   CALENDAR_HOUR_COLUMN_WIDTH_VAR,
-} from "../../..";
+} from "../../../constants";
 
 function Header({ weekdays }: { weekdays: Array<Date> }) {
   const currentTime = useAtomValue(calendarCurrentTimeAtom);

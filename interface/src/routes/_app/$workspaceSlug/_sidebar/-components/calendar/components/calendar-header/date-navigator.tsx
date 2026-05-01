@@ -4,13 +4,14 @@ import { Calendar } from "@recount/ui/calendar";
 import { Icons } from "@recount/ui/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@recount/ui/popover";
 
+import { useDateTimeFormatter } from "~/lib/utils/date-time";
+
 import {
   calendarSelectedDateAtom,
   goToNextPeriod,
   goToPreviousPeriod,
   setCalendarSelectedDate,
-} from "~/atoms/calendar.atoms";
-import { useDateTimeFormatter } from "~/lib/utils/date-time";
+} from "../../atoms";
 
 function DateNavigator() {
   const selectedDate = useAtomValue(calendarSelectedDateAtom);

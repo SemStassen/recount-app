@@ -1,8 +1,9 @@
 import { useAtomValue } from "@effect/atom-react";
 
-import { calendarCurrentTimeAtom } from "~/atoms/calendar.atoms";
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
-import { FIRST_VISIBLE_HOUR, LAST_VISIBLE_HOUR } from "../..";
+
+import { calendarCurrentTimeAtom } from "../../atoms";
+import { FIRST_VISIBLE_HOUR, LAST_VISIBLE_HOUR } from "../../constants";
 
 function CurrentTimeLine() {
   const currentTime = useAtomValue(calendarCurrentTimeAtom);

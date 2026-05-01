@@ -1,8 +1,7 @@
 import { useAtomValue } from "@effect/atom-react";
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
-import { calendarSortedDragSelectionAtom } from "~/atoms/calendar.atoms";
-
+import { calendarSortedDragSelectionAtom } from "../../atoms";
 import { getDragSelectionStyle } from "../../helpers";
 
 function DragSelectionHighlight({ day }: { day: Date }) {

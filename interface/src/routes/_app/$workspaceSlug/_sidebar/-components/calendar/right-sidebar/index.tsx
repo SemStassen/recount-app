@@ -1,19 +1,13 @@
 import { useAtomValue } from "@effect/atom-react";
 import { AnimatePresence, motion } from "motion/react";
 
-import {
-  calendarIsDragSelectionActiveAtom,
-  calendarSortedDragSelectionAtom,
-} from "~/atoms/calendar.atoms";
-
+import { calendarIsCreateSidebarOpenAtom } from "../atoms";
 import { CreateTimeEntryForm } from "./create-time-entry-form";
 
 const SIDEBAR_WIDTH = 400;
 
 function RightSidebar() {
-  const isDragSelectionActive = useAtomValue(calendarIsDragSelectionActiveAtom);
-  const dragSelection = useAtomValue(calendarSortedDragSelectionAtom);
-  const isOpen = Boolean(dragSelection && !isDragSelectionActive);
+  const isOpen = useAtomValue(calendarIsCreateSidebarOpenAtom);
 
   return (
     <AnimatePresence initial={false}>

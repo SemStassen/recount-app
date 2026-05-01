@@ -2,10 +2,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { isToday } from "date-fns";
 
-import {
-  calendarSelectedDateAtom,
-  setCalendarSelectedDate,
-} from "~/atoms/calendar.atoms";
+import { calendarSelectedDateAtom, setCalendarSelectedDate } from "../../atoms";
 
 function TodayButton() {
   const selectedDate = useAtomValue(calendarSelectedDateAtom);

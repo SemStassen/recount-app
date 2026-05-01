@@ -1,33 +1,24 @@
 import { useAtomValue } from "@effect/atom-react";
 import { ScrollArea } from "@recount/ui/scroll-area";
-import {
-  addDays,
-  areIntervalsOverlapping,
-  isSameDay,
-  setHours,
-  setMinutes,
-} from "date-fns";
+import { areIntervalsOverlapping, isSameDay } from "date-fns";
 
-import {
-  calendarDaysInViewAtom,
-  calendarDragSelectionAtom,
-  calendarSelectedDateAtom,
-  resetDragSelection,
-  setDragSelectionFirst,
-  setDragSelectionSecond,
-  setIsDragSelectionActive,
-} from "~/atoms/calendar.atoms";
-import { atomRegistry } from "~/atoms/registry";
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
+import { calendarVisibleDaysAtom } from "../../../atoms";
 import {
   CALENDAR_DAY_HEADER_HEIGHT_VAR,
   CALENDAR_HEADER_HEIGHT_VAR,
   CALENDAR_HOUR_COLUMN_WIDTH_VAR,
   CALENDAR_HOUR_HEIGHT_VAR,
-} from "../../..";
+  CALENDAR_SLOTS_PER_HOUR,
+} from "../../../constants";
 import { DUMMY_TIME_ENTRIES } from "../../../dummy-time-entries";
-import { getTimeEntryBlockStyle, groupTimeEntries } from "../../../helpers";
+import {
+  getCalendarSlotDate,
+  getTimeEntryBlockStyle,
+  groupTimeEntries,
+} from "../../../helpers";
+import { useCalendarDragSelection } from "../../../use-calendar-drag-selection";
 import { DroppableTimeEntry } from "../../dnd/droppable-time-entry";
 import { CurrentTimeLine } from "../../views/current-time-line";
 import { DragSelectionHighlight } from "../../views/drag-selection-highlight";
@@ -35,45 +26,14 @@ import { TimeEntry } from "../../views/time-entry";
 import { Header } from "./header";
 
 const hours = Array.from({ length: 24 }).map((_, hourIndex) => hourIndex);
-const timeSlotsPerHour = Array.from({ length: 4 }).map(
+const timeSlotsPerHour = Array.from({ length: CALENDAR_SLOTS_PER_HOUR }).map(
   (_, timeSlotIndex) => timeSlotIndex
 );
 
-const handlePointerDown = () => {
-  resetDragSelection();
-  setIsDragSelectionActive(true);
-
-  window.addEventListener("pointermove", handlePointerMove);
-  window.addEventListener("pointerup", handlePointerUp);
-};
-
-const handlePointerMove = (e: PointerEvent) => {
-  const dataDate = (e.target as HTMLElement).dataset.date;
-  if (!dataDate) {
-    return;
-  }
-
-  if (atomRegistry.get(calendarDragSelectionAtom)?.firstSelected) {
-    setDragSelectionSecond(new Date(dataDate));
-  } else {
-    setDragSelectionFirst(new Date(dataDate));
-  }
-};
-
-const handlePointerUp = () => {
-  setIsDragSelectionActive(false);
-
-  window.removeEventListener("pointermove", handlePointerMove);
-  window.removeEventListener("pointerup", handlePointerUp);
-};
-
 function CalendarMultiDayView() {
-  const selectedDate = useAtomValue(calendarSelectedDateAtom);
-  const daysInView = useAtomValue(calendarDaysInViewAtom);
+  const weekdays = useAtomValue(calendarVisibleDaysAtom);
   const formatter = useDateTimeFormatter();
-  const weekdays = Array.from({ length: daysInView }).map((_, dayIndex) =>
-    addDays(selectedDate, dayIndex)
-  );
+  const { startDragSelection } = useCalendarDragSelection();
 
   return (
     <div className="flex flex-col">
@@ -138,17 +98,20 @@ function CalendarMultiDayView() {
                       {/* Change this for better creation precision */}
                       {/* 4 = 15 min, 6 = 10 min, 12 = 5 min */}
                       {timeSlotsPerHour.map((timeSlotIndex) => {
-                        const minutes =
-                          timeSlotIndex * (60 / timeSlotsPerHour.length);
-
-                        const date = setMinutes(setHours(day, hour), minutes);
+                        const date = getCalendarSlotDate(
+                          day,
+                          hour,
+                          timeSlotIndex,
+                          timeSlotsPerHour.length
+                        );
+                        const minutes = date.getMinutes();
 
                         return (
                           <DroppableTimeEntry
                             data-date={date}
                             id={`${day.toString()}-${hour}-${minutes}`}
                             key={timeSlotIndex}
-                            onPointerDown={() => handlePointerDown()}
+                            onPointerDown={startDragSelection}
                             style={{
                               height: `calc(var(${CALENDAR_HOUR_HEIGHT_VAR}) / ${timeSlotsPerHour.length})`,
                             }}

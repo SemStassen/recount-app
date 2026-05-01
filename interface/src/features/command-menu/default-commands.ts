@@ -7,6 +7,21 @@ import type { Command } from "./types";
 
 export const defaultCommands: Array<Command> = [
   {
+    id: "navigation.go-to-log-time",
+    category: "navigation",
+    icon: Icons.ArrowRight,
+    perform: ({ close }) => {
+      router.navigate(
+        linkOptions({
+          to: "/$workspaceSlug",
+          from: "/$workspaceSlug/",
+        })
+      );
+      close();
+    },
+    title: "Go to log time",
+  },
+  {
     id: "navigation.go-to-projects",
     category: "navigation",
     icon: Icons.ArrowRight,

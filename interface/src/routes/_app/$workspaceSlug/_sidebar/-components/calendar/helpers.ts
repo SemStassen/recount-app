@@ -1,7 +1,29 @@
-import { differenceInMinutes, endOfDay, startOfDay } from "date-fns";
+import {
+  addDays,
+  differenceInMinutes,
+  endOfDay,
+  setHours,
+  setMinutes,
+  startOfDay,
+} from "date-fns";
 
-import { FIRST_VISIBLE_HOUR, LAST_VISIBLE_HOUR } from ".";
+import { FIRST_VISIBLE_HOUR, LAST_VISIBLE_HOUR } from "./constants";
 import type { ITimeEntry } from "./types";
+
+export function getVisibleDays(selectedDate: Date, daysInView: number) {
+  return Array.from({ length: daysInView }).map((_, dayIndex) =>
+    addDays(selectedDate, dayIndex)
+  );
+}
+
+export function getCalendarSlotDate(
+  day: Date,
+  hour: number,
+  timeSlotIndex: number,
+  slotsPerHour: number
+) {
+  return setMinutes(setHours(day, hour), timeSlotIndex * (60 / slotsPerHour));
+}
 
 /**
  * Groups overlapping time entries into separate columns for calendar display.
@@ -27,7 +49,7 @@ import type { ITimeEntry } from "./types";
  * ```
  */
 export function groupTimeEntries(timeEntries: Array<ITimeEntry>) {
-  const sortedTimeEntries = timeEntries.sort(
+  const sortedTimeEntries = [...timeEntries].sort(
     (a, b) => a.startedAt.getTime() - b.startedAt.getTime()
   );
   const groups: Array<Array<ITimeEntry>> = [];

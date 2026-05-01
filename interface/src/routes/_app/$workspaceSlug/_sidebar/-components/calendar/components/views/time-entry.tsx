@@ -1,7 +1,8 @@
 import { differenceInMinutes } from "date-fns";
 
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
-import { CALENDAR_HOUR_HEIGHT_VAR } from "../..";
+
+import { CALENDAR_HOUR_HEIGHT_VAR } from "../../constants";
 import type { ITimeEntry } from "../../types";
 import { DraggableTimeEntry } from "../dnd/draggable-time-entry";
 

@@ -1,5 +1,5 @@
 import { WorkspaceIntegration } from "@recount/core/modules/integration";
-import { Project } from "@recount/core/modules/project";
+import { Project, Task } from "@recount/core/modules/project";
 import { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { Schema, Struct } from "effect";
 
@@ -40,6 +40,16 @@ export const workspaceShapes = {
     decodeRow: (row) =>
       Schema.decodeUnknownSync(
         Project.json.mapFields(Struct.map(Schema.optionalKey))
+      )(row),
+  }),
+  tasks: defineShape({
+    name: "tasks",
+    routePath: "/tasks",
+    schema: Schema.toStandardSchemaV1(Task.json),
+    getKey: (task) => task.id,
+    decodeRow: (row) =>
+      Schema.decodeUnknownSync(
+        Task.json.mapFields(Struct.map(Schema.optionalKey))
       )(row),
   }),
 };

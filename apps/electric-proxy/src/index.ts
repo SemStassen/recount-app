@@ -29,6 +29,7 @@ import {
 import { UserSettingsMeRouteLayer } from "./routes/me/user-settings";
 import { WorkspacesMeRouteLayer } from "./routes/me/workspaces";
 import { ProjectsRouteLayer } from "./routes/projects";
+import { TasksRouteLayer } from "./routes/tasks";
 import { WorkspaceIntegrationsRouteLayer } from "./routes/workspace-integrations";
 import { WorkspaceMembersRouteLayer } from "./routes/workspace-members";
 
@@ -97,6 +98,7 @@ const HttpRoutesLayer = Layer.mergeAll(
   WorkspacesMeRouteLayer,
   // General
   ProjectsRouteLayer,
+  TasksRouteLayer,
   WorkspaceIntegrationsRouteLayer,
   WorkspaceMembersRouteLayer
 ).pipe(Layer.provide(CorsLayer));

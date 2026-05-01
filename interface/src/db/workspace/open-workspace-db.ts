@@ -73,6 +73,21 @@ export async function openWorkspaceDb(workspaceId: string) {
     })
   );
 
+  const tasksCollection = createCollection(
+    electricCollectionOptions({
+      id: createCollectionId(workspaceShapes.tasks.name),
+      schema: workspaceShapes.tasks.schema,
+      getKey: workspaceShapes.tasks.getKey,
+      shapeOptions: {
+        url: workspaceShapes.tasks.url,
+        columnMapper: snakeCamelMapper(),
+        transformer: workspaceShapes.tasks.decodeRow,
+        fetchClient: workspaceFetchClient,
+        signal: abortController.signal,
+      },
+    })
+  );
+
   let preloadPromise: Promise<void> | null = null;
 
   return {
@@ -80,6 +95,7 @@ export async function openWorkspaceDb(workspaceId: string) {
       workspaceMembersCollection,
       workspaceIntegrationsCollection,
       projectsCollection,
+      tasksCollection,
     },
     preload: async () => {
       if (!preloadPromise) {
@@ -87,6 +103,7 @@ export async function openWorkspaceDb(workspaceId: string) {
           workspaceMembersCollection.preload(),
           workspaceIntegrationsCollection.preload(),
           projectsCollection.preload(),
+          tasksCollection.preload(),
         ]).then(() => {});
       }
 
@@ -99,6 +116,7 @@ export async function openWorkspaceDb(workspaceId: string) {
         workspaceMembersCollection.cleanup(),
         workspaceIntegrationsCollection.cleanup(),
         projectsCollection.cleanup(),
+        tasksCollection.cleanup(),
       ]);
     },
   };

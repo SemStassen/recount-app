@@ -1,46 +1,79 @@
 import { useAtomValue } from "@effect/atom-react";
-import { Field, FieldGroup, Fieldset } from "@recount/ui/field";
+import type { Project, Task } from "@recount/core/modules/project";
+import { Field } from "@recount/ui/field";
+import { Fieldset } from "@recount/ui/fieldset";
 import { Icons } from "@recount/ui/icons";
+import { useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
 import { isEqual } from "date-fns";
 import { Schema } from "effect";
 
-import { projectsWithTasksAtom } from "~/atoms/api";
+import { useAppForm } from "~/components/form";
+import { useWorkspaceDb } from "~/db/workspace/context";
+
 import {
-  calendarSortedDragSelectionAtom,
+  calendarSortedCreateTimeEntrySelectionAtom,
   setDragSelectionFirst,
   setDragSelectionSecond,
-} from "~/atoms/calendar.atoms";
-import { useAppForm } from "~/components/form";
+} from "../atoms";
 
-const createTimeEntrySchema = Schema.standardSchemaV1(
+const createTimeEntrySchema = Schema.toStandardSchemaV1(
   Schema.Struct({
-    startedAt: Schema.Date,
-    stoppedAt: Schema.Date,
+    startedAt: Schema.String,
+    stoppedAt: Schema.String,
     projectId: Schema.NonEmptyString,
-    taskId: Schema.NullOr(Schema.String),
+    taskId: Schema.optional(Schema.String),
     description: Schema.NullOr(Schema.String),
   })
 );
 
-const defaultValues: typeof createTimeEntrySchema.Encoded = {
+type CreateTimeEntryFormValues = {
+  startedAt: string;
+  stoppedAt: string;
+  projectId: string;
+  taskId?: string;
+  description: string | null;
+};
+
+const defaultValues: CreateTimeEntryFormValues = {
   startedAt: new Date().toISOString(),
   stoppedAt: new Date().toISOString(),
   projectId: "",
-  taskId: null,
+  taskId: undefined,
   description: null,
 };
 
+type ProjectWithTasks = Project & { tasks: Array<Task> };
+
+function getProjectsWithTasks(
+  projects: ReadonlyArray<Project>,
+  tasks: ReadonlyArray<Task>
+): Array<ProjectWithTasks> {
+  return projects.map((project) => ({
+    ...project,
+    tasks: tasks.filter((task) => task.projectId === project.id),
+  }));
+}
+
 function CreateTimeEntryForm() {
-  const dragSelection = useAtomValue(calendarSortedDragSelectionAtom);
-  const projectsWithTasks = useAtomValue(projectsWithTasksAtom);
+  const dragSelection = useAtomValue(
+    calendarSortedCreateTimeEntrySelectionAtom
+  );
+  const workspaceDb = useWorkspaceDb();
+  const { data: projects = [] } = useLiveQuery((q) =>
+    q.from({ p: workspaceDb.collections.projectsCollection })
+  );
+  const { data: tasks = [] } = useLiveQuery((q) =>
+    q.from({ t: workspaceDb.collections.tasksCollection })
+  );
+  const projectsWithTasks = getProjectsWithTasks(projects, tasks);
 
   const form = useAppForm({
     defaultValues: {
       ...defaultValues,
       startedAt: dragSelection?.start.toISOString() ?? defaultValues.startedAt,
       stoppedAt: dragSelection?.end.toISOString() ?? defaultValues.stoppedAt,
-      projectId: projectsWithTasks[0]?.id,
+      projectId: projectsWithTasks[0]?.id.toString() ?? defaultValues.projectId,
     },
     validationLogic: revalidateLogic(),
     validators: {
@@ -50,17 +83,19 @@ function CreateTimeEntryForm() {
 
   return (
     <form>
-      <FieldGroup direction="vertical">
+      <div className="flex flex-col gap-6">
         <Fieldset>
-          <FieldGroup className="gap-2" direction="horizontal">
+          <div className="flex flex-row gap-2">
             <Icons.Clock className="size-4 shrink-0 text-muted-foreground" />
             <form.AppField
               children={(field) => (
-                <field.TimeField
+                <field.TextField
                   description={{
                     className: "sr-only",
                     children: "Time you started working on the task",
                   }}
+                  direction="vertical"
+                  input={{ type: "datetime-local" }}
                   label={{ className: "sr-only", children: "Started At" }}
                 />
               )}
@@ -78,11 +113,13 @@ function CreateTimeEntryForm() {
             <Icons.ArrowRight className="muted-foreground size-4 shrink-0" />
             <form.AppField
               children={(field) => (
-                <field.TimeField
+                <field.TextField
                   description={{
                     className: "sr-only",
                     children: "Time you stopped working on the task",
                   }}
+                  direction="vertical"
+                  input={{ type: "datetime-local" }}
                   label={{ className: "sr-only", children: "Stopped At" }}
                 />
               )}
@@ -97,28 +134,29 @@ function CreateTimeEntryForm() {
               }}
               name="stoppedAt"
             />
-          </FieldGroup>
+          </div>
         </Fieldset>
         <Fieldset>
-          <FieldGroup className="items-start gap-2" direction="horizontal">
+          <div className="flex flex-row items-start gap-2">
             <Icons.Folder className="mt-2.5 size-4 shrink-0 text-muted-foreground" />
 
-            <FieldGroup>
+            <div className="flex flex-col gap-6">
               <form.AppField
                 children={(field) => (
-                  <field.ComboBoxField
+                  <field.SelectField
                     description={{
                       className: "sr-only",
                       children: "The project you worked on",
                     }}
+                    direction="vertical"
                     items={[
                       {
                         label: "No project",
-                        value: null,
+                        value: "",
                       },
                       ...projectsWithTasks.map((project) => ({
                         label: project.name,
-                        value: project.id,
+                        value: project.id.toString(),
                       })),
                     ]}
                     label={{ className: "sr-only", children: "Project" }}
@@ -138,13 +176,13 @@ function CreateTimeEntryForm() {
 
                       const items = hasTasks
                         ? [
-                            { label: "No task", value: null },
+                            { label: "No task", value: "" },
                             ...tasks.map((t) => ({
                               label: t.name,
-                              value: t.id,
+                              value: t.id.toString(),
                             })),
                           ]
-                        : [{ label: "No tasks available", value: null }];
+                        : [{ label: "No tasks available", value: "" }];
 
                       return (
                         <field.SelectField
@@ -152,6 +190,7 @@ function CreateTimeEntryForm() {
                             className: "sr-only",
                             children: "The task of the project you worked on",
                           }}
+                          direction="vertical"
                           field={{
                             disabled: !projectId || !hasTasks,
                           }}
@@ -164,8 +203,8 @@ function CreateTimeEntryForm() {
                   />
                 )}
               />
-            </FieldGroup>
-          </FieldGroup>
+            </div>
+          </div>
         </Fieldset>
         <Fieldset>
           <form.AppField
@@ -177,6 +216,7 @@ function CreateTimeEntryForm() {
                 textarea={{
                   placeholder: "Notes...",
                 }}
+                direction="vertical"
                 description={{
                   className: "sr-only",
                   children: "The description of the time entry",
@@ -192,7 +232,7 @@ function CreateTimeEntryForm() {
             <form.SubmitButton>Create Time Entry</form.SubmitButton>
           </form.AppForm>
         </Field>
-      </FieldGroup>
+      </div>
     </form>
   );
 }
