@@ -6,11 +6,11 @@ import { describe, expect, it, vi } from "vitest";
 import * as schema from "../src/schema";
 
 const mockState = vi.hoisted(() => ({
-  rootExecute: vi.fn(() => Promise.resolve([{ createdAt: "2026-01-01" }])),
+  rootExecute: vi.fn(() => Effect.succeed([{ createdAt: "2026-01-01" }])),
   transactionExecute: vi.fn(() =>
-    Promise.resolve([{ createdAt: "2026-01-02" }])
+    Effect.succeed([{ createdAt: "2026-01-02" }])
   ),
-  transaction: vi.fn((run: (tx: unknown) => Promise<unknown>) =>
+  transaction: vi.fn((run: (tx: unknown) => Effect.Effect<unknown>) =>
     run({
       select: () => ({
         from: () => ({
@@ -22,24 +22,33 @@ const mockState = vi.hoisted(() => ({
   ),
 }));
 
-vi.mock("pg", () => ({
-  Pool: class MockPool {
-    end() {
-      return Promise.resolve();
-    }
-  },
-}));
+vi.mock("@effect/sql-pg", async () => {
+  const { Layer } = await import("effect");
 
-vi.mock("drizzle-orm/node-postgres", () => ({
-  drizzle: vi.fn(() => ({
-    select: () => ({
-      from: () => ({
-        execute: mockState.rootExecute,
-      }),
-    }),
-    transaction: mockState.transaction,
-  })),
-}));
+  return {
+    PgClient: {
+      layerConfig: vi.fn(() => Layer.empty),
+    },
+  };
+});
+
+vi.mock("drizzle-orm/effect-postgres", async () => {
+  const { Effect, Layer } = await import("effect");
+
+  return {
+    DefaultServices: Layer.empty,
+    make: vi.fn(() =>
+      Effect.succeed({
+        select: () => ({
+          from: () => ({
+            execute: mockState.rootExecute,
+          }),
+        }),
+        transaction: mockState.transaction,
+      })
+    ),
+  };
+});
 
 vi.mock("../src/relations", () => ({
   relations: {} as never,
@@ -84,10 +93,7 @@ describe("database layer", () => {
         const db = yield* Database;
 
         return yield* db.drizzle((drizzle) =>
-          Effect.tryPromise({
-            try: () => drizzle.select().from(schema.workspacesTable).execute(),
-            catch: (cause) => cause,
-          })
+          drizzle.select().from(schema.workspacesTable).execute()
         );
       }).pipe(Effect.provide(DatabaseLayer))
     );
@@ -138,11 +144,7 @@ describe("database layer", () => {
         const db = yield* Database;
 
         return yield* db.withTransaction(
-          Effect.tryPromise({
-            try: () =>
-              db.unsafeDrizzle.select().from(schema.workspacesTable).execute(),
-            catch: (cause) => cause,
-          })
+          db.unsafeDrizzle.select().from(schema.workspacesTable).execute()
         );
       }).pipe(Effect.provide(DatabaseLayer))
     );
