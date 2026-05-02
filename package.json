@@ -27,7 +27,7 @@
       "@effect/platform-bun": "^4.0.0-beta.59",
       "@effect/sql-pg": "^4.0.0-beta.59",
       "better-auth": "^1.6.5",
-      "drizzle-orm": "1.0.0-beta.18-7eb39f0",
+      "drizzle-orm": "1.0.0-rc.1",
       "effect": "^4.0.0-beta.59",
       "uuid": "^13.0.0"
     },
@@ -39,7 +39,7 @@
         "@types/react-dom": "^19.2.1",
         "@vitejs/plugin-react": "^6.0.1",
         "babel-plugin-react-compiler": "^1.0.0",
-        "drizzle-kit": "1.0.0-beta.18-7eb39f0",
+        "drizzle-kit": "1.0.0-rc.1",
         "typescript": "^6.0.3",
         "vite": "^8.0.9"
       },
@@ -67,6 +67,7 @@
     "@inlang/cli": "^3.1.10"
   },
   "dependencies": {
-    "alchemy": "^0.93.4"
+    "alchemy": "2.0.0-beta.28",
+    "effect": "catalog:"
   }
 }

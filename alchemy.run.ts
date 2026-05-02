@@ -1,43 +1,28 @@
-import alchemy from "alchemy";
-import { R2Bucket } from "alchemy/cloudflare";
+import * as Alchemy from "alchemy";
+import * as Cloudflare from "alchemy/Cloudflare";
+import * as Effect from "effect/Effect";
 
-const app = await alchemy("recount", {});
+export default Alchemy.Stack(
+  "Recount",
+  {
+    providers: Cloudflare.providers(),
+    state: Cloudflare.state(),
+  },
+  Effect.gen(function* () {
+    const globalUploadsBucket = yield* Cloudflare.R2Bucket("GlobalUploads", {
+      locationHint: "wnam",
+      storageClass: "Standard",
+    });
 
-const isProd = app.stage === "prod";
+    const euUploadsBucket = yield* Cloudflare.R2Bucket("EuUploads", {
+      locationHint: "weur",
+      jurisdiction: "eu",
+      storageClass: "Standard",
+    });
 
-await alchemy.run("uploads", async () => {
-  const bucketTier = isProd ? "prod" : "sandbox";
-
-  const cors: R2Bucket["cors"] = [
-    {
-      allowed: {
-        origins: isProd ? ["https://recount.dev"] : ["http://localhost:8002"],
-        methods: ["GET", "PUT", "HEAD"],
-        headers: ["*"],
-      },
-    },
-  ];
-
-  const globalUploadsBucket = await R2Bucket("globalUploads", {
-    name: `recount-global-uploads-${bucketTier}`,
-    adopt: true,
-    locationHint: "enam",
-    devDomain: isProd ? false : true,
-    cors,
-  });
-
-  const euUploadsBucket = await R2Bucket("euUploads", {
-    name: `recount-eu-uploads-${bucketTier}`,
-    adopt: true,
-    jurisdiction: "eu",
-    devDomain: isProd ? false : true,
-    cors,
-  });
-
-  return {
-    globalUploadsBucket,
-    euUploadsBucket,
-  };
-});
-
-await app.finalize();
+    return {
+      globalUploadsBucketName: globalUploadsBucket.bucketName,
+      euUploadsBucketName: euUploadsBucket.bucketName,
+    };
+  })
+);

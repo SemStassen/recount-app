@@ -1,11 +1,4 @@
-import {
-  boolean,
-  jsonb,
-  pgTable,
-  timestamp,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 
 import { tableArchive, tableId, tableMetadata } from "#utils/snippets";
 
