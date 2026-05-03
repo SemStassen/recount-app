@@ -1,9 +1,9 @@
 import * as PgDrizzle from "drizzle-orm/effect-postgres";
 import { Context, Effect, Layer } from "effect";
 
-import { PgClientLayer } from "./pg-client.layer";
 import { Database, DatabaseError } from "./database.service";
 import type { ActiveConnection, DatabaseShape } from "./database.service";
+import { PgClientLayer } from "./pg-client.layer";
 
 export const DatabaseLayer = Layer.effect(
   Database,

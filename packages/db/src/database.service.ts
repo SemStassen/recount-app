@@ -17,8 +17,6 @@ export type TransactionDb = Parameters<
 
 export type ActiveConnection = DrizzleDb | TransactionDb;
 
-export type DrizzleCallbackResult<A, E, R = never> = Effect.Effect<A, E, R>;
-
 export interface DatabaseShape {
   /**
    * Integration-only escape hatch to the root Drizzle client.
@@ -37,7 +35,7 @@ export interface DatabaseShape {
    *
    */
   readonly drizzle: <A, E, R = never>(
-    f: (drizzle: ActiveConnection) => DrizzleCallbackResult<A, E, R>
+    f: (drizzle: ActiveConnection) => Effect.Effect<A, E, R>
   ) => Effect.Effect<A, E | DatabaseError, R>;
   /**
    * Run operations in a transaction.

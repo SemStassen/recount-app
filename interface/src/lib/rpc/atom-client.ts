@@ -2,6 +2,7 @@ import {
   AuthRpcGroup,
   FileUploadRpcGroup,
   ProjectRpcGroup,
+  TimeEntryRpcGroup,
   UserRpcGroup,
   UserSettingsRpcGroup,
   WorkspaceIntegrationRpcGroup,
@@ -22,6 +23,7 @@ import { RpcSessionMiddlewareLayerClient } from "./middleware";
 const allRpcGroups = AuthRpcGroup.merge(
   FileUploadRpcGroup,
   ProjectRpcGroup,
+  TimeEntryRpcGroup,
   UserSettingsRpcGroup,
   UserRpcGroup,
   WorkspaceIntegrationRpcGroup,
