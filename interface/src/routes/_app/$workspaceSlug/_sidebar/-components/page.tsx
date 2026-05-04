@@ -13,7 +13,7 @@ import {
   type RegisteredRouter,
   type ValidateLinkOptions,
 } from "@tanstack/react-router";
-import { Fragment, type PropsWithChildren } from "react";
+import { Fragment } from "react";
 
 import { isNavigationSidebarOpenAtom } from "~/atoms/ui-atoms";
 

@@ -8,13 +8,13 @@ import { revalidateLogic } from "@tanstack/react-form";
 import { isEqual } from "date-fns";
 import { Schema } from "effect";
 
+import { atomRegistry } from "~/atoms/registry";
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 
 import {
-  calendarSortedCreateTimeEntrySelectionAtom,
-  setDragSelectionFirst,
-  setDragSelectionSecond,
+  sortedTimeEntrySidebarSelectionAtom,
+  timeEntrySidebarSelectionAtom,
 } from "../atoms";
 
 const createTimeEntrySchema = Schema.toStandardSchemaV1(
@@ -56,9 +56,7 @@ function getProjectsWithTasks(
 }
 
 function CreateTimeEntryForm() {
-  const dragSelection = useAtomValue(
-    calendarSortedCreateTimeEntrySelectionAtom
-  );
+  const sidebarSelection = useAtomValue(sortedTimeEntrySidebarSelectionAtom);
   const workspaceDb = useWorkspaceDb();
   const { data: projects = [] } = useLiveQuery((q) =>
     q.from({ p: workspaceDb.collections.projectsCollection })
@@ -71,8 +69,9 @@ function CreateTimeEntryForm() {
   const form = useAppForm({
     defaultValues: {
       ...defaultValues,
-      startedAt: dragSelection?.start.toISOString() ?? defaultValues.startedAt,
-      stoppedAt: dragSelection?.end.toISOString() ?? defaultValues.stoppedAt,
+      startedAt:
+        sidebarSelection?.start.toISOString() ?? defaultValues.startedAt,
+      stoppedAt: sidebarSelection?.end.toISOString() ?? defaultValues.stoppedAt,
       projectId: projectsWithTasks[0]?.id.toString() ?? defaultValues.projectId,
     },
     validationLogic: revalidateLogic(),
@@ -105,7 +104,11 @@ function CreateTimeEntryForm() {
                     return;
                   }
 
-                  setDragSelectionFirst(new Date(value.value));
+                  const firstSelected = new Date(value.value);
+                  atomRegistry.set(timeEntrySidebarSelectionAtom, {
+                    firstSelected,
+                    secondSelected: firstSelected,
+                  });
                 },
               }}
               name="startedAt"
@@ -129,7 +132,19 @@ function CreateTimeEntryForm() {
                     return;
                   }
 
-                  setDragSelectionSecond(new Date(value.value));
+                  atomRegistry.update(
+                    timeEntrySidebarSelectionAtom,
+                    (selection) => {
+                      if (!selection) {
+                        return selection;
+                      }
+
+                      return {
+                        ...selection,
+                        secondSelected: new Date(value.value),
+                      };
+                    }
+                  );
                 },
               }}
               name="stoppedAt"

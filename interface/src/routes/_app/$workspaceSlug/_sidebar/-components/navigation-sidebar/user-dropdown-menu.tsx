@@ -15,7 +15,7 @@ import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { betterAuthClient } from "~/lib/better-auth";
 
-function UserDropdownMenu() {
+export function UserDropdownMenu() {
   const { user } = useRouteContext({
     from: "/_app/$workspaceSlug",
   });
@@ -77,5 +77,3 @@ function UserDropdownMenu() {
     </DropdownMenu>
   );
 }
-
-export { UserDropdownMenu };

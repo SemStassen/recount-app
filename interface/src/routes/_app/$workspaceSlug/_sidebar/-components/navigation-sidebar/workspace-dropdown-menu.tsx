@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@recount/ui/avatar";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 import {
@@ -39,7 +38,10 @@ export function WorkspaceDropdownMenu() {
       <MenuTrigger
         render={
           <Button className="max-w-full" size="sm" variant="ghost">
-            <WorkspaceAvatar workspaceId={workspace.id} />
+            <WorkspaceAvatar
+              name={workspace.name}
+              logoUrl={workspace.logoUrl.valueOrUndefined}
+            />
             <span className="truncate">{workspace.name}</span>
             <Icons.ChevronDown />
           </Button>

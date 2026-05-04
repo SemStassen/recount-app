@@ -23,7 +23,7 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-row w-full h-full">
-      <div className="flex flex-col w-full">
+      <div className="flex min-w-0 flex-1 flex-col">
         <PageTopBar
           left={
             <PageTopBarBreadcrumbs

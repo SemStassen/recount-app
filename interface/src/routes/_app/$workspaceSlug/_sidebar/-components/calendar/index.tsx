@@ -1,13 +1,13 @@
-import { useAtomValue } from "@effect/atom-react";
+import { useAtom, useAtomSet } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 
 import { PageTopBar } from "../page";
-import { calendarViewAtom } from "./atoms";
-import { DateNavigator } from "./components/calendar-header/date-navigator";
-import { OptionsDropdown } from "./components/calendar-header/options-dropdown";
-import { TodayButton } from "./components/calendar-header/today-button";
+import { isTimeEntrySidebarOpenAtom } from "./atoms";
+import { DateNavigator } from "./components/date-navigator";
 import { DndProvider } from "./components/dnd/dnd-provider";
+import { OptionsDropdown } from "./components/options-dropdown";
+import { TodayButton } from "./components/today-button";
 import { CalendarMultiDayView } from "./components/views/calendar-multi-day-view";
 import {
   CALENDAR_DAY_HEADER_HEIGHT_VAR,
@@ -15,15 +15,15 @@ import {
   CALENDAR_HOUR_COLUMN_WIDTH_VAR,
   CALENDAR_HOUR_HEIGHT_VAR,
 } from "./constants";
-import { RightSidebar } from "./right-sidebar";
+import { TimeEntrySidebar } from "./time-entry-sidebar";
 
 function Calendar() {
-  const view = useAtomValue(calendarViewAtom);
+  const setIsOpen = useAtomSet(isTimeEntrySidebarOpenAtom);
 
   return (
-    <div className="flex flex-1">
+    <div className="flex flex-row flex-1">
       <div
-        className="w-full overflow-hidden"
+        className="min-w-0 flex-1 overflow-hidden"
         style={
           {
             [CALENDAR_HEADER_HEIGHT_VAR]: "48px",
@@ -43,18 +43,18 @@ function Calendar() {
           right={
             <>
               <OptionsDropdown />
-              <Button variant="ghost">
+              <Button variant="ghost" onClick={() => setIsOpen(true)}>
                 <Icons.Plus />
-                Add entry (NI)
+                Add entry
               </Button>
             </>
           }
         />
-        <DndProvider>{view === "days" && <CalendarMultiDayView />}</DndProvider>
+        <DndProvider>
+          <CalendarMultiDayView />
+        </DndProvider>
       </div>
-      <div className="relative">
-        <RightSidebar />
-      </div>
+      <TimeEntrySidebar />
     </div>
   );
 }

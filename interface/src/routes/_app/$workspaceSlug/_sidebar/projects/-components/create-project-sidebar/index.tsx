@@ -40,10 +40,10 @@ export function CreateProjectSidebar() {
       side="right"
       width={SIDEBAR_WIDTH}
     >
-      <SidebarContent className="px-4 pt-3 pb-4">
-        <SidebarHeader className="justify-end">
-          <SidebarClose />
-        </SidebarHeader>
+      <SidebarHeader className="justify-end px-4 pt-3">
+        <SidebarClose />
+      </SidebarHeader>
+      <SidebarContent className="px-4 pb-4">
         <CreateProjectForm />
       </SidebarContent>
     </Sidebar>

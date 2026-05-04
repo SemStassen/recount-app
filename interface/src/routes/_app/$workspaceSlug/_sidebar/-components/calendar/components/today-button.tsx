@@ -1,18 +1,18 @@
-import { useAtomValue } from "@effect/atom-react";
+import { useAtom } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { isToday } from "date-fns";
 
-import { calendarSelectedDateAtom, setCalendarSelectedDate } from "../../atoms";
+import { calendarSelectedDateAtom } from "../atoms";
 
 function TodayButton() {
-  const selectedDate = useAtomValue(calendarSelectedDateAtom);
+  const [selectedDate, setSelectedDate] = useAtom(calendarSelectedDateAtom);
 
   return (
     <>
       {!isToday(selectedDate) && (
         <Button
           onClick={() => {
-            setCalendarSelectedDate(new Date());
+            setSelectedDate(new Date());
           }}
           variant="ghost"
         >

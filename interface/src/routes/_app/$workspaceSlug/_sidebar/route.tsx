@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { NavigationSidebar } from "./-components/navigation-sidebar/navigation-sidebar";
+import { NavigationSidebar } from "./-components/navigation-sidebar";
 import { NavigationSidebarToggle } from "./-components/navigation-sidebar/navigation-sidebar-toggle";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar")({

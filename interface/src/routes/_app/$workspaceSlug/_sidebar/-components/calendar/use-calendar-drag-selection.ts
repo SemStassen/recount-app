@@ -1,21 +1,54 @@
+import { isEqual } from "date-fns";
 import { useEffect } from "react";
 
 import { atomRegistry } from "~/atoms/registry";
 
 import {
   calendarDragSelectionAtom,
-  commitDragSelection,
-  resetCreateTimeEntrySelection,
-  resetDragSelection,
-  setDragSelectionFirst,
-  setDragSelectionSecond,
-  setIsDragSelectionActive,
+  isTimeEntrySidebarOpenAtom,
+  timeEntrySidebarSelectionAtom,
 } from "./atoms";
+
+function resetDragSelection() {
+  atomRegistry.set(calendarDragSelectionAtom, null);
+}
+
+function setDragSelectionFirst(firstSelected: Date) {
+  atomRegistry.set(calendarDragSelectionAtom, {
+    firstSelected,
+    secondSelected: firstSelected,
+  });
+}
+
+function setDragSelectionSecond(secondSelected: Date) {
+  atomRegistry.update(calendarDragSelectionAtom, (dragSelection) => {
+    if (
+      !dragSelection ||
+      isEqual(dragSelection.secondSelected, secondSelected)
+    ) {
+      return dragSelection;
+    }
+
+    return {
+      ...dragSelection,
+      secondSelected,
+    };
+  });
+}
+
+function commitDragSelection() {
+  const dragSelection = atomRegistry.get(calendarDragSelectionAtom);
+  if (!dragSelection) {
+    return;
+  }
+
+  atomRegistry.set(timeEntrySidebarSelectionAtom, dragSelection);
+  atomRegistry.set(isTimeEntrySidebarOpenAtom, true);
+}
 
 export function useCalendarDragSelection() {
   useEffect(() => {
     return () => {
-      setIsDragSelectionActive(false);
       resetDragSelection();
     };
   }, []);
@@ -23,8 +56,7 @@ export function useCalendarDragSelection() {
   return {
     startDragSelection() {
       resetDragSelection();
-      resetCreateTimeEntrySelection();
-      setIsDragSelectionActive(true);
+      atomRegistry.set(timeEntrySidebarSelectionAtom, null);
 
       const handlePointerMove = (event: PointerEvent) => {
         const dataDate = (event.target as HTMLElement).dataset.date;
@@ -41,7 +73,6 @@ export function useCalendarDragSelection() {
 
       const handlePointerUp = () => {
         commitDragSelection();
-        setIsDragSelectionActive(false);
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
       };
