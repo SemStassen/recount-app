@@ -29,7 +29,7 @@ export function searchCommands(
   const terms = normalizedQuery.split(/\s+/).filter(Boolean);
 
   return commands.filter((command) => {
-    if (!(options.includeDisabled ?? true) && isCommandDisabled(command)) {
+    if (!(options.includeDisabled ?? false) && isCommandDisabled(command)) {
       return false;
     }
 

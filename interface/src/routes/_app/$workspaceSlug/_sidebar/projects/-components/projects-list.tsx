@@ -28,16 +28,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { DateTime, Option } from "effect";
 import { useMemo, useRef } from "react";
 
-import { projectSidebarAtom } from "~/atoms/ui-atoms";
 import { useWorkspaceDb } from "~/db/workspace/context";
-import { useDateTimeFormatter } from "~/lib/utils/date-time";
+
+import { isCreateProjectSidebarOpenAtom } from "./create-project-sidebar/atoms";
 
 const columnHelper = createColumnHelper<Project>();
 
-const createColumns = (formatDate: (date: Date) => string) => [
+const createColumns = () => [
   columnHelper.accessor("hexColor", {
     header: undefined,
     size: 48,
@@ -65,15 +64,16 @@ const createColumns = (formatDate: (date: Date) => string) => [
 ];
 
 export function ProjectsList() {
-  const formatter = useDateTimeFormatter();
-  const setProjectSidebar = useAtomSet(projectSidebarAtom);
+  const setIsCreateProjectSidebarOpen = useAtomSet(
+    isCreateProjectSidebarOpenAtom
+  );
 
   const workspaceDb = useWorkspaceDb();
   const { data: projects } = useLiveQuery((q) =>
     q.from({ p: workspaceDb.collections.projectsCollection })
   );
 
-  const columns = useMemo(() => createColumns(formatter.date), [formatter]);
+  const columns = useMemo(() => createColumns(), []);
 
   const table = useReactTable({
     data: projects ?? [],
@@ -165,7 +165,7 @@ export function ProjectsList() {
       <EmptyContent>
         <Button
           variant="outline"
-          onClick={() => setProjectSidebar({ mode: "create" })}
+          onClick={() => setIsCreateProjectSidebarOpen(true)}
         >
           New project
         </Button>

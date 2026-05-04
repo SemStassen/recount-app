@@ -10,12 +10,6 @@ import { createSchemaForm } from "~/lib/form";
 import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
 import { m } from "~/paraglide/messages";
 
-import {
-  formOpts,
-  ProjectFormFields,
-  projectFormFieldMap,
-} from "./project-form-fields";
-
 const schema = createSchemaForm(Project.jsonCreate);
 
 export function CreateProjectForm() {
@@ -30,7 +24,12 @@ export function CreateProjectForm() {
 
   const form = useAppForm({
     formId: `create-project`,
-    ...formOpts,
+    defaultValues: {
+      name: "",
+      hexColor: "#000000",
+      isBillable: false,
+      notes: null,
+    } satisfies typeof schema.validator.Encoded,
     validationLogic: revalidateLogic(),
     validators: {
       onDynamic: schema.validator,
@@ -53,7 +52,43 @@ export function CreateProjectForm() {
         form.handleSubmit();
       }}
     >
-      <ProjectFormFields form={form} fields={projectFormFieldMap} />
+      <form.AppField
+        children={(field) => (
+          <field.TextField
+            direction="vertical"
+            label={{ children: m.project_form_name_label() }}
+            input={{ autoFocus: true, autoComplete: "off" }}
+          />
+        )}
+        name="name"
+      />
+      <form.AppField
+        children={(field) => (
+          <field.TextField
+            direction="vertical"
+            label={{ children: m.project_form_color_label() }}
+          />
+        )}
+        name="hexColor"
+      />
+      <form.AppField
+        children={(field) => (
+          <field.SwitchField
+            direction="vertical"
+            label={{ children: m.project_form_billable_label() }}
+          />
+        )}
+        name="isBillable"
+      />
+      <form.AppField
+        children={(field) => (
+          <field.EditorField
+            direction="vertical"
+            label={{ children: m.project_form_notes_label() }}
+          />
+        )}
+        name="notes"
+      />
       <form.AppForm>
         <form.SubmitButton className="w-full">
           {m.project_create_submit()}

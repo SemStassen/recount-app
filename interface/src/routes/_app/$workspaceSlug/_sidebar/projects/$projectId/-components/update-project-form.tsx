@@ -14,8 +14,11 @@ import { createSchemaForm, optionDateTimeToDate } from "~/lib/form";
 import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
 import { m } from "~/paraglide/messages";
 
-import type { ProjectFormValues } from "./project-form-fields";
-import { projectFormFieldMap, ProjectFormFields } from "./project-form-fields";
+import type { ProjectFormValues } from "../../-components/create-project-sidebar/create-project/project-form-fields";
+import {
+  projectFormFieldMap,
+  ProjectFormFields,
+} from "../../-components/create-project-sidebar/create-project/project-form-fields";
 
 const schema = createSchemaForm(Project.jsonUpdate);
 

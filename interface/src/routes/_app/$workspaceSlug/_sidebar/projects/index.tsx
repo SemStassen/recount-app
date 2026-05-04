@@ -3,11 +3,11 @@ import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { projectSidebarAtom } from "~/atoms/ui-atoms";
 import { m } from "~/paraglide/messages";
 
 import { PageTopBar, PageTopBarBreadcrumbs } from "../-components/page";
-import { ProjectSidebar } from "./-components/project-sidebar";
+import { CreateProjectSidebar } from "./-components/create-project-sidebar";
+import { isCreateProjectSidebarOpenAtom } from "./-components/create-project-sidebar/atoms";
 import { ProjectsList } from "./-components/projects-list";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
@@ -17,7 +17,9 @@ export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
 );
 
 function RouteComponent() {
-  const setProjectSidebar = useAtomSet(projectSidebarAtom);
+  const setIsCreateProjectSidebarOpen = useAtomSet(
+    isCreateProjectSidebarOpenAtom
+  );
 
   return (
     <div className="flex flex-row w-full h-full">
@@ -40,7 +42,7 @@ function RouteComponent() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setProjectSidebar({ mode: "create" })}
+              onClick={() => setIsCreateProjectSidebarOpen(true)}
             >
               <Icons.Plus />
             </Button>
@@ -48,7 +50,7 @@ function RouteComponent() {
         />
         <ProjectsList />
       </div>
-      <ProjectSidebar />
+      <CreateProjectSidebar />
     </div>
   );
 }

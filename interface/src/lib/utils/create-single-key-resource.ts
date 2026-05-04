@@ -14,10 +14,9 @@ interface CreateSingleKeyResourceOptions<TKey, TValue extends Disposable> {
  * becomes current. Concurrent `get(key)` calls for the same key share the same
  * in-flight creation promise.
  */
-export function createSingleKeyResource<
-  TKey,
-  TValue extends Disposable,
->({ create }: CreateSingleKeyResourceOptions<TKey, TValue>) {
+export function createSingleKeyResource<TKey, TValue extends Disposable>({
+  create,
+}: CreateSingleKeyResourceOptions<TKey, TValue>) {
   let currentKey: TKey | null = null;
   let currentValue: TValue | null = null;
   let currentValuePromise: Promise<TValue> | null = null;

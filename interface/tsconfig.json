@@ -4,8 +4,8 @@
   "exclude": ["dist"],
   "compilerOptions": {
     "paths": {
-      "~/*": ["./src/*"],
+      "~/*": ["./src/*"]
     },
-    "exactOptionalPropertyTypes": false,
-  },
+    "exactOptionalPropertyTypes": false
+  }
 }

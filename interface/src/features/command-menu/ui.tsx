@@ -20,7 +20,7 @@ import {
   commandMenuSearchQueryAtom,
   commandsAtom,
 } from "./atoms";
-import { searchCommands } from "./search";
+import { isCommandDisabled, searchCommands } from "./search";
 import type { Command as CommandItemType, CommandCategory } from "./types";
 
 const CATEGORY_ORDER: Array<CommandCategory> = [
@@ -99,7 +99,9 @@ export function CommandMenu() {
   }
 
   function selectCommand(command: CommandItemType) {
-    const children = command.children?.();
+    const children = command
+      .children?.()
+      .filter((child) => !isCommandDisabled(child));
 
     if (children?.length) {
       setStack((currentStack) => [
@@ -107,10 +109,6 @@ export function CommandMenu() {
         { title: command.title, commands: children },
       ]);
       setQuery("");
-      return;
-    }
-
-    if (command.disabled) {
       return;
     }
 
@@ -173,11 +171,7 @@ function CommandMenuItem({
   const Icon = command.icon;
 
   return (
-    <CommandItem
-      disabled={command.disabled}
-      onClick={() => onSelect(command)}
-      value={command.id}
-    >
+    <CommandItem onClick={() => onSelect(command)} value={command.id}>
       {Icon && <Icon />}
       <span>{command.title}</span>
       {command.children && <Icons.ChevronRight className="ms-auto" />}
