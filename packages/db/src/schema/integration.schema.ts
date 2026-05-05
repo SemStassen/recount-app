@@ -18,7 +18,7 @@ export const workspaceIntegrationConnectionsTable = pgTable(
       "created_by_workspace_member_id"
     ).references(() => workspaceMembersTable.id, { onDelete: "set null" }),
     // General
-    provider: varchar().notNull(),
+    provider: varchar("provider").notNull(),
     encryptedApiKey: varchar("encrypted_api_key").notNull(),
     // Metadata
     _metadata: jsonb("metadata").$type<Record<string, unknown>>(),
@@ -45,12 +45,11 @@ export const externalProjectReferencesTable = pgTable(
       .notNull(),
     workspaceIntegrationConnectionId: uuid(
       "workspace_integration_connection_id"
-    )
-      .references(() => workspaceIntegrationConnectionsTable.id, {
-        onDelete: "set null",
-      })
+    ).references(() => workspaceIntegrationConnectionsTable.id, {
+      onDelete: "set null",
+    }),
     // General
-    provider: varchar().notNull(),
+    provider: varchar("provider").notNull(),
     externalId: varchar("external_id").notNull(),
     ...tableMetadata,
   }
@@ -65,12 +64,13 @@ export const externalTaskReferencesTable = pgTable("external_task_references", {
   taskId: uuid("task_id")
     .references(() => tasksTable.id)
     .notNull(),
-  workspaceIntegrationConnectionId: uuid("workspace_integration_connection_id")
-    .references(() => workspaceIntegrationConnectionsTable.id, {
-      onDelete: "set null",
-    })
+  workspaceIntegrationConnectionId: uuid(
+    "workspace_integration_connection_id"
+  ).references(() => workspaceIntegrationConnectionsTable.id, {
+    onDelete: "set null",
+  }),
   // General
-  provider: varchar().notNull(),
+  provider: varchar("provider").notNull(),
   externalId: varchar("external_id").notNull(),
   ...tableMetadata,
 });
