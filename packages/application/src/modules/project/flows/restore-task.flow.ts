@@ -3,24 +3,19 @@ import type {
   RestoreTaskResult,
 } from "@recount/core/contracts";
 import { ProjectModule } from "@recount/core/modules/project";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const restoreTaskFlow = Effect.fn("flows.restoreTaskFlow")(function* (
   request: typeof RestoreTaskCommand.Type
 ) {
-  const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-  const authz = yield* Authorization;
-
+  const appContext = yield* ApplicationContext;
   const projectModule = yield* ProjectModule;
 
-  yield* authz.ensureAllowed({
-    action: "project:restore_task",
-    role: workspaceMember.role,
-  });
+  const { workspace } = yield* appContext.authorizedWorkspace(
+    "project:restore_task"
+  );
 
   yield* projectModule.restoreTask({
     id: request.id,

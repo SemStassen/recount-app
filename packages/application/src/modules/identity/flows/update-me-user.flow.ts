@@ -3,13 +3,15 @@ import type {
   UpdateMeUserResult,
 } from "@recount/core/contracts";
 import { IdentityModule } from "@recount/core/modules/identity";
-import { SessionContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
+
+import { ApplicationContext } from "#shared/application-context";
 
 export const updateMeUserFlow = Effect.fn("flows.updateMeUser")(function* (
   params: typeof UpdateMeUserCommand.Type
 ) {
-  const { user } = yield* SessionContext;
+  const appContext = yield* ApplicationContext;
+  const { user } = yield* appContext.session();
 
   const identityModule = yield* IdentityModule;
 

@@ -3,23 +3,18 @@ import type {
   UpdateTimeEntryResult,
 } from "@recount/core/contracts";
 import { TimeModule } from "@recount/core/modules/time";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const updateTimeEntryFlow = Effect.fn("flows.updateTimeEntryFlow")(
   function* (request: typeof UpdateTimeEntryCommand.Type) {
-    const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-    const authz = yield* Authorization;
-
+    const appContext = yield* ApplicationContext;
     const timeModule = yield* TimeModule;
 
-    yield* authz.ensureAllowed({
-      action: "time:update_time_entry",
-      role: workspaceMember.role,
-    });
+    const { workspace } = yield* appContext.authorizedWorkspace(
+      "time:update_time_entry"
+    );
 
     const updatedTimeEntry = yield* timeModule.updateTimeEntry({
       id: request.timeEntryId,

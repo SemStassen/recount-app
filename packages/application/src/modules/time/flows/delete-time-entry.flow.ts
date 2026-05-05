@@ -3,23 +3,18 @@ import type {
   DeleteTimeEntryResult,
 } from "@recount/core/contracts";
 import { TimeModule } from "@recount/core/modules/time";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const deleteTimeEntryFlow = Effect.fn("flows.deleteTimeEntryFlow")(
   function* (request: typeof DeleteTimeEntryCommand.Type) {
-    const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-    const authz = yield* Authorization;
-
+    const appContext = yield* ApplicationContext;
     const timeModule = yield* TimeModule;
 
-    yield* authz.ensureAllowed({
-      action: "time:delete_time_entry",
-      role: workspaceMember.role,
-    });
+    const { workspace } = yield* appContext.authorizedWorkspace(
+      "time:delete_time_entry"
+    );
 
     yield* timeModule.hardDeleteTimeEntries({
       workspaceId: workspace.id,

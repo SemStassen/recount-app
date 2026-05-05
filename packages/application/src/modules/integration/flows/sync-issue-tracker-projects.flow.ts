@@ -1,6 +1,5 @@
 import { WorkspaceIntegrationConnectionNotFoundError } from "@recount/core/modules/integration";
 import { ProjectModule } from "@recount/core/modules/project";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import {
   HexColor,
   ExternalProjectReferenceId,
@@ -10,7 +9,7 @@ import { generateUUID } from "@recount/core/shared/utils";
 import { IssueTrackerIntegration } from "@recount/integrations";
 import { DateTime, Effect, Option } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 import { ExternalProjectReferenceRepository } from "../external-project-reference-repository.service";
 import { IntegrationModule } from "../integration-module.service";
@@ -19,9 +18,7 @@ import { WorkspaceIntegrationConnectionRepository } from "../workspace-integrati
 export const syncIssueTrackerProjectsFlow = Effect.fn(
   "flows.syncIssueTrackerProjectsFlow"
 )(function* (request: { integrationId: WorkspaceIntegrationConnectionId }) {
-  const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-  const authz = yield* Authorization;
+  const appContext = yield* ApplicationContext;
   const integrationModule = yield* IntegrationModule;
   const issueTrackerIntegration = yield* IssueTrackerIntegration;
   const projectModule = yield* ProjectModule;
@@ -30,10 +27,9 @@ export const syncIssueTrackerProjectsFlow = Effect.fn(
   const workspaceIntegrationConnectionRepo =
     yield* WorkspaceIntegrationConnectionRepository;
 
-  yield* authz.ensureAllowed({
-    action: "workspace:create_integration_connection",
-    role: workspaceMember.role,
-  });
+  const { workspace } = yield* appContext.authorizedWorkspace(
+    "workspace:create_integration_connection"
+  );
 
   const workspaceIntegrationConnection =
     yield* workspaceIntegrationConnectionRepo

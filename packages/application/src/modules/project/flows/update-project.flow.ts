@@ -3,23 +3,17 @@ import type {
   UpdateProjectResult,
 } from "@recount/core/contracts";
 import { ProjectModule } from "@recount/core/modules/project";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const updateProjectFlow = Effect.fn("flows.updateProjectFlow")(
   function* (request: typeof UpdateProjectCommand.Type) {
-    const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-    const authz = yield* Authorization;
-
+    const appContext = yield* ApplicationContext;
     const projectModule = yield* ProjectModule;
 
-    yield* authz.ensureAllowed({
-      action: "project:patch",
-      role: workspaceMember.role,
-    });
+    const { workspace } =
+      yield* appContext.authorizedWorkspace("project:patch");
 
     const updatedProject = yield* projectModule.updateProject({
       id: request.id,

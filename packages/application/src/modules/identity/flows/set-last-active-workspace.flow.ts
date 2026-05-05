@@ -4,13 +4,15 @@ import type {
 } from "@recount/core/contracts";
 import { IdentityModule } from "@recount/core/modules/identity";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
-import { SessionContext } from "@recount/core/shared/auth";
 import { Effect, Option } from "effect";
+
+import { ApplicationContext } from "#shared/application-context";
 
 export const setLastActiveWorkspaceFlow = Effect.fn(
   "flows.setLastActiveWorkspaceFlow"
 )(function* (params: typeof SetLastActiveWorkspaceCommand.Type) {
-  const { user, session } = yield* SessionContext;
+  const appContext = yield* ApplicationContext;
+  const { user, session } = yield* appContext.session();
 
   const identityModule = yield* IdentityModule;
   const workspaceMemberModule = yield* WorkspaceMemberModule;

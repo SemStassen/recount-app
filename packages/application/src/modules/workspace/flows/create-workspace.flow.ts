@@ -5,13 +5,15 @@ import type {
 import { IdentityModule } from "@recount/core/modules/identity";
 import { WorkspaceModule } from "@recount/core/modules/workspace";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
-import { SessionContext } from "@recount/core/shared/auth";
 import { Database } from "@recount/db";
 import { Effect, Option } from "effect";
 
+import { ApplicationContext } from "#shared/application-context";
+
 export const createWorkspaceFlow = Effect.fn("flows.createWorkspaceFlow")(
   function* (request: typeof CreateWorkspaceCommand.Type) {
-    const { user, session } = yield* SessionContext;
+    const appContext = yield* ApplicationContext;
+    const { user, session } = yield* appContext.session();
 
     const db = yield* Database;
 

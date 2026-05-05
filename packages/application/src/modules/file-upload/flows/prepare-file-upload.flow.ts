@@ -6,15 +6,14 @@ import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
 import { FileUploadKeyPolicy, ObjectStorage } from "#infra/storage";
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 import { validateFileUploadPolicy } from "../file-upload-policy";
 
 export const prepareFileUploadFlow = Effect.fn("flows.prepareFileUploadFlow")(
   function* (request: typeof PrepareFileUploadCommand.Type) {
+    const appContext = yield* ApplicationContext;
     const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-    const authz = yield* Authorization;
     const objectStorage = yield* ObjectStorage;
     const fileUploadKeyPolicy = yield* FileUploadKeyPolicy;
 
@@ -29,10 +28,7 @@ export const prepareFileUploadFlow = Effect.fn("flows.prepareFileUploadFlow")(
           });
         }
         case "workspaceLogo": {
-          yield* authz.ensureAllowed({
-            action: "workspace:patch",
-            role: workspaceMember.role,
-          });
+          yield* appContext.authorizedWorkspace("workspace:patch");
 
           return yield* fileUploadKeyPolicy.workspaceLogo({
             workspaceId: workspace.id,

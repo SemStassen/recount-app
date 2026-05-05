@@ -3,24 +3,19 @@ import type {
   CancelWorkspaceInvitationResult,
 } from "@recount/core/contracts";
 import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const cancelWorkspaceInvitationFlow = Effect.fn(
   "flows.cancelWorkspaceInvitationFlow"
 )(function* (request: typeof CancelWorkspaceInvitationCommand.Type) {
-  const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-  const authz = yield* Authorization;
-
+  const appContext = yield* ApplicationContext;
   const workspaceInvitationModule = yield* WorkspaceInvitationModule;
 
-  yield* authz.ensureAllowed({
-    action: "workspace:cancel_invite",
-    role: workspaceMember.role,
-  });
+  const { workspace } = yield* appContext.authorizedWorkspace(
+    "workspace:cancel_invite"
+  );
 
   yield* workspaceInvitationModule.cancelWorkspaceInvitation({
     id: request.id,

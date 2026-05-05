@@ -3,13 +3,15 @@ import type {
   RejectWorkspaceInvitationResult,
 } from "@recount/core/contracts";
 import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
-import { SessionContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
+
+import { ApplicationContext } from "#shared/application-context";
 
 export const rejectWorkspaceInvitationFlow = Effect.fn(
   "flows.rejectWorkspaceInvitationFlow"
 )(function* (request: typeof RejectWorkspaceInvitationCommand.Type) {
-  const { user } = yield* SessionContext;
+  const appContext = yield* ApplicationContext;
+  const { user } = yield* appContext.session();
 
   const workspaceInvitationModule = yield* WorkspaceInvitationModule;
 

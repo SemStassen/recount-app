@@ -5,29 +5,22 @@ import type {
 import { IdentityModule } from "@recount/core/modules/identity";
 import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
-import { SessionContext, WorkspaceContext } from "@recount/core/shared/auth";
 import { Mailer } from "@recount/notifications/mailer";
 import { Effect, Option } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const createWorkspaceInvitationFlow = Effect.fn(
   "flows.createWorkspaceInvitationFlow"
 )(function* (request: typeof CreateWorkspaceInvitationCommand.Type) {
-  const { user } = yield* SessionContext;
-  const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-  const authz = yield* Authorization;
+  const appContext = yield* ApplicationContext;
+  const { user, workspaceMember, workspace } =
+    yield* appContext.authorizedWorkspace("workspace:invite_user");
   const mailer = yield* Mailer;
 
   const identityModule = yield* IdentityModule;
   const workspaceMemberModule = yield* WorkspaceMemberModule;
   const workspaceInvitationModule = yield* WorkspaceInvitationModule;
-
-  yield* authz.ensureAllowed({
-    action: "workspace:invite_user",
-    role: workspaceMember.role,
-  });
 
   /** Assert that the user is not already a member of the workspace */
   yield* identityModule.retrieveUserByEmail(request.email).pipe(

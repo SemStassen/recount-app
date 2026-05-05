@@ -3,23 +3,17 @@ import type {
   ArchiveProjectResult,
 } from "@recount/core/contracts";
 import { ProjectModule } from "@recount/core/modules/project";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const archiveProjectFlow = Effect.fn("flows.archiveProjectFlow")(
   function* (request: typeof ArchiveProjectCommand.Type) {
-    const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-    const authz = yield* Authorization;
-
+    const appContext = yield* ApplicationContext;
     const projectModule = yield* ProjectModule;
 
-    yield* authz.ensureAllowed({
-      action: "project:archive",
-      role: workspaceMember.role,
-    });
+    const { workspace } =
+      yield* appContext.authorizedWorkspace("project:archive");
 
     yield* projectModule.archiveProject({
       id: request.id,

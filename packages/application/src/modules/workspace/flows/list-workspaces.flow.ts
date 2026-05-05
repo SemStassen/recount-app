@@ -4,12 +4,14 @@ import type {
 } from "@recount/core/contracts";
 import { WorkspaceModule } from "@recount/core/modules/workspace";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
-import { SessionContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
+
+import { ApplicationContext } from "#shared/application-context";
 
 export const listWorkspacesFlow = Effect.fn("flows.listWorkspacesFlow")(
   function* (_request: typeof ListWorkspacesCommand.Type) {
-    const { user } = yield* SessionContext;
+    const appContext = yield* ApplicationContext;
+    const { user } = yield* appContext.session();
 
     const workspaceMemberModule = yield* WorkspaceMemberModule;
     const workspaceModule = yield* WorkspaceModule;

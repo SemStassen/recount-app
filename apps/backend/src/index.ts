@@ -21,6 +21,7 @@ import { TimeEntryRepositoryLayer } from "@recount/application/modules/time";
 import { WorkspaceRepositoryLayer } from "@recount/application/modules/workspace";
 import { WorkspaceInvitationRepositoryLayer } from "@recount/application/modules/workspace-invitation";
 import { WorkspaceMemberRepositoryLayer } from "@recount/application/modules/workspace-member";
+import { ApplicationContext } from "@recount/application/shared/application-context";
 import { Authorization } from "@recount/application/shared/authorization";
 import {
   RpcSessionMiddlewareLayer,
@@ -76,6 +77,10 @@ const InfrastructureServicesLayer = Layer.mergeAll(
   PersistenceServicesLayer,
   ObjectStorageR2Layer,
   FileUploadKeyPolicy.layer
+);
+
+const ApplicationContextLayer = ApplicationContext.layer.pipe(
+  Layer.provide(InfrastructureServicesLayer)
 );
 
 const DomainServicesLayer = Layer.mergeAll(
@@ -145,6 +150,7 @@ const HttpRoutesLayer = Layer.mergeAll(
 
 const ApplicationServicesLayer = Layer.mergeAll(
   InfrastructureServicesLayer,
+  ApplicationContextLayer,
   DomainServicesLayer,
   BetterAuthLayer,
   RequestContextLayer,

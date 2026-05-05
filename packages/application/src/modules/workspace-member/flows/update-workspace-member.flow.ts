@@ -3,24 +3,18 @@ import type {
   UpdateWorkspaceMemberResult,
 } from "@recount/core/contracts";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const updateWorkspaceMemberFlow = Effect.fn(
   "flows.updateWorkspaceMemberFlow"
 )(function* (request: typeof UpdateWorkspaceMemberCommand.Type) {
-  const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-  const authz = yield* Authorization;
-
+  const appContext = yield* ApplicationContext;
   const workspaceMemberModule = yield* WorkspaceMemberModule;
 
-  yield* authz.ensureAllowed({
-    action: "workspace:patch",
-    role: workspaceMember.role,
-  });
+  const { workspaceMember, workspace } =
+    yield* appContext.authorizedWorkspace("workspace:patch");
 
   const updatedWorkspaceMember =
     yield* workspaceMemberModule.updateWorkspaceMember({

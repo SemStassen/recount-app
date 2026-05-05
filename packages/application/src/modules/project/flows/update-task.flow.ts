@@ -3,24 +3,18 @@ import type {
   UpdateTaskResult,
 } from "@recount/core/contracts";
 import { ProjectModule } from "@recount/core/modules/project";
-import { WorkspaceContext } from "@recount/core/shared/auth";
 import { Effect } from "effect";
 
-import { Authorization } from "#shared/authorization";
+import { ApplicationContext } from "#shared/application-context";
 
 export const updateTaskFlow = Effect.fn("flows.updateTaskFlow")(function* (
   request: typeof UpdateTaskCommand.Type
 ) {
-  const { workspaceMember, workspace } = yield* WorkspaceContext;
-
-  const authz = yield* Authorization;
-
+  const appContext = yield* ApplicationContext;
   const projectModule = yield* ProjectModule;
 
-  yield* authz.ensureAllowed({
-    action: "project:patch_task",
-    role: workspaceMember.role,
-  });
+  const { workspace } =
+    yield* appContext.authorizedWorkspace("project:patch_task");
 
   const updatedTask = yield* projectModule.updateTask({
     id: request.id,

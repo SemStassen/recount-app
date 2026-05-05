@@ -5,14 +5,16 @@ import type {
 import { IdentityModule } from "@recount/core/modules/identity";
 import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
-import { SessionContext } from "@recount/core/shared/auth";
 import { Database } from "@recount/db";
 import { Effect, Option } from "effect";
+
+import { ApplicationContext } from "#shared/application-context";
 
 export const acceptWorkspaceInvitationFlow = Effect.fn(
   "flows.acceptWorkspaceInvitationFlow"
 )(function* (request: typeof AcceptWorkspaceInvitationCommand.Type) {
-  const { user, session } = yield* SessionContext;
+  const appContext = yield* ApplicationContext;
+  const { user, session } = yield* appContext.session();
 
   const db = yield* Database;
 
