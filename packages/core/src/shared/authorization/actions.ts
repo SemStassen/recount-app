@@ -12,6 +12,10 @@ const WorkspaceAction = Schema.Literals([
   "workspace:delete_integration_connection",
 ]);
 
+const WorkspaceMemberAction = Schema.Literals([
+  "workspace-member:update_avatar_self",
+]);
+
 const ProjectAction = Schema.Literals([
   "project:create",
   "project:patch",
@@ -32,6 +36,7 @@ const TimeAction = Schema.Literals([
 export type Action = typeof Action.Type;
 export const Action = Schema.Union([
   WorkspaceAction,
+  WorkspaceMemberAction,
   ProjectAction,
   TimeAction,
 ]);

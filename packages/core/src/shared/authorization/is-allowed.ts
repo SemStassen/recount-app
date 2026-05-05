@@ -12,8 +12,11 @@ const permissionRules: Record<Action, ReadonlyArray<WorkspaceRole>> = {
   "workspace:cancel_invite": ["owner"],
   "workspace:patch": ["owner"],
   "workspace:delete": ["owner"],
-  "workspace:create_integration": ["owner"],
-  "workspace:delete_integration": ["owner"],
+
+  "workspace:create_integration_connection": ["owner"],
+  "workspace:delete_integration_connection": ["owner"],
+
+  "workspace-member:update_avatar_self": ["owner", "member"],
 
   "project:create": ["owner"],
   "project:patch": ["owner"],
