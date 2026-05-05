@@ -31,16 +31,16 @@ import {
   BetterAuthConfig,
   RequestContextResolver,
 } from "@recount/auth";
+import {
+  matchesAllowedOrigin,
+  parseOrigins,
+} from "@recount/core-server/shared/config";
 import { IdentityModuleLayer } from "@recount/core/modules/identity";
 import { ProjectModuleLayer } from "@recount/core/modules/project";
 import { TimeModuleLayer } from "@recount/core/modules/time";
 import { WorkspaceModuleLayer } from "@recount/core/modules/workspace";
 import { WorkspaceInvitationModuleLayer } from "@recount/core/modules/workspace-invitation";
 import { WorkspaceMemberModuleLayer } from "@recount/core/modules/workspace-member";
-import {
-  matchesAllowedOrigin,
-  parseOrigins,
-} from "@recount/core/shared/config";
 import { DatabaseLayer } from "@recount/db";
 import { Mailer } from "@recount/notifications/mailer";
 import { makeObservabilityLayer } from "@recount/observability";

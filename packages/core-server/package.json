@@ -20,6 +20,6 @@
     "#modules/*": "./src/modules/*.ts"
   },
   "exports": {
-    "./modules/*": "./src/modules/*/index.ts"
+    "./shared/*": "./src/shared/*/index.ts"
   }
 }

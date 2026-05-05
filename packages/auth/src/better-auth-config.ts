@@ -1,4 +1,4 @@
-import { parseOrigins } from "@recount/core/shared/config";
+import { parseOrigins } from "@recount/core-server/shared/config";
 import { Config, Effect, Layer, Context } from "effect";
 
 export interface BetterAuthConfigShape {

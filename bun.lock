@@ -30,6 +30,7 @@
         "@recount/application": "workspace:*",
         "@recount/auth": "workspace:*",
         "@recount/core": "workspace:*",
+        "@recount/core-server": "workspace:*",
         "@recount/db": "workspace:*",
         "@recount/notifications": "workspace:*",
         "@recount/observability": "workspace:*",
@@ -68,6 +69,7 @@
         "@recount/application": "workspace:*",
         "@recount/auth": "workspace:*",
         "@recount/core": "workspace:*",
+        "@recount/core-server": "workspace:*",
         "@recount/db": "workspace:*",
         "@recount/notifications": "workspace:*",
         "@recount/observability": "workspace:*",
@@ -168,6 +170,7 @@
       "name": "@recount/auth",
       "dependencies": {
         "@recount/core": "workspace:*",
+        "@recount/core-server": "workspace:*",
         "@recount/db": "workspace:*",
         "@recount/notifications": "workspace:*",
         "better-auth": "catalog:",

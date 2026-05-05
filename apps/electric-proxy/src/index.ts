@@ -11,11 +11,11 @@ import {
   BetterAuthConfig,
   RequestContextResolver,
 } from "@recount/auth";
-import { IdentityModuleLayer } from "@recount/core/modules/identity";
 import {
   matchesAllowedOrigin,
   parseOrigins,
-} from "@recount/core/shared/config";
+} from "@recount/core-server/shared/config";
+import { IdentityModuleLayer } from "@recount/core/modules/identity";
 import { DatabaseLayer } from "@recount/db";
 import { Mailer } from "@recount/notifications/mailer";
 import { makeObservabilityLayer } from "@recount/observability";
