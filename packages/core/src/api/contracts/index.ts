@@ -6,6 +6,6 @@ export * from "./time-entry";
 export * from "./user-settings";
 export * from "./user";
 export * from "./workspace";
-export * from "./workspace-integration";
+export * from "./workspace-integration-connection";
 export * from "./workspace-invitation";
 export * from "./workspace-member";

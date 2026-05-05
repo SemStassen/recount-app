@@ -1,46 +1,46 @@
 import type {
-  WorkspaceIntegration,
-  WorkspaceIntegrationNotFoundError,
-  WorkspaceIntegrationProviderAlreadyExistsError,
+  WorkspaceIntegrationConnection,
+  WorkspaceIntegrationConnectionNotFoundError,
+  WorkspaceIntegrationConnectionProviderAlreadyExistsError,
 } from "@recount/core/modules/integration";
 import type { RepositoryError } from "@recount/core/shared/repository";
 import type {
   PlainApiKey,
-  WorkspaceIntegrationId,
+  WorkspaceIntegrationConnectionId,
 } from "@recount/core/shared/schemas";
 import { Context } from "effect";
 import type { Effect } from "effect";
 
 export interface IntegrationModuleShape {
-  readonly createWorkspaceIntegration: (params: {
-    workspaceId: WorkspaceIntegration["workspaceId"];
-    createdByWorkspaceMemberId: WorkspaceIntegration["createdByWorkspaceMemberId"];
-    data: typeof WorkspaceIntegration.jsonCreate.Type;
+  readonly createWorkspaceIntegrationConnection: (params: {
+    workspaceId: WorkspaceIntegrationConnection["workspaceId"];
+    createdByWorkspaceMemberId: WorkspaceIntegrationConnection["createdByWorkspaceMemberId"];
+    data: typeof WorkspaceIntegrationConnection.jsonCreate.Type;
   }) => Effect.Effect<
-    WorkspaceIntegration,
-    WorkspaceIntegrationProviderAlreadyExistsError | RepositoryError
+    WorkspaceIntegrationConnection,
+    WorkspaceIntegrationConnectionProviderAlreadyExistsError | RepositoryError
   >;
-  readonly updateWorkspaceIntegration: (params: {
-    id: WorkspaceIntegration["id"];
-    workspaceId: WorkspaceIntegration["workspaceId"];
-    data: typeof WorkspaceIntegration.jsonUpdate.Type;
+  readonly updateWorkspaceIntegrationConnection: (params: {
+    id: WorkspaceIntegrationConnection["id"];
+    workspaceId: WorkspaceIntegrationConnection["workspaceId"];
+    data: typeof WorkspaceIntegrationConnection.jsonUpdate.Type;
   }) => Effect.Effect<
-    WorkspaceIntegration,
-    WorkspaceIntegrationNotFoundError | RepositoryError
+    WorkspaceIntegrationConnection,
+    WorkspaceIntegrationConnectionNotFoundError | RepositoryError
   >;
-  readonly hardDeleteWorkspaceIntegration: (params: {
-    id: WorkspaceIntegrationId;
-    workspaceId: WorkspaceIntegration["workspaceId"];
+  readonly hardDeleteWorkspaceIntegrationConnection: (params: {
+    id: WorkspaceIntegrationConnectionId;
+    workspaceId: WorkspaceIntegrationConnection["workspaceId"];
   }) => Effect.Effect<
     void,
-    WorkspaceIntegrationNotFoundError | RepositoryError
+    WorkspaceIntegrationConnectionNotFoundError | RepositoryError
   >;
-  readonly revealWorkspaceIntegrationApiKey: (params: {
-    workspaceId: WorkspaceIntegration["workspaceId"];
-    id: WorkspaceIntegration["id"];
+  readonly revealWorkspaceIntegrationConnectionApiKey: (params: {
+    workspaceId: WorkspaceIntegrationConnection["workspaceId"];
+    id: WorkspaceIntegrationConnection["id"];
   }) => Effect.Effect<
     PlainApiKey,
-    WorkspaceIntegrationNotFoundError | RepositoryError
+    WorkspaceIntegrationConnectionNotFoundError | RepositoryError
   >;
 }
 

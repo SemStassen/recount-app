@@ -30,7 +30,7 @@ import { UserSettingsMeRouteLayer } from "./routes/me/user-settings";
 import { WorkspacesMeRouteLayer } from "./routes/me/workspaces";
 import { ProjectsRouteLayer } from "./routes/projects";
 import { TasksRouteLayer } from "./routes/tasks";
-import { WorkspaceIntegrationsRouteLayer } from "./routes/workspace-integrations";
+import { WorkspaceIntegrationConnectionsRouteLayer } from "./routes/workspace-integration-connections";
 import { WorkspaceMembersRouteLayer } from "./routes/workspace-members";
 
 const PersistenceServicesLayer = Layer.mergeAll(
@@ -99,7 +99,7 @@ const HttpRoutesLayer = Layer.mergeAll(
   // General
   ProjectsRouteLayer,
   TasksRouteLayer,
-  WorkspaceIntegrationsRouteLayer,
+  WorkspaceIntegrationConnectionsRouteLayer,
   WorkspaceMembersRouteLayer
 ).pipe(Layer.provide(CorsLayer));
 

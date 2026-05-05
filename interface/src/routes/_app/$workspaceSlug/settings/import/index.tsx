@@ -1,3 +1,4 @@
+import { WorkspaceIntegrationConnectionProvider } from "@recount/core/modules/integration";
 import { Avatar, AvatarFallback } from "@recount/ui/avatar";
 import { Badge } from "@recount/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@recount/ui/card";
@@ -61,7 +62,9 @@ function IntegrationCard({
   const workspaceDb = useWorkspaceDb();
   const { data: integration } = useLiveQuery((q) =>
     q
-      .from({ wi: workspaceDb.collections.workspaceIntegrationsCollection })
+      .from({
+        wi: workspaceDb.collections.workspaceIntegrationConnectionsCollection,
+      })
       .where(({ wi }) => eq(wi.provider, provider))
       .findOne()
   );

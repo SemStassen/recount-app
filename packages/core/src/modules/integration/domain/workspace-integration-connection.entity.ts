@@ -5,23 +5,26 @@ import {
   EncryptedApiKey,
   PlainApiKey,
   WorkspaceId,
-  WorkspaceIntegrationId,
+  WorkspaceIntegrationConnectionId,
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
-const WorkspaceIntegrationProvider = Schema.Literal("float").pipe(
-  Schema.brand("WorkspaceIntegrationProvider")
-);
+export type WorkspaceIntegrationConnectionProvider =
+  typeof WorkspaceIntegrationConnectionProvider.Type;
+export const WorkspaceIntegrationConnectionProvider = Schema.Literals([
+  "float",
+  "linear",
+]).pipe(Schema.brand("WorkspaceIntegrationConnectionProvider"));
 
-export class WorkspaceIntegration extends Model.Class<WorkspaceIntegration>(
-  "WorkspaceIntegration"
+export class WorkspaceIntegrationConnection extends Model.Class<WorkspaceIntegrationConnection>(
+  "WorkspaceIntegrationConnection"
 )(
   {
-    id: Model.ServerImmutable(WorkspaceIntegrationId),
+    id: Model.ServerImmutable(WorkspaceIntegrationConnectionId),
     workspaceId: Model.ServerImmutable(WorkspaceId),
     createdByWorkspaceMemberId: Model.ServerImmutable(WorkspaceMemberId),
     provider: Model.ServerImmutableClientImmutable(
-      WorkspaceIntegrationProvider
+      WorkspaceIntegrationConnectionProvider
     ),
     apiKey: Model.Field({
       select: EncryptedApiKey,
@@ -38,7 +41,7 @@ export class WorkspaceIntegration extends Model.Class<WorkspaceIntegration>(
     createdAt: Model.ServerImmutable(Schema.DateTimeUtcFromDate),
   },
   {
-    identifier: "WorkspaceIntegration",
+    identifier: "WorkspaceIntegrationConnection",
     title: "Workspace Integration",
     description: "An integration connecting a workspace to an external service",
   }

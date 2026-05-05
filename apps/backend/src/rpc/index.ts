@@ -5,7 +5,7 @@ import {
   TimeEntryRpcGroup,
   UserRpcGroup,
   UserSettingsRpcGroup,
-  WorkspaceIntegrationRpcGroup,
+  WorkspaceIntegrationConnectionRpcGroup,
   WorkspaceMemberRpcGroup,
   WorkspaceRpcGroup,
 } from "@recount/core/rpc";
@@ -18,7 +18,7 @@ import { TimeEntryRpcGroupLayer } from "./handlers/time-entry";
 import { UserRpcGroupLayer } from "./handlers/user";
 import { UserSettingsRpcGroupLayer } from "./handlers/user-settings";
 import { WorkspaceRpcGroupLayer } from "./handlers/workspace";
-import { WorkspaceIntegrationRpcGroupLayer } from "./handlers/workspace-integration";
+import { WorkspaceIntegrationConnectionRpcGroupLayer } from "./handlers/workspace-integration-connection";
 import { WorkspaceMemberRpcGroupLayer } from "./handlers/workspace-member";
 
 export const AllRpcsGroup = AuthRpcGroup.merge(
@@ -27,7 +27,7 @@ export const AllRpcsGroup = AuthRpcGroup.merge(
   TimeEntryRpcGroup,
   UserSettingsRpcGroup,
   UserRpcGroup,
-  WorkspaceIntegrationRpcGroup,
+  WorkspaceIntegrationConnectionRpcGroup,
   WorkspaceRpcGroup,
   WorkspaceMemberRpcGroup
 );
@@ -39,7 +39,7 @@ export const AllRpcsGroupLayer = Layer.mergeAll(
   TimeEntryRpcGroupLayer,
   UserSettingsRpcGroupLayer,
   UserRpcGroupLayer,
-  WorkspaceIntegrationRpcGroupLayer,
+  WorkspaceIntegrationConnectionRpcGroupLayer,
   WorkspaceRpcGroupLayer,
   WorkspaceMemberRpcGroupLayer
 );

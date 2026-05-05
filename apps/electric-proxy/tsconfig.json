@@ -8,7 +8,7 @@
       "~/application/*": ["./src/application/*"],
       "~/domains/*": ["./src/domains/*"],
       "~/infra/*": ["./src/infra/*"],
-      "~/shared/*": ["./src/shared/*"],
-    },
-  },
+      "~/shared/*": ["./src/shared/*"]
+    }
+  }
 }

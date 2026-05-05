@@ -11,7 +11,7 @@ import {
 } from "@recount/application/modules/identity";
 import {
   IntegrationModuleLayer,
-  WorkspaceIntegrationRepositoryLayer,
+  WorkspaceIntegrationConnectionRepositoryLayer,
 } from "@recount/application/modules/integration";
 import {
   ProjectRepositoryLayer,
@@ -63,7 +63,7 @@ const PersistenceServicesLayer = Layer.mergeAll(
   TimeEntryRepositoryLayer,
   UserSettingsRepositoryLayer,
   UserRepositoryLayer,
-  WorkspaceIntegrationRepositoryLayer,
+  WorkspaceIntegrationConnectionRepositoryLayer,
   WorkspaceInvitationRepositoryLayer,
   WorkspaceMemberRepositoryLayer,
   WorkspaceRepositoryLayer

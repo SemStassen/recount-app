@@ -15,6 +15,7 @@
     "@recount/core": "workspace:*",
     "@recount/core-server": "workspace:*",
     "@recount/db": "workspace:*",
+    "@recount/integrations": "workspace:*",
     "@recount/notifications": "workspace:*",
     "drizzle-orm": "catalog:",
     "effect": "catalog:"

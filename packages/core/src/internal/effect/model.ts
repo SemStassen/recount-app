@@ -208,7 +208,7 @@ export interface ServerImmutableClientImmutable<
  * server and client after insert.
  *
  * @example
- * provider: ServerImmutableClientImmutable(WorkspaceIntegrationProvider)
+ * provider: ServerImmutableClientImmutable(WorkspaceIntegrationConnectionProvider)
  */
 export const ServerImmutableClientImmutable = <S extends Schema.Top>(
   schema: S

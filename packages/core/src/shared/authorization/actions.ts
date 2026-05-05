@@ -8,8 +8,8 @@ const WorkspaceAction = Schema.Literals([
   "workspace:cancel_invite",
   "workspace:patch",
   "workspace:delete",
-  "workspace:create_integration",
-  "workspace:delete_integration",
+  "workspace:create_integration_connection",
+  "workspace:delete_integration_connection",
 ]);
 
 const ProjectAction = Schema.Literals([

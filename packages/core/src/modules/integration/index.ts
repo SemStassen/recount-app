@@ -1,5 +1,8 @@
-export { WorkspaceIntegration } from "./domain/workspace-integration.entity";
+export { ExternalProjectReference } from "./domain/external-project-reference.entity";
+export { ExternalTaskReference } from "./domain/external-task-reference.entity";
+export { WorkspaceIntegrationConnection } from "./domain/workspace-integration-connection.entity";
+export { WorkspaceIntegrationConnectionProvider } from "./domain/workspace-integration-connection.entity";
 export {
-  WorkspaceIntegrationNotFoundError,
-  WorkspaceIntegrationProviderAlreadyExistsError,
-} from "./domain/workpace-integration.errors";
+  WorkspaceIntegrationConnectionNotFoundError,
+  WorkspaceIntegrationConnectionProviderAlreadyExistsError,
+} from "./domain/workspace-integration-connection.errors";

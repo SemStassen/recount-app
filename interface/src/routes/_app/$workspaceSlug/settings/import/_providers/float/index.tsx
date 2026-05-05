@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 
-import { CreateWorkspaceIntegrationForm } from "../-components/create-workspace-integration-form";
+import { CreateWorkspaceIntegrationConnectionForm } from "../-components/create-workspace-integration-connection-form";
 
 export const Route = createFileRoute(
   "/_app/$workspaceSlug/settings/import/_providers/float/"
@@ -20,15 +20,17 @@ function RouteComponent() {
   const workspaceDb = useWorkspaceDb();
   const { data: integration } = useLiveQuery((q) =>
     q
-      .from({ wi: workspaceDb.collections.workspaceIntegrationsCollection })
+      .from({
+        wi: workspaceDb.collections.workspaceIntegrationConnectionsCollection,
+      })
       .where(({ wi }) => eq(wi.provider, "float"))
       .findOne()
   );
-  // const workspaceIntegrations = useAtomValue(workspaceIntegrationsAtom);
-  // const integration = workspaceIntegrations.find((i) => i.provider === "float");
+  // const workspaceIntegrationConnections = useAtomValue(workspaceIntegrationConnectionsAtom);
+  // const integration = workspaceIntegrationConnections.find((i) => i.provider === "float");
 
   // const syncProjects = useAtomSet(
-  //   RecountAtomClient.mutation("FloatWorkspaceIntegration", "Sync"),
+  //   RecountAtomClient.mutation("FloatWorkspaceIntegrationConnection", "Sync"),
   //   {
   //     mode: "promise",
   //   }
@@ -37,7 +39,7 @@ function RouteComponent() {
   // const handleSyncProjects = () => {
   //   startTransition(async () => {
   //     await syncProjects({
-  //       reactivityKeys: ["workspaceIntegrations"],
+  //       reactivityKeys: ["workspaceIntegrationConnections"],
   //     });
   //   });
   // };
@@ -51,7 +53,7 @@ function RouteComponent() {
               {/* <FrameTitle>
                 Connected on {formatter.date(integration.createdAt)}
               </FrameTitle> */}
-              {/* <DisconnectWorkspaceIntegrationButton
+              {/* <DisconnectWorkspaceIntegrationConnectionButton
                 integrationId={integration?.id}
               /> */}
             </div>
@@ -61,7 +63,7 @@ function RouteComponent() {
         </FrameHeader>
         {!integration && (
           <FramePanel>
-            <CreateWorkspaceIntegrationForm provider="float" />
+            <CreateWorkspaceIntegrationConnectionForm provider="float" />
           </FramePanel>
         )}
       </Frame>
@@ -92,17 +94,17 @@ function RouteComponent() {
   );
 }
 
-// function DisconnectWorkspaceIntegrationButton({
+// function DisconnectWorkspaceIntegrationConnectionButton({
 //   integrationId,
 // }: {
 //   integrationId: string;
 // }) {
-//   const deleteWorkspaceIntegration = useAtomSet(
-//     deleteWorkspaceIntegrationAtom(integrationId)
+//   const deleteWorkspaceIntegrationConnection = useAtomSet(
+//     deleteWorkspaceIntegrationConnectionAtom(integrationId)
 //   );
 
 //   return (
-//     <Button onClick={() => deleteWorkspaceIntegration()} variant="destructive">
+//     <Button onClick={() => deleteWorkspaceIntegrationConnection()} variant="destructive">
 //       Disconnect
 //     </Button>
 //   );

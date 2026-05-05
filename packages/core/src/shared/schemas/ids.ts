@@ -15,10 +15,21 @@ export const SessionId = Schema.String.check(Schema.isUUID(7)).pipe(
   Schema.brand("SessionId")
 );
 
-export type WorkspaceIntegrationId = typeof WorkspaceIntegrationId.Type;
-export const WorkspaceIntegrationId = Schema.String.check(
+export type WorkspaceIntegrationConnectionId =
+  typeof WorkspaceIntegrationConnectionId.Type;
+export const WorkspaceIntegrationConnectionId = Schema.String.check(
   Schema.isUUID(7)
-).pipe(Schema.brand("WorkspaceIntegrationId"));
+).pipe(Schema.brand("WorkspaceIntegrationConnectionId"));
+
+export type ExternalProjectReferenceId = typeof ExternalProjectReferenceId.Type;
+export const ExternalProjectReferenceId = Schema.String.check(
+  Schema.isUUID(7)
+).pipe(Schema.brand("ExternalProjectReferenceId"));
+
+export type ExternalTaskReferenceId = typeof ExternalTaskReferenceId.Type;
+export const ExternalTaskReferenceId = Schema.String.check(
+  Schema.isUUID(7)
+).pipe(Schema.brand("ExternalTaskReferenceId"));
 
 export type WorkspaceMemberId = typeof WorkspaceMemberId.Type;
 export const WorkspaceMemberId = Schema.String.check(Schema.isUUID(7)).pipe(

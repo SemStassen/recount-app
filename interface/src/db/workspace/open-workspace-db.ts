@@ -43,15 +43,17 @@ export async function openWorkspaceDb(workspaceId: string) {
     })
   );
 
-  const workspaceIntegrationsCollection = createCollection(
+  const workspaceIntegrationConnectionsCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId(workspaceShapes.workspaceIntegrations.name),
-      schema: workspaceShapes.workspaceIntegrations.schema,
-      getKey: workspaceShapes.workspaceIntegrations.getKey,
+      id: createCollectionId(
+        workspaceShapes.workspaceIntegrationConnections.name
+      ),
+      schema: workspaceShapes.workspaceIntegrationConnections.schema,
+      getKey: workspaceShapes.workspaceIntegrationConnections.getKey,
       shapeOptions: {
-        url: workspaceShapes.workspaceIntegrations.url,
+        url: workspaceShapes.workspaceIntegrationConnections.url,
         columnMapper: snakeCamelMapper(),
-        transformer: workspaceShapes.workspaceIntegrations.decodeRow,
+        transformer: workspaceShapes.workspaceIntegrationConnections.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
       },
@@ -93,7 +95,7 @@ export async function openWorkspaceDb(workspaceId: string) {
   return {
     collections: {
       workspaceMembersCollection,
-      workspaceIntegrationsCollection,
+      workspaceIntegrationConnectionsCollection,
       projectsCollection,
       tasksCollection,
     },
@@ -101,7 +103,7 @@ export async function openWorkspaceDb(workspaceId: string) {
       if (!preloadPromise) {
         preloadPromise = Promise.all([
           workspaceMembersCollection.preload(),
-          workspaceIntegrationsCollection.preload(),
+          workspaceIntegrationConnectionsCollection.preload(),
           projectsCollection.preload(),
           tasksCollection.preload(),
         ]).then(() => {});
@@ -114,7 +116,7 @@ export async function openWorkspaceDb(workspaceId: string) {
 
       await Promise.allSettled([
         workspaceMembersCollection.cleanup(),
-        workspaceIntegrationsCollection.cleanup(),
+        workspaceIntegrationConnectionsCollection.cleanup(),
         projectsCollection.cleanup(),
         tasksCollection.cleanup(),
       ]);

@@ -8,11 +8,11 @@ import { HttpRouter } from "effect/unstable/http";
 
 import { createElectricProxyHandler } from "../shared/create-electric-proxy-handler";
 
-export const WorkspaceIntegrationsRouteLayer = HttpRouter.add(
+export const WorkspaceIntegrationConnectionsRouteLayer = HttpRouter.add(
   "GET",
-  "/workspace-integrations",
+  "/workspace-integration-connections",
   createElectricProxyHandler({
-    table: "workspace_integrations",
+    table: "workspace_integration_connections",
     buildShapeParams: () =>
       Effect.gen(function* () {
         const workspaceContext = yield* WorkspaceContext;

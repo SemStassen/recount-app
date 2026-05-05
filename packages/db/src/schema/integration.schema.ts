@@ -6,8 +6,8 @@ import { projectsTable, tasksTable } from "./project.schema";
 import { workspaceMembersTable } from "./workspace-member.schema";
 import { workspacesTable } from "./workspace.schema";
 
-export const workspaceIntegrationsTable = pgTable(
-  "workspace_integrations",
+export const workspaceIntegrationConnectionsTable = pgTable(
+  "workspace_integration_connections",
   {
     id: tableId,
     // References
@@ -32,22 +32,31 @@ export const workspaceIntegrationsTable = pgTable(
   ]
 );
 
-export const projectIntegrationsTable = pgTable("project_integrations", {
-  id: tableId,
-  // References
-  workspaceId: uuid("workspace_id")
-    .references(() => workspacesTable.id, { onDelete: "cascade" })
-    .notNull(),
-  projectId: uuid("project_id")
-    .references(() => projectsTable.id)
-    .notNull(),
-  // General
-  source: varchar().notNull(),
-  externalId: varchar("external_id").notNull(),
-  ...tableMetadata,
-});
+export const externalProjectReferencesTable = pgTable(
+  "external_project_references",
+  {
+    id: tableId,
+    // References
+    workspaceId: uuid("workspace_id")
+      .references(() => workspacesTable.id, { onDelete: "cascade" })
+      .notNull(),
+    projectId: uuid("project_id")
+      .references(() => projectsTable.id)
+      .notNull(),
+    workspaceIntegrationConnectionId: uuid(
+      "workspace_integration_connection_id"
+    )
+      .references(() => workspaceIntegrationConnectionsTable.id, {
+        onDelete: "set null",
+      })
+    // General
+    provider: varchar().notNull(),
+    externalId: varchar("external_id").notNull(),
+    ...tableMetadata,
+  }
+);
 
-export const taskIntegrationsTable = pgTable("task_integrations", {
+export const externalTaskReferencesTable = pgTable("external_task_references", {
   id: tableId,
   // References
   workspaceId: uuid("workspace_id")
@@ -56,8 +65,12 @@ export const taskIntegrationsTable = pgTable("task_integrations", {
   taskId: uuid("task_id")
     .references(() => tasksTable.id)
     .notNull(),
+  workspaceIntegrationConnectionId: uuid("workspace_integration_connection_id")
+    .references(() => workspaceIntegrationConnectionsTable.id, {
+      onDelete: "set null",
+    })
   // General
-  source: varchar().notNull(),
+  provider: varchar().notNull(),
   externalId: varchar("external_id").notNull(),
   ...tableMetadata,
 });

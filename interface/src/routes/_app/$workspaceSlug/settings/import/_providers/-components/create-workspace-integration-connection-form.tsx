@@ -1,5 +1,7 @@
+import { WorkspaceIntegrationConnectionProvider } from "@recount/core/modules/integration";
+import { PlainApiKey } from "@recount/core/shared/schemas";
 import { defaultValidationLogic } from "@tanstack/react-form";
-import { Effect, Schema } from "effect";
+import { Effect, Redacted, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
@@ -12,9 +14,13 @@ const schema = createSchemaForm(
   })
 );
 
-function CreateWorkspaceIntegrationForm({ provider }: { provider: "float" }) {
-  // const createWorkspaceIntegration = useAtomSet(
-  //   createWorkspaceIntegrationAtom,
+function CreateWorkspaceIntegrationConnectionForm({
+  provider,
+}: {
+  provider: "float";
+}) {
+  // const createWorkspaceIntegrationConnection = useAtomSet(
+  //   createWorkspaceIntegrationConnectionAtom,
   //   {
   //     mode: "promiseExit",
   //   }
@@ -34,9 +40,9 @@ function CreateWorkspaceIntegrationForm({ provider }: { provider: "float" }) {
         Effect.gen(function* () {
           const client = yield* RecountAtomRpcClient;
 
-          const res = yield* client("WorkspaceIntegration.Create", {
-            provider: "float",
-            apiKey: value.apiKey,
+          yield* client("WorkspaceIntegrationConnection.Create", {
+            provider: WorkspaceIntegrationConnectionProvider.make(provider),
+            apiKey: PlainApiKey.make(Redacted.make(value.apiKey)),
           });
         })
       );
@@ -54,6 +60,7 @@ function CreateWorkspaceIntegrationForm({ provider }: { provider: "float" }) {
       <form.AppField
         children={(field) => (
           <field.TextField
+            direction="vertical"
             label={{
               children: "Api key",
             }}
@@ -68,4 +75,4 @@ function CreateWorkspaceIntegrationForm({ provider }: { provider: "float" }) {
   );
 }
 
-export { CreateWorkspaceIntegrationForm };
+export { CreateWorkspaceIntegrationConnectionForm };

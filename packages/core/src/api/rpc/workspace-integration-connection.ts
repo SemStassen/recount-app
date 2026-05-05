@@ -3,21 +3,21 @@ import { HttpApiError } from "effect/unstable/httpapi";
 import { Rpc, RpcGroup } from "effect/unstable/rpc";
 
 import {
-  CreateWorkspaceIntegrationCommand,
-  CreateWorkspaceIntegrationResult,
+  CreateWorkspaceIntegrationConnectionCommand,
+  CreateWorkspaceIntegrationConnectionResult,
 } from "#api/contracts/index";
-import { WorkspaceIntegrationProviderAlreadyExistsError } from "#modules/integration/index";
+import { WorkspaceIntegrationConnectionProviderAlreadyExistsError } from "#modules/integration/index";
 import { AuthorizationError } from "#shared/authorization/index";
 
 import { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
 
-export const WorkspaceIntegrationRpcGroup = RpcGroup.make(
-  Rpc.make("WorkspaceIntegration.Create", {
-    payload: CreateWorkspaceIntegrationCommand,
-    success: CreateWorkspaceIntegrationResult,
+export const WorkspaceIntegrationConnectionRpcGroup = RpcGroup.make(
+  Rpc.make("WorkspaceIntegrationConnection.Create", {
+    payload: CreateWorkspaceIntegrationConnectionCommand,
+    success: CreateWorkspaceIntegrationConnectionResult,
     error: Schema.Union([
       AuthorizationError,
-      WorkspaceIntegrationProviderAlreadyExistsError,
+      WorkspaceIntegrationConnectionProviderAlreadyExistsError,
       HttpApiError.InternalServerError,
     ]),
   })

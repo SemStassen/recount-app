@@ -1,21 +1,22 @@
 import {
-  WorkspaceIntegrationNotFoundError,
-  WorkspaceIntegrationProviderAlreadyExistsError,
+  WorkspaceIntegrationConnectionNotFoundError,
+  WorkspaceIntegrationConnectionProviderAlreadyExistsError,
 } from "@recount/core/modules/integration";
 import { EncryptedApiKey, PlainApiKey } from "@recount/core/shared/schemas";
 import { DateTime, Effect, Layer, Option, Redacted } from "effect";
 
 import { Crypto } from "#shared/crypto";
 
-import * as workspaceIntegrationTransitions from "./domain/workspace-integration.transitions";
+import * as workspaceIntegrationConnectionTransitions from "./domain/workspace-integration-connection.transitions";
 import { IntegrationModule } from "./integration-module.service";
-import { WorkspaceIntegrationRepository } from "./workspace-integration-repository.service";
+import { WorkspaceIntegrationConnectionRepository } from "./workspace-integration-connection-repository.service";
 
 export const IntegrationModuleLayer = Layer.effect(
   IntegrationModule,
   Effect.gen(function* () {
     const crypto = yield* Crypto;
-    const workspaceIntegrationRepo = yield* WorkspaceIntegrationRepository;
+    const workspaceIntegrationConnectionRepo =
+      yield* WorkspaceIntegrationConnectionRepository;
 
     const encryptApiKey = Effect.fn("integration.encryptApiKey")(function* (
       apiKey: Redacted.Redacted<string>
@@ -34,12 +35,12 @@ export const IntegrationModuleLayer = Layer.effect(
     });
 
     return {
-      createWorkspaceIntegration: Effect.fn(
-        "integration.createWorkspaceIntegration"
+      createWorkspaceIntegrationConnection: Effect.fn(
+        "integration.createWorkspaceIntegrationConnection"
       )(function* (params) {
         const now = yield* DateTime.now;
 
-        yield* workspaceIntegrationRepo
+        yield* workspaceIntegrationConnectionRepo
           .findByProvider({
             workspaceId: params.workspaceId,
             provider: params.data.provider,
@@ -49,7 +50,7 @@ export const IntegrationModuleLayer = Layer.effect(
               Option.match({
                 onSome: () =>
                   Effect.fail(
-                    new WorkspaceIntegrationProviderAlreadyExistsError()
+                    new WorkspaceIntegrationConnectionProviderAlreadyExistsError()
                   ),
                 onNone: () => Effect.void,
               })
@@ -58,114 +59,123 @@ export const IntegrationModuleLayer = Layer.effect(
 
         const encryptedApiKey = yield* encryptApiKey(params.data.apiKey);
 
-        const workspaceIntegration = yield* Effect.fromResult(
-          workspaceIntegrationTransitions.createWorkspaceIntegration({
-            createdByWorkspaceMemberId: params.createdByWorkspaceMemberId,
-            workspaceId: params.workspaceId,
-            data: params.data,
-            apiKey: encryptedApiKey,
-            now,
-          })
+        const workspaceIntegrationConnection = yield* Effect.fromResult(
+          workspaceIntegrationConnectionTransitions.createWorkspaceIntegrationConnection(
+            {
+              createdByWorkspaceMemberId: params.createdByWorkspaceMemberId,
+              workspaceId: params.workspaceId,
+              data: params.data,
+              apiKey: encryptedApiKey,
+              now,
+            }
+          )
         );
 
-        const persistedWorkspaceIntegration =
-          yield* workspaceIntegrationRepo.insert(workspaceIntegration);
-
-        return persistedWorkspaceIntegration;
-      }),
-      updateWorkspaceIntegration: Effect.fn(
-        "integration.updateWorkspaceIntegration"
-      )(function* (params) {
-        const workspaceIntegration = yield* workspaceIntegrationRepo
-          .findById({
-            workspaceId: params.workspaceId,
-            id: params.id,
-          })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new WorkspaceIntegrationNotFoundError({
-                      workspaceIntegrationId: params.id,
-                    })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
+        const persistedWorkspaceIntegrationConnection =
+          yield* workspaceIntegrationConnectionRepo.insert(
+            workspaceIntegrationConnection
           );
+
+        return persistedWorkspaceIntegrationConnection;
+      }),
+      updateWorkspaceIntegrationConnection: Effect.fn(
+        "integration.updateWorkspaceIntegrationConnection"
+      )(function* (params) {
+        const workspaceIntegrationConnection =
+          yield* workspaceIntegrationConnectionRepo
+            .findById({
+              workspaceId: params.workspaceId,
+              id: params.id,
+            })
+            .pipe(
+              Effect.flatMap(
+                Option.match({
+                  onNone: () =>
+                    Effect.fail(
+                      new WorkspaceIntegrationConnectionNotFoundError({
+                        workspaceIntegrationConnectionId: params.id,
+                      })
+                    ),
+                  onSome: Effect.succeed,
+                })
+              )
+            );
 
         const encryptedApiKey = params.data.apiKey
           ? yield* encryptApiKey(params.data.apiKey)
           : undefined;
 
         const { entity, changes } = yield* Effect.fromResult(
-          workspaceIntegrationTransitions.updateWorkspaceIntegration({
-            workspaceIntegration,
-            data: params.data,
-            apiKey: encryptedApiKey,
-          })
+          workspaceIntegrationConnectionTransitions.updateWorkspaceIntegrationConnection(
+            {
+              workspaceIntegrationConnection,
+              data: params.data,
+              apiKey: encryptedApiKey,
+            }
+          )
         );
 
-        const persistedWorkspaceIntegration =
-          yield* workspaceIntegrationRepo.update({
+        const persistedWorkspaceIntegrationConnection =
+          yield* workspaceIntegrationConnectionRepo.update({
             workspaceId: params.workspaceId,
             id: entity.id,
             update: changes,
           });
 
-        return persistedWorkspaceIntegration;
+        return persistedWorkspaceIntegrationConnection;
       }),
-      hardDeleteWorkspaceIntegration: Effect.fn(
-        "integration.hardDeleteWorkspaceIntegration"
+      hardDeleteWorkspaceIntegrationConnection: Effect.fn(
+        "integration.hardDeleteWorkspaceIntegrationConnection"
       )(function* (params) {
-        const workspaceIntegration = yield* workspaceIntegrationRepo
-          .findById({
-            workspaceId: params.workspaceId,
-            id: params.id,
-          })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new WorkspaceIntegrationNotFoundError({
-                      workspaceIntegrationId: params.id,
-                    })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const workspaceIntegrationConnection =
+          yield* workspaceIntegrationConnectionRepo
+            .findById({
+              workspaceId: params.workspaceId,
+              id: params.id,
+            })
+            .pipe(
+              Effect.flatMap(
+                Option.match({
+                  onNone: () =>
+                    Effect.fail(
+                      new WorkspaceIntegrationConnectionNotFoundError({
+                        workspaceIntegrationConnectionId: params.id,
+                      })
+                    ),
+                  onSome: Effect.succeed,
+                })
+              )
+            );
 
-        yield* workspaceIntegrationRepo.hardDelete({
+        yield* workspaceIntegrationConnectionRepo.hardDelete({
           workspaceId: params.workspaceId,
-          id: workspaceIntegration.id,
+          id: workspaceIntegrationConnection.id,
         });
       }),
-      revealWorkspaceIntegrationApiKey: Effect.fn(
-        "integration.revealWorkspaceIntegrationApiKey"
+      revealWorkspaceIntegrationConnectionApiKey: Effect.fn(
+        "integration.revealWorkspaceIntegrationConnectionApiKey"
       )(function* (params) {
-        const workspaceIntegration = yield* workspaceIntegrationRepo
-          .findById({
-            workspaceId: params.workspaceId,
-            id: params.id,
-          })
-          .pipe(
-            Effect.flatMap(
-              Option.match({
-                onNone: () =>
-                  Effect.fail(
-                    new WorkspaceIntegrationNotFoundError({
-                      workspaceIntegrationId: params.id,
-                    })
-                  ),
-                onSome: Effect.succeed,
-              })
-            )
-          );
+        const workspaceIntegrationConnection =
+          yield* workspaceIntegrationConnectionRepo
+            .findById({
+              workspaceId: params.workspaceId,
+              id: params.id,
+            })
+            .pipe(
+              Effect.flatMap(
+                Option.match({
+                  onNone: () =>
+                    Effect.fail(
+                      new WorkspaceIntegrationConnectionNotFoundError({
+                        workspaceIntegrationConnectionId: params.id,
+                      })
+                    ),
+                  onSome: Effect.succeed,
+                })
+              )
+            );
 
-        return yield* decryptApiKey(workspaceIntegration.apiKey);
+        return yield* decryptApiKey(workspaceIntegrationConnection.apiKey);
       }),
     };
   })

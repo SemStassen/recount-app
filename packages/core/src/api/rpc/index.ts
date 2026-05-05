@@ -7,6 +7,6 @@ export { TimeEntryRpcGroup } from "./time-entry";
 export { UserSettingsRpcGroup } from "./user-settings";
 export { UserRpcGroup } from "./user";
 export { WorkspaceRpcGroup } from "./workspace";
-export { WorkspaceIntegrationRpcGroup } from "./workspace-integration";
+export { WorkspaceIntegrationConnectionRpcGroup } from "./workspace-integration-connection";
 export { WorkspaceInvitationRpcGroup } from "./workspace-invitation";
 export { WorkspaceMemberRpcGroup } from "./workspace-member";
