@@ -8,386 +8,387 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as AppWorkspaceSlugSidebarIndexRouteImport } from "./routes/_app/$workspaceSlug/_sidebar/index";
-import { Route as AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport } from "./routes/_app/$workspaceSlug/_sidebar/projects/$projectId/index";
-import { Route as AppWorkspaceSlugSidebarProjectsIndexRouteImport } from "./routes/_app/$workspaceSlug/_sidebar/projects/index";
-import { Route as AppWorkspaceSlugSidebarRouteRouteImport } from "./routes/_app/$workspaceSlug/_sidebar/route";
-import { Route as AppWorkspaceSlugRouteRouteImport } from "./routes/_app/$workspaceSlug/route";
-import { Route as AppWorkspaceSlugSettingsPreferencesIndexRouteImport } from "./routes/_app/$workspaceSlug/settings/_preferences/index";
-import { Route as AppWorkspaceSlugSettingsImportProvidersFloatIndexRouteImport } from "./routes/_app/$workspaceSlug/settings/import/_providers/float/index";
-import { Route as AppWorkspaceSlugSettingsImportProvidersRouteRouteImport } from "./routes/_app/$workspaceSlug/settings/import/_providers/route";
-import { Route as AppWorkspaceSlugSettingsImportIndexRouteImport } from "./routes/_app/$workspaceSlug/settings/import/index";
-import { Route as AppWorkspaceSlugSettingsProfileIndexRouteImport } from "./routes/_app/$workspaceSlug/settings/profile/index";
-import { Route as AppWorkspaceSlugSettingsRouteRouteImport } from "./routes/_app/$workspaceSlug/settings/route";
-import { Route as AppOnboardingCreateWorkspaceIndexRouteImport } from "./routes/_app/_onboarding/create-workspace/index";
-import { Route as AppOnboardingProfileIndexRouteImport } from "./routes/_app/_onboarding/profile/index";
-import { Route as AppOnboardingRouteRouteImport } from "./routes/_app/_onboarding/route";
-import { Route as AppIndexRouteImport } from "./routes/_app/index";
-import { Route as AppRouteRouteImport } from "./routes/_app/route";
-import { Route as AuthRouteRouteImport } from "./routes/_auth/route";
-import { Route as AuthSignInIndexRouteImport } from "./routes/_auth/sign-in/index";
-import { Route as AuthSignUpIndexRouteImport } from "./routes/_auth/sign-up/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteRouteImport } from './routes/_auth/route'
+import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppOnboardingRouteRouteImport } from './routes/_app/_onboarding/route'
+import { Route as AppWorkspaceSlugRouteRouteImport } from './routes/_app/$workspaceSlug/route'
+import { Route as AuthSignUpIndexRouteImport } from './routes/_auth/sign-up/index'
+import { Route as AuthSignInIndexRouteImport } from './routes/_auth/sign-in/index'
+import { Route as AppWorkspaceSlugSettingsRouteRouteImport } from './routes/_app/$workspaceSlug/settings/route'
+import { Route as AppWorkspaceSlugSidebarRouteRouteImport } from './routes/_app/$workspaceSlug/_sidebar/route'
+import { Route as AppOnboardingProfileIndexRouteImport } from './routes/_app/_onboarding/profile/index'
+import { Route as AppOnboardingCreateWorkspaceIndexRouteImport } from './routes/_app/_onboarding/create-workspace/index'
+import { Route as AppWorkspaceSlugSidebarIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/index'
+import { Route as AppWorkspaceSlugSettingsProfileIndexRouteImport } from './routes/_app/$workspaceSlug/settings/profile/index'
+import { Route as AppWorkspaceSlugSettingsIntegrationsIndexRouteImport } from './routes/_app/$workspaceSlug/settings/integrations/index'
+import { Route as AppWorkspaceSlugSettingsPreferencesIndexRouteImport } from './routes/_app/$workspaceSlug/settings/_preferences/index'
+import { Route as AppWorkspaceSlugSidebarProjectsIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/projects/index'
+import { Route as AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteImport } from './routes/_app/$workspaceSlug/settings/integrations/_providers/route'
+import { Route as AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/projects/$projectId/index'
+import { Route as AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRouteImport } from './routes/_app/$workspaceSlug/settings/integrations/_providers/linear/index'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
-  id: "/_auth",
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AppRouteRoute = AppRouteRouteImport.update({
-  id: "/_app",
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => AppRouteRoute,
-} as any);
+} as any)
 const AppOnboardingRouteRoute = AppOnboardingRouteRouteImport.update({
-  id: "/_onboarding",
+  id: '/_onboarding',
   getParentRoute: () => AppRouteRoute,
-} as any);
+} as any)
 const AppWorkspaceSlugRouteRoute = AppWorkspaceSlugRouteRouteImport.update({
-  id: "/$workspaceSlug",
-  path: "/$workspaceSlug",
+  id: '/$workspaceSlug',
+  path: '/$workspaceSlug',
   getParentRoute: () => AppRouteRoute,
-} as any);
+} as any)
 const AuthSignUpIndexRoute = AuthSignUpIndexRouteImport.update({
-  id: "/sign-up/",
-  path: "/sign-up/",
+  id: '/sign-up/',
+  path: '/sign-up/',
   getParentRoute: () => AuthRouteRoute,
-} as any);
+} as any)
 const AuthSignInIndexRoute = AuthSignInIndexRouteImport.update({
-  id: "/sign-in/",
-  path: "/sign-in/",
+  id: '/sign-in/',
+  path: '/sign-in/',
   getParentRoute: () => AuthRouteRoute,
-} as any);
+} as any)
 const AppWorkspaceSlugSettingsRouteRoute =
   AppWorkspaceSlugSettingsRouteRouteImport.update({
-    id: "/settings",
-    path: "/settings",
+    id: '/settings',
+    path: '/settings',
     getParentRoute: () => AppWorkspaceSlugRouteRoute,
-  } as any);
+  } as any)
 const AppWorkspaceSlugSidebarRouteRoute =
   AppWorkspaceSlugSidebarRouteRouteImport.update({
-    id: "/_sidebar",
+    id: '/_sidebar',
     getParentRoute: () => AppWorkspaceSlugRouteRoute,
-  } as any);
+  } as any)
 const AppOnboardingProfileIndexRoute =
   AppOnboardingProfileIndexRouteImport.update({
-    id: "/profile/",
-    path: "/profile/",
+    id: '/profile/',
+    path: '/profile/',
     getParentRoute: () => AppOnboardingRouteRoute,
-  } as any);
+  } as any)
 const AppOnboardingCreateWorkspaceIndexRoute =
   AppOnboardingCreateWorkspaceIndexRouteImport.update({
-    id: "/create-workspace/",
-    path: "/create-workspace/",
+    id: '/create-workspace/',
+    path: '/create-workspace/',
     getParentRoute: () => AppOnboardingRouteRoute,
-  } as any);
+  } as any)
 const AppWorkspaceSlugSidebarIndexRoute =
   AppWorkspaceSlugSidebarIndexRouteImport.update({
-    id: "/",
-    path: "/",
+    id: '/',
+    path: '/',
     getParentRoute: () => AppWorkspaceSlugSidebarRouteRoute,
-  } as any);
+  } as any)
 const AppWorkspaceSlugSettingsProfileIndexRoute =
   AppWorkspaceSlugSettingsProfileIndexRouteImport.update({
-    id: "/profile/",
-    path: "/profile/",
+    id: '/profile/',
+    path: '/profile/',
     getParentRoute: () => AppWorkspaceSlugSettingsRouteRoute,
-  } as any);
-const AppWorkspaceSlugSettingsImportIndexRoute =
-  AppWorkspaceSlugSettingsImportIndexRouteImport.update({
-    id: "/import/",
-    path: "/import/",
+  } as any)
+const AppWorkspaceSlugSettingsIntegrationsIndexRoute =
+  AppWorkspaceSlugSettingsIntegrationsIndexRouteImport.update({
+    id: '/integrations/',
+    path: '/integrations/',
     getParentRoute: () => AppWorkspaceSlugSettingsRouteRoute,
-  } as any);
+  } as any)
 const AppWorkspaceSlugSettingsPreferencesIndexRoute =
   AppWorkspaceSlugSettingsPreferencesIndexRouteImport.update({
-    id: "/_preferences/",
-    path: "/",
+    id: '/_preferences/',
+    path: '/',
     getParentRoute: () => AppWorkspaceSlugSettingsRouteRoute,
-  } as any);
+  } as any)
 const AppWorkspaceSlugSidebarProjectsIndexRoute =
   AppWorkspaceSlugSidebarProjectsIndexRouteImport.update({
-    id: "/projects/",
-    path: "/projects/",
+    id: '/projects/',
+    path: '/projects/',
     getParentRoute: () => AppWorkspaceSlugSidebarRouteRoute,
-  } as any);
-const AppWorkspaceSlugSettingsImportProvidersRouteRoute =
-  AppWorkspaceSlugSettingsImportProvidersRouteRouteImport.update({
-    id: "/import/_providers",
-    path: "/import",
+  } as any)
+const AppWorkspaceSlugSettingsIntegrationsProvidersRouteRoute =
+  AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteImport.update({
+    id: '/integrations/_providers',
+    path: '/integrations',
     getParentRoute: () => AppWorkspaceSlugSettingsRouteRoute,
-  } as any);
+  } as any)
 const AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute =
   AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport.update({
-    id: "/projects/$projectId/",
-    path: "/projects/$projectId/",
+    id: '/projects/$projectId/',
+    path: '/projects/$projectId/',
     getParentRoute: () => AppWorkspaceSlugSidebarRouteRoute,
-  } as any);
-const AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute =
-  AppWorkspaceSlugSettingsImportProvidersFloatIndexRouteImport.update({
-    id: "/float/",
-    path: "/float/",
-    getParentRoute: () => AppWorkspaceSlugSettingsImportProvidersRouteRoute,
-  } as any);
+  } as any)
+const AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute =
+  AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRouteImport.update({
+    id: '/linear/',
+    path: '/linear/',
+    getParentRoute: () =>
+      AppWorkspaceSlugSettingsIntegrationsProvidersRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof AppIndexRoute;
-  "/$workspaceSlug": typeof AppWorkspaceSlugSidebarRouteRouteWithChildren;
-  "/$workspaceSlug/settings": typeof AppWorkspaceSlugSettingsRouteRouteWithChildren;
-  "/sign-in/": typeof AuthSignInIndexRoute;
-  "/sign-up/": typeof AuthSignUpIndexRoute;
-  "/$workspaceSlug/": typeof AppWorkspaceSlugSidebarIndexRoute;
-  "/create-workspace/": typeof AppOnboardingCreateWorkspaceIndexRoute;
-  "/profile/": typeof AppOnboardingProfileIndexRoute;
-  "/$workspaceSlug/settings/import": typeof AppWorkspaceSlugSettingsImportProvidersRouteRouteWithChildren;
-  "/$workspaceSlug/projects/": typeof AppWorkspaceSlugSidebarProjectsIndexRoute;
-  "/$workspaceSlug/settings/": typeof AppWorkspaceSlugSettingsPreferencesIndexRoute;
-  "/$workspaceSlug/settings/import/": typeof AppWorkspaceSlugSettingsImportIndexRoute;
-  "/$workspaceSlug/settings/profile/": typeof AppWorkspaceSlugSettingsProfileIndexRoute;
-  "/$workspaceSlug/projects/$projectId/": typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute;
-  "/$workspaceSlug/settings/import/float/": typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute;
+  '/': typeof AppIndexRoute
+  '/$workspaceSlug': typeof AppWorkspaceSlugSidebarRouteRouteWithChildren
+  '/$workspaceSlug/settings': typeof AppWorkspaceSlugSettingsRouteRouteWithChildren
+  '/sign-in/': typeof AuthSignInIndexRoute
+  '/sign-up/': typeof AuthSignUpIndexRoute
+  '/$workspaceSlug/': typeof AppWorkspaceSlugSidebarIndexRoute
+  '/create-workspace/': typeof AppOnboardingCreateWorkspaceIndexRoute
+  '/profile/': typeof AppOnboardingProfileIndexRoute
+  '/$workspaceSlug/settings/integrations': typeof AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteWithChildren
+  '/$workspaceSlug/projects/': typeof AppWorkspaceSlugSidebarProjectsIndexRoute
+  '/$workspaceSlug/settings/': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
+  '/$workspaceSlug/settings/integrations/': typeof AppWorkspaceSlugSettingsIntegrationsIndexRoute
+  '/$workspaceSlug/settings/profile/': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/$workspaceSlug/projects/$projectId/': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
+  '/$workspaceSlug/settings/integrations/linear/': typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof AppIndexRoute;
-  "/$workspaceSlug": typeof AppWorkspaceSlugSidebarIndexRoute;
-  "/sign-in": typeof AuthSignInIndexRoute;
-  "/sign-up": typeof AuthSignUpIndexRoute;
-  "/create-workspace": typeof AppOnboardingCreateWorkspaceIndexRoute;
-  "/profile": typeof AppOnboardingProfileIndexRoute;
-  "/$workspaceSlug/settings/import": typeof AppWorkspaceSlugSettingsImportIndexRoute;
-  "/$workspaceSlug/projects": typeof AppWorkspaceSlugSidebarProjectsIndexRoute;
-  "/$workspaceSlug/settings": typeof AppWorkspaceSlugSettingsPreferencesIndexRoute;
-  "/$workspaceSlug/settings/profile": typeof AppWorkspaceSlugSettingsProfileIndexRoute;
-  "/$workspaceSlug/projects/$projectId": typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute;
-  "/$workspaceSlug/settings/import/float": typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute;
+  '/': typeof AppIndexRoute
+  '/$workspaceSlug': typeof AppWorkspaceSlugSidebarIndexRoute
+  '/sign-in': typeof AuthSignInIndexRoute
+  '/sign-up': typeof AuthSignUpIndexRoute
+  '/create-workspace': typeof AppOnboardingCreateWorkspaceIndexRoute
+  '/profile': typeof AppOnboardingProfileIndexRoute
+  '/$workspaceSlug/settings/integrations': typeof AppWorkspaceSlugSettingsIntegrationsIndexRoute
+  '/$workspaceSlug/projects': typeof AppWorkspaceSlugSidebarProjectsIndexRoute
+  '/$workspaceSlug/settings': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
+  '/$workspaceSlug/settings/profile': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/$workspaceSlug/projects/$projectId': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
+  '/$workspaceSlug/settings/integrations/linear': typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/_app": typeof AppRouteRouteWithChildren;
-  "/_auth": typeof AuthRouteRouteWithChildren;
-  "/_app/$workspaceSlug": typeof AppWorkspaceSlugRouteRouteWithChildren;
-  "/_app/_onboarding": typeof AppOnboardingRouteRouteWithChildren;
-  "/_app/": typeof AppIndexRoute;
-  "/_app/$workspaceSlug/_sidebar": typeof AppWorkspaceSlugSidebarRouteRouteWithChildren;
-  "/_app/$workspaceSlug/settings": typeof AppWorkspaceSlugSettingsRouteRouteWithChildren;
-  "/_auth/sign-in/": typeof AuthSignInIndexRoute;
-  "/_auth/sign-up/": typeof AuthSignUpIndexRoute;
-  "/_app/$workspaceSlug/_sidebar/": typeof AppWorkspaceSlugSidebarIndexRoute;
-  "/_app/_onboarding/create-workspace/": typeof AppOnboardingCreateWorkspaceIndexRoute;
-  "/_app/_onboarding/profile/": typeof AppOnboardingProfileIndexRoute;
-  "/_app/$workspaceSlug/settings/import/_providers": typeof AppWorkspaceSlugSettingsImportProvidersRouteRouteWithChildren;
-  "/_app/$workspaceSlug/_sidebar/projects/": typeof AppWorkspaceSlugSidebarProjectsIndexRoute;
-  "/_app/$workspaceSlug/settings/_preferences/": typeof AppWorkspaceSlugSettingsPreferencesIndexRoute;
-  "/_app/$workspaceSlug/settings/import/": typeof AppWorkspaceSlugSettingsImportIndexRoute;
-  "/_app/$workspaceSlug/settings/profile/": typeof AppWorkspaceSlugSettingsProfileIndexRoute;
-  "/_app/$workspaceSlug/_sidebar/projects/$projectId/": typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute;
-  "/_app/$workspaceSlug/settings/import/_providers/float/": typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute;
+  __root__: typeof rootRouteImport
+  '/_app': typeof AppRouteRouteWithChildren
+  '/_auth': typeof AuthRouteRouteWithChildren
+  '/_app/$workspaceSlug': typeof AppWorkspaceSlugRouteRouteWithChildren
+  '/_app/_onboarding': typeof AppOnboardingRouteRouteWithChildren
+  '/_app/': typeof AppIndexRoute
+  '/_app/$workspaceSlug/_sidebar': typeof AppWorkspaceSlugSidebarRouteRouteWithChildren
+  '/_app/$workspaceSlug/settings': typeof AppWorkspaceSlugSettingsRouteRouteWithChildren
+  '/_auth/sign-in/': typeof AuthSignInIndexRoute
+  '/_auth/sign-up/': typeof AuthSignUpIndexRoute
+  '/_app/$workspaceSlug/_sidebar/': typeof AppWorkspaceSlugSidebarIndexRoute
+  '/_app/_onboarding/create-workspace/': typeof AppOnboardingCreateWorkspaceIndexRoute
+  '/_app/_onboarding/profile/': typeof AppOnboardingProfileIndexRoute
+  '/_app/$workspaceSlug/settings/integrations/_providers': typeof AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteWithChildren
+  '/_app/$workspaceSlug/_sidebar/projects/': typeof AppWorkspaceSlugSidebarProjectsIndexRoute
+  '/_app/$workspaceSlug/settings/_preferences/': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
+  '/_app/$workspaceSlug/settings/integrations/': typeof AppWorkspaceSlugSettingsIntegrationsIndexRoute
+  '/_app/$workspaceSlug/settings/profile/': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/_app/$workspaceSlug/_sidebar/projects/$projectId/': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
+  '/_app/$workspaceSlug/settings/integrations/_providers/linear/': typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/$workspaceSlug"
-    | "/$workspaceSlug/settings"
-    | "/sign-in/"
-    | "/sign-up/"
-    | "/$workspaceSlug/"
-    | "/create-workspace/"
-    | "/profile/"
-    | "/$workspaceSlug/settings/import"
-    | "/$workspaceSlug/projects/"
-    | "/$workspaceSlug/settings/"
-    | "/$workspaceSlug/settings/import/"
-    | "/$workspaceSlug/settings/profile/"
-    | "/$workspaceSlug/projects/$projectId/"
-    | "/$workspaceSlug/settings/import/float/";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/$workspaceSlug'
+    | '/$workspaceSlug/settings'
+    | '/sign-in/'
+    | '/sign-up/'
+    | '/$workspaceSlug/'
+    | '/create-workspace/'
+    | '/profile/'
+    | '/$workspaceSlug/settings/integrations'
+    | '/$workspaceSlug/projects/'
+    | '/$workspaceSlug/settings/'
+    | '/$workspaceSlug/settings/integrations/'
+    | '/$workspaceSlug/settings/profile/'
+    | '/$workspaceSlug/projects/$projectId/'
+    | '/$workspaceSlug/settings/integrations/linear/'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/$workspaceSlug"
-    | "/sign-in"
-    | "/sign-up"
-    | "/create-workspace"
-    | "/profile"
-    | "/$workspaceSlug/settings/import"
-    | "/$workspaceSlug/projects"
-    | "/$workspaceSlug/settings"
-    | "/$workspaceSlug/settings/profile"
-    | "/$workspaceSlug/projects/$projectId"
-    | "/$workspaceSlug/settings/import/float";
+    | '/'
+    | '/$workspaceSlug'
+    | '/sign-in'
+    | '/sign-up'
+    | '/create-workspace'
+    | '/profile'
+    | '/$workspaceSlug/settings/integrations'
+    | '/$workspaceSlug/projects'
+    | '/$workspaceSlug/settings'
+    | '/$workspaceSlug/settings/profile'
+    | '/$workspaceSlug/projects/$projectId'
+    | '/$workspaceSlug/settings/integrations/linear'
   id:
-    | "__root__"
-    | "/_app"
-    | "/_auth"
-    | "/_app/$workspaceSlug"
-    | "/_app/_onboarding"
-    | "/_app/"
-    | "/_app/$workspaceSlug/_sidebar"
-    | "/_app/$workspaceSlug/settings"
-    | "/_auth/sign-in/"
-    | "/_auth/sign-up/"
-    | "/_app/$workspaceSlug/_sidebar/"
-    | "/_app/_onboarding/create-workspace/"
-    | "/_app/_onboarding/profile/"
-    | "/_app/$workspaceSlug/settings/import/_providers"
-    | "/_app/$workspaceSlug/_sidebar/projects/"
-    | "/_app/$workspaceSlug/settings/_preferences/"
-    | "/_app/$workspaceSlug/settings/import/"
-    | "/_app/$workspaceSlug/settings/profile/"
-    | "/_app/$workspaceSlug/_sidebar/projects/$projectId/"
-    | "/_app/$workspaceSlug/settings/import/_providers/float/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/_app'
+    | '/_auth'
+    | '/_app/$workspaceSlug'
+    | '/_app/_onboarding'
+    | '/_app/'
+    | '/_app/$workspaceSlug/_sidebar'
+    | '/_app/$workspaceSlug/settings'
+    | '/_auth/sign-in/'
+    | '/_auth/sign-up/'
+    | '/_app/$workspaceSlug/_sidebar/'
+    | '/_app/_onboarding/create-workspace/'
+    | '/_app/_onboarding/profile/'
+    | '/_app/$workspaceSlug/settings/integrations/_providers'
+    | '/_app/$workspaceSlug/_sidebar/projects/'
+    | '/_app/$workspaceSlug/settings/_preferences/'
+    | '/_app/$workspaceSlug/settings/integrations/'
+    | '/_app/$workspaceSlug/settings/profile/'
+    | '/_app/$workspaceSlug/_sidebar/projects/$projectId/'
+    | '/_app/$workspaceSlug/settings/integrations/_providers/linear/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRouteRoute: typeof AppRouteRouteWithChildren;
-  AuthRouteRoute: typeof AuthRouteRouteWithChildren;
+  AppRouteRoute: typeof AppRouteRouteWithChildren
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/_auth": {
-      id: "/_auth";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof AuthRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_app": {
-      id: "/_app";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof AppRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_app/": {
-      id: "/_app/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof AppIndexRouteImport;
-      parentRoute: typeof AppRouteRoute;
-    };
-    "/_app/_onboarding": {
-      id: "/_app/_onboarding";
-      path: "";
-      fullPath: "/";
-      preLoaderRoute: typeof AppOnboardingRouteRouteImport;
-      parentRoute: typeof AppRouteRoute;
-    };
-    "/_app/$workspaceSlug": {
-      id: "/_app/$workspaceSlug";
-      path: "/$workspaceSlug";
-      fullPath: "/$workspaceSlug";
-      preLoaderRoute: typeof AppWorkspaceSlugRouteRouteImport;
-      parentRoute: typeof AppRouteRoute;
-    };
-    "/_auth/sign-up/": {
-      id: "/_auth/sign-up/";
-      path: "/sign-up";
-      fullPath: "/sign-up/";
-      preLoaderRoute: typeof AuthSignUpIndexRouteImport;
-      parentRoute: typeof AuthRouteRoute;
-    };
-    "/_auth/sign-in/": {
-      id: "/_auth/sign-in/";
-      path: "/sign-in";
-      fullPath: "/sign-in/";
-      preLoaderRoute: typeof AuthSignInIndexRouteImport;
-      parentRoute: typeof AuthRouteRoute;
-    };
-    "/_app/$workspaceSlug/settings": {
-      id: "/_app/$workspaceSlug/settings";
-      path: "/settings";
-      fullPath: "/$workspaceSlug/settings";
-      preLoaderRoute: typeof AppWorkspaceSlugSettingsRouteRouteImport;
-      parentRoute: typeof AppWorkspaceSlugRouteRoute;
-    };
-    "/_app/$workspaceSlug/_sidebar": {
-      id: "/_app/$workspaceSlug/_sidebar";
-      path: "";
-      fullPath: "/$workspaceSlug";
-      preLoaderRoute: typeof AppWorkspaceSlugSidebarRouteRouteImport;
-      parentRoute: typeof AppWorkspaceSlugRouteRoute;
-    };
-    "/_app/_onboarding/profile/": {
-      id: "/_app/_onboarding/profile/";
-      path: "/profile";
-      fullPath: "/profile/";
-      preLoaderRoute: typeof AppOnboardingProfileIndexRouteImport;
-      parentRoute: typeof AppOnboardingRouteRoute;
-    };
-    "/_app/_onboarding/create-workspace/": {
-      id: "/_app/_onboarding/create-workspace/";
-      path: "/create-workspace";
-      fullPath: "/create-workspace/";
-      preLoaderRoute: typeof AppOnboardingCreateWorkspaceIndexRouteImport;
-      parentRoute: typeof AppOnboardingRouteRoute;
-    };
-    "/_app/$workspaceSlug/_sidebar/": {
-      id: "/_app/$workspaceSlug/_sidebar/";
-      path: "/";
-      fullPath: "/$workspaceSlug/";
-      preLoaderRoute: typeof AppWorkspaceSlugSidebarIndexRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute;
-    };
-    "/_app/$workspaceSlug/settings/profile/": {
-      id: "/_app/$workspaceSlug/settings/profile/";
-      path: "/profile";
-      fullPath: "/$workspaceSlug/settings/profile/";
-      preLoaderRoute: typeof AppWorkspaceSlugSettingsProfileIndexRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute;
-    };
-    "/_app/$workspaceSlug/settings/import/": {
-      id: "/_app/$workspaceSlug/settings/import/";
-      path: "/import";
-      fullPath: "/$workspaceSlug/settings/import/";
-      preLoaderRoute: typeof AppWorkspaceSlugSettingsImportIndexRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute;
-    };
-    "/_app/$workspaceSlug/settings/_preferences/": {
-      id: "/_app/$workspaceSlug/settings/_preferences/";
-      path: "/";
-      fullPath: "/$workspaceSlug/settings/";
-      preLoaderRoute: typeof AppWorkspaceSlugSettingsPreferencesIndexRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute;
-    };
-    "/_app/$workspaceSlug/_sidebar/projects/": {
-      id: "/_app/$workspaceSlug/_sidebar/projects/";
-      path: "/projects";
-      fullPath: "/$workspaceSlug/projects/";
-      preLoaderRoute: typeof AppWorkspaceSlugSidebarProjectsIndexRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute;
-    };
-    "/_app/$workspaceSlug/settings/import/_providers": {
-      id: "/_app/$workspaceSlug/settings/import/_providers";
-      path: "/import";
-      fullPath: "/$workspaceSlug/settings/import";
-      preLoaderRoute: typeof AppWorkspaceSlugSettingsImportProvidersRouteRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute;
-    };
-    "/_app/$workspaceSlug/_sidebar/projects/$projectId/": {
-      id: "/_app/$workspaceSlug/_sidebar/projects/$projectId/";
-      path: "/projects/$projectId";
-      fullPath: "/$workspaceSlug/projects/$projectId/";
-      preLoaderRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute;
-    };
-    "/_app/$workspaceSlug/settings/import/_providers/float/": {
-      id: "/_app/$workspaceSlug/settings/import/_providers/float/";
-      path: "/float";
-      fullPath: "/$workspaceSlug/settings/import/float/";
-      preLoaderRoute: typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRouteImport;
-      parentRoute: typeof AppWorkspaceSlugSettingsImportProvidersRouteRoute;
-    };
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/_onboarding': {
+      id: '/_app/_onboarding'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppOnboardingRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/$workspaceSlug': {
+      id: '/_app/$workspaceSlug'
+      path: '/$workspaceSlug'
+      fullPath: '/$workspaceSlug'
+      preLoaderRoute: typeof AppWorkspaceSlugRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_auth/sign-up/': {
+      id: '/_auth/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up/'
+      preLoaderRoute: typeof AuthSignUpIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/sign-in/': {
+      id: '/_auth/sign-in/'
+      path: '/sign-in'
+      fullPath: '/sign-in/'
+      preLoaderRoute: typeof AuthSignInIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_app/$workspaceSlug/settings': {
+      id: '/_app/$workspaceSlug/settings'
+      path: '/settings'
+      fullPath: '/$workspaceSlug/settings'
+      preLoaderRoute: typeof AppWorkspaceSlugSettingsRouteRouteImport
+      parentRoute: typeof AppWorkspaceSlugRouteRoute
+    }
+    '/_app/$workspaceSlug/_sidebar': {
+      id: '/_app/$workspaceSlug/_sidebar'
+      path: ''
+      fullPath: '/$workspaceSlug'
+      preLoaderRoute: typeof AppWorkspaceSlugSidebarRouteRouteImport
+      parentRoute: typeof AppWorkspaceSlugRouteRoute
+    }
+    '/_app/_onboarding/profile/': {
+      id: '/_app/_onboarding/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof AppOnboardingProfileIndexRouteImport
+      parentRoute: typeof AppOnboardingRouteRoute
+    }
+    '/_app/_onboarding/create-workspace/': {
+      id: '/_app/_onboarding/create-workspace/'
+      path: '/create-workspace'
+      fullPath: '/create-workspace/'
+      preLoaderRoute: typeof AppOnboardingCreateWorkspaceIndexRouteImport
+      parentRoute: typeof AppOnboardingRouteRoute
+    }
+    '/_app/$workspaceSlug/_sidebar/': {
+      id: '/_app/$workspaceSlug/_sidebar/'
+      path: '/'
+      fullPath: '/$workspaceSlug/'
+      preLoaderRoute: typeof AppWorkspaceSlugSidebarIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute
+    }
+    '/_app/$workspaceSlug/settings/profile/': {
+      id: '/_app/$workspaceSlug/settings/profile/'
+      path: '/profile'
+      fullPath: '/$workspaceSlug/settings/profile/'
+      preLoaderRoute: typeof AppWorkspaceSlugSettingsProfileIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute
+    }
+    '/_app/$workspaceSlug/settings/integrations/': {
+      id: '/_app/$workspaceSlug/settings/integrations/'
+      path: '/integrations'
+      fullPath: '/$workspaceSlug/settings/integrations/'
+      preLoaderRoute: typeof AppWorkspaceSlugSettingsIntegrationsIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute
+    }
+    '/_app/$workspaceSlug/settings/_preferences/': {
+      id: '/_app/$workspaceSlug/settings/_preferences/'
+      path: '/'
+      fullPath: '/$workspaceSlug/settings/'
+      preLoaderRoute: typeof AppWorkspaceSlugSettingsPreferencesIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute
+    }
+    '/_app/$workspaceSlug/_sidebar/projects/': {
+      id: '/_app/$workspaceSlug/_sidebar/projects/'
+      path: '/projects'
+      fullPath: '/$workspaceSlug/projects/'
+      preLoaderRoute: typeof AppWorkspaceSlugSidebarProjectsIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute
+    }
+    '/_app/$workspaceSlug/settings/integrations/_providers': {
+      id: '/_app/$workspaceSlug/settings/integrations/_providers'
+      path: '/integrations'
+      fullPath: '/$workspaceSlug/settings/integrations'
+      preLoaderRoute: typeof AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteImport
+      parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute
+    }
+    '/_app/$workspaceSlug/_sidebar/projects/$projectId/': {
+      id: '/_app/$workspaceSlug/_sidebar/projects/$projectId/'
+      path: '/projects/$projectId'
+      fullPath: '/$workspaceSlug/projects/$projectId/'
+      preLoaderRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute
+    }
+    '/_app/$workspaceSlug/settings/integrations/_providers/linear/': {
+      id: '/_app/$workspaceSlug/settings/integrations/_providers/linear/'
+      path: '/linear'
+      fullPath: '/$workspaceSlug/settings/integrations/linear/'
+      preLoaderRoute: typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSettingsIntegrationsProvidersRouteRoute
+    }
   }
 }
 
 interface AppWorkspaceSlugSidebarRouteRouteChildren {
-  AppWorkspaceSlugSidebarIndexRoute: typeof AppWorkspaceSlugSidebarIndexRoute;
-  AppWorkspaceSlugSidebarProjectsIndexRoute: typeof AppWorkspaceSlugSidebarProjectsIndexRoute;
-  AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute;
+  AppWorkspaceSlugSidebarIndexRoute: typeof AppWorkspaceSlugSidebarIndexRoute
+  AppWorkspaceSlugSidebarProjectsIndexRoute: typeof AppWorkspaceSlugSidebarProjectsIndexRoute
+  AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
 }
 
 const AppWorkspaceSlugSidebarRouteRouteChildren: AppWorkspaceSlugSidebarRouteRouteChildren =
@@ -397,55 +398,55 @@ const AppWorkspaceSlugSidebarRouteRouteChildren: AppWorkspaceSlugSidebarRouteRou
       AppWorkspaceSlugSidebarProjectsIndexRoute,
     AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute:
       AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute,
-  };
+  }
 
 const AppWorkspaceSlugSidebarRouteRouteWithChildren =
   AppWorkspaceSlugSidebarRouteRoute._addFileChildren(
-    AppWorkspaceSlugSidebarRouteRouteChildren
-  );
+    AppWorkspaceSlugSidebarRouteRouteChildren,
+  )
 
-interface AppWorkspaceSlugSettingsImportProvidersRouteRouteChildren {
-  AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute: typeof AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute;
+interface AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteChildren {
+  AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute: typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute
 }
 
-const AppWorkspaceSlugSettingsImportProvidersRouteRouteChildren: AppWorkspaceSlugSettingsImportProvidersRouteRouteChildren =
+const AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteChildren: AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteChildren =
   {
-    AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute:
-      AppWorkspaceSlugSettingsImportProvidersFloatIndexRoute,
-  };
+    AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute:
+      AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute,
+  }
 
-const AppWorkspaceSlugSettingsImportProvidersRouteRouteWithChildren =
-  AppWorkspaceSlugSettingsImportProvidersRouteRoute._addFileChildren(
-    AppWorkspaceSlugSettingsImportProvidersRouteRouteChildren
-  );
+const AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteWithChildren =
+  AppWorkspaceSlugSettingsIntegrationsProvidersRouteRoute._addFileChildren(
+    AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteChildren,
+  )
 
 interface AppWorkspaceSlugSettingsRouteRouteChildren {
-  AppWorkspaceSlugSettingsImportProvidersRouteRoute: typeof AppWorkspaceSlugSettingsImportProvidersRouteRouteWithChildren;
-  AppWorkspaceSlugSettingsPreferencesIndexRoute: typeof AppWorkspaceSlugSettingsPreferencesIndexRoute;
-  AppWorkspaceSlugSettingsImportIndexRoute: typeof AppWorkspaceSlugSettingsImportIndexRoute;
-  AppWorkspaceSlugSettingsProfileIndexRoute: typeof AppWorkspaceSlugSettingsProfileIndexRoute;
+  AppWorkspaceSlugSettingsIntegrationsProvidersRouteRoute: typeof AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteWithChildren
+  AppWorkspaceSlugSettingsPreferencesIndexRoute: typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
+  AppWorkspaceSlugSettingsIntegrationsIndexRoute: typeof AppWorkspaceSlugSettingsIntegrationsIndexRoute
+  AppWorkspaceSlugSettingsProfileIndexRoute: typeof AppWorkspaceSlugSettingsProfileIndexRoute
 }
 
 const AppWorkspaceSlugSettingsRouteRouteChildren: AppWorkspaceSlugSettingsRouteRouteChildren =
   {
-    AppWorkspaceSlugSettingsImportProvidersRouteRoute:
-      AppWorkspaceSlugSettingsImportProvidersRouteRouteWithChildren,
+    AppWorkspaceSlugSettingsIntegrationsProvidersRouteRoute:
+      AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteWithChildren,
     AppWorkspaceSlugSettingsPreferencesIndexRoute:
       AppWorkspaceSlugSettingsPreferencesIndexRoute,
-    AppWorkspaceSlugSettingsImportIndexRoute:
-      AppWorkspaceSlugSettingsImportIndexRoute,
+    AppWorkspaceSlugSettingsIntegrationsIndexRoute:
+      AppWorkspaceSlugSettingsIntegrationsIndexRoute,
     AppWorkspaceSlugSettingsProfileIndexRoute:
       AppWorkspaceSlugSettingsProfileIndexRoute,
-  };
+  }
 
 const AppWorkspaceSlugSettingsRouteRouteWithChildren =
   AppWorkspaceSlugSettingsRouteRoute._addFileChildren(
-    AppWorkspaceSlugSettingsRouteRouteChildren
-  );
+    AppWorkspaceSlugSettingsRouteRouteChildren,
+  )
 
 interface AppWorkspaceSlugRouteRouteChildren {
-  AppWorkspaceSlugSidebarRouteRoute: typeof AppWorkspaceSlugSidebarRouteRouteWithChildren;
-  AppWorkspaceSlugSettingsRouteRoute: typeof AppWorkspaceSlugSettingsRouteRouteWithChildren;
+  AppWorkspaceSlugSidebarRouteRoute: typeof AppWorkspaceSlugSidebarRouteRouteWithChildren
+  AppWorkspaceSlugSettingsRouteRoute: typeof AppWorkspaceSlugSettingsRouteRouteWithChildren
 }
 
 const AppWorkspaceSlugRouteRouteChildren: AppWorkspaceSlugRouteRouteChildren = {
@@ -453,61 +454,61 @@ const AppWorkspaceSlugRouteRouteChildren: AppWorkspaceSlugRouteRouteChildren = {
     AppWorkspaceSlugSidebarRouteRouteWithChildren,
   AppWorkspaceSlugSettingsRouteRoute:
     AppWorkspaceSlugSettingsRouteRouteWithChildren,
-};
+}
 
 const AppWorkspaceSlugRouteRouteWithChildren =
   AppWorkspaceSlugRouteRoute._addFileChildren(
-    AppWorkspaceSlugRouteRouteChildren
-  );
+    AppWorkspaceSlugRouteRouteChildren,
+  )
 
 interface AppOnboardingRouteRouteChildren {
-  AppOnboardingCreateWorkspaceIndexRoute: typeof AppOnboardingCreateWorkspaceIndexRoute;
-  AppOnboardingProfileIndexRoute: typeof AppOnboardingProfileIndexRoute;
+  AppOnboardingCreateWorkspaceIndexRoute: typeof AppOnboardingCreateWorkspaceIndexRoute
+  AppOnboardingProfileIndexRoute: typeof AppOnboardingProfileIndexRoute
 }
 
 const AppOnboardingRouteRouteChildren: AppOnboardingRouteRouteChildren = {
   AppOnboardingCreateWorkspaceIndexRoute:
     AppOnboardingCreateWorkspaceIndexRoute,
   AppOnboardingProfileIndexRoute: AppOnboardingProfileIndexRoute,
-};
+}
 
 const AppOnboardingRouteRouteWithChildren =
-  AppOnboardingRouteRoute._addFileChildren(AppOnboardingRouteRouteChildren);
+  AppOnboardingRouteRoute._addFileChildren(AppOnboardingRouteRouteChildren)
 
 interface AppRouteRouteChildren {
-  AppWorkspaceSlugRouteRoute: typeof AppWorkspaceSlugRouteRouteWithChildren;
-  AppOnboardingRouteRoute: typeof AppOnboardingRouteRouteWithChildren;
-  AppIndexRoute: typeof AppIndexRoute;
+  AppWorkspaceSlugRouteRoute: typeof AppWorkspaceSlugRouteRouteWithChildren
+  AppOnboardingRouteRoute: typeof AppOnboardingRouteRouteWithChildren
+  AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppWorkspaceSlugRouteRoute: AppWorkspaceSlugRouteRouteWithChildren,
   AppOnboardingRouteRoute: AppOnboardingRouteRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
-};
+}
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
-  AppRouteRouteChildren
-);
+  AppRouteRouteChildren,
+)
 
 interface AuthRouteRouteChildren {
-  AuthSignInIndexRoute: typeof AuthSignInIndexRoute;
-  AuthSignUpIndexRoute: typeof AuthSignUpIndexRoute;
+  AuthSignInIndexRoute: typeof AuthSignInIndexRoute
+  AuthSignUpIndexRoute: typeof AuthSignUpIndexRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthSignInIndexRoute: AuthSignInIndexRoute,
   AuthSignUpIndexRoute: AuthSignUpIndexRoute,
-};
+}
 
 const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
-  AuthRouteRouteChildren
-);
+  AuthRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

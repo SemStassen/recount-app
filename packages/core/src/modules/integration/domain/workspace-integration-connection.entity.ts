@@ -12,7 +12,6 @@ import {
 export type WorkspaceIntegrationConnectionProvider =
   typeof WorkspaceIntegrationConnectionProvider.Type;
 export const WorkspaceIntegrationConnectionProvider = Schema.Literals([
-  "float",
   "linear",
 ]).pipe(Schema.brand("WorkspaceIntegrationConnectionProvider"));
 

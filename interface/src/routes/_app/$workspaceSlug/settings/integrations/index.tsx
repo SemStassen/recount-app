@@ -1,48 +1,28 @@
 import { WorkspaceIntegrationConnectionProvider } from "@recount/core/modules/integration";
-import { Avatar, AvatarFallback } from "@recount/ui/avatar";
+import { Avatar, AvatarImage } from "@recount/ui/avatar";
 import { Badge } from "@recount/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@recount/ui/card";
-import { Icons } from "@recount/ui/icons";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 
-export const Route = createFileRoute("/_app/$workspaceSlug/settings/import/")({
+export const Route = createFileRoute(
+  "/_app/$workspaceSlug/settings/integrations/"
+)({
   beforeLoad: () => ({
-    getTitle: () => "Import",
+    getTitle: () => "Integrations",
   }),
   component: RouteComponent,
 });
-
-const defaultDescription =
-  "Connect your external time tracking tool to sync time entries, projects, and team data automatically.";
 
 function RouteComponent() {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <IntegrationCard
-        description={defaultDescription}
-        icon={<Icons.Company.Float />}
-        provider="float"
-      />
-      <IntegrationCard
-        description={defaultDescription}
-        disabled={true}
-        icon={<Icons.Company.Early />}
-        provider="early"
-      />
-      <IntegrationCard
-        description={defaultDescription}
-        disabled={true}
-        icon={<Icons.Company.Simplicate />}
-        provider="simplicate"
-      />
-      <IntegrationCard
-        description={defaultDescription}
-        disabled={true}
-        icon={<Icons.Company.Toggl />}
-        provider="toggl"
+        description="Placeholder description"
+        logoSrc="/assets/integrations/linear.svg"
+        provider="linear"
       />
     </div>
   );
@@ -51,12 +31,12 @@ function RouteComponent() {
 function IntegrationCard({
   provider,
   description,
-  icon,
+  logoSrc,
   disabled = false,
 }: {
-  provider: "float" | "early" | "simplicate" | "toggl";
+  provider: typeof WorkspaceIntegrationConnectionProvider.schema.Type;
   description: string;
-  icon: React.ReactNode;
+  logoSrc: string;
   disabled?: boolean;
 }) {
   const workspaceDb = useWorkspaceDb();
@@ -72,14 +52,14 @@ function IntegrationCard({
   return (
     <Link
       disabled={disabled}
-      from="/$workspaceSlug/settings/import"
-      to={`/$workspaceSlug/settings/import/${provider as "float"}`}
+      from="/$workspaceSlug/settings/integrations/"
+      to={`/$workspaceSlug/settings/integrations/${provider}`}
     >
       <Card>
         <CardHeader className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback>{icon}</AvatarFallback>
+            <Avatar rounded="md">
+              <AvatarImage src={logoSrc} />
             </Avatar>
             <CardTitle>{provider}</CardTitle>
           </div>

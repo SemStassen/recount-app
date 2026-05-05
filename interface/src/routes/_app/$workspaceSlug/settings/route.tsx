@@ -70,11 +70,11 @@ function RouteComponent() {
             render={(props) => (
               <Link
                 from="/$workspaceSlug/settings"
-                to="/$workspaceSlug/settings/import"
+                to="/$workspaceSlug/settings/integrations"
                 {...props}
               >
                 <Icons.Plugs />
-                Import
+                Integrations
               </Link>
             )}
             variant="ghost"
