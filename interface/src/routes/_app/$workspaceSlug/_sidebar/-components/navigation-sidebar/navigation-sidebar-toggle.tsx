@@ -12,17 +12,15 @@ export function NavigationSidebarToggle() {
   useRegisterCommands(
     [
       {
-        id: isOpen
-          ? "navigation.close-left-sidebar"
-          : "navigation.open-left-sidebar",
-        title: isOpen ? "Close left sidebar" : "Open left sidebar",
-        hotkey: "bracketleft",
+        id: "navigation.toggle-sidebar",
         category: "navigation",
-        icon: Icons.Sidebar,
+        title: isOpen ? "Close left sidebar" : "Open left sidebar",
         perform: ({ close }) => {
           toggleIsOpen();
           close();
         },
+        hotkey: "bracketleft",
+        icon: Icons.Sidebar,
       },
     ],
     { id: "navigation-sidebar-toggle" }

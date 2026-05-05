@@ -1,6 +1,3 @@
-/* oxlint-disable eslint/no-shadow */
-/* oxlint-disable unicorn/no-array-reduce */
-
 import type * as React from "react";
 import { DayPicker } from "react-day-picker";
 

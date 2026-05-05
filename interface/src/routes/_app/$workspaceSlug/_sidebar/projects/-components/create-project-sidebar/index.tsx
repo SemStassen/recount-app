@@ -20,12 +20,12 @@ export function CreateProjectSidebar() {
     [
       {
         id: "navigation.toggle-create-project-sidebar",
+        category: "navigation",
         title: isOpen ? "Close new project" : "Create new project",
         perform: ({ close }) => {
           setIsOpen((o) => !o);
           close();
         },
-        category: "navigation",
       },
     ],
     {

@@ -18,7 +18,7 @@ export function UpdatePreferencesForm() {
     q.from({ us: userDb.collections.userSettingsCollection }).findOne()
   );
 
-  const defaultValues: (typeof schema)["Encoded"] = {
+  const defaultValues: (typeof schema.validator)["Encoded"] = {
     dateFormat:
       currentUserSettings?.dateFormat ??
       UserSettings.fields.dateFormat.literals[0],
@@ -60,10 +60,12 @@ export function UpdatePreferencesForm() {
           <field.SelectField
             direction="horizontal"
             label={{ children: "Date Format" }}
-            items={UserSettings.fields.dateFormat.literals.map((literal) => ({
-              label: literal,
-              value: literal,
-            }))}
+            select={{
+              items: UserSettings.fields.dateFormat.literals.map((literal) => ({
+                label: literal,
+                value: literal,
+              })),
+            }}
           />
         )}
         name="dateFormat"
@@ -73,10 +75,12 @@ export function UpdatePreferencesForm() {
           <field.SelectField
             direction="horizontal"
             label={{ children: "Time Format" }}
-            items={UserSettings.fields.timeFormat.literals.map((literal) => ({
-              label: literal,
-              value: literal,
-            }))}
+            select={{
+              items: UserSettings.fields.timeFormat.literals.map((literal) => ({
+                label: literal,
+                value: literal,
+              })),
+            }}
           />
         )}
         name="timeFormat"

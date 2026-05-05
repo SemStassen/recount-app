@@ -1,4 +1,4 @@
-import type { SelectItemProps } from "@base-ui/react";
+import type { Select as SelectPrimitive } from "@base-ui/react";
 import { RichTextEditor } from "@recount/editor";
 import type { RichTextContent } from "@recount/editor";
 import { Button } from "@recount/ui/button";
@@ -31,6 +31,7 @@ import { Switch } from "@recount/ui/switch";
 import type { SwitchProps } from "@recount/ui/switch";
 import { Textarea } from "@recount/ui/textarea";
 import type { TextareaProps } from "@recount/ui/textarea";
+import { TimePicker, type TimePickerProps } from "@recount/ui/time-picker";
 import { cn } from "@recount/ui/utils";
 import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
 import { cva } from "class-variance-authority";
@@ -47,10 +48,9 @@ export const { useAppForm, withFieldGroup } = createFormHook({
     TextField,
     TextareaField,
     SwitchField,
-    DateField,
-    // TimeField: TimeField,
+    DatePickerField,
+    TimePickerField,
     SelectField,
-    // ComboBoxField: ComboBoxField,
     EditorField,
   },
   formComponents: {
@@ -177,24 +177,42 @@ function SwitchField({ switch: switchProps, ...props }: SwitchFieldProps) {
   );
 }
 
-export interface SelectFieldProps extends BaseFieldProps {
-  items: Array<SelectItemProps>;
+interface SelectFieldItem<Value> {
+  label: React.ReactNode;
+  value: Value;
 }
-function SelectField({ items, ...props }: SelectFieldProps) {
-  const fieldCtx = useFieldContext<string | undefined>();
+
+export interface SelectFieldProps<
+  Value,
+  Multiple extends boolean,
+> extends BaseFieldProps {
+  select: Omit<
+    SelectPrimitive.Root.Props<Value, Multiple>,
+    "multiple" | "items"
+  > & {
+    items: Array<SelectFieldItem<Value>>;
+  };
+}
+
+function SelectField<Value>({
+  select,
+  ...props
+}: SelectFieldProps<Value, false>) {
+  const fieldCtx = useFieldContext<Value | undefined>();
 
   return (
     <BaseField {...props}>
       <Select
         value={fieldCtx.state.value}
         onValueChange={(value) => fieldCtx.handleChange(value ?? undefined)}
+        {...select}
       >
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectPopup>
-          {items.map(({ label, value }) => (
-            <SelectItem key={value} value={value}>
+          {select.items.map(({ label, value }) => (
+            <SelectItem key={String(value)} value={value}>
               {label}
             </SelectItem>
           ))}
@@ -204,8 +222,8 @@ function SelectField({ items, ...props }: SelectFieldProps) {
   );
 }
 
-export interface DateFieldProps extends BaseFieldProps {}
-function DateField({ ...props }: DateFieldProps) {
+export interface DatePickerFieldProps extends BaseFieldProps {}
+function DatePickerField({ ...props }: DatePickerFieldProps) {
   const fieldCtx = useFieldContext<Date | undefined>();
   const formatter = useDateTimeFormatter();
 
@@ -230,6 +248,29 @@ function DateField({ ...props }: DateFieldProps) {
           />
         </PopoverPopup>
       </Popover>
+    </BaseField>
+  );
+}
+
+export interface TimePickerFieldProps extends BaseFieldProps {
+  timePicker?: Omit<
+    TimePickerProps,
+    "format" | "locale" | "onChange" | "value"
+  >;
+}
+function TimePickerField({ timePicker, ...props }: TimePickerFieldProps) {
+  const fieldCtx = useFieldContext<Date | null>();
+  const formatter = useDateTimeFormatter();
+
+  return (
+    <BaseField {...props}>
+      <TimePicker
+        format={formatter.time}
+        locale="en"
+        onChange={fieldCtx.handleChange}
+        value={fieldCtx.state.value}
+        {...timePicker}
+      />
     </BaseField>
   );
 }

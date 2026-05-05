@@ -66,14 +66,4 @@ export const defaultCommands: Array<Command> = [
     },
     title: "Go to profile",
   },
-  {
-    category: "developer",
-    id: "developer.say-hello",
-    icon: Icons.Bug,
-    perform: ({ close }) => {
-      console.log("hello");
-      close();
-    },
-    title: "Say hello",
-  },
 ];

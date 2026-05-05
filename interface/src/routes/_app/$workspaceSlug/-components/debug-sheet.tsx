@@ -21,19 +21,36 @@ import {
 import { Atom } from "effect/unstable/reactivity";
 
 import { currentTimeAtom } from "~/atoms/current-time.atom";
-import { PLATFORM } from "~/lib/utils/constants";
+import { useRegisterCommands } from "~/features/command-menu";
+import { PLATFORM } from "~/lib/utils/platform";
 
 export const isDebugSheetOpenAtom = Atom.make(false);
 
 function DebugSheet() {
-  const [isOpen, setIsOpen] = useAtom(isDebugSheetOpenAtom);
-  const [currentTime, setCurrentTime] = useAtom(currentTimeAtom);
   const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
 
-  const toggleDebugSheet = () => setIsOpen((o) => !o);
+  const [isOpen, setIsOpen] = useAtom(isDebugSheetOpenAtom);
+  const [currentTime, setCurrentTime] = useAtom(currentTimeAtom);
+
+  useRegisterCommands(
+    [
+      {
+        id: "developer.toggle-debug-sheet",
+        category: "developer",
+        title: isOpen ? "Close Debug Sheet" : "Open Debug Sheet",
+        perform: ({ close }) => {
+          setIsOpen((o) => !o);
+          close();
+        },
+      },
+    ],
+    {
+      id: "debug-sheet",
+    }
+  );
 
   return (
-    <Sheet onOpenChange={toggleDebugSheet} open={isOpen}>
+    <Sheet onOpenChange={(o) => setIsOpen(o)} open={isOpen}>
       <SheetContent side="right">
         <SheetHeader className="flex flex-row items-center gap-2">
           <Icons.LookingGlass />

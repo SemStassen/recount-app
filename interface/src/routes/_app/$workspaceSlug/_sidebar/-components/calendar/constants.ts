@@ -6,3 +6,4 @@ export const CALENDAR_HOUR_HEIGHT_VAR = "--calendar-hour-height";
 export const FIRST_VISIBLE_HOUR = 0;
 export const LAST_VISIBLE_HOUR = 24;
 export const CALENDAR_SLOTS_PER_HOUR = 4;
+export const CALENDAR_WEEK_STARTS_ON = 1;

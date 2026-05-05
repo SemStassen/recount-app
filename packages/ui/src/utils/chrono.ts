@@ -1,19 +1,21 @@
 import * as chrono from "chrono-node";
 
-export type ChronoLocale =
-  | "en"
-  | "en-GB"
-  | "fr"
-  | "ja"
-  | "nl"
-  | "ru"
-  | "uk"
-  // Partially supported
-  | "de"
-  | "pt"
-  | "zh"
-  | "zh-Hans"
-  | "zh-Hant";
+const locales = {
+  de: chrono.de,
+  en: chrono.en,
+  "en-GB": chrono.en.GB,
+  fr: chrono.fr,
+  ja: chrono.ja,
+  nl: chrono.nl,
+  pt: chrono.pt,
+  ru: chrono.ru,
+  uk: chrono.uk,
+  zh: chrono.zh,
+  "zh-Hans": chrono.zh.hans,
+  "zh-Hant": chrono.zh.hant,
+} as const;
+
+export type ChronoLocale = keyof typeof locales;
 
 export function chronoParse({
   text,
@@ -24,47 +26,7 @@ export function chronoParse({
   text: string;
   ref?: chrono.en.ParsingReference | Date;
   option?: chrono.en.ParsingOption;
-  locale?: ChronoLocale;
+  locale: ChronoLocale;
 }) {
-  switch (locale) {
-    case "de": {
-      return chrono.de.parseDate(text, ref, option);
-    }
-    case "en": {
-      return chrono.en.parseDate(text, ref, option);
-    }
-    case "en-GB": {
-      return chrono.en.GB.parseDate(text, ref, option);
-    }
-    case "fr": {
-      return chrono.fr.parseDate(text, ref, option);
-    }
-    case "ja": {
-      return chrono.ja.parseDate(text, ref, option);
-    }
-    case "nl": {
-      return chrono.nl.parseDate(text, ref, option);
-    }
-    case "pt": {
-      return chrono.pt.parseDate(text, ref, option);
-    }
-    case "ru": {
-      return chrono.ru.parseDate(text, ref, option);
-    }
-    case "uk": {
-      return chrono.uk.parseDate(text, ref, option);
-    }
-    case "zh": {
-      return chrono.zh.parseDate(text, ref, option);
-    }
-    case "zh-Hans": {
-      return chrono.zh.hans.parseDate(text, ref, option);
-    }
-    case "zh-Hant": {
-      return chrono.zh.hant.parseDate(text, ref, option);
-    }
-    default: {
-      return chrono.parseDate(text, ref, option);
-    }
-  }
+  return locales[locale].parseDate(text, ref, option);
 }

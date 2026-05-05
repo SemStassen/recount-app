@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+
 import {
   Combobox,
-  ComboboxContent,
+  ComboboxPopup,
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
@@ -16,20 +17,22 @@ type Item = Date;
 
 const TimePicker = ({
   format,
+  locale,
   step = 15,
   value,
   onChange,
   defaultValue,
   ...props
 }: TimePickerProps) => {
-  const [internalValue, setInternalValue] = useState(
-    defaultValue ?? new Date()
+  const [internalValue, setInternalValue] = useState<Date | null>(
+    defaultValue ?? null
   );
 
   const isControlled = value !== undefined;
   const currentValue = isControlled ? value : internalValue;
+  const referenceValue = currentValue ?? new Date();
 
-  function setValue(next: Date) {
+  function setValue(next: Date | null) {
     if (!isControlled) {
       setInternalValue(next);
     }
@@ -38,19 +41,15 @@ const TimePicker = ({
 
   const totalSteps = (24 * 60) / step;
 
-  const items: Array<Date> = useMemo(
-    () =>
-      Array.from({ length: totalSteps }, (_, i) => {
-        const minutes = i * step;
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
+  const items: Array<Date> = Array.from({ length: totalSteps }, (_, i) => {
+    const minutes = i * step;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
 
-        const d = new Date(currentValue);
-        d.setHours(hours, mins, 0, 0);
-        return d;
-      }),
-    [totalSteps, step, currentValue]
-  );
+    const d = new Date(referenceValue);
+    d.setHours(hours, mins, 0, 0);
+    return d;
+  });
 
   function handleValueChange(selected: unknown) {
     if (typeof selected === "string") {
@@ -67,20 +66,17 @@ const TimePicker = ({
       filter={() => true}
       items={items}
       onValueChange={handleValueChange}
-      value={currentValue.toISOString()}
+      value={currentValue?.toISOString() ?? ""}
     >
       <ComboboxInput
         render={(inputProps) => {
-          const {
-            // @ts-expect-error: Value does exist
-            value: _value,
-            defaultValue: _defaultValue,
-            ...safeInputProps
-          } = inputProps;
+          const { defaultValue: _defaultValue, ...inputTimeProps } = inputProps;
+
           return (
             <InputTime
-              {...safeInputProps}
+              {...inputTimeProps}
               format={format}
+              locale={locale}
               onBlur={props.onBlur}
               onChange={setValue}
               value={currentValue}
@@ -88,7 +84,7 @@ const TimePicker = ({
           );
         }}
       />
-      <ComboboxContent>
+      <ComboboxPopup>
         <ComboboxList>
           {(item: Item) => (
             <ComboboxItem key={item.toISOString()} value={item.toISOString()}>
@@ -96,7 +92,7 @@ const TimePicker = ({
             </ComboboxItem>
           )}
         </ComboboxList>
-      </ComboboxContent>
+      </ComboboxPopup>
     </Combobox>
   );
 };

@@ -11,7 +11,7 @@ export interface InputTimeProps extends Omit<
   "value" | "onChange" | "defaultValue"
 > {
   format: (date: Date) => string;
-  locale?: ChronoLocale;
+  locale: ChronoLocale;
   value?: Date | null;
   defaultValue?: Date | null;
   onChange?: (value: Date | null) => void;
@@ -38,15 +38,18 @@ function InputTime({
     setText(currentValue ? format(currentValue) : "");
   }, [currentValue, format]);
 
+  function setValue(nextValue: Date | null) {
+    if (!isControlled) {
+      setInternalValue(nextValue);
+    }
+    onChange?.(nextValue);
+  }
+
   function commit() {
     const raw = text.trim();
 
-    // empty → null
     if (!raw) {
-      if (!isControlled) {
-        setInternalValue(null);
-      }
-      onChange?.(null);
+      setValue(null);
       return;
     }
 
@@ -56,16 +59,12 @@ function InputTime({
       locale,
     });
 
-    if (parsed) {
-      if (!isControlled) {
-        setInternalValue(parsed);
-      }
-      onChange?.(parsed);
-      setText(format(parsed));
-    } else {
-      // Failed parse: keep text, user can continue editing
-      // (no auto-revert)
+    if (!parsed) {
+      return;
     }
+
+    setValue(parsed);
+    setText(format(parsed));
   }
 
   return (

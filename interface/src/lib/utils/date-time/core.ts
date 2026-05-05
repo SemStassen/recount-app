@@ -1,7 +1,4 @@
-import { useLiveQuery } from "@tanstack/react-db";
 import { format } from "date-fns";
-
-import { useUserDb } from "~/db/user/context";
 
 const DATE_FORMATS = {
   "MM/DD/YYYY": "MM/dd/yyyy",
@@ -14,29 +11,51 @@ const TIME_FORMATS = {
   "24h": "HH:mm",
 } as const;
 
-const DEFAULT_TIME_ZONE: string | null = null;
 const DEFAULT_DATE_FORMAT: DateFormat = "DD/MM/YYYY";
 const DEFAULT_TIME_FORMAT: TimeFormat = "24h";
+const DEFAULT_TIME_ZONE = "UTC";
 
 export type DateFormat = keyof typeof DATE_FORMATS;
 export type TimeFormat = keyof typeof TIME_FORMATS;
+export type TimeZone = string;
 
 export interface DateTimeSettings {
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
-  timeZone: string | null;
+  timeZone: TimeZone;
 }
 
-interface DateTimeSettingsInput {
+export interface DateTimeSettingsInput {
   dateFormat?: string;
   timeFormat?: string;
+  timeZone?: string | null;
 }
 
-function normalizeDateTimeSettings(
+export function parseTimeZone(value: string): TimeZone | null {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: value });
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+export function getDefaultTimeZone(): TimeZone {
+  const utc = parseTimeZone(DEFAULT_TIME_ZONE);
+
+  if (utc) {
+    return utc;
+  }
+
+  throw new Error("Intl runtime does not support UTC time zone");
+}
+
+export function normalizeDateTimeSettings(
   userSettings?: DateTimeSettingsInput | null
 ): DateTimeSettings {
   const dateFormat = userSettings?.dateFormat;
   const timeFormat = userSettings?.timeFormat;
+  const timeZone = userSettings?.timeZone;
 
   return {
     dateFormat:
@@ -47,7 +66,10 @@ function normalizeDateTimeSettings(
       timeFormat !== undefined && timeFormat in TIME_FORMATS
         ? (timeFormat as TimeFormat)
         : DEFAULT_TIME_FORMAT,
-    timeZone: DEFAULT_TIME_ZONE,
+    timeZone:
+      typeof timeZone === "string"
+        ? (parseTimeZone(timeZone) ?? getDefaultTimeZone())
+        : getDefaultTimeZone(),
   };
 }
 
@@ -57,6 +79,7 @@ export function createDateTimeFormatter(input?: DateTimeSettingsInput | null) {
   const settings = normalizeDateTimeSettings(input);
 
   return {
+    settings,
     time: (date: Date): string =>
       format(date, TIME_FORMATS[settings.timeFormat]),
     date: (date: Date): string =>
@@ -71,16 +94,4 @@ export function createDateTimeFormatter(input?: DateTimeSettingsInput | null) {
     weekday: (date: Date): string => format(date, "EEEE"),
     weekdayShort: (date: Date): string => format(date, "EEE"),
   };
-}
-
-export function useDateTimeFormatter(): DateTimeFormatter {
-  const userDb = useUserDb();
-  const { data: userSettings } = useLiveQuery((q) =>
-    q.from({ us: userDb.collections.userSettingsCollection }).findOne()
-  );
-
-  return createDateTimeFormatter({
-    dateFormat: userSettings?.dateFormat,
-    timeFormat: userSettings?.timeFormat,
-  });
 }
