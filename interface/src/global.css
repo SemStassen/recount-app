@@ -1,4 +1,4 @@
-@import "@recount/ui/globals.css";
+@import "@recount/ui/global.css";
 
 /* biome-ignore lint/suspicious/noUnknownAtRules: This is necessary for tailwind to work */
 @source "../src";
@@ -7,9 +7,9 @@
 
 /* https://base-ui.com/react/overview/quick-start */
 .root {
-  isolation: isolate;
+    isolation: isolate;
 }
 
 body {
-  position: relative;
+    position: relative;
 }

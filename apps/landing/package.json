@@ -1,0 +1,30 @@
+{
+  "name": "@recount/landing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
+    "dev": "astro dev --port 8005",
+    "format": "oxfmt --write .",
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.4",
+    "@astrojs/sitemap": "^3.7.2",
+    "@fontsource/geist-mono": "^5.2.7",
+    "@fontsource/geist-sans": "^5.2.5",
+    "@recount/ui": "workspace:*",
+    "astro": "^6.2.2",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
+  },
+  "devDependencies": {
+    "@recount/config": "workspace:*",
+    "@tailwindcss/vite": "catalog:dev",
+    "@types/react": "catalog:dev",
+    "@types/react-dom": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}

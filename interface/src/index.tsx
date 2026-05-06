@@ -2,7 +2,7 @@ import { RegistryContext } from "@effect/atom-react";
 import { AnchoredToastProvider, ToastProvider } from "@recount/ui/toast";
 import { TooltipProvider } from "@recount/ui/tooltip";
 
-import "./globals.css";
+import "./global.css";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";

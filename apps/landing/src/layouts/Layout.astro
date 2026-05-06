@@ -1,0 +1,77 @@
+---
+import "@fontsource/geist-sans/400.css";
+import "@fontsource/geist-sans/500.css";
+import "@fontsource/geist-sans/600.css";
+import "@fontsource/geist-sans/700.css";
+import "@fontsource/geist-mono/400.css";
+import "../styles/global.css";
+import { siteConfig } from "~/lib/site";
+
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title = siteConfig.name, description = siteConfig.description, ogImage } =
+  Astro.props;
+
+const resolvedOgImage = `${siteConfig.url}${ogImage || siteConfig.ogImage}`;
+
+// Generate breadcrumb based on current path
+const pathname = Astro.url.pathname;
+const pathSegments = pathname.split('/').filter(Boolean);
+const breadcrumbItems = [
+  { name: "Home", url: siteConfig.url }
+];
+if (pathSegments.length > 0) {
+  let currentPath = '';
+  for (const segment of pathSegments) {
+    currentPath += `/${segment}`;
+    const name = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+    breadcrumbItems.push({ name, url: `${siteConfig.url}${currentPath}` });
+  }
+}
+
+// Generate canonical URL from current page
+const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+
+    <meta name="author" content={siteConfig.name} />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    <title>{title}</title>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content={siteConfig.name} />
+    <meta
+      property="og:image"
+      content={resolvedOgImage}
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Recount - Time tracking for focus" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Additional head content from pages -->
+    <slot name="head" />
+
+  </head>
+  <body class="antialiased font-sans bg-background">
+      <slot />
+  </body>
+</html>

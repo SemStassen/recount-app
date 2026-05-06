@@ -34,7 +34,7 @@
     "#utils/*": "./src/utils/*.ts"
   },
   "exports": {
-    "./globals.css": "./src/globals.css",
+    "./global.css": "./src/global.css",
     "./utils": "./src/utils/index.ts",
     "./accordion": "./src/components/accordion.coss.tsx",
     "./autocomplete": "./src/components/autocomplete.coss.tsx",
