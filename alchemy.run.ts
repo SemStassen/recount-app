@@ -34,6 +34,22 @@ const Landing = Cloudflare.StaticSite(
   }))
 );
 
+const AppWeb = Cloudflare.StaticSite(
+  "app-web",
+  Alchemy.Stack.useSync((stack) => ({
+    name: `${stack.name}-app-web-${stack.stage}`,
+    domain: stack.stage === "prod" ? ["app.recount.dev"] : undefined,
+    cwd: "apps/web",
+    command: "bun run build",
+    main: "apps/web/src/worker.ts",
+    outdir: "dist",
+    assetsConfig: {
+      htmlHandling: "auto-trailing-slash",
+      notFoundHandling: "single-page-application",
+    },
+  }))
+);
+
 export default Alchemy.Stack(
   "recount",
   {
@@ -58,11 +74,14 @@ export default Alchemy.Stack(
       storageClass: "Standard",
     });
 
+    const appWeb = yield* AppWeb;
+
     const landing = yield* Landing;
 
     return {
       globalUploadsBucketName: globalUploadsBucket.bucketName,
       euUploadsBucketName: euUploadsBucket.bucketName,
+      appWebUrl: appWeb.url,
       landingUrl: landing.url,
     };
   })

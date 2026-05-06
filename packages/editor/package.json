@@ -27,7 +27,9 @@
     "@tiptap/extension-underline": "^3.22.5",
     "@tiptap/extensions": "^3.22.5",
     "@tiptap/pm": "^3.22.2",
-    "@tiptap/react": "^3.22.2"
+    "@tiptap/react": "^3.22.2",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",

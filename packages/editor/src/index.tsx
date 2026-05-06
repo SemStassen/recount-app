@@ -1,6 +1,6 @@
 import { Button } from "@recount/ui/button";
 import { cn } from "@recount/ui/utils";
-import { useEditor, Tiptap, EditorContext, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContext, EditorContent } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { useMemo } from "react";
