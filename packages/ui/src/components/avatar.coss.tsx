@@ -14,6 +14,7 @@ const avatarVariants = cva(
     variants: {
       size: {
         default: "size-8",
+        lg: "size-12",
       },
       rounded: {
         md: "rounded-md",
