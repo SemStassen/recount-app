@@ -48,7 +48,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
     <meta name="author" content={siteConfig.name} />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#000000" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <link rel="canonical" href={canonicalURL} />
     <title>{title}</title>
 
@@ -71,7 +71,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
     <slot name="head" />
 
   </head>
-  <body class="antialiased font-sans bg-background">
+  <body class="antialiased font-sans bg-background text-foreground">
       <slot />
   </body>
 </html>
