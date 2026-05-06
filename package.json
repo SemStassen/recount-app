@@ -22,13 +22,13 @@
       "packages/*"
     ],
     "catalog": {
-      "@effect/atom-react": "^4.0.0-beta.59",
-      "@effect/opentelemetry": "^4.0.0-beta.59",
-      "@effect/platform-bun": "^4.0.0-beta.59",
-      "@effect/sql-pg": "^4.0.0-beta.59",
+      "@effect/atom-react": "^4.0.0-beta.60",
+      "@effect/opentelemetry": "^4.0.0-beta.60",
+      "@effect/platform-bun": "^4.0.0-beta.60",
+      "@effect/sql-pg": "^4.0.0-beta.60",
       "better-auth": "^1.6.5",
       "drizzle-orm": "1.0.0-rc.1",
-      "effect": "^4.0.0-beta.59",
+      "effect": "^4.0.0-beta.60",
       "uuid": "^13.0.0"
     },
     "catalogs": {
@@ -67,7 +67,7 @@
     "@inlang/cli": "^3.1.10"
   },
   "dependencies": {
-    "alchemy": "2.0.0-beta.28",
+    "alchemy": "2.0.0-beta.30",
     "effect": "catalog:"
   }
 }
