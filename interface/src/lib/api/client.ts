@@ -5,8 +5,8 @@ import { HttpApiClient } from "effect/unstable/httpapi";
 
 import { env } from "../env";
 
-export class RecountApiClient extends Context.Service<RecountApiClient>()(
-  "@recount/interface/RecountApiClient",
+export class BackendHttpApiClient extends Context.Service<BackendHttpApiClient>()(
+  "@recount/interface/BackendHttpApiClient",
   {
     make: Effect.succeed(
       HttpApiClient.make(RecountApi, {

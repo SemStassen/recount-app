@@ -7,7 +7,7 @@ import { Effect } from "effect";
 import { useAppForm } from "~/components/form";
 import { useUserDb } from "~/db/user/context";
 import { createSchemaForm } from "~/lib/form";
-import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 import { runtime } from "~/lib/runtime";
 
 const schema = createSchemaForm(UserSettings.jsonUpdate);
@@ -37,7 +37,7 @@ export function UpdatePreferencesForm() {
     onSubmit: schema.handleSubmit(async ({ value }) => {
       await runtime.runPromise(
         Effect.gen(function* () {
-          const client = yield* RecountAtomRpcClient;
+          const client = yield* BackendAtomRpcClient;
 
           yield* client("UserSettings.UpdateMe", {
             dateFormat: value.dateFormat,

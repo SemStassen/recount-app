@@ -63,15 +63,15 @@ const AtomRpcProtocolLayer = Layer.mergeAll(
   Reactivity.layer
 );
 
-export class RecountAtomRpcClient extends AtomRpc.Service<RecountAtomRpcClient>()(
-  "@recount/interface/RecountAtomRpcClient",
+export class BackendAtomRpcClient extends AtomRpc.Service<BackendAtomRpcClient>()(
+  "@recount/interface/BackendAtomRpcClient",
   {
     group: allRpcGroups,
     protocol: AtomRpcProtocolLayer,
   }
 ) {
   static readonly layer = Layer.effect(
-    RecountAtomRpcClient,
+    BackendAtomRpcClient,
     RpcClient.make(allRpcGroups, { flatten: true })
   ).pipe(Layer.provide(AtomRpcProtocolLayer));
 }

@@ -1,6 +1,6 @@
-import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
-export const sessionAtom = RecountAtomRpcClient.query(
+export const sessionAtom = BackendAtomRpcClient.query(
   "Auth.GetSession",
   undefined,
   {
@@ -8,7 +8,7 @@ export const sessionAtom = RecountAtomRpcClient.query(
   }
 );
 
-export const workspacesAtom = RecountAtomRpcClient.query(
+export const workspacesAtom = BackendAtomRpcClient.query(
   "Workspace.List",
   undefined,
   {

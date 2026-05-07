@@ -7,7 +7,7 @@ import { useRouteContext } from "@tanstack/react-router";
 
 import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
-import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 import { m } from "~/paraglide/messages";
 
 const schema = createSchemaForm(Project.jsonCreate);
@@ -16,7 +16,7 @@ export function CreateProjectForm() {
   const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
 
   const createProject = useAtomSet(
-    RecountAtomRpcClient.mutation("Project.Create"),
+    BackendAtomRpcClient.mutation("Project.Create"),
     {
       mode: "promiseExit",
     }

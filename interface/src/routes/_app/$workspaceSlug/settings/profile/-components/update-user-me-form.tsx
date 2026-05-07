@@ -8,7 +8,7 @@ import { Exit, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
-import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
 const schema = createSchemaForm(
   Schema.Struct({
@@ -20,7 +20,7 @@ export function UpdateUserMeForm() {
   const { user } = useRouteContext({ from: "/_app/$workspaceSlug" });
 
   const updateUserMe = useAtomSet(
-    RecountAtomRpcClient.mutation("User.UpdateMe"),
+    BackendAtomRpcClient.mutation("User.UpdateMe"),
     { mode: "promiseExit" }
   );
 

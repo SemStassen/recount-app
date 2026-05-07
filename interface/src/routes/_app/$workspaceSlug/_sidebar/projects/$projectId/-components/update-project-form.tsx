@@ -10,8 +10,8 @@ import { Option } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
-import { createSchemaForm, optionDateTimeToDate } from "~/lib/form";
-import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
+import { createSchemaForm } from "~/lib/form";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 import { m } from "~/paraglide/messages";
 
 import type { ProjectFormValues } from "../../-components/create-project-sidebar/create-project/project-form-fields";
@@ -42,7 +42,7 @@ function UpdateProjectFormContent({ project }: { project: Project }) {
   const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
 
   const updateProject = useAtomSet(
-    RecountAtomRpcClient.mutation("Project.Update"),
+    BackendAtomRpcClient.mutation("Project.Update"),
     {
       mode: "promiseExit",
     }

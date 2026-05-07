@@ -1,14 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Effect, Option } from "effect";
 
-import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 import { runtime } from "~/lib/runtime";
 
 export const Route = createFileRoute("/_app/")({
   beforeLoad: async ({ context }) => {
     const workspaces = await runtime.runPromise(
       Effect.gen(function* () {
-        const client = yield* RecountAtomRpcClient;
+        const client = yield* BackendAtomRpcClient;
 
         return yield* client("Workspace.List", undefined);
       })

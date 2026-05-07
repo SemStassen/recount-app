@@ -22,7 +22,7 @@ import { useAppForm } from "~/components/form";
 import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm, optionalFromEmptyString } from "~/lib/form";
-import { RecountAtomRpcClient } from "~/lib/rpc/atom-client";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
 const profileFormSchema = createSchemaForm(
   Schema.Struct({
@@ -43,11 +43,11 @@ export function UpdateWorkspaceMemberMeForm() {
   );
 
   const prepareFileUpload = useAtomSet(
-    RecountAtomRpcClient.mutation("FileUpload.Prepare"),
+    BackendAtomRpcClient.mutation("FileUpload.Prepare"),
     { mode: "promiseExit" }
   );
   const updateWorkspaceMember = useAtomSet(
-    RecountAtomRpcClient.mutation("WorkspaceMember.Update"),
+    BackendAtomRpcClient.mutation("WorkspaceMember.Update"),
     { mode: "promiseExit" }
   );
 

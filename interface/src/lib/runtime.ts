@@ -1,13 +1,13 @@
 import { Layer, ManagedRuntime } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
-import { RecountApiClient } from "./api/client";
-import { RecountAtomRpcClient } from "./rpc/atom-client";
+import { BackendHttpApiClient } from "./api/client";
+import { BackendAtomRpcClient } from "./rpc/atom-client";
 import { TracerLayer } from "./telemetry";
 
 export const runtimeLayer = Layer.mergeAll(
-  RecountApiClient.layer,
-  RecountAtomRpcClient.layer,
+  BackendHttpApiClient.layer,
+  BackendAtomRpcClient.layer,
   TracerLayer
 );
 
