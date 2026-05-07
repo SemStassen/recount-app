@@ -13,17 +13,6 @@ const Landing = Cloudflare.StaticSite(
     command: "bun run build",
     main: "apps/landing/src/worker.ts",
     outdir: "dist",
-    memo: {
-      include: [
-        "src/**",
-        "astro.config.ts",
-        "package.json",
-        "plugins/**",
-        "public/**",
-        "scripts/**",
-        "../bun.lock",
-      ],
-    },
     compatibility: {
       date: "2026-04-02",
       flags: ["nodejs_compat"],
@@ -34,6 +23,7 @@ const Landing = Cloudflare.StaticSite(
   }))
 );
 
+export type AppWebWorkerEnv = Cloudflare.InferEnv<typeof Landing>;
 const AppWeb = Cloudflare.StaticSite(
   "app-web",
   Alchemy.Stack.useSync((stack) => ({
