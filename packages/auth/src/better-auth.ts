@@ -22,7 +22,6 @@ export class BetterAuth extends Context.Service<BetterAuth>()(
     make: Effect.gen(function* () {
       const betterAuthConfig = yield* BetterAuthConfig;
 
-      yield* Database;
       const mailer = yield* Mailer;
       const identityModule = yield* IdentityModule;
 

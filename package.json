@@ -8,6 +8,7 @@
     "format": "oxfmt --write .",
     "lint": "turbo lint",
     "lint:ast": "ast-grep scan",
+    "lint:ast:test": "ast-grep test",
     "typecheck": "turbo typecheck",
     "subtree:create:effect": "git remote add effect https://github.com/Effect-TS/effect-smol && git subtree add --prefix=.better-agents/effect effect main --squash",
     "subtree:update:effect": "git subtree pull --prefix=.better-agents/effect effect main --squash",

@@ -1,0 +1,23 @@
+id: no-bare-new-error
+
+valid:
+  - |
+    class ExtensionHostServiceError extends Data.TaggedError("ExtensionHostServiceError")<{
+      readonly reason: string;
+    }> {}
+
+    Effect.fail(new ExtensionHostServiceError({ reason: "Extension process stopped" }));
+  - |
+    Effect.try(() => riskyOperation());
+
+invalid:
+  - |
+    return Effect.fail(new Error("Extension host is not initialized"));
+  - |
+    desktopRuntime.runSync(Deferred.fail(entry.deferred, new Error(message.error)));
+  - |
+    throw new TypeError("Expected string");
+  - |
+    throw new RangeError("Out of bounds");
+  - |
+    Effect.fail(new ReferenceError("missing"));

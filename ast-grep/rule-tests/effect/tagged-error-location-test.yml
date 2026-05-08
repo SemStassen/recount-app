@@ -1,0 +1,36 @@
+id: tagged-error-location
+
+valid:
+  - |
+    import { HelloError } from "../errors";
+    Effect.fail(new HelloError({ reason: "test" }));
+  - |
+    const result = Effect.catchTag("HelloError", (e) => Effect.succeed(fallback));
+  - |
+    import { ApiError } from "../errors";
+    Effect.fail(new ApiError({ message: "test" }));
+
+invalid:
+  - |
+    class HelloError extends Data.TaggedError("HelloError")<{
+      readonly reason: string;
+    }> {}
+  - |
+    export class FetchError extends Data.TaggedError("FetchError")<{
+      readonly url: string;
+      readonly status: number;
+    }> {
+      get message() {
+        return `Fetch failed: ${this.url}`;
+      }
+    }
+  - |
+    class ApiError extends Schema.ErrorClass("ApiError")({
+      _tag: Schema.tag("ApiError"),
+      message: Schema.String,
+    }) {}
+  - |
+    export class RpcError extends Schema.ErrorClass("RpcError")({
+      _tag: Schema.tag("RpcError"),
+      code: Schema.Number,
+    }) {}
