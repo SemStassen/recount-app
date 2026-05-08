@@ -10,12 +10,7 @@ import {
 } from "@recount/ui/popover";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
-import {
-  createRootRoute,
-  HeadContent,
-  Outlet,
-  ScriptOnce,
-} from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Duration, Effect } from "effect";
 import { AsyncResult, Atom, AtomRegistry } from "effect/unstable/reactivity";
