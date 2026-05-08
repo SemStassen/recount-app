@@ -24,14 +24,14 @@
       "packages/*"
     ],
     "catalog": {
-      "@effect/atom-react": "^4.0.0-beta.60",
-      "@effect/opentelemetry": "^4.0.0-beta.60",
-      "@effect/platform-bun": "^4.0.0-beta.60",
-      "@effect/sql-pg": "^4.0.0-beta.60",
+      "@effect/atom-react": "^4.0.0-beta.64",
+      "@effect/opentelemetry": "^4.0.0-beta.64",
+      "@effect/platform-bun": "^4.0.0-beta.64",
+      "@effect/sql-pg": "^4.0.0-beta.64",
       "better-auth": "^1.6.5",
       "drizzle-orm": "1.0.0-rc.1",
-      "effect": "^4.0.0-beta.60",
-      "uuid": "^13.0.0"
+      "effect": "^4.0.0-beta.64",
+      "uuid": "^14.0.0"
     },
     "catalogs": {
       "dev": {
@@ -43,14 +43,14 @@
         "babel-plugin-react-compiler": "^1.0.0",
         "drizzle-kit": "1.0.0-rc.1",
         "typescript": "^6.0.3",
-        "vite": "^8.0.9"
+        "vite": "^8.0.11"
       },
       "frontend": {
         "@base-ui/react": "^1.4.1",
-        "@tanstack/react-form": "^1.29.0",
+        "@tanstack/react-form": "^1.29.2",
         "class-variance-authority": "^0.7.1",
-        "react": "^19.2.5",
-        "react-dom": "^19.2.5"
+        "react": "^19.2.6",
+        "react-dom": "^19.2.6"
       }
     }
   },
@@ -64,15 +64,15 @@
     "lefthook": "^2.1.6",
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0",
-    "turbo": "^2.9.9",
+    "turbo": "^2.9.10",
     "typescript": "catalog:dev",
-    "ultracite": "7.6.3",
+    "ultracite": "7.6.4",
     "vitest": "^4.1.4"
   },
   "dependencies": {
     "@effect/platform-bun": "catalog:",
-    "@effect/platform-node": "^4.0.0-beta.60",
-    "alchemy": "2.0.0-beta.30",
+    "@effect/platform-node": "^4.0.0-beta.64",
+    "alchemy": "2.0.0-beta.35",
     "effect": "catalog:"
   },
   "trustedDependencies": [
