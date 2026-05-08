@@ -1,13 +1,13 @@
 # schema missing: check github
 
 ruleDirs:
-  - rules/shared # Rules for all TypeScript code
-  - rules/effect # Effect library patterns
+  - ast-grep/rules/shared # Rules for all TypeScript code
+  - ast-grep/rules/effect # Effect library patterns
 
 # Test configuration
 testConfigs:
-  - testDir: rule-tests/shared
-  - testDir: rule-tests/effect
+  - testDir: ast-grep/rule-tests/shared
+  - testDir: ast-grep/rule-tests/effect
 
 # Treat .ts files as TSX for unified rule handling
 languageGlobs:

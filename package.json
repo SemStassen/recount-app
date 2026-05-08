@@ -7,6 +7,7 @@
     "dev": "turbo dev --parallel --filter=@recount/backend --filter=@recount/electric-proxy --filter=@recount/web",
     "format": "oxfmt --write .",
     "lint": "turbo lint",
+    "lint:ast": "ast-grep scan",
     "typecheck": "turbo typecheck",
     "subtree:create:effect": "git remote add effect https://github.com/Effect-TS/effect-smol && git subtree add --prefix=.better-agents/effect effect main --squash",
     "subtree:update:effect": "git subtree pull --prefix=.better-agents/effect effect main --squash",
@@ -72,5 +73,8 @@
     "@effect/platform-node": "^4.0.0-beta.60",
     "alchemy": "2.0.0-beta.30",
     "effect": "catalog:"
-  }
+  },
+  "trustedDependencies": [
+    "@ast-grep/cli"
+  ]
 }
