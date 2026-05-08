@@ -1,6 +1,7 @@
 import * as PgDrizzle from "drizzle-orm/effect-postgres";
 import { Schema, Context } from "effect";
 import type { Effect } from "effect";
+import type { Pool } from "pg";
 
 export class DatabaseError extends Schema.TaggedErrorClass<DatabaseError>()(
   "infra/DatabaseError",
@@ -27,6 +28,14 @@ export interface DatabaseShape {
    * such as Better Auth.
    */
   readonly unsafeDrizzle: DrizzleDb;
+  /**
+   * Integration-only escape hatch to a Promise-based Drizzle client.
+   *
+   * This shares the same underlying pg pool as the Effect driver, but does not
+   * participate in fiber-local transaction context. Use only for integrations
+   * that require Promise-returning Drizzle queries, such as Better Auth.
+   */
+  readonly unsafePgPool: Pool;
   /**
    * Preferred query entrypoint for application code.
    *

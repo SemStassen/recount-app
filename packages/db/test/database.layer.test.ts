@@ -6,6 +6,9 @@ import { describe, expect, it, vi } from "vitest";
 import * as schema from "../src/schema";
 
 const mockState = vi.hoisted(() => ({
+  pool: {
+    end: vi.fn(() => Promise.resolve()),
+  },
   rootExecute: vi.fn(() => Effect.succeed([{ createdAt: "2026-01-01" }])),
   transactionExecute: vi.fn(() =>
     Effect.succeed([{ createdAt: "2026-01-02" }])
@@ -23,14 +26,21 @@ const mockState = vi.hoisted(() => ({
 }));
 
 vi.mock("@effect/sql-pg", async () => {
-  const { Layer } = await import("effect");
+  const { Effect, Layer } = await import("effect");
 
   return {
     PgClient: {
-      layerConfig: vi.fn(() => Layer.empty),
+      fromPool: vi.fn(() => Effect.succeed({})),
+      layerFrom: vi.fn(() => Layer.empty),
     },
   };
 });
+
+vi.mock("pg", () => ({
+  Pool: vi.fn(function Pool() {
+    return mockState.pool;
+  }),
+}));
 
 vi.mock("drizzle-orm/effect-postgres", async () => {
   const { Effect, Layer } = await import("effect");

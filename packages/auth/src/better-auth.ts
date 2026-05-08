@@ -1,9 +1,8 @@
 import { IdentityModule } from "@recount/core/modules/identity";
 import { Email, UserId } from "@recount/core/shared/schemas";
-import { Database, drizzleDb, schema } from "@recount/db";
+import { Database } from "@recount/db";
 import { Mailer } from "@recount/notifications/mailer";
 import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, emailOTP } from "better-auth/plugins";
 import { Effect, Layer, Schema, Context } from "effect";
 
@@ -22,6 +21,7 @@ export class BetterAuth extends Context.Service<BetterAuth>()(
     make: Effect.gen(function* () {
       const betterAuthConfig = yield* BetterAuthConfig;
 
+      const db = yield* Database;
       const mailer = yield* Mailer;
       const identityModule = yield* IdentityModule;
 
@@ -33,10 +33,7 @@ export class BetterAuth extends Context.Service<BetterAuth>()(
       const betterAuthClient = betterAuth({
         appName: "Recount",
         secret: betterAuthConfig.secret,
-        database: drizzleAdapter(drizzleDb, {
-          provider: "pg",
-          schema,
-        }),
+        database: db.unsafePgPool,
         trustedOrigins: betterAuthConfig.trustedOrigins,
         databaseHooks: {
           user: {
