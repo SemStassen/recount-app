@@ -10,7 +10,12 @@ import {
 } from "@recount/ui/popover";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  ScriptOnce,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Duration, Effect } from "effect";
 import { AsyncResult, Atom, AtomRegistry } from "effect/unstable/reactivity";
@@ -35,6 +40,19 @@ export const Route = createRootRoute({
     };
   },
   component: RootLayout,
+  head: () => ({
+    scripts: [
+      // <!-- ********** -->
+      // <!-- REACT SCAN -->
+      // <!-- ********** -->
+      env.VITE_DEV
+        ? {
+            src: "//unpkg.com/react-scan/dist/auto.global.js",
+            crossOrigin: "anonymous",
+          }
+        : undefined,
+    ],
+  }),
 });
 
 function RootLayout() {
@@ -46,6 +64,7 @@ function RootLayout() {
 
   return (
     <>
+      <HeadContent />
       <Outlet />
       {AsyncResult.isFailure(ping) && (
         <Popover>
@@ -69,18 +88,20 @@ function RootLayout() {
         </Popover>
       )}
       {env.VITE_DEV && (
-        <TanStackDevtools
-          plugins={[
-            {
-              name: "TanStack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            {
-              name: "TanStack Form",
-              render: <FormDevtoolsPanel />,
-            },
-          ]}
-        />
+        <>
+          <TanStackDevtools
+            plugins={[
+              {
+                name: "TanStack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              {
+                name: "TanStack Form",
+                render: <FormDevtoolsPanel />,
+              },
+            ]}
+          />
+        </>
       )}
     </>
   );
