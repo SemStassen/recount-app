@@ -1,4 +1,4 @@
-import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { useAtomValue } from "@effect/atom-react";
 import { TimeEntry } from "@recount/core/modules/time";
 import { Form } from "@recount/ui/form";
 import { Icons } from "@recount/ui/icons";
@@ -8,7 +8,7 @@ import { revalidateLogic } from "@tanstack/react-form";
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
-import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 import { sortedTimeEntrySidebarSelectionAtom } from "../atoms";
 
@@ -19,7 +19,7 @@ type CreateTimeEntryFormValues = {
   stoppedAt: Date | null;
   projectId: string;
   taskId: string | null;
-  description: string | null;
+  notes: string | null;
 };
 
 const defaultValues: CreateTimeEntryFormValues = {
@@ -27,7 +27,7 @@ const defaultValues: CreateTimeEntryFormValues = {
   stoppedAt: new Date(),
   projectId: "",
   taskId: null,
-  description: null,
+  notes: null,
 };
 
 export function CreateTimeEntryForm() {
@@ -47,14 +47,10 @@ export function CreateTimeEntryForm() {
       }))
   );
 
-  const createTimeEntry = useAtomSet(
-    BackendAtomRpcClient.mutation("TimeEntry.Create"),
-    {
-      mode: "promiseExit",
-    }
-  );
+  const createTimeEntry = useWorkspaceMutation("TimeEntry.Create");
 
   const form = useAppForm({
+    formId: "create-time-entry-form",
     defaultValues: {
       ...defaultValues,
       startedAt: sidebarSelection?.start ?? defaultValues.startedAt,
@@ -66,11 +62,19 @@ export function CreateTimeEntryForm() {
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(async ({ value }) => {}),
+    onSubmit: schema.handleSubmit(async ({ value }) => {
+      console.log(value);
+      await createTimeEntry({ payload: value });
+    }),
   });
 
   return (
-    <Form>
+    <Form
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit();
+      }}
+    >
       <div className="flex flex-row items-center gap-2 justify-between">
         <form.AppField
           name="startedAt"
@@ -151,12 +155,12 @@ export function CreateTimeEntryForm() {
         )}
       />
       <form.AppField
-        name="description"
+        name="notes"
         children={(field) => (
           <field.EditorField
             direction="vertical"
             label={{
-              children: "Description",
+              children: "Notes",
             }}
           />
         )}

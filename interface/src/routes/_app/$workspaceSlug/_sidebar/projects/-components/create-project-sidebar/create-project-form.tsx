@@ -1,26 +1,16 @@
-import { useAtomSet } from "@effect/atom-react";
 import { Project } from "@recount/core/modules/project";
-import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import { Form } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
-import { useRouteContext } from "@tanstack/react-router";
 
 import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
-import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 const schema = createSchemaForm(Project.jsonCreate);
 
 export function CreateProjectForm() {
-  const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
-
-  const createProject = useAtomSet(
-    BackendAtomRpcClient.mutation("Project.Create"),
-    {
-      mode: "promiseExit",
-    }
-  );
+  const createProject = useWorkspaceMutation("Project.Create");
 
   const form = useAppForm({
     formId: `create-project`,
@@ -38,9 +28,6 @@ export function CreateProjectForm() {
     onSubmit: schema.handleSubmit(({ value }) => {
       createProject({
         payload: value,
-        headers: {
-          [WORKSPACE_ID_HEADER]: workspace.id,
-        },
       });
     }),
   });

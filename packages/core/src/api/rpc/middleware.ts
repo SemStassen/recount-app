@@ -29,5 +29,5 @@ export class RpcWorkspaceMiddleware extends RpcMiddleware.Service<
     HttpApiError.Forbidden,
     HttpApiError.InternalServerError,
   ]),
-  requiredForClient: true,
+  requiredForClient: false,
 }) {}

@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { VariantSchema } from "effect/unstable/schema";
 
 const {
@@ -34,7 +34,7 @@ const optionalKeyWithDecodingDefault = <S extends Schema.Top>(params: {
   defaultValue: () => S["Encoded"];
 }) =>
   params.schema.pipe(
-    Schema.withDecodingDefaultKey(params.defaultValue, {
+    Schema.withDecodingDefaultKey(Effect.sync(params.defaultValue), {
       encodingStrategy: "omit",
     })
   );
