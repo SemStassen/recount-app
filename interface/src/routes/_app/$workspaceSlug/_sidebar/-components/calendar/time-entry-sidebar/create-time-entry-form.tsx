@@ -1,23 +1,24 @@
-import { useAtomValue } from "@effect/atom-react";
+import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { TimeEntry } from "@recount/core/modules/time";
 import { Form } from "@recount/ui/form";
 import { Icons } from "@recount/ui/icons";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveQuery, toArray } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
+import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
 import { sortedTimeEntrySidebarSelectionAtom } from "../atoms";
 
 const schema = createSchemaForm(TimeEntry.jsonCreate);
 
 type CreateTimeEntryFormValues = {
-  startedAt: string;
-  stoppedAt: string;
+  startedAt: Date;
+  stoppedAt: Date | null;
   projectId: string;
-  taskId?: string;
+  taskId: string | null;
   description: string | null;
 };
 
@@ -25,23 +26,32 @@ const defaultValues: CreateTimeEntryFormValues = {
   startedAt: new Date(),
   stoppedAt: new Date(),
   projectId: "",
-  taskId: undefined,
+  taskId: null,
   description: null,
 };
 
 export function CreateTimeEntryForm() {
   const sidebarSelection = useAtomValue(sortedTimeEntrySidebarSelectionAtom);
+
   const workspaceDb = useWorkspaceDb();
   const { data: projects = [] } = useLiveQuery((q) =>
     q
       .from({ p: workspaceDb.collections.projectsCollection })
-      .leftJoin({ t: workspaceDb.collections.tasksCollection }, ({ p, t }) =>
-        eq(p.id, t.projectId)
-      )
-      .select(({ p, t }) => ({
+      .select(({ p }) => ({
         ...p,
-        tasks: t,
+        tasks: toArray(
+          q
+            .from({ t: workspaceDb.collections.tasksCollection })
+            .where(({ t }) => eq(p.id, t.projectId))
+        ),
       }))
+  );
+
+  const createTimeEntry = useAtomSet(
+    BackendAtomRpcClient.mutation("TimeEntry.Create"),
+    {
+      mode: "promiseExit",
+    }
   );
 
   const form = useAppForm({
@@ -105,23 +115,41 @@ export function CreateTimeEntryForm() {
           />
         )}
       />
-      {/*<form.AppField
-        name="taskId"
-        children={(field) => (
-          <field.SelectField
-            direction="vertical"
-            label={{
-              children: "Task",
-            }}
-            select={{
-              items: projects.map((project) => ({
-                value: project.id,
-                label: project.name,
-              })),
+      <form.Subscribe
+        selector={(state) => state.values.projectId}
+        children={(projectId) => (
+          <form.AppField
+            name="taskId"
+            children={(field) => {
+              const tasks =
+                projects.find((p) => p.id === projectId)?.tasks ?? [];
+
+              const hasTasks = tasks.length > 0;
+
+              return (
+                <field.SelectField
+                  direction="vertical"
+                  label={{
+                    children: "Task",
+                  }}
+                  select={{
+                    disabled: !hasTasks,
+                    items: tasks.map((t) => ({
+                      value: t.id,
+                      label: t.name,
+                    })),
+                  }}
+                  selectValue={{
+                    placeholder: hasTasks
+                      ? "Choose a project"
+                      : "No projects available",
+                  }}
+                />
+              );
             }}
           />
         )}
-      />*/}
+      />
       <form.AppField
         name="description"
         children={(field) => (
@@ -133,6 +161,9 @@ export function CreateTimeEntryForm() {
           />
         )}
       />
+      <form.AppForm>
+        <form.SubmitButton>Create time entry</form.SubmitButton>
+      </form.AppForm>
     </Form>
   );
 }

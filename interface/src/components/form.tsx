@@ -26,6 +26,7 @@ import {
   SelectPopup,
   SelectTrigger,
   SelectValue,
+  type SelectValueProps,
 } from "@recount/ui/select";
 import { Switch } from "@recount/ui/switch";
 import type { SwitchProps } from "@recount/ui/switch";
@@ -192,10 +193,12 @@ export interface SelectFieldProps<
   > & {
     items: Array<SelectFieldItem<Value>>;
   };
+  selectValue?: SelectValueProps;
 }
 
 function SelectField<Value>({
   select,
+  selectValue,
   ...props
 }: SelectFieldProps<Value, false>) {
   const fieldCtx = useFieldContext<Value | undefined>();
@@ -208,7 +211,7 @@ function SelectField<Value>({
         {...select}
       >
         <SelectTrigger>
-          <SelectValue />
+          <SelectValue {...selectValue} />
         </SelectTrigger>
         <SelectPopup>
           {select.items.map(({ label, value }) => (
@@ -224,7 +227,7 @@ function SelectField<Value>({
 
 export interface DatePickerFieldProps extends BaseFieldProps {}
 function DatePickerField({ ...props }: DatePickerFieldProps) {
-  const fieldCtx = useFieldContext<Date | undefined>();
+  const fieldCtx = useFieldContext<Date | null>();
   const formatter = useDateTimeFormatter();
 
   return (
@@ -243,8 +246,8 @@ function DatePickerField({ ...props }: DatePickerFieldProps) {
         <PopoverPopup align="start">
           <Calendar
             mode="single"
-            selected={fieldCtx.state.value}
-            onSelect={fieldCtx.handleChange}
+            selected={fieldCtx.state.value ?? undefined}
+            onSelect={(date) => fieldCtx.handleChange(date ?? null)}
           />
         </PopoverPopup>
       </Popover>

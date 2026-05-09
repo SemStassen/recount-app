@@ -14,11 +14,6 @@ import { createSchemaForm } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 import { m } from "~/paraglide/messages";
 
-import type { ProjectFormValues } from "../../-components/create-project-sidebar/create-project/project-form-fields";
-import {
-  projectFormFieldMap,
-  ProjectFormFields,
-} from "../../-components/create-project-sidebar/create-project/project-form-fields";
 
 const schema = createSchemaForm(Project.jsonUpdate);
 

@@ -85,10 +85,11 @@ export function SelectTrigger({
   );
 }
 
+export interface SelectValueProps extends SelectPrimitive.Value.Props {}
 export function SelectValue({
   className,
   ...props
-}: SelectPrimitive.Value.Props): React.ReactElement {
+}: SelectValueProps): React.ReactElement {
   return (
     <SelectPrimitive.Value
       className={cn(
