@@ -74,7 +74,7 @@
     "./switch": "./src/components/old/switch.coss.tsx",
     "./table": "./src/components/old/table.coss.tsx",
     "./tabs": "./src/components/old/tabs.coss.tsx",
-    "./textarea": "./src/components/old/textarea.coss.tsx",
+    "./textarea": "./src/components/textarea.tsx",
     "./time-picker": "./src/components/old/time-picker.tsx",
     "./toast": "./src/components/old/toast.coss.tsx",
     "./toggle-group": "./src/components/old/toggle-group.coss.tsx",

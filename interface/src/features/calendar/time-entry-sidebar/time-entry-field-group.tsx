@@ -1,4 +1,5 @@
 import { Icons } from "@recount/ui/icons";
+import { Separator } from "@recount/ui/separator";
 
 import { withFieldGroup } from "~/components/form";
 
@@ -121,13 +122,19 @@ export const TimeEntryFieldGroup = withFieldGroup({
             />
           )}
         />
+        <Separator orientation="horizontal" />
         <group.AppField
           name="notes"
           children={(field) => (
             <field.EditorField
               direction="vertical"
               label={{
+                className: "sr-only",
                 children: "Notes",
+              }}
+              editor={{
+                placeholder: "Notes",
+                variant: "ghost",
               }}
             />
           )}

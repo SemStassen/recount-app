@@ -1,6 +1,6 @@
 import type { Select as SelectPrimitive } from "@base-ui/react";
 import { RichTextEditor } from "@recount/editor";
-import type { RichTextContent } from "@recount/editor";
+import type { RichTextContent, RichTextEditorProps } from "@recount/editor";
 import { Button } from "@recount/ui/button";
 import type { ButtonProps } from "@recount/ui/button";
 import { Calendar } from "@recount/ui/calendar";
@@ -30,8 +30,7 @@ import {
 } from "@recount/ui/select";
 import { Switch } from "@recount/ui/switch";
 import type { SwitchProps } from "@recount/ui/switch";
-import { Textarea } from "@recount/ui/textarea";
-import type { TextareaProps } from "@recount/ui/textarea";
+import { Textarea, type TextareaProps } from "@recount/ui/textarea";
 import { TimePicker, type TimePickerProps } from "@recount/ui/time-picker";
 import { cn } from "@recount/ui/utils";
 import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
@@ -297,8 +296,10 @@ function ColorPickerField({ ...props }: ColorPickerFieldProps) {
   );
 }
 
-export interface EditorFieldProps extends BaseFieldProps {}
-function EditorField(props: EditorFieldProps) {
+export interface EditorFieldProps extends BaseFieldProps {
+  editor?: Omit<RichTextEditorProps, "content" | "onChange">;
+}
+function EditorField({ editor, ...props }: EditorFieldProps) {
   const fieldCtx = useFieldContext<RichTextContent>();
 
   return (
@@ -306,6 +307,7 @@ function EditorField(props: EditorFieldProps) {
       <RichTextEditor
         content={fieldCtx.state.value}
         onChange={fieldCtx.handleChange}
+        {...editor}
       />
     </BaseField>
   );
