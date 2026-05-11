@@ -29,7 +29,7 @@ const makeProject = (overrides: Partial<Project> = {}) =>
     id: projectId(),
     workspaceId: workspaceId(),
     name: "Project",
-    hexColor: HexColor.make("#000000"),
+    color: HexColor.make("#000000"),
     isBillable: false,
     notes: Option.none(),
     archivedAt: Option.none(),

@@ -1,0 +1,5 @@
+@reference "../../global.css";
+
+.root :global(.react-colorful) {
+    @apply gap-2 w-full;
+}

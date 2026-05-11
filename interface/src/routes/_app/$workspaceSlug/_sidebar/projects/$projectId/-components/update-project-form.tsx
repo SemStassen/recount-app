@@ -18,7 +18,7 @@ export function UpdateProjectForm({ projectId }: { projectId: ProjectId }) {
   const { data: project, isLoading } = useLiveQuery(
     (q) =>
       q
-        .from({ p: workspaceDb.collections.projectsCollection })
+        .from({ p: workspaceDb.collections.activeProjectsCollection })
         .where(({ p }) => eq(p.id, projectId))
         .findOne(),
     [projectId]
@@ -34,7 +34,7 @@ function UpdateProjectFormContent({ project }: { project: Project }) {
 
   const defaultValues: ProjectFormValues = {
     name: project.name,
-    hexColor: project.hexColor,
+    color: project.color,
     isBillable: project.isBillable,
     notes: Option.getOrNull(project.notes),
   };

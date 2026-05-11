@@ -12,7 +12,7 @@ export const projectsTable = pgTable("projects", {
     .notNull(),
   // General
   name: varchar("name").notNull(),
-  hexColor: varchar("color").notNull(),
+  color: varchar("color").notNull(),
   isBillable: boolean("is_billable").default(true).notNull(),
   notes: jsonb("notes"),
   // Metadata

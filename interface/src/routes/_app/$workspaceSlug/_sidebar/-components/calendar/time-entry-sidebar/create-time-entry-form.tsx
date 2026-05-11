@@ -36,7 +36,7 @@ export function CreateTimeEntryForm() {
   const workspaceDb = useWorkspaceDb();
   const { data: projects = [] } = useLiveQuery((q) =>
     q
-      .from({ p: workspaceDb.collections.projectsCollection })
+      .from({ p: workspaceDb.collections.activeProjectsCollection })
       .select(({ p }) => ({
         ...p,
         tasks: toArray(
@@ -63,7 +63,6 @@ export function CreateTimeEntryForm() {
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      console.log(value);
       await createTimeEntry({ payload: value });
     }),
   });

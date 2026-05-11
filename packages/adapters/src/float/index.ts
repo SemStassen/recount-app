@@ -140,7 +140,7 @@ export const floatLive = Layer.effect(
             Schema.decodeUnknown(ExternalProject)({
               externalId: String(p.project_id),
               name: p.name,
-              ...(p.color && { hexColor: `#${p.color}` }),
+              ...(p.color && { color: `#${p.color}` }),
               ...(p.non_billable !== undefined && {
                 isBillable: p.non_billable === 0,
               }),

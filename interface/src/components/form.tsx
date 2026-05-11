@@ -40,6 +40,8 @@ import type { PropsWithChildren } from "react";
 
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
+import { ColorPicker } from "./color-picker";
+
 const { fieldContext, formContext, useFieldContext, useFormContext } =
   createFormHookContexts();
 
@@ -52,6 +54,7 @@ export const { useAppForm, withFieldGroup } = createFormHook({
     DatePickerField,
     TimePickerField,
     SelectField,
+    ColorPickerField,
     EditorField,
   },
   formComponents: {
@@ -273,6 +276,22 @@ function TimePickerField({ timePicker, ...props }: TimePickerFieldProps) {
         onChange={fieldCtx.handleChange}
         value={fieldCtx.state.value}
         {...timePicker}
+      />
+    </BaseField>
+  );
+}
+
+export interface ColorPickerFieldProps extends BaseFieldProps {
+  colorPicker?: {};
+}
+function ColorPickerField({ ...props }: ColorPickerFieldProps) {
+  const fieldCtx = useFieldContext<string | null>();
+
+  return (
+    <BaseField {...props}>
+      <ColorPicker
+        onValueChange={fieldCtx.handleChange}
+        value={fieldCtx.state.value}
       />
     </BaseField>
   );

@@ -5,7 +5,7 @@ export type ExternalProject = typeof ExternalProject.Type;
 export const ExternalProject = Schema.Struct({
   externalId: Schema.NonEmptyString,
   name: Schema.OptionFromSelf(Schema.String),
-  hexColor: Schema.OptionFromSelf(Schema.String),
+  color: Schema.OptionFromSelf(Schema.String),
   isBillable: Schema.OptionFromSelf(Schema.Boolean),
   startDate: Schema.OptionFromSelf(Schema.DateTimeUtcFromSelf),
   endDate: Schema.OptionFromSelf(Schema.DateTimeUtcFromSelf),

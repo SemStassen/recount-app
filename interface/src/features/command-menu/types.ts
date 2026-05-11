@@ -1,7 +1,11 @@
 import type { IconProps } from "@recount/ui/icons";
 import type { ReactNode } from "react";
 
-export type CommandCategory = "navigation" | "settings" | "developer";
+export type CommandCategory =
+  | "navigation"
+  | "settings"
+  | "developer"
+  | "project";
 
 export type CommandId = string;
 

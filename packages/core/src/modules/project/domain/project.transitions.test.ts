@@ -7,6 +7,7 @@ import { generateUUID } from "#shared/utils/index";
 import { Project } from "./project.entity";
 import {
   archiveProject,
+  createProject,
   restoreProject,
   updateProject,
 } from "./project.transitions";
@@ -16,7 +17,7 @@ const makeProject = (overrides: Partial<Project> = {}) =>
     id: ProjectId.make(generateUUID()),
     workspaceId: WorkspaceId.make(generateUUID()),
     name: "Project",
-    hexColor: HexColor.make("#000000"),
+    color: HexColor.make("#000000"),
     isBillable: false,
     notes: Option.none(),
     archivedAt: Option.none(),
@@ -75,5 +76,41 @@ describe("Project transitions", () => {
 
     expect(result.entity.name).toBe("Existing");
     expect(result.patch).toStrictEqual({ name: "Existing" });
+  });
+
+  it("defaults optional create fields in the transition", () => {
+    const workspaceId = WorkspaceId.make(generateUUID());
+
+    const result = Result.getOrThrow(
+      createProject({
+        workspaceId,
+        data: {
+          id: Option.none(),
+          name: "Project",
+        },
+      })
+    );
+
+    expect(result.color).toBe(HexColor.make("#000000"));
+    expect(result.isBillable).toBe(false);
+  });
+
+  it("preserves provided create fields", () => {
+    const workspaceId = WorkspaceId.make(generateUUID());
+
+    const result = Result.getOrThrow(
+      createProject({
+        workspaceId,
+        data: {
+          id: Option.none(),
+          name: "Project",
+          color: HexColor.make("#ff0000"),
+          isBillable: true,
+        },
+      })
+    );
+
+    expect(result.color).toBe(HexColor.make("#ff0000"));
+    expect(result.isBillable).toBe(true);
   });
 });

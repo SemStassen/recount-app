@@ -43,6 +43,7 @@
     "effect": "catalog:",
     "motion": "^12.23.12",
     "react": "catalog:frontend",
+    "react-colorful": "^5.7.0",
     "react-dom": "catalog:frontend",
     "react-hotkeys-hook": "^5.1.0",
     "vite": "catalog:dev",

@@ -4,6 +4,6 @@ export type ITimeEntry = {
   stoppedAt: Date;
   project: {
     name: string;
-    hexColor: string;
+    color: string;
   };
 };

@@ -37,7 +37,7 @@ import { isCreateProjectSidebarOpenAtom } from "./create-project-sidebar/atoms";
 const columnHelper = createColumnHelper<Project>();
 
 const createColumns = () => [
-  columnHelper.accessor("hexColor", {
+  columnHelper.accessor("color", {
     header: undefined,
     size: 48,
     cell: (info) => (
@@ -51,7 +51,7 @@ const createColumns = () => [
   columnHelper.accessor("name", {
     header: "Name",
     size: 200,
-    cell: (info) => info.getValue(),
+    cell: (info) => <span className="line-clamp-1">{info.getValue()}</span>,
     enableSorting: true,
     meta: { grow: true },
   }),
@@ -70,7 +70,7 @@ export function ProjectsList() {
 
   const workspaceDb = useWorkspaceDb();
   const { data: projects } = useLiveQuery((q) =>
-    q.from({ p: workspaceDb.collections.projectsCollection })
+    q.from({ p: workspaceDb.collections.activeProjectsCollection })
   );
 
   const columns = useMemo(() => createColumns(), []);

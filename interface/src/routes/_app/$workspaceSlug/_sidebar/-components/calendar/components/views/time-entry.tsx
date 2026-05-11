@@ -17,7 +17,7 @@ function TimeEntry({ timeEntry }: { timeEntry: ITimeEntry }) {
       <div
         className="overflow-hidden rounded-md bg-primary p-1"
         style={{
-          backgroundColor: project.hexColor,
+          backgroundColor: project.color,
           height: `calc(${durationInMinutes / 60} * var(${CALENDAR_HOUR_HEIGHT_VAR}))`,
         }}
       >

@@ -15,9 +15,7 @@ export class TimeEntry extends Model.Class<TimeEntry>("TimeEntry")(
     workspaceId: Model.ServerImmutable(WorkspaceId),
     workspaceMemberId: Model.ServerImmutable(WorkspaceMemberId),
     projectId: Model.ServerMutableClientMutable(ProjectId),
-    taskId: Model.ServerMutableClientMutableOptionalCreateDefault(TaskId, {
-      defaultValue: () => null,
-    }),
+    taskId: Model.ServerMutableClientMutableOptional(TaskId),
     startedAt: Model.Field({
       select: Schema.DateTimeUtcFromDate,
       insert: Schema.DateTimeUtcFromDate,
@@ -26,15 +24,10 @@ export class TimeEntry extends Model.Class<TimeEntry>("TimeEntry")(
       jsonCreate: Schema.optionalKey(Schema.DateTimeUtcFromDate),
       jsonUpdate: Schema.optionalKey(Schema.DateTimeUtcFromDate),
     }),
-    stoppedAt: Model.ServerMutableClientMutableOptionalCreateDefault(
-      Schema.DateTimeUtcFromDate,
-      {
-        defaultValue: () => null,
-      }
+    stoppedAt: Model.ServerMutableClientMutableOptional(
+      Schema.DateTimeUtcFromDate
     ),
-    notes: Model.ServerMutableClientMutableOptionalCreateDefault(Schema.Json, {
-      defaultValue: () => null,
-    }),
+    notes: Model.ServerMutableClientMutableOptional(Schema.Json),
   },
   {
     identifier: "TimeEntry",

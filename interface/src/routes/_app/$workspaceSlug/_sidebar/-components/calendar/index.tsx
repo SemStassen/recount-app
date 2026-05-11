@@ -1,4 +1,4 @@
-import { useAtom, useAtomSet } from "@effect/atom-react";
+import { useAtomSet } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 

@@ -32,6 +32,9 @@ export const createTimeEntry = (params: {
       workspaceId: params.workspaceId,
       workspaceMemberId: params.workspaceMemberId,
       startedAt: params.data.startedAt ?? params.now,
+      taskId: Option.none(),
+      stoppedAt: Option.none(),
+      notes: Option.none(),
       ...rest,
     });
 

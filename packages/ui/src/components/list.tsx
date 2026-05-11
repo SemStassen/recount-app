@@ -13,7 +13,7 @@ export function List({
     <div className="min-h-0 min-w-0 h-full w-full">
       <div
         className={cn(
-          "grid relative gap-y-0 content-start h-full grid-rows-[auto_1fr]",
+          "grid relative gap-y-0 content-start h-full grid-rows-[auto_auto]",
           className
         )}
         data-slot="list-container"
@@ -76,7 +76,7 @@ export function ListBody({
   return (
     <div
       className={cn(
-        "relative grid grid-cols-subgrid col-span-full min-h-0 overflow-y-scroll",
+        "relative grid grid-cols-subgrid col-span-full min-h-px overflow-y-scroll",
         className
       )}
       data-slot="list-body"
