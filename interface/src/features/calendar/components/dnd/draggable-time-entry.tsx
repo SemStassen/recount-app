@@ -10,5 +10,9 @@ export function DraggableTimeEntry({ id, children }: DraggableTimeEntryProps) {
     id: id,
   });
 
-  return <div ref={ref}>{children}</div>;
+  return (
+    <div className="h-full" ref={ref}>
+      {children}
+    </div>
+  );
 }

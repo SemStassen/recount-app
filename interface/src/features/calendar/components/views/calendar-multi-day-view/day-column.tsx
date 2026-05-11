@@ -11,14 +11,9 @@ import { useCalendarDragSelection } from "../../../use-calendar-drag-selection";
 import { DraggableTimeEntry } from "../../dnd/draggable-time-entry";
 import { DroppableTimeEntry } from "../../dnd/droppable-time-entry";
 import { DragSelectionHighlight } from "../drag-selection-highlight";
-import { TimeEntryBlock } from "../time-entry-block";
+import { TimeEntryContent, TimeEntryFrame } from "../time-entry";
 import { hours } from "./hour-column";
-import {
-  getCalendarSlotDate,
-  getTimeEntryBlockHeight,
-  getTimeEntryBlockStyle,
-  groupTimeEntries,
-} from "./layout";
+import { getCalendarSlotDate, groupTimeEntries } from "./layout";
 import { TimeEntryPreview } from "./time-entry-preview";
 import type { CalendarTimeEntry } from "./types";
 
@@ -82,12 +77,6 @@ export function DayColumn({
       ))}
       {groupedTimeEntries.map((group, groupIndex) =>
         group.map((timeEntry) => {
-          let style = getTimeEntryBlockStyle(
-            timeEntry,
-            day,
-            groupIndex,
-            groupedTimeEntries.length
-          );
           const hasOverlap = groupedTimeEntries.some(
             (otherGroup, otherIndex) =>
               otherIndex !== groupIndex &&
@@ -104,25 +93,27 @@ export function DayColumn({
                 )
               )
           );
-
-          if (!hasOverlap) {
-            style = { ...style, width: "100%", left: "0%" };
-          }
+          const overlap = hasOverlap
+            ? { index: groupIndex, count: groupedTimeEntries.length }
+            : undefined;
 
           return (
-            <div className="absolute p-0.5" key={timeEntry.id} style={style}>
+            <TimeEntryFrame
+              day={day}
+              key={timeEntry.id}
+              overlap={overlap}
+              timeRange={timeEntry}
+              className="p-0.5"
+            >
               <DraggableTimeEntry id={timeEntry.id}>
-                <TimeEntryBlock
-                  style={{
-                    height: getTimeEntryBlockHeight(timeEntry, day),
-                  }}
+                <TimeEntryContent
                   onClick={() => {
                     openUpdateTimeEntryEditor(timeEntry.id as TimeEntryId);
                   }}
                   timeEntry={timeEntry}
                 />
               </DraggableTimeEntry>
-            </div>
+            </TimeEntryFrame>
           );
         })
       )}

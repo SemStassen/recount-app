@@ -1,8 +1,7 @@
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
 import type { CalendarEditingPreview } from "../../../atoms";
-import { TimeEntryBlock } from "../time-entry-block";
-import { getTimeEntryBlockHeight, getTimeEntryBlockStyle } from "./layout";
+import { TimeEntryContent, TimeEntryFrame } from "../time-entry";
 import type { CalendarTimeEntry } from "./types";
 
 type TimeEntryPreviewProps = {
@@ -30,17 +29,9 @@ export function TimeEntryPreview({
   }
 
   return (
-    <div
-      className="absolute p-0.5"
-      style={getTimeEntryBlockStyle(previewTimeEntry, day, 0, 1)}
-    >
-      <TimeEntryBlock
-        style={{
-          height: getTimeEntryBlockHeight(previewTimeEntry, day),
-        }}
-        timeEntry={previewTimeEntry}
-      />
-    </div>
+    <TimeEntryFrame className="p-0.5" day={day} timeRange={previewTimeEntry}>
+      <TimeEntryContent timeEntry={previewTimeEntry} variant="preview" />
+    </TimeEntryFrame>
   );
 }
 

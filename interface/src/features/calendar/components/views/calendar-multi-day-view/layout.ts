@@ -5,6 +5,7 @@ import {
   setMinutes,
   startOfDay,
 } from "date-fns";
+import type { CSSProperties } from "react";
 
 import {
   CALENDAR_HOUR_HEIGHT_VAR,
@@ -52,7 +53,7 @@ export function groupTimeEntries(timeEntries: Array<CalendarTimeEntry>) {
   return groups;
 }
 
-export function getTimeEntryBlockStyle(
+function getTimeEntryPositionStyle(
   timeEntry: Pick<CalendarTimeEntry, "startedAt" | "stoppedAt">,
   day: Date,
   groupIndex: number,
@@ -75,7 +76,34 @@ export function getTimeEntryBlockStyle(
   return { top: `${top}%`, width: `${width}%`, left: `${left}%` };
 }
 
-export function getTimeEntryBlockHeight(
+export function getTimeEntryFrameStyle({
+  day,
+  timeRange,
+  overlap,
+}: {
+  day: Date;
+  timeRange: Pick<CalendarTimeEntry, "startedAt" | "stoppedAt">;
+  overlap?: { index: number; count: number };
+}) {
+  const style: CSSProperties = {
+    ...getTimeEntryPositionStyle(
+      timeRange,
+      day,
+      overlap?.index ?? 0,
+      overlap?.count ?? 1
+    ),
+    height: getTimeEntryHeight(timeRange, day),
+  };
+
+  if (!overlap) {
+    style.width = "100%";
+    style.left = "0%";
+  }
+
+  return style;
+}
+
+function getTimeEntryHeight(
   timeEntry: Pick<CalendarTimeEntry, "startedAt" | "stoppedAt">,
   day: Date
 ) {
@@ -87,29 +115,6 @@ export function getTimeEntryBlockHeight(
   const durationInMinutes = differenceInMinutes(stoppedAt, startedAt);
 
   return `calc(${durationInMinutes / 60} * var(${CALENDAR_HOUR_HEIGHT_VAR}))`;
-}
-
-export function getDragSelectionStyle(
-  dragSelection: { start: Date; end: Date },
-  day: Date
-) {
-  const dayStart = startOfDay(day);
-  const dayEnd = endOfDay(day);
-  const selectionStart =
-    dragSelection.start < dayStart ? dayStart : dragSelection.start;
-  const selectionEnd = dragSelection.end > dayEnd ? dayEnd : dragSelection.end;
-
-  const startMinutes = differenceInMinutes(selectionStart, dayStart);
-  const endMinutes = differenceInMinutes(selectionEnd, dayStart);
-
-  const visibleStartMinutes = FIRST_VISIBLE_HOUR * 60;
-  const visibleEndMinutes = LAST_VISIBLE_HOUR * 60;
-  const visibleRangeMinutes = visibleEndMinutes - visibleStartMinutes;
-
-  return {
-    top: `${((startMinutes - visibleStartMinutes) / visibleRangeMinutes) * 100}%`,
-    height: `${((endMinutes - startMinutes) / visibleRangeMinutes) * 100}%`,
-  };
 }
 
 export function getCurrentTimePosition(currentTime: Date) {

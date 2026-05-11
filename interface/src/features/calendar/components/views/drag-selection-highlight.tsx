@@ -2,7 +2,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
 import { calendarSortedDragSelectionAtom } from "../../atoms";
-import { getDragSelectionStyle } from "./calendar-multi-day-view/layout";
+import { TimeEntryContent, TimeEntryFrame } from "./time-entry";
 
 export function DragSelectionHighlight({ day }: { day: Date }) {
   const dragSelection = useAtomValue(calendarSortedDragSelectionAtom);
@@ -20,18 +20,16 @@ export function DragSelectionHighlight({ day }: { day: Date }) {
     return null;
   }
 
-  const style = getDragSelectionStyle(
-    {
-      start: dragSelection.start,
-      end: dragSelection.end,
-    },
-    day
-  );
-
   return (
-    <div
-      className="pointer-events-none absolute w-full bg-primary/10"
-      style={style}
-    />
+    <TimeEntryFrame
+      className="pointer-events-none"
+      day={day}
+      timeRange={{
+        startedAt: dragSelection.start,
+        stoppedAt: dragSelection.end,
+      }}
+    >
+      <TimeEntryContent variant="selection" />
+    </TimeEntryFrame>
   );
 }
