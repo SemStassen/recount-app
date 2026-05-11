@@ -1,0 +1,37 @@
+import { useAtomValue } from "@effect/atom-react";
+import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
+
+import { calendarSortedDragSelectionAtom } from "../../atoms";
+import { getDragSelectionStyle } from "./calendar-multi-day-view/layout";
+
+export function DragSelectionHighlight({ day }: { day: Date }) {
+  const dragSelection = useAtomValue(calendarSortedDragSelectionAtom);
+
+  if (!dragSelection) {
+    return null;
+  }
+
+  const isDragSelectionOverDay = isWithinInterval(day, {
+    start: startOfDay(dragSelection.start),
+    end: endOfDay(dragSelection.end),
+  });
+
+  if (!isDragSelectionOverDay) {
+    return null;
+  }
+
+  const style = getDragSelectionStyle(
+    {
+      start: dragSelection.start,
+      end: dragSelection.end,
+    },
+    day
+  );
+
+  return (
+    <div
+      className="pointer-events-none absolute w-full bg-primary/10"
+      style={style}
+    />
+  );
+}
