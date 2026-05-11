@@ -3,14 +3,7 @@ import { Button } from "@recount/ui/button";
 import { Calendar } from "@recount/ui/calendar";
 import { Icons } from "@recount/ui/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@recount/ui/popover";
-import {
-  addDays,
-  format,
-  isSameDay,
-  isSameMonth,
-  startOfWeek,
-  subDays,
-} from "date-fns";
+import { addDays, format, isSameMonth, startOfWeek, subDays } from "date-fns";
 
 import { atomRegistry } from "~/atoms/registry";
 
