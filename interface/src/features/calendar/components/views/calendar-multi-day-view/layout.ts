@@ -1,26 +1,104 @@
 import {
+  addMinutes,
   differenceInMinutes,
   endOfDay,
-  setHours,
-  setMinutes,
+  isBefore,
   startOfDay,
 } from "date-fns";
 import type { CSSProperties } from "react";
 
+import { clamp } from "~/lib/utils/math";
+
 import {
+  CALENDAR_SLOT_DURATION_MINUTES,
   CALENDAR_HOUR_HEIGHT_VAR,
   FIRST_VISIBLE_HOUR,
   LAST_VISIBLE_HOUR,
 } from "../../../constants";
 import type { CalendarTimeEntry } from "./types";
 
-export function getCalendarSlotDate(
-  day: Date,
-  hour: number,
-  timeSlotIndex: number,
-  slotsPerHour: number
-) {
-  return setMinutes(setHours(day, hour), timeSlotIndex * (60 / slotsPerHour));
+export type CalendarRect = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
+export type CalendarSlot = {
+  day: Date;
+  index: number;
+  start: Date;
+  end: Date;
+};
+
+export type CalendarTimeRange = {
+  startedAt: Date;
+  stoppedAt: Date;
+};
+
+export function getCalendarSlotFromPoint({
+  point,
+  gridRect,
+  scrollTop = 0,
+  visibleDays,
+}: {
+  point: { clientX: number; clientY: number };
+  gridRect: CalendarRect;
+  scrollTop?: number;
+  visibleDays: Array<Date>;
+}): CalendarSlot | null {
+  if (visibleDays.length === 0 || gridRect.width <= 0 || gridRect.height <= 0) {
+    return null;
+  }
+
+  const dayWidth = gridRect.width / visibleDays.length;
+  const dayIndex = clamp(
+    Math.floor((point.clientX - gridRect.left) / dayWidth),
+    0,
+    visibleDays.length - 1
+  );
+  const visibleRangeMinutes = (LAST_VISIBLE_HOUR - FIRST_VISIBLE_HOUR) * 60;
+  const slotCount = visibleRangeMinutes / CALENDAR_SLOT_DURATION_MINUTES;
+  const y = clamp(point.clientY - gridRect.top + scrollTop, 0, gridRect.height);
+  const slotIndex = clamp(
+    Math.floor((y / gridRect.height) * slotCount),
+    0,
+    slotCount - 1
+  );
+  const startMinutes =
+    FIRST_VISIBLE_HOUR * 60 + slotIndex * CALENDAR_SLOT_DURATION_MINUTES;
+  const start = addMinutes(startOfDay(visibleDays[dayIndex]), startMinutes);
+
+  return {
+    day: visibleDays[dayIndex],
+    index: slotIndex,
+    start,
+    end: addMinutes(start, CALENDAR_SLOT_DURATION_MINUTES),
+  };
+}
+
+export function getCalendarRangeFromSlots(
+  firstSlot: CalendarSlot,
+  secondSlot: CalendarSlot
+): CalendarTimeRange {
+  return isBefore(secondSlot.start, firstSlot.start)
+    ? { startedAt: secondSlot.start, stoppedAt: firstSlot.end }
+    : { startedAt: firstSlot.start, stoppedAt: secondSlot.end };
+}
+
+export function moveTimeRangeToSlot(
+  timeRange: CalendarTimeRange,
+  slot: CalendarSlot
+): CalendarTimeRange {
+  const durationInMinutes = differenceInMinutes(
+    timeRange.stoppedAt,
+    timeRange.startedAt
+  );
+
+  return {
+    startedAt: slot.start,
+    stoppedAt: addMinutes(slot.start, durationInMinutes),
+  };
 }
 
 export function groupTimeEntries(timeEntries: Array<CalendarTimeEntry>) {

@@ -1,40 +1,35 @@
+import { useAtomSet } from "@effect/atom-react";
 import type { TimeEntryId } from "@recount/core/shared/schemas";
 import { areIntervalsOverlapping, isSameDay } from "date-fns";
 
-import { openUpdateTimeEntryEditor } from "../../../actions";
-import type { CalendarEditingPreview } from "../../../atoms";
 import {
-  CALENDAR_HOUR_HEIGHT_VAR,
-  CALENDAR_SLOTS_PER_HOUR,
-} from "../../../constants";
-import { useCalendarDragSelection } from "../../../use-calendar-drag-selection";
+  type CalendarEditingPreview,
+  openUpdateTimeEntryEditor,
+} from "../../../atoms";
 import { DraggableTimeEntry } from "../../dnd/draggable-time-entry";
-import { DroppableTimeEntry } from "../../dnd/droppable-time-entry";
 import { DragSelectionHighlight } from "../drag-selection-highlight";
 import { TimeEntryContent, TimeEntryFrame } from "../time-entry";
-import { hours } from "./hour-column";
-import { getCalendarSlotDate, groupTimeEntries } from "./layout";
+import { groupTimeEntries } from "./layout";
+import { TimeEntryDropPreview } from "./time-entry-drop-preview";
 import { TimeEntryPreview } from "./time-entry-preview";
 import type { CalendarTimeEntry } from "./types";
-
-const timeSlotsPerHour = Array.from({ length: CALENDAR_SLOTS_PER_HOUR }).map(
-  (_, timeSlotIndex) => timeSlotIndex
-);
 
 export function DayColumn({
   currentTime,
   day,
   preview,
   projects,
+  timeEntryDropPreview,
   timeEntries,
 }: {
   currentTime: Date;
   day: Date;
   preview: CalendarEditingPreview;
   projects: Array<{ id: string; name: string; color: string }>;
+  timeEntryDropPreview: CalendarTimeEntry | null;
   timeEntries: Array<CalendarTimeEntry>;
 }) {
-  const { startDragSelection } = useCalendarDragSelection();
+  const openUpdateEditor = useAtomSet(openUpdateTimeEntryEditor);
   const dayTimeEntries = timeEntries.filter(
     (timeEntry) =>
       isSameDay(timeEntry.startedAt, day) || isSameDay(timeEntry.stoppedAt, day)
@@ -44,37 +39,6 @@ export function DayColumn({
   return (
     <div className="relative">
       <DragSelectionHighlight day={day} />
-      {hours.map((hour) => (
-        <div
-          className="border-b"
-          key={hour}
-          style={{
-            height: `var(${CALENDAR_HOUR_HEIGHT_VAR})`,
-          }}
-        >
-          {timeSlotsPerHour.map((timeSlotIndex) => {
-            const date = getCalendarSlotDate(
-              day,
-              hour,
-              timeSlotIndex,
-              timeSlotsPerHour.length
-            );
-            const minutes = date.getMinutes();
-
-            return (
-              <DroppableTimeEntry
-                data-date={date}
-                id={`${day.toString()}-${hour}-${minutes}`}
-                key={timeSlotIndex}
-                onPointerDown={startDragSelection}
-                style={{
-                  height: `calc(var(${CALENDAR_HOUR_HEIGHT_VAR}) / ${timeSlotsPerHour.length})`,
-                }}
-              />
-            );
-          })}
-        </div>
-      ))}
       {groupedTimeEntries.map((group, groupIndex) =>
         group.map((timeEntry) => {
           const hasOverlap = groupedTimeEntries.some(
@@ -105,10 +69,13 @@ export function DayColumn({
               timeRange={timeEntry}
               className="p-0.5"
             >
-              <DraggableTimeEntry id={timeEntry.id}>
+              <DraggableTimeEntry id={timeEntry.id} timeRange={timeEntry}>
                 <TimeEntryContent
+                  data-calendar-entry=""
                   onClick={() => {
-                    openUpdateTimeEntryEditor(timeEntry.id as TimeEntryId);
+                    openUpdateEditor({
+                      timeEntryId: timeEntry.id as TimeEntryId,
+                    });
                   }}
                   timeEntry={timeEntry}
                 />
@@ -123,6 +90,7 @@ export function DayColumn({
         preview={preview}
         projects={projects}
       />
+      <TimeEntryDropPreview day={day} timeEntry={timeEntryDropPreview} />
     </div>
   );
 }

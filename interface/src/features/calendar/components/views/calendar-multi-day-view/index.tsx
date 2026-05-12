@@ -14,8 +14,7 @@ import {
   CALENDAR_DAY_HEADER_HEIGHT_VAR,
   CALENDAR_HEADER_HEIGHT_VAR,
 } from "../../../constants";
-import { CurrentTimeLine } from "../../views/current-time-line";
-import { DayColumn } from "./day-column";
+import { CalendarGrid } from "./calendar-grid";
 import { Header } from "./header";
 import { HourColumn } from "./hour-column";
 import { useCalendarTimeEntries } from "./use-calendar-time-entries";
@@ -39,34 +38,23 @@ function CalendarMultiDayView() {
 
   return (
     <div className="flex flex-col">
-      {/* Header */}
       <Header weekdays={weekdays} />
       <ScrollArea
-        className="[&>div]:overscroll-none"
+        className="[&>div]:overscroll-y-none"
         style={{
           height: `calc(100vh - var(${CALENDAR_HEADER_HEIGHT_VAR}) - var(${CALENDAR_DAY_HEADER_HEIGHT_VAR}))`,
         }}
       >
         <div className="flex">
           <HourColumn />
-          <div
-            className="relative grid w-full"
-            style={{
-              gridTemplateColumns: `repeat(${weekdays.length}, 1fr)`,
-            }}
-          >
-            {weekdays.map((day) => (
-              <DayColumn
-                currentTime={currentTime}
-                day={day}
-                key={day.toString()}
-                preview={preview}
-                projects={projects}
-                timeEntries={calendarTimeEntries}
-              />
-            ))}
-            {showCurrentTimeLine ? <CurrentTimeLine /> : null}
-          </div>
+          <CalendarGrid
+            currentTime={currentTime}
+            preview={preview}
+            projects={projects}
+            showCurrentTimeLine={showCurrentTimeLine}
+            timeEntries={calendarTimeEntries}
+            weekdays={weekdays}
+          />
         </div>
       </ScrollArea>
     </div>

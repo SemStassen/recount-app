@@ -1,9 +1,10 @@
+import { useAtomSet } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 
 import { PageTopBar } from "~/routes/_app/$workspaceSlug/_sidebar/-components/page";
 
-import { openCreateTimeEntryEditor } from "./actions";
+import { openCreateTimeEntryEditor } from "./atoms";
 import { DateNavigator } from "./components/date-navigator";
 import { DndProvider } from "./components/dnd/dnd-provider";
 import { OptionsDropdown } from "./components/options-dropdown";
@@ -18,6 +19,8 @@ import {
 import { TimeEntrySidebar } from "./time-entry-sidebar";
 
 function Calendar() {
+  const openCreateEditor = useAtomSet(openCreateTimeEntryEditor);
+
   return (
     <div className="flex flex-row flex-1">
       <div
@@ -44,7 +47,7 @@ function Calendar() {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  openCreateTimeEntryEditor(null);
+                  openCreateEditor(null);
                 }}
               >
                 <Icons.Plus />

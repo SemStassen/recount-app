@@ -119,6 +119,7 @@
       "name": "@recount/interface",
       "dependencies": {
         "@base-ui/react": "catalog:frontend",
+        "@dnd-kit/dom": "^0.4.0",
         "@dnd-kit/react": "^0.4.0",
         "@effect/atom-react": "catalog:",
         "@electric-sql/client": "^1.5.15",

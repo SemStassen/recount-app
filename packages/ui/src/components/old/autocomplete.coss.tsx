@@ -4,8 +4,8 @@ import type React from "react";
 import { cn } from "#utils/cn";
 
 import { Icons } from "../icons";
+import { ScrollArea } from "../scroll-area";
 import { Input } from "./input.coss";
-import { ScrollArea } from "./scroll-area.coss";
 
 export const Autocomplete: typeof AutocompletePrimitive.Root =
   AutocompletePrimitive.Root;

@@ -8,11 +8,13 @@
     "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
     "format": "oxfmt --write .",
     "lint": "oxlint .",
+    "test": "vitest run --config ./vitest.config.ts",
     "typecheck": "tsc --noEmit",
     "paraglide:compile": "npx @inlang/paraglide-js compile --project ../project.inlang --outdir ./src/paraglide"
   },
   "dependencies": {
     "@base-ui/react": "catalog:frontend",
+    "@dnd-kit/dom": "^0.4.0",
     "@dnd-kit/react": "^0.4.0",
     "@effect/atom-react": "catalog:",
     "@electric-sql/client": "^1.5.15",

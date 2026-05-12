@@ -5,6 +5,6 @@
 }
 
 .root :global(p.is-editor-empty:first-child::before) {
-    @apply text-muted-foreground float-left h-0 pointer-none;
+    @apply text-muted-foreground float-left h-0 pointer-events-none;
     content: attr(data-placeholder);
 }

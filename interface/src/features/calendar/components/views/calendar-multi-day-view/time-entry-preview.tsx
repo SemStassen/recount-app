@@ -1,6 +1,7 @@
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
 import type { CalendarEditingPreview } from "../../../atoms";
+import { DraggableTimeEntry } from "../../dnd/draggable-time-entry";
 import { TimeEntryContent, TimeEntryFrame } from "../time-entry";
 import type { CalendarTimeEntry } from "./types";
 
@@ -30,7 +31,20 @@ export function TimeEntryPreview({
 
   return (
     <TimeEntryFrame className="p-0.5" day={day} timeRange={previewTimeEntry}>
-      <TimeEntryContent timeEntry={previewTimeEntry} variant="preview" />
+      {preview?.replacingTimeEntryId ? (
+        <DraggableTimeEntry
+          id={preview.replacingTimeEntryId}
+          timeRange={previewTimeEntry}
+        >
+          <TimeEntryContent
+            data-calendar-entry=""
+            timeEntry={previewTimeEntry}
+            variant="preview"
+          />
+        </DraggableTimeEntry>
+      ) : (
+        <TimeEntryContent timeEntry={previewTimeEntry} variant="preview" />
+      )}
     </TimeEntryFrame>
   );
 }

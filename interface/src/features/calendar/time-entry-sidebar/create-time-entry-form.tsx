@@ -7,8 +7,7 @@ import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
 import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
-import { closeTimeEntryEditor } from "../actions";
-import { calendarEditingPreviewAtom } from "../atoms";
+import { calendarEditingPreviewAtom, closeTimeEntryEditor } from "../atoms";
 import {
   TimeEntryFieldGroup,
   timeEntryFields,
@@ -32,6 +31,7 @@ export function CreateTimeEntryForm({
   initialRange: { startedAt: Date; stoppedAt: Date } | null;
 }) {
   const setPreview = useAtomSet(calendarEditingPreviewAtom);
+  const closeEditor = useAtomSet(closeTimeEntryEditor);
   const { data: projects = [] } = useTimeEntryFormProjects();
 
   const createTimeEntry = useWorkspaceMutation("TimeEntry.Create");
@@ -62,7 +62,7 @@ export function CreateTimeEntryForm({
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
       await createTimeEntry({ payload: value });
-      closeTimeEntryEditor();
+      closeEditor();
     }),
   });
 

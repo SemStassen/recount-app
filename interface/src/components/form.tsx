@@ -297,7 +297,7 @@ function ColorPickerField({ ...props }: ColorPickerFieldProps) {
 }
 
 export interface EditorFieldProps extends BaseFieldProps {
-  editor?: Omit<RichTextEditorProps, "content" | "onChange">;
+  editor: Omit<RichTextEditorProps, "content" | "onChange">;
 }
 function EditorField({ editor, ...props }: EditorFieldProps) {
   const fieldCtx = useFieldContext<RichTextContent>();

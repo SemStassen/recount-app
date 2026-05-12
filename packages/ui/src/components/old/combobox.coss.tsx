@@ -4,8 +4,8 @@ import * as React from "react";
 import { cn } from "#utils/cn";
 
 import { Icons } from "../icons";
+import { ScrollArea } from "../scroll-area";
 import { Input } from "./input.coss";
-import { ScrollArea } from "./scroll-area.coss";
 
 export const ComboboxContext: React.Context<{
   chipsRef: React.RefObject<Element | null> | null;

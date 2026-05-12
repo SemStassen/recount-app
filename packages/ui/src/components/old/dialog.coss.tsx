@@ -6,7 +6,7 @@ import { cn } from "#utils/cn";
 
 import { Button } from "../button";
 import { Icons } from "../icons";
-import { ScrollArea } from "./scroll-area.coss";
+import { ScrollArea } from "../scroll-area";
 
 export const DialogCreateHandle: typeof DialogPrimitive.createHandle =
   DialogPrimitive.createHandle;

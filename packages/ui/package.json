@@ -66,7 +66,7 @@
     "./popover": "./src/components/old/popover.coss.tsx",
     "./resizable": "./src/components/old/resizable.9ui.tsx",
     "./rich-editor": "./src/components/old/rich-editor.tsx",
-    "./scroll-area": "./src/components/old/scroll-area.coss.tsx",
+    "./scroll-area": "./src/components/scroll-area.tsx",
     "./select": "./src/components/old/select.coss.tsx",
     "./separator": "./src/components/old/separator.coss.tsx",
     "./sheet": "./src/components/old/sheet.coss.tsx",

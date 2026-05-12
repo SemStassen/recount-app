@@ -1,5 +1,13 @@
 @reference "../../global.css";
 
 .root :global(.react-colorful) {
-  @apply gap-2 w-full;
+    @apply gap-2 w-full;
+}
+
+.root :global(.react-colorful__saturation) {
+    @apply rounded-md;
+}
+
+.root :global(.react-colorful__hue) {
+    @apply rounded-md;
 }

@@ -1,4 +1,4 @@
-import { useAtom } from "@effect/atom-react";
+import { useAtom, useAtomSet } from "@effect/atom-react";
 
 import {
   Sidebar,
@@ -7,8 +7,7 @@ import {
   SidebarHeader,
 } from "~/components/sidebar";
 
-import { closeTimeEntryEditor } from "../actions";
-import { calendarEditorAtom } from "../atoms";
+import { calendarEditorAtom, closeTimeEntryEditor } from "../atoms";
 import { CreateTimeEntryForm } from "./create-time-entry-form";
 import { UpdateTimeEntryForm } from "./update-time-entry-form";
 
@@ -16,12 +15,13 @@ const SIDEBAR_WIDTH = 400;
 
 export function TimeEntrySidebar() {
   const [editor] = useAtom(calendarEditorAtom);
+  const closeEditor = useAtomSet(closeTimeEntryEditor);
 
   return (
     <Sidebar
       onOpenChange={(open) => {
         if (!open) {
-          closeTimeEntryEditor();
+          closeEditor();
         }
       }}
       open={editor !== null}
@@ -36,7 +36,10 @@ export function TimeEntrySidebar() {
           <CreateTimeEntryForm initialRange={editor.initialRange} />
         )}
         {editor?.mode === "update" && (
-          <UpdateTimeEntryForm timeEntryId={editor.timeEntryId} />
+          <UpdateTimeEntryForm
+            initialRange={editor.initialRange}
+            timeEntryId={editor.timeEntryId}
+          />
         )}
       </SidebarContent>
     </Sidebar>
