@@ -1,24 +1,15 @@
-import { useAtomSet } from "@effect/atom-react";
 import { Project } from "@recount/core/modules/project";
-import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { ProjectId } from "@recount/core/shared/schemas";
 import { Form } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
-import { useRouteContext } from "@tanstack/react-router";
 import { Option } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
-import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
-
-import type { ProjectFormValues } from "../../-components/create-project-sidebar/create-project/project-form-fields";
-import {
-  projectFormFieldMap,
-  ProjectFormFields,
-} from "../../-components/create-project-sidebar/create-project/project-form-fields";
 
 const schema = createSchemaForm(Project.jsonUpdate);
 
@@ -27,7 +18,7 @@ export function UpdateProjectForm({ projectId }: { projectId: ProjectId }) {
   const { data: project, isLoading } = useLiveQuery(
     (q) =>
       q
-        .from({ p: workspaceDb.collections.projectsCollection })
+        .from({ p: workspaceDb.collections.activeProjectsCollection })
         .where(({ p }) => eq(p.id, projectId))
         .findOne(),
     [projectId]
@@ -39,18 +30,11 @@ export function UpdateProjectForm({ projectId }: { projectId: ProjectId }) {
 }
 
 function UpdateProjectFormContent({ project }: { project: Project }) {
-  const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
-
-  const updateProject = useAtomSet(
-    BackendAtomRpcClient.mutation("Project.Update"),
-    {
-      mode: "promiseExit",
-    }
-  );
+  const updateProject = useWorkspaceMutation("Project.Update");
 
   const defaultValues: ProjectFormValues = {
     name: project.name,
-    hexColor: project.hexColor,
+    color: project.color,
     isBillable: project.isBillable,
     notes: Option.getOrNull(project.notes),
   };
@@ -68,9 +52,6 @@ function UpdateProjectFormContent({ project }: { project: Project }) {
         payload: {
           id: project.id,
           data: value,
-        },
-        headers: {
-          [WORKSPACE_ID_HEADER]: workspace.id,
         },
       });
     }),

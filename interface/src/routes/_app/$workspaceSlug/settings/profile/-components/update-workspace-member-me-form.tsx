@@ -23,6 +23,7 @@ import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm, optionalFromEmptyString } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 const profileFormSchema = createSchemaForm(
   Schema.Struct({
@@ -46,10 +47,7 @@ export function UpdateWorkspaceMemberMeForm() {
     BackendAtomRpcClient.mutation("FileUpload.Prepare"),
     { mode: "promiseExit" }
   );
-  const updateWorkspaceMember = useAtomSet(
-    BackendAtomRpcClient.mutation("WorkspaceMember.Update"),
-    { mode: "promiseExit" }
-  );
+  const updateWorkspaceMember = useWorkspaceMutation("WorkspaceMember.Update");
 
   const form = useAppForm({
     formId: "update-profile",
@@ -67,9 +65,6 @@ export function UpdateWorkspaceMemberMeForm() {
         payload: {
           displayName: value.displayName,
           avatarUrl: value.avatarUrl,
-        },
-        headers: {
-          [WORKSPACE_ID_HEADER]: workspace.id,
         },
       });
 

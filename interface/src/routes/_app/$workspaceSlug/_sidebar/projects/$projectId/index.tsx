@@ -1,9 +1,12 @@
+import { HexColor, ProjectId } from "@recount/core/shared/schemas";
 import { RichTextEditor } from "@recount/editor";
-import { Input } from "@recount/ui/input";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
+import { ColorPicker } from "~/components/color-picker";
 import { useWorkspaceDb } from "~/db/workspace/context";
+import { useRegisterCommands } from "~/features/command-menu";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 import {
@@ -19,14 +22,40 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
+  const navigate = Route.useNavigate();
   const { projectId } = Route.useParams();
 
   const workspaceDb = useWorkspaceDb();
   const { data: project, isLoading } = useLiveQuery((q) =>
     q
-      .from({ p: workspaceDb.collections.projectsCollection })
+      .from({ p: workspaceDb.collections.activeProjectsCollection })
       .where(({ p }) => eq(p.id, projectId))
       .findOne()
+  );
+
+  const archiveProject = useWorkspaceMutation("Project.Archive");
+  const updateProject = useWorkspaceMutation("Project.Update");
+
+  useRegisterCommands(
+    [
+      {
+        id: "archive-project",
+        category: "project",
+        title: "Archive project",
+        perform: ({ close }) => {
+          archiveProject({
+            payload: {
+              id: ProjectId.make(projectId),
+            },
+          });
+          navigate({ to: "/$workspaceSlug/projects" });
+          close();
+        },
+      },
+    ],
+    {
+      id: "archive-project",
+    }
   );
 
   if (isLoading) {
@@ -63,9 +92,18 @@ function RouteComponent() {
           }
         />
         <PageContainer>
-          <div
-            className="size-7 rounded-md"
-            style={{ backgroundColor: project.hexColor }}
+          <ColorPicker
+            value={project.color}
+            onValueChange={(color) => {
+              if (!color || color === project.color) return;
+
+              updateProject({
+                payload: {
+                  id: ProjectId.make(projectId),
+                  data: { color: HexColor.make(color) },
+                },
+              });
+            }}
           />
           <h1 className="text-2xl font-semibold">{project.name}</h1>
           <RichTextEditor content={project.notes} onChange={(value) => {}} />

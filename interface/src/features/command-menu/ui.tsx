@@ -25,6 +25,7 @@ import type { Command as CommandItemType, CommandCategory } from "./types";
 
 const CATEGORY_ORDER: Array<CommandCategory> = [
   "navigation",
+  "project",
   "settings",
   "developer",
 ];
@@ -37,6 +38,8 @@ function getCategoryLabel(category: CommandCategory) {
       return "Developer";
     case "navigation":
       return "Navigation";
+    case "project":
+      return "Project";
     case "settings":
       return "Settings";
   }

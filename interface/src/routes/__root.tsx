@@ -75,7 +75,7 @@ function RootLayout() {
             }
           />
           <PopoverContent align="start">
-            <PopoverTitle>Possible Service Unavailability</PopoverTitle>
+            <PopoverTitle>Possible service degradation</PopoverTitle>
             <PopoverDescription>
               We hope to get this resolved soon.
             </PopoverDescription>

@@ -29,16 +29,6 @@ export {
 const optionalNullableOptionKey = <S extends Schema.Top>(schema: S) =>
   Schema.optionalKey(Schema.OptionFromNullOr(schema));
 
-const optionalKeyWithDecodingDefault = <S extends Schema.Top>(params: {
-  schema: S;
-  defaultValue: () => S["Encoded"];
-}) =>
-  params.schema.pipe(
-    Schema.withDecodingDefaultKey(params.defaultValue, {
-      encodingStrategy: "omit",
-    })
-  );
-
 /**
  * Named helpers cover the common matrix of shared DB and JSON contracts.
  *
@@ -50,8 +40,7 @@ const optionalKeyWithDecodingDefault = <S extends Schema.Top>(params: {
  *   `ServerMutable`
  * - Add the client contract only when client input is part of the field's API:
  *   `ClientImmutable` or `ClientMutable`
- * - Append whole-field modifiers last: `Optional`, `CreateOptional`,
- *   `CreateDefault`
+ * - Append whole-field modifiers last: `Optional`, `CreateOptional`
  * - `Optional` describes the field shape as a whole, not a separate per-actor
  *   contract
  * - If the name starts to describe transport quirks instead of the core
@@ -323,45 +312,6 @@ export const ServerMutableClientMutableCreateOptional = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerMutableClientMutableCreateDefault
-// ---------------------------------------------------------------------------
-
-export interface ServerMutableClientMutableCreateDefault<
-  S extends Schema.Top,
-> extends VariantSchema.Field<{
-  readonly select: S;
-  readonly insert: S;
-  readonly update: Schema.optionalKey<S>;
-  readonly json: S;
-  readonly jsonCreate: Schema.withDecodingDefaultKey<S>;
-  readonly jsonUpdate: Schema.optionalKey<S>;
-}> {}
-
-/**
- * Mutable field that can be omitted on create and defaults during decoding.
- *
- * @example
- * hexColor: ServerMutableClientMutableCreateDefault(HexColor, { defaultValue: () => HexColor.make("#000000") })
- */
-export const ServerMutableClientMutableCreateDefault = <S extends Schema.Top>(
-  schema: S,
-  options: {
-    readonly defaultValue: () => S["Encoded"];
-  }
-): ServerMutableClientMutableCreateDefault<S> =>
-  Field({
-    select: schema,
-    insert: schema,
-    update: Schema.optionalKey(schema),
-    json: schema,
-    jsonCreate: optionalKeyWithDecodingDefault({
-      schema,
-      defaultValue: options.defaultValue,
-    }),
-    jsonUpdate: Schema.optionalKey(schema),
-  });
-
-// ---------------------------------------------------------------------------
 // ServerMutableClientMutableOptional
 // ---------------------------------------------------------------------------
 
@@ -391,49 +341,5 @@ export const ServerMutableClientMutableOptional = <S extends Schema.Top>(
     update: Schema.optionalKey(Schema.OptionFromNullOr(schema)),
     json: Schema.OptionFromNullOr(schema),
     jsonCreate: optionalNullableOptionKey(schema),
-    jsonUpdate: optionalNullableOptionKey(schema),
-  });
-
-// ---------------------------------------------------------------------------
-// ServerMutableClientMutableOptionalCreateDefault
-// ---------------------------------------------------------------------------
-
-export interface ServerMutableClientMutableOptionalCreateDefault<
-  S extends Schema.Top,
-> extends VariantSchema.Field<{
-  readonly select: Schema.OptionFromNullOr<S>;
-  readonly insert: Schema.OptionFromNullOr<S>;
-  readonly update: Schema.optionalKey<Schema.OptionFromNullOr<S>>;
-  readonly json: Schema.OptionFromNullOr<S>;
-  readonly jsonCreate: Schema.withDecodingDefaultKey<
-    Schema.OptionFromNullOr<S>
-  >;
-  readonly jsonUpdate: Schema.optionalKey<Schema.OptionFromNullOr<S>>;
-}> {}
-
-/**
- * Optional mutable field that can be omitted on create and defaults during
- * decoding.
- *
- * @example
- * notes: ServerMutableClientMutableOptionalCreateDefault(Schema.Json, { defaultValue: () => null })
- */
-export const ServerMutableClientMutableOptionalCreateDefault = <
-  S extends Schema.Top,
->(
-  schema: S,
-  options: {
-    readonly defaultValue: () => S["Encoded"] | null;
-  }
-): ServerMutableClientMutableOptionalCreateDefault<S> =>
-  Field({
-    select: Schema.OptionFromNullOr(schema),
-    insert: Schema.OptionFromNullOr(schema),
-    update: Schema.optionalKey(Schema.OptionFromNullOr(schema)),
-    json: Schema.OptionFromNullOr(schema),
-    jsonCreate: optionalKeyWithDecodingDefault({
-      schema: Schema.OptionFromNullOr(schema),
-      defaultValue: options.defaultValue,
-    }),
     jsonUpdate: optionalNullableOptionKey(schema),
   });

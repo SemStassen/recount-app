@@ -1,6 +1,6 @@
 import { DateTime, Option, Result } from "effect";
 
-import { ProjectId } from "#shared/schemas/index";
+import { HexColor, ProjectId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
 import { Project } from "./project.entity";
@@ -20,10 +20,16 @@ export const createProject = (params: {
   const { id, ...rest } = params.data;
 
   const project = Project.make({
-    id: Option.getOrElse(id, () => ProjectId.make(generateUUID())),
+    id:
+      id === undefined
+        ? ProjectId.make(generateUUID())
+        : Option.getOrElse(id, () => ProjectId.make(generateUUID())),
     workspaceId: params.workspaceId,
-    archivedAt: Option.none(),
     ...rest,
+    color: rest.color ?? HexColor.make("#000000"),
+    isBillable: rest.isBillable ?? false,
+    notes: Option.none(),
+    archivedAt: Option.none(),
   });
 
   return Result.succeed(project);

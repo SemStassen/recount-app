@@ -15,17 +15,10 @@ export class Project extends Model.Class<Project>("Project")(
     name: Model.ServerMutableClientMutable(
       NonEmptyTrimmedString.check(Schema.isMaxLength(255))
     ),
-    hexColor: Model.ServerMutableClientMutableCreateDefault(HexColor, {
-      defaultValue: () => HexColor.make("#000000"),
-    }),
-    isBillable: Model.ServerMutableClientMutableCreateDefault(Schema.Boolean, {
-      defaultValue: () => false,
-    }),
-    notes: Model.ServerMutableClientMutableOptionalCreateDefault(
-      Schema.Json.pipe(Schema.fromJsonString),
-      {
-        defaultValue: () => null,
-      }
+    color: Model.ServerMutableClientMutableCreateOptional(HexColor),
+    isBillable: Model.ServerMutableClientMutableCreateOptional(Schema.Boolean),
+    notes: Model.ServerMutableClientMutableOptional(
+      Schema.Json.pipe(Schema.fromJsonString)
     ),
     archivedAt: Model.ServerMutableOptional(Schema.DateTimeUtcFromDate),
   },

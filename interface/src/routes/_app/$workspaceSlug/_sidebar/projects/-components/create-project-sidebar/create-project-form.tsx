@@ -1,35 +1,27 @@
-import { useAtomSet } from "@effect/atom-react";
 import { Project } from "@recount/core/modules/project";
-import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import { Form } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
-import { useRouteContext } from "@tanstack/react-router";
 
 import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
-import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 const schema = createSchemaForm(Project.jsonCreate);
 
-export function CreateProjectForm() {
-  const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
+const defaultValues: typeof schema.validator.Encoded = {
+  name: "",
+  color: "#000000",
+  isBillable: false,
+  notes: null,
+};
 
-  const createProject = useAtomSet(
-    BackendAtomRpcClient.mutation("Project.Create"),
-    {
-      mode: "promiseExit",
-    }
-  );
+export function CreateProjectForm() {
+  const createProject = useWorkspaceMutation("Project.Create");
 
   const form = useAppForm({
     formId: `create-project`,
-    defaultValues: {
-      name: "",
-      hexColor: "#000000",
-      isBillable: false,
-      notes: null,
-    } satisfies typeof schema.validator.Encoded,
+    defaultValues,
     validationLogic: revalidateLogic(),
     validators: {
       onDynamic: schema.validator,
@@ -38,9 +30,6 @@ export function CreateProjectForm() {
     onSubmit: schema.handleSubmit(({ value }) => {
       createProject({
         payload: value,
-        headers: {
-          [WORKSPACE_ID_HEADER]: workspace.id,
-        },
       });
     }),
   });
@@ -64,12 +53,12 @@ export function CreateProjectForm() {
       />
       <form.AppField
         children={(field) => (
-          <field.TextField
+          <field.ColorPickerField
             direction="vertical"
             label={{ children: m.project_form_color_label() }}
           />
         )}
-        name="hexColor"
+        name="color"
       />
       <form.AppField
         children={(field) => (
