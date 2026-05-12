@@ -3,9 +3,9 @@ import { DateTime, Option } from "effect";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 
-import type { CalendarTimeEntry } from "./types";
+import type { TimeEntry } from "./types";
 
-export function useCalendarTimeEntries({
+export function useTimeEntries({
   currentTime,
   replacingTimeEntryId,
 }: {
@@ -36,6 +36,6 @@ export function useCalendarTimeEntries({
           onNone: () => currentTime,
           onSome: DateTime.toDate,
         }),
-      } satisfies CalendarTimeEntry;
+      } satisfies TimeEntry;
     });
 }

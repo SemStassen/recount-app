@@ -4,22 +4,19 @@ import { isSameDay } from "date-fns";
 
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
-import { calendarCurrentTimeAtom } from "../../../atoms";
-import {
-  CALENDAR_DAY_HEADER_HEIGHT_VAR,
-  CALENDAR_HOUR_COLUMN_WIDTH_VAR,
-} from "../../../constants";
+import { DAY_HEADER_HEIGHT_VAR, HOUR_COLUMN_WIDTH_VAR } from "../constants";
+import { currentTimeAtom } from "../state/atoms";
 
 function Header({ weekdays }: { weekdays: Array<Date> }) {
-  const currentTime = useAtomValue(calendarCurrentTimeAtom);
+  const currentTime = useAtomValue(currentTimeAtom);
   const formatter = useDateTimeFormatter();
 
   return (
     <div
       className="flex items-center justify-center border-b"
       style={{
-        height: `var(${CALENDAR_DAY_HEADER_HEIGHT_VAR})`,
-        paddingLeft: `var(${CALENDAR_HOUR_COLUMN_WIDTH_VAR})`,
+        height: `var(${DAY_HEADER_HEIGHT_VAR})`,
+        paddingLeft: `var(${HOUR_COLUMN_WIDTH_VAR})`,
       }}
     >
       <div

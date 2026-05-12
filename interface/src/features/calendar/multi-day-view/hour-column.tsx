@@ -1,13 +1,8 @@
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
-import {
-  CALENDAR_HOUR_COLUMN_WIDTH_VAR,
-  CALENDAR_HOUR_HEIGHT_VAR,
-} from "../../../constants";
+import { HOUR_COLUMN_WIDTH_VAR, HOUR_HEIGHT_VAR } from "../constants";
 
-export const hours = Array.from({ length: 24 }).map(
-  (_, hourIndex) => hourIndex
-);
+const hours = Array.from({ length: 24 }).map((_, hourIndex) => hourIndex);
 
 export function HourColumn() {
   const formatter = useDateTimeFormatter();
@@ -16,7 +11,7 @@ export function HourColumn() {
     <div
       className="border-r"
       style={{
-        width: `var(${CALENDAR_HOUR_COLUMN_WIDTH_VAR})`,
+        width: `var(${HOUR_COLUMN_WIDTH_VAR})`,
       }}
     >
       {hours.map((hour) => (
@@ -24,7 +19,7 @@ export function HourColumn() {
           className="relative"
           key={hour}
           style={{
-            height: `var(${CALENDAR_HOUR_HEIGHT_VAR})`,
+            height: `var(${HOUR_HEIGHT_VAR})`,
           }}
         >
           {hour !== 0 && (

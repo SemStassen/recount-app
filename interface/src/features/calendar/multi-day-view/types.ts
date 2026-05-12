@@ -1,9 +1,9 @@
-export type CalendarTimeEntry = {
+export type TimeEntry = {
   id: string;
   startedAt: Date;
   stoppedAt: Date;
-  project: null | {
+  project: {
     name: string;
     color: string;
-  };
+  } | null;
 };

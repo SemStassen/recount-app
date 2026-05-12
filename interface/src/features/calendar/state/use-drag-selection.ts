@@ -2,30 +2,26 @@ import { useAtomSet } from "@effect/atom-react";
 
 import { atomRegistry } from "~/atoms/registry";
 
-import { calendarDragSelectionAtom, openCreateTimeEntryEditor } from "./atoms";
-
-type TimeRange = {
-  startedAt: Date;
-  stoppedAt: Date;
-};
+import { dragSelectionAtom, openCreateTimeEntryEditor } from "./atoms";
+import type { TimeRange } from "./time-range";
 
 function resetDragSelection() {
-  atomRegistry.set(calendarDragSelectionAtom, null);
+  atomRegistry.set(dragSelectionAtom, null);
 }
 
-export function useCalendarDragSelection() {
+export function useDragSelection() {
   const openCreateEditor = useAtomSet(openCreateTimeEntryEditor);
 
   return {
     startDragSelection(range: TimeRange) {
       resetDragSelection();
-      atomRegistry.set(calendarDragSelectionAtom, range);
+      atomRegistry.set(dragSelectionAtom, range);
     },
     updateDragSelection(range: TimeRange) {
-      atomRegistry.set(calendarDragSelectionAtom, range);
+      atomRegistry.set(dragSelectionAtom, range);
     },
     commitDragSelection() {
-      const dragSelection = atomRegistry.get(calendarDragSelectionAtom);
+      const dragSelection = atomRegistry.get(dragSelectionAtom);
 
       if (!dragSelection) {
         return;

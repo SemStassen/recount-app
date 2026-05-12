@@ -1,12 +1,12 @@
 import { DragOverlay } from "@dnd-kit/react";
 import { useAtomValue } from "@effect/atom-react";
 
-import { calendarSortedDragSelectionAtom } from "../../../atoms";
-import { isTimeEntryDragData } from "../../dnd/types";
-import { TimeEntryContent } from "../time-entry";
+import { getDraggedTimeEntry } from "../dnd/adapter";
+import { sortedDragSelectionAtom } from "../state/atoms";
+import { TimeEntryContent } from "./time-entry";
 
-export function CalendarDragOverlay() {
-  const dragSelection = useAtomValue(calendarSortedDragSelectionAtom);
+export function TimeEntryDragOverlay() {
+  const dragSelection = useAtomValue(sortedDragSelectionAtom);
 
   return (
     <DragOverlay
@@ -30,7 +30,9 @@ export function CalendarDragOverlay() {
           );
         }
 
-        if (!isTimeEntryDragData(source.data)) {
+        const draggedTimeEntry = getDraggedTimeEntry(source);
+
+        if (!draggedTimeEntry) {
           return null;
         }
 
@@ -38,7 +40,7 @@ export function CalendarDragOverlay() {
           <div className="pointer-events-none h-full w-56 p-0.5 drop-shadow-xl">
             <TimeEntryContent
               className="opacity-95 ring-2 ring-background/80"
-              timeEntry={source.data.timeRange}
+              timeEntry={draggedTimeEntry.timeRange}
             />
           </div>
         );

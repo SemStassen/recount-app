@@ -5,26 +5,23 @@ import { isSameDay } from "date-fns";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 
+import { DAY_HEADER_HEIGHT_VAR, HEADER_HEIGHT_VAR } from "../constants";
 import {
-  calendarCurrentTimeAtom,
-  calendarEditingPreviewAtom,
-  calendarVisibleDaysAtom,
-} from "../../../atoms";
-import {
-  CALENDAR_DAY_HEADER_HEIGHT_VAR,
-  CALENDAR_HEADER_HEIGHT_VAR,
-} from "../../../constants";
-import { CalendarGrid } from "./calendar-grid";
+  currentTimeAtom,
+  editingPreviewAtom,
+  visibleDaysAtom,
+} from "../state/atoms";
+import { Grid } from "./grid";
 import { Header } from "./header";
 import { HourColumn } from "./hour-column";
-import { useCalendarTimeEntries } from "./use-calendar-time-entries";
+import { useTimeEntries } from "./use-time-entries";
 
-function CalendarMultiDayView() {
-  const weekdays = useAtomValue(calendarVisibleDaysAtom);
-  const currentTime = useAtomValue(calendarCurrentTimeAtom);
-  const preview = useAtomValue(calendarEditingPreviewAtom);
+function MultiDayView() {
+  const weekdays = useAtomValue(visibleDaysAtom);
+  const currentTime = useAtomValue(currentTimeAtom);
+  const preview = useAtomValue(editingPreviewAtom);
   const workspaceDb = useWorkspaceDb();
-  const calendarTimeEntries = useCalendarTimeEntries({
+  const timeEntries = useTimeEntries({
     currentTime,
     replacingTimeEntryId: preview?.replacingTimeEntryId,
   });
@@ -42,17 +39,17 @@ function CalendarMultiDayView() {
       <ScrollArea
         className="[&>div]:overscroll-y-none"
         style={{
-          height: `calc(100vh - var(${CALENDAR_HEADER_HEIGHT_VAR}) - var(${CALENDAR_DAY_HEADER_HEIGHT_VAR}))`,
+          height: `calc(100vh - var(${HEADER_HEIGHT_VAR}) - var(${DAY_HEADER_HEIGHT_VAR}))`,
         }}
       >
         <div className="flex">
           <HourColumn />
-          <CalendarGrid
+          <Grid
             currentTime={currentTime}
             preview={preview}
             projects={projects}
             showCurrentTimeLine={showCurrentTimeLine}
-            timeEntries={calendarTimeEntries}
+            timeEntries={timeEntries}
             weekdays={weekdays}
           />
         </div>
@@ -61,4 +58,4 @@ function CalendarMultiDayView() {
   );
 }
 
-export { CalendarMultiDayView };
+export { MultiDayView };

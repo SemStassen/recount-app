@@ -2,16 +2,12 @@ import { cn } from "@recount/ui/utils";
 
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
-import { getTimeEntryFrameStyle } from "./calendar-multi-day-view/layout";
-
-type TimeEntryInterval = {
-  startedAt: Date;
-  stoppedAt: Date;
-};
+import type { TimeRange } from "../state/time-range";
+import { getTimeEntryFrameStyle } from "./layout";
 
 interface TimeEntryFrameProps extends React.ComponentProps<"div"> {
   day: Date;
-  timeRange: TimeEntryInterval;
+  timeRange: TimeRange;
   overlap?: { index: number; count: number };
 }
 

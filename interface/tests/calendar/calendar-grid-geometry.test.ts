@@ -4,9 +4,10 @@ import { describe, expect, test } from "vitest";
 import {
   getCalendarRangeFromSlots,
   getCalendarSlotFromPoint,
+  getDayTimeEntryFrames,
   moveTimeRangeToSlot,
   type CalendarRect,
-} from "../../src/features/calendar/components/views/calendar-multi-day-view/layout";
+} from "../../src/features/calendar/views/calendar-multi-day-view/layout";
 
 const gridRect: CalendarRect = {
   left: 100,
@@ -137,5 +138,37 @@ describe("calendar grid geometry", () => {
       startedAt: localTime(1, 23, 30),
       stoppedAt: localTime(2, 1),
     });
+  });
+
+  test("assigns overlap frames inside layout policy", () => {
+    const frames = getDayTimeEntryFrames({
+      day: monday,
+      timeEntries: [
+        {
+          id: "first",
+          project: null,
+          startedAt: localTime(0, 9),
+          stoppedAt: localTime(0, 10),
+        },
+        {
+          id: "second",
+          project: null,
+          startedAt: localTime(0, 9, 30),
+          stoppedAt: localTime(0, 10, 30),
+        },
+        {
+          id: "third",
+          project: null,
+          startedAt: localTime(0, 11),
+          stoppedAt: localTime(0, 12),
+        },
+      ],
+    });
+
+    expect(frames).toMatchObject([
+      { timeEntry: { id: "first" }, overlap: { index: 0, count: 2 } },
+      { timeEntry: { id: "third" }, overlap: undefined },
+      { timeEntry: { id: "second" }, overlap: { index: 1, count: 2 } },
+    ]);
   });
 });

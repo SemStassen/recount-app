@@ -1,34 +1,32 @@
 import { useDraggable, useDroppable, useDragDropMonitor } from "@dnd-kit/react";
 import { useAtomSet } from "@effect/atom-react";
-import type { TimeEntryId } from "@recount/core/shared/schemas";
 import { cn } from "@recount/ui/utils";
 import { useRef, useState } from "react";
 
+import { getDraggedTimeEntry } from "../dnd/adapter";
+import { GRID_DROPPABLE_ID, SELECTION_DRAGGABLE_ID } from "../dnd/types";
 import {
   closeTimeEntryEditor,
-  type CalendarEditingPreview,
+  type EditingPreview,
   openUpdateTimeEntryEditor,
-} from "../../../atoms";
-import { useCalendarDragSelection } from "../../../use-calendar-drag-selection";
-import {
-  CALENDAR_GRID_DROPPABLE_ID,
-  CALENDAR_SELECTION_DRAGGABLE_ID,
-  isTimeEntryDragData,
-} from "../../dnd/types";
-import { CurrentTimeLine } from "../current-time-line";
-import { CalendarDragOverlay } from "./calendar-drag-overlay";
+} from "../state/atoms";
+import { useDragSelection } from "../state/use-drag-selection";
+import { CurrentTimeLine } from "./current-time-line";
 import { DayColumn } from "./day-column";
 import {
-  getCalendarRangeFromSlots,
-  getCalendarSlotFromPoint,
-  moveTimeRangeToSlot,
-  type CalendarSlot,
-} from "./layout";
-import type { CalendarTimeEntry } from "./types";
+  getDropPreviewKey,
+  getMovedTimeEntryPreview,
+  getPointFromEvent,
+  getRangeKey,
+  getSelectionRange,
+  type Point,
+} from "./grid-interactions";
+import { getSlotFromPoint, type Slot } from "./layout";
+import { TimeEntryDragOverlay } from "./time-entry-drag-overlay";
+import type { TimeEntry } from "./types";
 
-import styles from "./calendar-grid.module.css";
+import styles from "./grid.module.css";
 
-type Point = { clientX: number; clientY: number };
 type GridGeometry = {
   left: number;
   top: number;
@@ -36,23 +34,17 @@ type GridGeometry = {
   height: number;
 };
 
-type CalendarGridProps = {
+type GridProps = {
   currentTime: Date;
-  preview: CalendarEditingPreview;
+  preview: EditingPreview;
   projects: Array<{ id: string; name: string; color: string }>;
   showCurrentTimeLine: boolean;
-  timeEntries: Array<CalendarTimeEntry>;
+  timeEntries: Array<TimeEntry>;
   weekdays: Array<Date>;
 };
 
 function getScrollViewport(element: HTMLElement) {
   return element.closest<HTMLElement>("[data-slot='scroll-area-viewport']");
-}
-
-function getPointFromEvent(event: Event | undefined): Point | null {
-  return event && "clientX" in event && "clientY" in event
-    ? { clientX: Number(event.clientX), clientY: Number(event.clientY) }
-    : null;
 }
 
 function getPointFromDraggedTop(
@@ -93,37 +85,37 @@ function getPointFromDraggedTopAtPointerX(
   };
 }
 
-export function CalendarGrid({
+export function Grid({
   currentTime,
   preview,
   projects,
   showCurrentTimeLine,
   timeEntries,
   weekdays,
-}: CalendarGridProps) {
+}: GridProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
-  const firstSlotRef = useRef<CalendarSlot | null>(null);
+  const firstSlotRef = useRef<Slot | null>(null);
   const geometryRef = useRef<GridGeometry | null>(null);
   const lastSelectionKeyRef = useRef<string | null>(null);
   const lastTimeEntryDropPreviewKeyRef = useRef<string | null>(null);
-  const pendingClickSlotRef = useRef<CalendarSlot | null>(null);
+  const pendingClickSlotRef = useRef<Slot | null>(null);
   const [timeEntryDropPreview, setTimeEntryDropPreview] =
-    useState<CalendarTimeEntry | null>(null);
+    useState<TimeEntry | null>(null);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
   const openUpdateEditor = useAtomSet(openUpdateTimeEntryEditor);
   const { ref: draggableRef } = useDraggable({
-    id: CALENDAR_SELECTION_DRAGGABLE_ID,
+    id: SELECTION_DRAGGABLE_ID,
     data: { kind: "calendar-selection" },
   });
   const { ref: droppableRef } = useDroppable({
-    id: CALENDAR_GRID_DROPPABLE_ID,
+    id: GRID_DROPPABLE_ID,
   });
   const {
     cancelDragSelection,
     commitDragSelection,
     startDragSelection,
     updateDragSelection,
-  } = useCalendarDragSelection();
+  } = useDragSelection();
 
   const setGridRef = (element: HTMLDivElement | null) => {
     gridRef.current = element;
@@ -159,7 +151,7 @@ export function CalendarGrid({
       return null;
     }
 
-    return getCalendarSlotFromPoint({
+    return getSlotFromPoint({
       point,
       gridRect: geometry,
       scrollTop: viewport.scrollTop,
@@ -175,8 +167,13 @@ export function CalendarGrid({
       return;
     }
 
-    const range = getCalendarRangeFromSlots(firstSlot, currentSlot);
-    const selectionKey = `${range.startedAt.getTime()}-${range.stoppedAt.getTime()}`;
+    const range = getSelectionRange(firstSlot, currentSlot);
+
+    if (!range) {
+      return;
+    }
+
+    const selectionKey = getRangeKey(range);
 
     if (selectionKey === lastSelectionKeyRef.current) {
       return;
@@ -191,24 +188,18 @@ export function CalendarGrid({
       NonNullable<Parameters<typeof useDragDropMonitor>[0]["onDragMove"]>
     >[0]
   ) => {
-    const source = event.operation.source;
+    const draggedTimeEntry = getDraggedTimeEntry(event.operation.source);
     const point = getPointFromDraggedTopAtPointerX(event);
 
-    if (!source?.id || !point || !isTimeEntryDragData(source.data)) {
+    if (!draggedTimeEntry || !point) {
       return null;
     }
 
-    const slot = getSlot(point);
-
-    if (!slot) {
-      return null;
-    }
-
-    return {
-      id: String(source.id),
-      project: source.data.timeRange.project,
-      ...moveTimeRangeToSlot(source.data.timeRange, slot),
-    } satisfies CalendarTimeEntry;
+    return getMovedTimeEntryPreview({
+      slot: getSlot(point),
+      timeEntryId: draggedTimeEntry.timeEntryId,
+      timeRange: draggedTimeEntry.timeRange,
+    });
   };
 
   const updateTimeEntryDropPreview = (
@@ -217,9 +208,7 @@ export function CalendarGrid({
     >[0]
   ) => {
     const dropPreview = getDraggedTimeEntryDropPreview(event);
-    const dropPreviewKey = dropPreview
-      ? `${dropPreview.id}-${dropPreview.startedAt.getTime()}-${dropPreview.stoppedAt.getTime()}`
-      : null;
+    const dropPreviewKey = getDropPreviewKey(dropPreview);
 
     if (dropPreviewKey === lastTimeEntryDropPreviewKeyRef.current) {
       return;
@@ -256,7 +245,7 @@ export function CalendarGrid({
       return;
     }
 
-    closeEditor();
+    closeEditor(undefined);
     resetSelectionDrag();
   };
 
@@ -272,7 +261,12 @@ export function CalendarGrid({
       return;
     }
 
-    const range = getCalendarRangeFromSlots(slot, slot);
+    const range = getSelectionRange(slot, slot);
+
+    if (!range) {
+      return;
+    }
+
     startDragSelection(range);
     commitDragSelection();
     resetSelectionDrag();
@@ -300,8 +294,13 @@ export function CalendarGrid({
 
       pendingClickSlotRef.current = null;
       firstSlotRef.current = firstSlot;
-      const range = getCalendarRangeFromSlots(firstSlot, firstSlot);
-      lastSelectionKeyRef.current = `${range.startedAt.getTime()}-${range.stoppedAt.getTime()}`;
+      const range = getSelectionRange(firstSlot, firstSlot);
+
+      if (!range) {
+        return;
+      }
+
+      lastSelectionKeyRef.current = getRangeKey(range);
       startDragSelection(range);
     },
     onDragMove(event) {
@@ -341,16 +340,26 @@ export function CalendarGrid({
         return;
       }
 
-      const source = event.operation.source;
+      const draggedTimeEntry = getDraggedTimeEntry(event.operation.source);
       const slot = getSlot(point);
 
-      if (!source?.id || !isTimeEntryDragData(source.data) || !slot) {
+      if (!draggedTimeEntry || !slot) {
+        return;
+      }
+
+      const movedTimeEntry = getMovedTimeEntryPreview({
+        slot,
+        timeEntryId: draggedTimeEntry.timeEntryId,
+        timeRange: draggedTimeEntry.timeRange,
+      });
+
+      if (!movedTimeEntry) {
         return;
       }
 
       openUpdateEditor({
-        timeEntryId: source.id as TimeEntryId,
-        initialRange: moveTimeRangeToSlot(source.data.timeRange, slot),
+        timeEntryId: draggedTimeEntry.timeEntryId,
+        initialRange: movedTimeEntry,
       });
     },
   });
@@ -382,7 +391,7 @@ export function CalendarGrid({
         />
       ))}
       {showCurrentTimeLine ? <CurrentTimeLine /> : null}
-      <CalendarDragOverlay />
+      <TimeEntryDragOverlay />
     </div>
   );
 }

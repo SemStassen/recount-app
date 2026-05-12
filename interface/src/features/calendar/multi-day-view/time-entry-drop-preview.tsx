@@ -1,14 +1,14 @@
 import { isSameDay } from "date-fns";
 
-import { TimeEntryFrame } from "../time-entry";
-import type { CalendarTimeEntry } from "./types";
+import { TimeEntryFrame } from "./time-entry";
+import type { TimeEntry } from "./types";
 
 export function TimeEntryDropPreview({
   day,
   timeEntry,
 }: {
   day: Date;
-  timeEntry: CalendarTimeEntry | null;
+  timeEntry: TimeEntry | null;
 }) {
   if (
     !timeEntry ||

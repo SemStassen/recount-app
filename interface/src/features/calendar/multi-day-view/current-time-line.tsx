@@ -2,11 +2,11 @@ import { useAtomValue } from "@effect/atom-react";
 
 import { useDateTimeFormatter } from "~/lib/utils/date-time";
 
-import { calendarCurrentTimeAtom } from "../../atoms";
-import { getCurrentTimePosition } from "./calendar-multi-day-view/layout";
+import { currentTimeAtom } from "../state/atoms";
+import { getCurrentTimePosition } from "./layout";
 
 function CurrentTimeLine() {
-  const currentTime = useAtomValue(calendarCurrentTimeAtom);
+  const currentTime = useAtomValue(currentTimeAtom);
   const formatter = useDateTimeFormatter();
 
   return (

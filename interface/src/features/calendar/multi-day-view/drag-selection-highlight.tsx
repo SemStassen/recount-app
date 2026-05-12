@@ -1,11 +1,11 @@
 import { useAtomValue } from "@effect/atom-react";
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
-import { calendarSortedDragSelectionAtom } from "../../atoms";
+import { sortedDragSelectionAtom } from "../state/atoms";
 import { TimeEntryContent, TimeEntryFrame } from "./time-entry";
 
 export function DragSelectionHighlight({ day }: { day: Date }) {
-  const dragSelection = useAtomValue(calendarSortedDragSelectionAtom);
+  const dragSelection = useAtomValue(sortedDragSelectionAtom);
 
   if (!dragSelection) {
     return null;

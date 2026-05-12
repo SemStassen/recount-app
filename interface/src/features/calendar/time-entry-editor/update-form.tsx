@@ -4,7 +4,6 @@ import type { TimeEntryId } from "@recount/core/shared/schemas";
 import { Form } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
-import { DateTime, Option } from "effect";
 import { useEffect } from "react";
 
 import { useAppForm } from "~/components/form";
@@ -12,16 +11,20 @@ import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
 import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
-import { calendarEditingPreviewAtom, closeTimeEntryEditor } from "../atoms";
+import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
 import {
   TimeEntryFieldGroup,
   timeEntryFields,
   type TimeEntryFormValues,
-} from "./time-entry-field-group";
+} from "./field-group";
+import {
+  getUpdateTimeEntryFormDefaults,
+  getUpdateTimeEntryPreview,
+} from "./model";
 import {
   type TimeEntryFormProject,
   useTimeEntryFormProjects,
-} from "./use-time-entry-form-projects";
+} from "./use-projects";
 
 const schema = createSchemaForm(TimeEntry.jsonUpdate);
 
@@ -66,36 +69,20 @@ function UpdateTimeEntryFormContent({
   timeEntry: typeof TimeEntry.json.Type;
 }) {
   const updateTimeEntry = useWorkspaceMutation("TimeEntry.Update");
-  const setPreview = useAtomSet(calendarEditingPreviewAtom);
+  const setPreview = useAtomSet(editingPreviewAtom);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
   const initialStartedAtMs = initialRange?.startedAt.getTime();
   const initialStoppedAtMs = initialRange?.stoppedAt.getTime();
   const publishPreview = (values: TimeEntryFormValues) => {
-    setPreview({
-      startedAt: values.startedAt,
-      stoppedAt: values.stoppedAt,
-      projectId: values.projectId,
-      replacingTimeEntryId: timeEntry.id,
-    });
+    setPreview(
+      getUpdateTimeEntryPreview({ timeEntryId: timeEntry.id, values })
+    );
   };
 
-  const defaultValues: TimeEntryFormValues = {
-    startedAt:
-      initialStartedAtMs !== undefined
-        ? new Date(initialStartedAtMs)
-        : DateTime.toDate(timeEntry.startedAt),
-    stoppedAt:
-      (initialStoppedAtMs !== undefined
-        ? new Date(initialStoppedAtMs)
-        : undefined) ??
-      Option.match(timeEntry.stoppedAt, {
-        onNone: () => null,
-        onSome: DateTime.toDate,
-      }),
-    projectId: timeEntry.projectId,
-    taskId: Option.getOrNull(timeEntry.taskId),
-    notes: Option.getOrNull(timeEntry.notes),
-  };
+  const defaultValues = getUpdateTimeEntryFormDefaults({
+    initialRange,
+    timeEntry,
+  });
 
   const form = useAppForm({
     formId: `update-time-entry-${timeEntry.id}`,
@@ -116,7 +103,7 @@ function UpdateTimeEntryFormContent({
           data: value,
         },
       });
-      closeEditor();
+      closeEditor(undefined);
     }),
   });
 

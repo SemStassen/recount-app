@@ -13,10 +13,10 @@ import {
   MenuSubPopup,
 } from "@recount/ui/menu";
 
-import { calendarDaysInViewAtom } from "../atoms";
+import { daysInViewAtom } from "../state/atoms";
 
 export function OptionsDropdown() {
-  const [daysInView, setDaysInView] = useAtom(calendarDaysInViewAtom);
+  const [daysInView, setDaysInView] = useAtom(daysInViewAtom);
   return (
     <Menu>
       <MenuTrigger

@@ -4,19 +4,19 @@ import { Icons } from "@recount/ui/icons";
 
 import { PageTopBar } from "~/routes/_app/$workspaceSlug/_sidebar/-components/page";
 
-import { openCreateTimeEntryEditor } from "./atoms";
-import { DateNavigator } from "./components/date-navigator";
-import { DndProvider } from "./components/dnd/dnd-provider";
-import { OptionsDropdown } from "./components/options-dropdown";
-import { TodayButton } from "./components/today-button";
-import { CalendarMultiDayView } from "./components/views/calendar-multi-day-view";
 import {
-  CALENDAR_DAY_HEADER_HEIGHT_VAR,
-  CALENDAR_HEADER_HEIGHT_VAR,
-  CALENDAR_HOUR_COLUMN_WIDTH_VAR,
-  CALENDAR_HOUR_HEIGHT_VAR,
+  DAY_HEADER_HEIGHT_VAR,
+  HEADER_HEIGHT_VAR,
+  HOUR_COLUMN_WIDTH_VAR,
+  HOUR_HEIGHT_VAR,
 } from "./constants";
-import { TimeEntrySidebar } from "./time-entry-sidebar";
+import { DndProvider } from "./dnd/dnd-provider";
+import { MultiDayView } from "./multi-day-view";
+import { DateNavigator } from "./navigation/date-navigator";
+import { OptionsDropdown } from "./navigation/options-dropdown";
+import { TodayButton } from "./navigation/today-button";
+import { openCreateTimeEntryEditor } from "./state/atoms";
+import { TimeEntryEditor } from "./time-entry-editor";
 
 function Calendar() {
   const openCreateEditor = useAtomSet(openCreateTimeEntryEditor);
@@ -27,10 +27,10 @@ function Calendar() {
         className="min-w-0 flex-1 overflow-hidden"
         style={
           {
-            [CALENDAR_HEADER_HEIGHT_VAR]: "48px",
-            [CALENDAR_DAY_HEADER_HEIGHT_VAR]: "40px",
-            [CALENDAR_HOUR_COLUMN_WIDTH_VAR]: "72px",
-            [CALENDAR_HOUR_HEIGHT_VAR]: "64px",
+            [HEADER_HEIGHT_VAR]: "48px",
+            [DAY_HEADER_HEIGHT_VAR]: "40px",
+            [HOUR_COLUMN_WIDTH_VAR]: "72px",
+            [HOUR_HEIGHT_VAR]: "64px",
           } as React.CSSProperties
         }
       >
@@ -57,10 +57,10 @@ function Calendar() {
           }
         />
         <DndProvider>
-          <CalendarMultiDayView />
+          <MultiDayView />
         </DndProvider>
       </div>
-      <TimeEntrySidebar />
+      <TimeEntryEditor />
     </div>
   );
 }

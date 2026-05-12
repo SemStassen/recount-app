@@ -7,21 +7,21 @@ import {
   SidebarHeader,
 } from "~/components/sidebar";
 
-import { calendarEditorAtom, closeTimeEntryEditor } from "../atoms";
-import { CreateTimeEntryForm } from "./create-time-entry-form";
-import { UpdateTimeEntryForm } from "./update-time-entry-form";
+import { editorAtom, closeTimeEntryEditor } from "../state/atoms";
+import { CreateTimeEntryForm } from "./create-form";
+import { UpdateTimeEntryForm } from "./update-form";
 
 const SIDEBAR_WIDTH = 400;
 
-export function TimeEntrySidebar() {
-  const [editor] = useAtom(calendarEditorAtom);
+export function TimeEntryEditor() {
+  const [editor] = useAtom(editorAtom);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
 
   return (
     <Sidebar
       onOpenChange={(open) => {
         if (!open) {
-          closeEditor();
+          closeEditor(undefined);
         }
       }}
       open={editor !== null}

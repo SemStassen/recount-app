@@ -1,8 +1,10 @@
 import {
   addMinutes,
+  areIntervalsOverlapping,
   differenceInMinutes,
   endOfDay,
   isBefore,
+  isSameDay,
   startOfDay,
 } from "date-fns";
 import type { CSSProperties } from "react";
@@ -10,12 +12,13 @@ import type { CSSProperties } from "react";
 import { clamp } from "~/lib/utils/math";
 
 import {
-  CALENDAR_SLOT_DURATION_MINUTES,
-  CALENDAR_HOUR_HEIGHT_VAR,
+  SLOT_DURATION_MINUTES,
+  HOUR_HEIGHT_VAR,
   FIRST_VISIBLE_HOUR,
   LAST_VISIBLE_HOUR,
-} from "../../../constants";
-import type { CalendarTimeEntry } from "./types";
+} from "../constants";
+import type { TimeRange } from "../state/time-range";
+import type { TimeEntry } from "./types";
 
 export type CalendarRect = {
   left: number;
@@ -24,19 +27,14 @@ export type CalendarRect = {
   height: number;
 };
 
-export type CalendarSlot = {
+export type Slot = {
   day: Date;
   index: number;
   start: Date;
   end: Date;
 };
 
-export type CalendarTimeRange = {
-  startedAt: Date;
-  stoppedAt: Date;
-};
-
-export function getCalendarSlotFromPoint({
+export function getSlotFromPoint({
   point,
   gridRect,
   scrollTop = 0,
@@ -46,7 +44,7 @@ export function getCalendarSlotFromPoint({
   gridRect: CalendarRect;
   scrollTop?: number;
   visibleDays: Array<Date>;
-}): CalendarSlot | null {
+}): Slot | null {
   if (visibleDays.length === 0 || gridRect.width <= 0 || gridRect.height <= 0) {
     return null;
   }
@@ -58,7 +56,7 @@ export function getCalendarSlotFromPoint({
     visibleDays.length - 1
   );
   const visibleRangeMinutes = (LAST_VISIBLE_HOUR - FIRST_VISIBLE_HOUR) * 60;
-  const slotCount = visibleRangeMinutes / CALENDAR_SLOT_DURATION_MINUTES;
+  const slotCount = visibleRangeMinutes / SLOT_DURATION_MINUTES;
   const y = clamp(point.clientY - gridRect.top + scrollTop, 0, gridRect.height);
   const slotIndex = clamp(
     Math.floor((y / gridRect.height) * slotCount),
@@ -66,30 +64,30 @@ export function getCalendarSlotFromPoint({
     slotCount - 1
   );
   const startMinutes =
-    FIRST_VISIBLE_HOUR * 60 + slotIndex * CALENDAR_SLOT_DURATION_MINUTES;
+    FIRST_VISIBLE_HOUR * 60 + slotIndex * SLOT_DURATION_MINUTES;
   const start = addMinutes(startOfDay(visibleDays[dayIndex]), startMinutes);
 
   return {
     day: visibleDays[dayIndex],
     index: slotIndex,
     start,
-    end: addMinutes(start, CALENDAR_SLOT_DURATION_MINUTES),
+    end: addMinutes(start, SLOT_DURATION_MINUTES),
   };
 }
 
-export function getCalendarRangeFromSlots(
-  firstSlot: CalendarSlot,
-  secondSlot: CalendarSlot
-): CalendarTimeRange {
+export function getRangeFromSlots(
+  firstSlot: Slot,
+  secondSlot: Slot
+): TimeRange {
   return isBefore(secondSlot.start, firstSlot.start)
     ? { startedAt: secondSlot.start, stoppedAt: firstSlot.end }
     : { startedAt: firstSlot.start, stoppedAt: secondSlot.end };
 }
 
 export function moveTimeRangeToSlot(
-  timeRange: CalendarTimeRange,
-  slot: CalendarSlot
-): CalendarTimeRange {
+  timeRange: TimeRange,
+  slot: Slot
+): TimeRange {
   const durationInMinutes = differenceInMinutes(
     timeRange.stoppedAt,
     timeRange.startedAt
@@ -101,11 +99,11 @@ export function moveTimeRangeToSlot(
   };
 }
 
-export function groupTimeEntries(timeEntries: Array<CalendarTimeEntry>) {
+function groupTimeEntries(timeEntries: Array<TimeEntry>) {
   const sortedTimeEntries = timeEntries.toSorted(
     (a, b) => a.startedAt.getTime() - b.startedAt.getTime()
   );
-  const groups: Array<Array<CalendarTimeEntry>> = [];
+  const groups: Array<Array<TimeEntry>> = [];
 
   for (const timeEntry of sortedTimeEntries) {
     let placed = false;
@@ -131,8 +129,55 @@ export function groupTimeEntries(timeEntries: Array<CalendarTimeEntry>) {
   return groups;
 }
 
+type TimeEntryFrame = {
+  timeEntry: TimeEntry;
+  overlap?: { index: number; count: number };
+};
+
+export function getDayTimeEntryFrames({
+  day,
+  timeEntries,
+}: {
+  day: Date;
+  timeEntries: Array<TimeEntry>;
+}): Array<TimeEntryFrame> {
+  const dayTimeEntries = timeEntries.filter(
+    (timeEntry) =>
+      isSameDay(timeEntry.startedAt, day) || isSameDay(timeEntry.stoppedAt, day)
+  );
+  const groupedTimeEntries = groupTimeEntries(dayTimeEntries);
+
+  return groupedTimeEntries.flatMap((group, groupIndex) =>
+    group.map((timeEntry) => {
+      const hasOverlap = groupedTimeEntries.some(
+        (otherGroup, otherIndex) =>
+          otherIndex !== groupIndex &&
+          otherGroup.some((otherTimeEntry) =>
+            areIntervalsOverlapping(
+              {
+                start: timeEntry.startedAt,
+                end: timeEntry.stoppedAt,
+              },
+              {
+                start: otherTimeEntry.startedAt,
+                end: otherTimeEntry.stoppedAt,
+              }
+            )
+          )
+      );
+
+      return {
+        timeEntry,
+        overlap: hasOverlap
+          ? { index: groupIndex, count: groupedTimeEntries.length }
+          : undefined,
+      };
+    })
+  );
+}
+
 function getTimeEntryPositionStyle(
-  timeEntry: Pick<CalendarTimeEntry, "startedAt" | "stoppedAt">,
+  timeEntry: Pick<TimeEntry, "startedAt" | "stoppedAt">,
   day: Date,
   groupIndex: number,
   groupSize: number
@@ -160,7 +205,7 @@ export function getTimeEntryFrameStyle({
   overlap,
 }: {
   day: Date;
-  timeRange: Pick<CalendarTimeEntry, "startedAt" | "stoppedAt">;
+  timeRange: Pick<TimeEntry, "startedAt" | "stoppedAt">;
   overlap?: { index: number; count: number };
 }) {
   const style: CSSProperties = {
@@ -182,7 +227,7 @@ export function getTimeEntryFrameStyle({
 }
 
 function getTimeEntryHeight(
-  timeEntry: Pick<CalendarTimeEntry, "startedAt" | "stoppedAt">,
+  timeEntry: Pick<TimeEntry, "startedAt" | "stoppedAt">,
   day: Date
 ) {
   const dayStart = startOfDay(day);
@@ -192,7 +237,7 @@ function getTimeEntryHeight(
   const stoppedAt = timeEntry.stoppedAt > dayEnd ? dayEnd : timeEntry.stoppedAt;
   const durationInMinutes = differenceInMinutes(stoppedAt, startedAt);
 
-  return `calc(${durationInMinutes / 60} * var(${CALENDAR_HOUR_HEIGHT_VAR}))`;
+  return `calc(${durationInMinutes / 60} * var(${HOUR_HEIGHT_VAR}))`;
 }
 
 export function getCurrentTimePosition(currentTime: Date) {

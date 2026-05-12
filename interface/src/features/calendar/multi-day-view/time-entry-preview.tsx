@@ -1,14 +1,14 @@
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
-import type { CalendarEditingPreview } from "../../../atoms";
-import { DraggableTimeEntry } from "../../dnd/draggable-time-entry";
-import { TimeEntryContent, TimeEntryFrame } from "../time-entry";
-import type { CalendarTimeEntry } from "./types";
+import { DraggableTimeEntry } from "../dnd/draggable-time-entry";
+import type { EditingPreview } from "../state/atoms";
+import { TimeEntryContent, TimeEntryFrame } from "./time-entry";
+import type { TimeEntry } from "./types";
 
 type TimeEntryPreviewProps = {
   currentTime: Date;
   day: Date;
-  preview: CalendarEditingPreview;
+  preview: EditingPreview;
   projects: Array<{ id: string; name: string; color: string }>;
 };
 
@@ -54,7 +54,7 @@ function getPreviewTimeEntry({
   day,
   preview,
   projects,
-}: TimeEntryPreviewProps): CalendarTimeEntry | null {
+}: TimeEntryPreviewProps): TimeEntry | null {
   if (!preview) {
     return null;
   }
