@@ -20,7 +20,7 @@
     "react-dom": "catalog:frontend",
     "react-dropzone": "^15.0.0",
     "react-resizable-panels": "^4.11.0",
-    "tailwind-merge": "^3.0.2"
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",

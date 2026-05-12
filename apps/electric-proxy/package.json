@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@effect/platform-bun": "catalog:",
-    "@electric-sql/client": "^1.4.0",
+    "@electric-sql/client": "^1.5.17",
     "@recount/auth": "workspace:*",
     "@recount/core": "workspace:*",
     "@recount/core-server": "workspace:*",
