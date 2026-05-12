@@ -53,6 +53,10 @@ export class BetterAuth extends Context.Service<BetterAuth>()(
           database: {
             generateId: false,
           },
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: betterAuthConfig.crossSubDomainCookieDomain,
+          },
           cookiePrefix: "recount",
         },
         emailAndPassword: {

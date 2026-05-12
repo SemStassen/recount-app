@@ -1,0 +1,21 @@
+app.recount.localhost {
+	tls internal
+	reverse_proxy localhost:8002
+}
+
+client-api.recount.localhost {
+	tls internal
+	reverse_proxy localhost:8003
+}
+
+electric-proxy.recount.localhost {
+	tls internal
+	reverse_proxy localhost:8004 {
+		flush_interval -1
+	}
+
+	header {
+		Cache-Control "no-cache, no-transform"
+		X-Accel-Buffering "no"
+	}
+}

@@ -5,6 +5,7 @@ export interface BetterAuthConfigShape {
   secret: string;
   googleClientId: string;
   googleClientSecret: string;
+  crossSubDomainCookieDomain: string;
   trustedOrigins: Array<string>;
 }
 
@@ -18,6 +19,9 @@ export class BetterAuthConfig extends Context.Service<
       const secret = yield* Config.string("BETTER_AUTH_SECRET");
       const googleClientId = yield* Config.string("GOOGLE_CLIENT_ID");
       const googleClientSecret = yield* Config.string("GOOGLE_CLIENT_SECRET");
+      const crossSubDomainCookieDomain = yield* Config.string(
+        "CROSS_SUB_DOMAIN_COOKIE_DOMAIN"
+      );
       const frontendOrigins = yield* Config.string("FRONTEND_ORIGINS");
 
       const trustedOrigins = yield* parseOrigins(frontendOrigins);
@@ -26,6 +30,7 @@ export class BetterAuthConfig extends Context.Service<
         secret,
         googleClientId,
         googleClientSecret,
+        crossSubDomainCookieDomain,
         trustedOrigins,
       };
     })

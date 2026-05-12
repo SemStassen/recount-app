@@ -1,5 +1,3 @@
-/* oxlint-disable no-negated-condition */
-
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import type * as React from "react";
 
