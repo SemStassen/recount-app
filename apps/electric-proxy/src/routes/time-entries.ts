@@ -3,22 +3,27 @@ import {
   HttpWorkspaceMiddleware,
 } from "@recount/application/shared/middleware";
 import { WorkspaceContext } from "@recount/core/shared/auth";
+import { schema } from "@recount/db";
+import { sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 
-import { createElectricProxyHandler } from "../shared/create-electric-proxy-handler";
+import {
+  createElectricProxyHandler,
+  electricColumn,
+} from "../shared/create-electric-proxy-handler";
 
 export const TimeEntriesRouteLayer = HttpRouter.add(
   "GET",
   "/time-entries",
   createElectricProxyHandler({
-    table: "time_entries",
-    buildShapeParams: () =>
+    table: schema.timeEntriesTable,
+    buildShapeParams: (table) =>
       Effect.gen(function* () {
         const workspaceContext = yield* WorkspaceContext;
 
         return {
-          where: `workspace_id = '${workspaceContext.workspace.id}' AND workspace_member_id = '${workspaceContext.workspaceMember.id}'`,
+          where: sql`${electricColumn(table.workspaceId)} = ${workspaceContext.workspace.id} AND ${electricColumn(table.workspaceMemberId)} = ${workspaceContext.workspaceMember.id}`,
         };
       }),
   })

@@ -1,21 +1,26 @@
 import { HttpSessionMiddleware } from "@recount/application/shared/middleware";
 import { SessionContext } from "@recount/core/shared/auth";
+import { schema } from "@recount/db";
+import { sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 
-import { createElectricProxyHandler } from "../../shared/create-electric-proxy-handler";
+import {
+  createElectricProxyHandler,
+  electricColumn,
+} from "../../shared/create-electric-proxy-handler";
 
 export const UserSettingsMeRouteLayer = HttpRouter.add(
   "GET",
   "/me/user-settings",
   createElectricProxyHandler({
-    table: "user_settings",
-    buildShapeParams: () =>
+    table: schema.userSettingsTable,
+    buildShapeParams: (table) =>
       Effect.gen(function* () {
         const sessionContext = yield* SessionContext;
 
         return {
-          where: `user_id = '${sessionContext.user.id}'`,
+          where: sql`${electricColumn(table.userId)} = ${sessionContext.user.id}`,
         };
       }),
   })
