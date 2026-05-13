@@ -1,6 +1,6 @@
 {
   "extends": "@recount/config/base.tsconfig.json",
-  "include": ["src", "../../alchemy.run.ts"],
+  "include": ["src", "alchemy.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
     "paths": {
