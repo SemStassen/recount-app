@@ -3,32 +3,38 @@ import { Stack } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Effect from "effect/Effect";
 
-export type LandingWorkerEnv = Cloudflare.InferEnv<typeof Landing>;
-const Landing = Cloudflare.StaticSite(
-  "landing",
-  Alchemy.Stack.useSync((stack) => ({
-    name: `${stack.name}-landing-${stack.stage}`,
-    domain: stack.stage === "prod" ? ["recount.dev"] : undefined,
-    cwd: "apps/landing",
-    command: "bun run build",
-    main: "apps/landing/src/worker.ts",
-    outdir: "dist",
-    compatibility: {
-      date: "2026-04-02",
-      flags: ["nodejs_compat"],
-    },
-    assetsConfig: {
-      runWorkerFirst: true,
-    },
-  }))
-);
+const Landing = (db: Cloudflare.D1Database) =>
+  Cloudflare.StaticSite(
+    "landing",
+    Alchemy.Stack.useSync((stack) => ({
+      name: `${stack.name}-landing-${stack.stage}`,
+      ...(stack.stage === "prod" ? { domain: ["recount.dev"] } : {}),
+      cwd: "apps/landing",
+      command: "bun run build",
+      main: "apps/landing/src/worker.ts",
+      outdir: "dist",
+      bindings: {
+        DB: db,
+      },
+      compatibility: {
+        date: "2026-04-02",
+        flags: ["nodejs_compat"],
+      },
+      assetsConfig: {
+        runWorkerFirst: true,
+      },
+    }))
+  );
+export type LandingWorkerEnv = Cloudflare.InferEnv<
+  Effect.Success<ReturnType<typeof Landing>>
+>;
 
-export type AppWebWorkerEnv = Cloudflare.InferEnv<typeof Landing>;
+export type AppWebWorkerEnv = Cloudflare.InferEnv<typeof AppWeb>;
 const AppWeb = Cloudflare.StaticSite(
   "app-web",
   Alchemy.Stack.useSync((stack) => ({
     name: `${stack.name}-app-web-${stack.stage}`,
-    domain: stack.stage === "prod" ? ["app.recount.dev"] : undefined,
+    ...(stack.stage === "prod" ? { domain: ["app.recount.dev"] } : {}),
     cwd: "apps/web",
     command: "bun run build",
     main: "apps/web/src/worker.ts",
@@ -64,9 +70,13 @@ export default Alchemy.Stack(
       storageClass: "Standard",
     });
 
+    const landingDb = yield* Cloudflare.D1Database("landing-db", {
+      name: `${stack.name}-landing-${stack.stage}`,
+    });
+
     const appWeb = yield* AppWeb;
 
-    const landing = yield* Landing;
+    const landing = yield* Landing(landingDb);
 
     return {
       globalUploadsBucketName: globalUploadsBucket.bucketName,

@@ -17,6 +17,7 @@
     "@fontsource/geist-sans": "^5.2.5",
     "@recount/ui": "workspace:*",
     "astro": "^6.3.1",
+    "motion": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend"
   },

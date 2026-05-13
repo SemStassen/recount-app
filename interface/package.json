@@ -43,7 +43,7 @@
     "date-fns": "^4.1.0",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
-    "motion": "^12.23.12",
+    "motion": "catalog:frontend",
     "react": "catalog:frontend",
     "react-colorful": "^5.7.0",
     "react-dom": "catalog:frontend",

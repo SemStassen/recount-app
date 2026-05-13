@@ -49,9 +49,7 @@
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "emmet.showExpandedAbbreviation": "never",
-  "rust-analyzer.linkedProjects": [
-    "apps/desktop/src-tauri/Cargo.toml"
-  ],
+  "rust-analyzer.linkedProjects": ["apps/desktop/src-tauri/Cargo.toml"],
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },

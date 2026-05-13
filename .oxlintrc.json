@@ -22,10 +22,7 @@
     "eslint/max-classes-per-file": "off",
     "eslint/sort-keys": "off",
     "eslint/no-inline-comments": "off",
-    "import/consistent-type-specifier-style": [
-      "error",
-      "prefer-top-level"
-    ],
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
     "import/namespace": "off",
     "typescript/array-type": [
       "error",
@@ -54,14 +51,11 @@
       {
         "patterns": [
           {
-            "group": [
-              "!~/domains/*",
-              "~/domains/*/**"
-            ],
+            "group": ["!~/domains/*", "~/domains/*/**"],
             "message": "Import from the domain's public index.ts (e.g., ~/domains/workspace) instead of internal paths"
           }
         ]
       }
     ]
-  },
+  }
 }

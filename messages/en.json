@@ -1,46 +1,41 @@
-  {
-    "$schema": "https://inlang.com/schema/inlang-message-format",
-    "common_or": "or",
-    "common_dashboard": "Dashboard",
-    "common_settings": "Settings",
-    "error_notFound_title": "Not found",
-    "error_notFound_description": "We could not find the page you were looking for.",
-    "error_unexpected_title": "Something went wrong",
-    "error_unexpected_description": "We're not sure what happened. Try again or contact support if the problem persists.",
-    "action_cancel": "Cancel",
-    "action_tryAgain": "Try again",
-    "auth_signUp_back": "Back to login",
-    "auth_signUp_chooseMethod_heading": "Create your workspace",
-    "auth_signUp_chooseMethod_google": "Continue with Google",
-    "auth_signUp_chooseMethod_email": "Continue with Email",
-    "auth_signUp_chooseMethod_alreadyHaveAccount": "Already have an account?",
-    "auth_signUp_chooseMethod_signIn": "Sign in",
-    "auth_signUp_enterEmail_heading": "What's your email address?",
-    "auth_signUp_enterEmail_email_label": "Email",
-    "auth_signUp_enterEmail_email_placeholder": "Enter your email address",
-    "auth_signUp_enterEmail_submit": "Continue with Email",
-    "auth_signUp_verifyEmail_heading": "Check your email",
-    "auth_signUp_verifyEmail_otp_label": "One time password",
-    "auth_signUp_verifyEmail_submit": "Continue with login code",
-    "project": [
-      {
-        "declarations": [
-          "input count",
-          "local countPlural = count: plural"
-        ],
-        "selectors": [
-          "countPlural"
-        ],
-        "match": {
-          "countPlural=one": "Project",
-          "countPlural=other": "Projects"
-        }
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "common_or": "or",
+  "common_dashboard": "Dashboard",
+  "common_settings": "Settings",
+  "error_notFound_title": "Not found",
+  "error_notFound_description": "We could not find the page you were looking for.",
+  "error_unexpected_title": "Something went wrong",
+  "error_unexpected_description": "We're not sure what happened. Try again or contact support if the problem persists.",
+  "action_cancel": "Cancel",
+  "action_tryAgain": "Try again",
+  "auth_signUp_back": "Back to login",
+  "auth_signUp_chooseMethod_heading": "Create your workspace",
+  "auth_signUp_chooseMethod_google": "Continue with Google",
+  "auth_signUp_chooseMethod_email": "Continue with Email",
+  "auth_signUp_chooseMethod_alreadyHaveAccount": "Already have an account?",
+  "auth_signUp_chooseMethod_signIn": "Sign in",
+  "auth_signUp_enterEmail_heading": "What's your email address?",
+  "auth_signUp_enterEmail_email_label": "Email",
+  "auth_signUp_enterEmail_email_placeholder": "Enter your email address",
+  "auth_signUp_enterEmail_submit": "Continue with Email",
+  "auth_signUp_verifyEmail_heading": "Check your email",
+  "auth_signUp_verifyEmail_otp_label": "One time password",
+  "auth_signUp_verifyEmail_submit": "Continue with login code",
+  "project": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Project",
+        "countPlural=other": "Projects"
       }
-    ],
-    "project_form_name_label": "Name",
-    "project_form_color_label": "Color",
-    "project_form_billable_label": "Billable",
-    "project_form_notes_label": "Notes",
-    "project_create_submit": "Create project",
-    "project_update_submit": "Update project"
-  }
+    }
+  ],
+  "project_form_name_label": "Name",
+  "project_form_color_label": "Color",
+  "project_form_billable_label": "Billable",
+  "project_form_notes_label": "Notes",
+  "project_create_submit": "Create project",
+  "project_update_submit": "Update project"
+}
