@@ -7,6 +7,7 @@ import {
   UserRpcGroup,
   UserSettingsRpcGroup,
   WorkspaceIntegrationConnectionRpcGroup,
+  WorkspaceInvitationRpcGroup,
   WorkspaceMemberRpcGroup,
   WorkspaceRpcGroup,
 } from "@recount/core/rpc";
@@ -28,8 +29,9 @@ const allRpcGroups = AuthRpcGroup.merge(
   TimeEntryRpcGroup,
   UserSettingsRpcGroup,
   UserRpcGroup,
-  WorkspaceIntegrationConnectionRpcGroup,
   WorkspaceRpcGroup,
+  WorkspaceIntegrationConnectionRpcGroup,
+  WorkspaceInvitationRpcGroup,
   WorkspaceMemberRpcGroup
 );
 
