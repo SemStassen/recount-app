@@ -12,8 +12,8 @@
     "lint:ast": "ast-grep scan",
     "lint:ast:test": "ast-grep test",
     "typecheck": "turbo typecheck",
-    "subtree:create:effect": "git remote add effect https://github.com/Effect-TS/effect-smol && git subtree add --prefix=.better-agents/effect effect main --squash",
-    "subtree:update:effect": "git subtree pull --prefix=.better-agents/effect effect main --squash",
+    "subtree:create:effect": "git subtree add --prefix=.better-agents/effect https://github.com/Effect-TS/effect-smol main --squash",
+    "subtree:update:effect": "git subtree pull --prefix=.better-agents/effect https://github.com/Effect-TS/effect-smol main --squash",
     "ultracite:check": "ultracite check",
     "ultracite:fix": "ultracite fix",
     "machine-translate": "inlang machine translate --project project.inlang"
