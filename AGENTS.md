@@ -76,4 +76,4 @@ This repo uses a single-context domain documentation layout. See `docs/agents/do
 ## Verification
 
 - For focused changes, run the nearest package `lint`/`typecheck` script or a filtered Turbo command first.
-- For broad changes, run `bun run format`, `bun run lint`, `bun run typecheck`, then `bunx vitest run`.
+- For broad changes, run `bun run format`, `bun run lint`, `bun run lint:ast`, `bun run typecheck`, then `bunx vitest run`.
