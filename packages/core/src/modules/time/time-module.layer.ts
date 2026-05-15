@@ -1,5 +1,6 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
+import type { TimeEntry } from "./domain/time-entry.entity";
 import { TimeEntryAlreadyRunningError } from "./domain/time-entry.errors";
 import * as timeEntryTransitions from "./domain/time-entry.transitions";
 import { TimeEntryRepository } from "./time-entry-repository.service";
@@ -9,6 +10,27 @@ export const TimeModuleLayer = Layer.effect(
   TimeModule,
   Effect.gen(function* () {
     const timeEntryRepo = yield* TimeEntryRepository;
+
+    const ensureNoOtherRunningTimeEntry = Effect.fn(
+      "time.ensureNoOtherRunningTimeEntry"
+    )(function* (params: {
+      workspaceId: TimeEntry["workspaceId"];
+      workspaceMemberId: TimeEntry["workspaceMemberId"];
+      excludeTimeEntryId?: TimeEntry["id"];
+    }) {
+      const maybeRunningTimeEntry =
+        yield* timeEntryRepo.findRunningByWorkspaceMember({
+          workspaceId: params.workspaceId,
+          workspaceMemberId: params.workspaceMemberId,
+        });
+
+      if (
+        Option.isSome(maybeRunningTimeEntry) &&
+        maybeRunningTimeEntry.value.id !== params.excludeTimeEntryId
+      ) {
+        return yield* new TimeEntryAlreadyRunningError();
+      }
+    });
 
     return {
       createTimeEntries: Effect.fn("time.createTimeEntries")(
@@ -36,15 +58,10 @@ export const TimeModuleLayer = Layer.effect(
           }
 
           if (runningEntries.length === 1) {
-            const otherRunning =
-              yield* timeEntryRepo.findRunningByWorkspaceMember({
-                workspaceId: params.workspaceId,
-                workspaceMemberId: params.workspaceMemberId,
-              });
-
-            if (Option.isSome(otherRunning)) {
-              return yield* new TimeEntryAlreadyRunningError();
-            }
+            yield* ensureNoOtherRunningTimeEntry({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: params.workspaceMemberId,
+            });
           }
 
           const persistedTimeEntries =
@@ -78,16 +95,11 @@ export const TimeModuleLayer = Layer.effect(
         );
 
         if (entity.isRunning()) {
-          const otherRunning = yield* timeEntryRepo
-            .findRunningByWorkspaceMember({
-              workspaceId: params.workspaceId,
-              workspaceMemberId: entity.workspaceMemberId,
-            })
-            .pipe(Effect.map(Option.filter((e) => e.id !== params.id)));
-
-          if (Option.isSome(otherRunning)) {
-            return yield* new TimeEntryAlreadyRunningError();
-          }
+          yield* ensureNoOtherRunningTimeEntry({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: entity.workspaceMemberId,
+            excludeTimeEntryId: entity.id,
+          });
         }
 
         const persistedTimeEntry = yield* timeEntryRepo.update({

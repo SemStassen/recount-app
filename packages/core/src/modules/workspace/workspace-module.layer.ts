@@ -1,5 +1,6 @@
 import { Effect, Layer, Option } from "effect";
 
+import type { Workspace } from "./domain/workspace.entity";
 import * as workspaceTransitions from "./domain/workspace.transitions";
 import {
   WorkspaceModule,
@@ -13,19 +14,25 @@ export const WorkspaceModuleLayer = Layer.effect(
   Effect.gen(function* () {
     const workspaceRepo = yield* WorkspaceRepository;
 
-    const assertWorkspaceSlugIsUnique = Effect.fn(
-      "workspace.assertWorkspaceSlugIsUnique"
-    )(function* (slug: string) {
-      const maybeWorkspace = yield* workspaceRepo.findBySlug(slug);
+    const ensureWorkspaceSlugAvailable = Effect.fn(
+      "workspace.ensureWorkspaceSlugAvailable "
+    )(function* (params: {
+      slug: string;
+      excludeWorkspaceId?: Workspace["id"];
+    }) {
+      const maybeWorkspace = yield* workspaceRepo.findBySlug(params.slug);
 
-      if (Option.isSome(maybeWorkspace)) {
+      if (
+        Option.isSome(maybeWorkspace) &&
+        maybeWorkspace.value.id !== params.excludeWorkspaceId
+      ) {
         return yield* new WorkspaceSlugAlreadyExistsError();
       }
     });
 
     return {
       createWorkspace: Effect.fn("workspace.createWorkspace")(function* (data) {
-        yield* assertWorkspaceSlugIsUnique(data.slug);
+        yield* ensureWorkspaceSlugAvailable({ slug: data.slug });
 
         const workspace = yield* Effect.fromResult(
           workspaceTransitions.createWorkspace(data)
@@ -52,7 +59,10 @@ export const WorkspaceModuleLayer = Layer.effect(
           );
 
           if (params.data.slug) {
-            yield* assertWorkspaceSlugIsUnique(params.data.slug);
+            yield* ensureWorkspaceSlugAvailable({
+              slug: params.data.slug,
+              excludeWorkspaceId: workspace.id,
+            });
           }
 
           const { changes, entity } = yield* Effect.fromResult(
