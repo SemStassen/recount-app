@@ -19,7 +19,7 @@ export class WorkspaceMember extends Model.Class<WorkspaceMember>(
     displayName: Model.ServerMutableClientMutable(NonEmptyTrimmedString),
     avatarUrl: Model.ServerMutableClientMutableOptional(NonEmptyTrimmedString),
     role: Model.ServerMutable(WorkspaceRole),
-    deletedAt: Model.ServerMutableOptional(Schema.DateTimeUtcFromDate),
+    removedAt: Model.ServerMutableOptional(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "WorkspaceMember",

@@ -1,6 +1,6 @@
-import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
-import { tableId, tableMetadata, tableSoftDelete } from "#utils/snippets";
+import { tableId, tableMetadata } from "#utils/snippets";
 
 import { usersTable } from "./identity.schema";
 import { workspacesTable } from "./workspace.schema";
@@ -19,6 +19,9 @@ export const workspaceMembersTable = pgTable("workspace_members", {
   role: varchar("role").notNull(),
   avatarUrl: varchar("avatar_url"),
   // Metadata
-  ...tableSoftDelete,
+  removedAt: timestamp("removed_at", {
+    withTimezone: true,
+    precision: 0,
+  }),
   ...tableMetadata,
 });
