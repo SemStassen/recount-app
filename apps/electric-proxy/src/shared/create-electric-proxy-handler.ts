@@ -94,6 +94,7 @@ export const createElectricProxyHandler =
       // We use raw fetch instead of Effect's HttpClient because HttpClient eagerly
       // locks the response body's ReadableStream before we can proxy it as a stream.
       const sourceRequest = request.source as Request;
+      // ast-grep-ignore: no-fetch-in-effect
       const response = yield* Effect.tryPromise({
         try: () =>
           fetch(originUrl.toString(), { signal: sourceRequest.signal }),

@@ -7,6 +7,10 @@ valid:
     const className = "text-foreground/80 bg-primary/20";
   - |
     const className = "text-sm bg-background";
+  - |
+    const className = "text-white bg-black/24";
+  - |
+    const className = "bg-destructive text-white hover:bg-destructive/90";
 
 invalid:
   - |

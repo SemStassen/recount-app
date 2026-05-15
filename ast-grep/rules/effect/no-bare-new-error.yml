@@ -14,6 +14,17 @@ rule:
     - pattern: new SyntaxError($$$ARGS)
     - pattern: new URIError($$$ARGS)
     - pattern: new EvalError($$$ARGS)
+  not:
+    inside:
+      any:
+        - pattern: Effect.die(new Error($$$ARGS))
+        - pattern: Effect.die(new TypeError($$$ARGS))
+        - pattern: Effect.die(new RangeError($$$ARGS))
+        - pattern: Effect.die(new ReferenceError($$$ARGS))
+        - pattern: Effect.die(new SyntaxError($$$ARGS))
+        - pattern: Effect.die(new URIError($$$ARGS))
+        - pattern: Effect.die(new EvalError($$$ARGS))
+      stopBy: end
 
 files:
   - "apps/**/*.ts"
@@ -37,9 +48,15 @@ note: |
 
   // ✅ Good — unknown failures propagate naturally
   Effect.try(() => riskyOperation());
+
+  // ✅ Good — defects can be represented with built-in errors
+  Effect.die(new Error("Invariant violated"));
   ```
 
 ignores:
+  - "interface/**"
+  - "packages/ui/**"
+  - "packages/editor/**"
   - "**/*.test.ts"
   - "**/*.spec.ts"
   - "**/node_modules/**"

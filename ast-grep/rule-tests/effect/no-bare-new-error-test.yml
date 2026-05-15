@@ -9,6 +9,16 @@ valid:
     Effect.fail(new ExtensionHostServiceError({ reason: "Extension process stopped" }));
   - |
     Effect.try(() => riskyOperation());
+  - |
+    Effect.die(new Error("Invariant violated"));
+  - |
+    Effect.die(
+      new Error(
+        `UserSettings missing for userId ${params.userId} — invariant violated`
+      )
+    );
+  - |
+    Effect.die(new TypeError("Unexpected non-string value"));
 
 invalid:
   - |

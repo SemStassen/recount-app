@@ -144,9 +144,7 @@ export class BetterAuth extends Context.Service<BetterAuth>()(
                     }
                     default: {
                       return yield* new BetterAuthError({
-                        cause: new Error(
-                          `Unsupported OTP type: ${String(type)}`
-                        ),
+                        cause: `Unsupported OTP type: ${String(type)}`,
                       });
                     }
                   }

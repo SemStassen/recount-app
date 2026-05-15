@@ -1,6 +1,0 @@
-{
-  "extends": "@recount/config/package.tsconfig.json",
-  "include": ["src"],
-  "exclude": ["dist"],
-  "compilerOptions": {}
-}
