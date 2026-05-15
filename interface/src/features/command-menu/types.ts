@@ -14,7 +14,8 @@ export type CommandRegistrationId = string;
 export type CommandIcon = (props: IconProps) => ReactNode;
 
 export interface CommandActionContext {
-  close: () => void;
+  /** Requests close and resolves after the close animation completes. */
+  close: () => Promise<void>;
 }
 
 export interface Command {

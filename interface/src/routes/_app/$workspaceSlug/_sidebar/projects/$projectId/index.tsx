@@ -1,6 +1,7 @@
 import { HexColor, ProjectId } from "@recount/core/shared/schemas";
 import { RichTextEditor } from "@recount/editor";
-import { eq, useLiveQuery } from "@tanstack/react-db";
+import { Separator } from "@recount/ui/separator";
+import { eq, toArray, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { ColorPicker } from "~/components/color-picker";
@@ -14,6 +15,7 @@ import {
   PageTopBar,
   PageTopBarBreadcrumbs,
 } from "../../-components/page";
+import { TasksList } from "./-components/tasks-list";
 
 export const Route = createFileRoute(
   "/_app/$workspaceSlug/_sidebar/projects/$projectId/"
@@ -30,6 +32,14 @@ function RouteComponent() {
     q
       .from({ p: workspaceDb.collections.activeProjectsCollection })
       .where(({ p }) => eq(p.id, projectId))
+      .select(({ p }) => ({
+        ...p,
+        tasks: toArray(
+          q
+            .from({ t: workspaceDb.collections.activeTasksCollection })
+            .where(({ t }) => eq(t.projectId, p.id))
+        ),
+      }))
       .findOne()
   );
 
@@ -72,26 +82,27 @@ function RouteComponent() {
         <PageTopBar
           left={
             <PageTopBarBreadcrumbs
-              items={[
-                {
+              items={(breadcrumbs) => {
+                breadcrumbs.push({
                   label: m.project({ count: "plural" }),
                   linkOptions: {
                     to: "/$workspaceSlug/projects",
                     from: "/$workspaceSlug",
                   },
-                },
-                {
+                });
+
+                breadcrumbs.push({
                   label: project.name,
                   linkOptions: {
                     to: "/$workspaceSlug/projects/$projectId",
                     from: "/$workspaceSlug/projects/$projectId/",
                   },
-                },
-              ]}
+                });
+              }}
             />
           }
         />
-        <PageContainer>
+        <PageContainer className="space-y-2">
           <ColorPicker
             value={project.color}
             onValueChange={(color) => {
@@ -107,9 +118,10 @@ function RouteComponent() {
           />
           <h1 className="text-2xl font-semibold">{project.name}</h1>
           <RichTextEditor content={project.notes} onChange={(value) => {}} />
+          <Separator orientation="horizontal" />
           <section>
-            <h3>Properties</h3>
-            <div></div>
+            <h3>Tasks</h3>
+            <TasksList projectId={project.id} tasks={project.tasks} />
           </section>
         </PageContainer>
       </div>

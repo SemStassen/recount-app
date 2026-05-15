@@ -21,7 +21,7 @@ export function useTimeEntryFormProjects() {
         ...p,
         tasks: toArray(
           q
-            .from({ t: workspaceDb.collections.tasksCollection })
+            .from({ t: workspaceDb.collections.activeTasksCollection })
             .where(({ t }) => eq(p.id, t.projectId))
         ),
       }))

@@ -83,17 +83,17 @@ export async function openWorkspaceDb(workspaceId: string) {
 
   const activeProjectsCollection = createLiveQueryCollection((q) =>
     q
-      .from({ project: allProjectsCollection })
-      .where(({ project }) => eq(project.archivedAt, Option.none()))
+      .from({ p: allProjectsCollection })
+      .where(({ p }) => eq(p.archivedAt, Option.none()))
   );
 
   const archivedProjectsCollection = createLiveQueryCollection((q) =>
     q
-      .from({ project: allProjectsCollection })
-      .where(({ project }) => not(eq(project.archivedAt, Option.none())))
+      .from({ p: allProjectsCollection })
+      .where(({ p }) => not(eq(p.archivedAt, Option.none())))
   );
 
-  const tasksCollection = createCollection(
+  const allTasksCollection = createCollection(
     electricCollectionOptions({
       id: createCollectionId(workspaceShapes.tasks.name),
       schema: workspaceShapes.tasks.schema,
@@ -107,6 +107,19 @@ export async function openWorkspaceDb(workspaceId: string) {
       },
     })
   );
+
+  const activeTasksCollection = createLiveQueryCollection((q) =>
+    q
+      .from({ t: allTasksCollection })
+      .where(({ t }) => eq(t.archivedAt, Option.none()))
+  );
+
+  const archivedTasksCollection = createLiveQueryCollection((q) =>
+    q
+      .from({ t: allTasksCollection })
+      .where(({ t }) => not(eq(t.archivedAt, Option.none())))
+  );
+
   const timeEntriesCollection = createCollection(
     electricCollectionOptions({
       id: createCollectionId(workspaceShapes.timeEntries.name),
@@ -128,10 +141,12 @@ export async function openWorkspaceDb(workspaceId: string) {
     collections: {
       workspaceMembersCollection,
       workspaceIntegrationConnectionsCollection,
+      allProjectsCollection,
       activeProjectsCollection,
       archivedProjectsCollection,
-      allProjectsCollection,
-      tasksCollection,
+      allTasksCollection,
+      activeTasksCollection,
+      archivedTasksCollection,
       timeEntriesCollection,
     },
     preload: async () => {
@@ -142,7 +157,9 @@ export async function openWorkspaceDb(workspaceId: string) {
           allProjectsCollection.preload(),
           activeProjectsCollection.preload(),
           archivedProjectsCollection.preload(),
-          tasksCollection.preload(),
+          allTasksCollection.preload(),
+          activeTasksCollection.preload(),
+          archivedTasksCollection.preload(),
           timeEntriesCollection.preload(),
         ]).then(() => {});
       }
@@ -155,10 +172,12 @@ export async function openWorkspaceDb(workspaceId: string) {
       await Promise.allSettled([
         workspaceMembersCollection.cleanup(),
         workspaceIntegrationConnectionsCollection.cleanup(),
+        allProjectsCollection.cleanup(),
         activeProjectsCollection.cleanup(),
         archivedProjectsCollection.cleanup(),
-        allProjectsCollection.cleanup(),
-        tasksCollection.cleanup(),
+        allTasksCollection.cleanup(),
+        activeTasksCollection.cleanup(),
+        archivedTasksCollection.cleanup(),
         timeEntriesCollection.cleanup(),
       ]);
     },

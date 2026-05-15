@@ -10,6 +10,7 @@ import {
 import { cn } from "@recount/ui/utils";
 import {
   Link,
+  type LinkProps,
   type RegisteredRouter,
   type ValidateLinkOptions,
 } from "@tanstack/react-router";
@@ -54,25 +55,37 @@ export function PageTopBar({ left, right }: PageTopBarProps) {
   );
 }
 
-interface PageTopBarBreadcrumbsProps<
-  TRouter extends RegisteredRouter = RegisteredRouter,
-  TOptions = unknown,
-> {
-  items: Array<{
-    label: string;
-    linkOptions: ValidateLinkOptions<TRouter, TOptions>;
-  }>;
+interface PageTopBarBreadcrumbItem {
+  label: string;
+  linkOptions: LinkProps;
 }
 
-/**
- * Function overload to preserve type safety
- * See: https://tanstack.com/router/latest/docs/guide/type-utilities#type-checking-link-options-with-validatelinkoptions
- */
+interface PageTopBarBreadcrumbBuilder<
+  TRouter extends RegisteredRouter = RegisteredRouter,
+> {
+  push: <TOptions>(item: {
+    label: string;
+    linkOptions: ValidateLinkOptions<TRouter, TOptions>;
+  }) => void;
+}
+
+interface PageTopBarBreadcrumbsProps<
+  TRouter extends RegisteredRouter = RegisteredRouter,
+> {
+  items: (breadcrumbs: PageTopBarBreadcrumbBuilder<TRouter>) => void;
+}
+
 export function PageTopBarBreadcrumbs<
   TRouter extends RegisteredRouter = RegisteredRouter,
-  TOptions = unknown,
->(props: PageTopBarBreadcrumbsProps<TRouter, TOptions>): React.ReactNode;
-export function PageTopBarBreadcrumbs({ items }: PageTopBarBreadcrumbsProps) {
+>({ items: buildItems }: PageTopBarBreadcrumbsProps<TRouter>) {
+  const items: Array<PageTopBarBreadcrumbItem> = [];
+
+  buildItems({
+    push: (item) => {
+      items.push(item as PageTopBarBreadcrumbItem);
+    },
+  });
+
   if (items.length === 0) {
     return null;
   }

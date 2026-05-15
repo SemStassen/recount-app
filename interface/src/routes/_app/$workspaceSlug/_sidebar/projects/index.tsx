@@ -27,15 +27,15 @@ function RouteComponent() {
         <PageTopBar
           left={
             <PageTopBarBreadcrumbs
-              items={[
-                {
+              items={(breadcrumbs) => {
+                breadcrumbs.push({
                   label: m.project({ count: "plural" }),
                   linkOptions: {
                     to: "/$workspaceSlug/projects",
                     from: "/$workspaceSlug",
                   },
-                },
-              ]}
+                });
+              }}
             />
           }
           right={

@@ -3,6 +3,7 @@ import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 import { getWorkspaceDb } from "~/db/workspace/get-workspace-db";
 import { CommandMenu } from "~/features/command-menu";
 
+import { CreateTaskDialog } from "./-components/create-task-dialog";
 import { DebugSheet } from "./-components/debug-sheet";
 import { WorkspaceProviders } from "./-workspace-providers";
 
@@ -38,6 +39,8 @@ function WorkspaceLayout() {
           <Outlet />
         </main>
         <CommandMenu />
+        {/* Dialogs */}
+        <CreateTaskDialog />
         <DebugSheet />
       </div>
     </WorkspaceProviders>

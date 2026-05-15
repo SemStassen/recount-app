@@ -12,7 +12,7 @@ import {
   CommandShortcut,
 } from "@recount/ui/command";
 import { Icons } from "@recount/ui/icons";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import {
@@ -73,6 +73,7 @@ export function CommandMenu() {
   const [stack, setStack] = useState<
     Array<{ title: string; commands: Array<CommandItemType> }>
   >([]);
+  const closeResolversRef = useRef<Array<() => void>>([]);
 
   useHotkeys("meta+k", () => setIsOpen((open) => !open), {
     preventDefault: true,
@@ -101,6 +102,31 @@ export function CommandMenu() {
     }
   }
 
+  function closeCommandMenu() {
+    if (!isOpen) {
+      return Promise.resolve();
+    }
+
+    handleOpenChange(false);
+
+    return new Promise<void>((resolve) => {
+      closeResolversRef.current.push(resolve);
+    });
+  }
+
+  function handleOpenChangeComplete(open: boolean) {
+    if (open) {
+      return;
+    }
+
+    const closeResolvers = closeResolversRef.current;
+    closeResolversRef.current = [];
+
+    for (const resolve of closeResolvers) {
+      resolve();
+    }
+  }
+
   function selectCommand(command: CommandItemType) {
     const children = command
       .children?.()
@@ -115,11 +141,15 @@ export function CommandMenu() {
       return;
     }
 
-    void command.perform?.({ close: () => handleOpenChange(false) });
+    void command.perform?.({ close: closeCommandMenu });
   }
 
   return (
-    <CommandDialog onOpenChange={handleOpenChange} open={isOpen}>
+    <CommandDialog
+      onOpenChange={handleOpenChange}
+      onOpenChangeComplete={handleOpenChangeComplete}
+      open={isOpen}
+    >
       <CommandDialogPopup>
         <Command filter={() => true} items={searchedCommands}>
           <CommandInput
