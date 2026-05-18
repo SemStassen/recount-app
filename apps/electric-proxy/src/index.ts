@@ -92,6 +92,12 @@ const CorsLayer = HttpRouter.middleware(
   }
 );
 
+const HttpTracingLayer = Layer.succeed(
+  HttpMiddleware.TracerDisabledWhen,
+  (request) => request.method === "OPTIONS" &&
+    request.headers["access-control-request-method"] !== undefined
+);
+
 const HttpRoutesLayer = Layer.mergeAll(
   HealthRouteLayer,
   // Me
@@ -112,6 +118,7 @@ const ObservabilityLayer = makeObservabilityLayer({
 const ServerLayer = HttpRouter.serve(HttpRoutesLayer).pipe(
   Layer.provide(ApplicationServicesLayer),
   Layer.provide(ObservabilityLayer),
+  Layer.provide(HttpTracingLayer),
   Layer.provide(BunHttpClient.layer),
   Layer.provide(
     BunHttpServer.layerConfig(

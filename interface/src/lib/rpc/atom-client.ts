@@ -35,6 +35,17 @@ const allRpcGroups = AuthRpcGroup.merge(
   WorkspaceMemberRpcGroup
 );
 
+const RpcFetchHttpClientLayer = FetchHttpClient.layer.pipe(
+  Layer.provide(
+    Layer.mergeAll(
+      Layer.succeed(HttpClient.TracerPropagationEnabled, false),
+      Layer.succeed(FetchHttpClient.RequestInit, {
+        credentials: "include",
+      })
+    )
+  )
+);
+
 const RpcProtocolHttpLayer = RpcClient.layerProtocolHttp({
   url: `${import.meta.env.VITE_BACKEND_URL}/rpc`,
   transformClient: (client) =>
@@ -52,12 +63,7 @@ const RpcProtocolHttpLayer = RpcClient.layerProtocolHttp({
       })
     ),
 }).pipe(
-  Layer.provide(FetchHttpClient.layer),
-  Layer.provide(
-    Layer.succeed(FetchHttpClient.RequestInit, {
-      credentials: "include",
-    })
-  ),
+  Layer.provide(RpcFetchHttpClientLayer),
   Layer.provide(RpcSerialization.layerNdjson)
 );
 

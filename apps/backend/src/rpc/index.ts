@@ -24,6 +24,10 @@ import { WorkspaceRpcGroupLayer } from "./handlers/workspace";
 import { WorkspaceIntegrationConnectionRpcGroupLayer } from "./handlers/workspace-integration-connection";
 import { WorkspaceInvitationRpcGroupLayer } from "./handlers/workspace-invitation";
 import { WorkspaceMemberRpcGroupLayer } from "./handlers/workspace-member";
+import {
+  RpcCauseLoggingMiddleware,
+  RpcCauseLoggingMiddlewareLayer,
+} from "./middleware";
 
 export const AllRpcsGroup = AuthRpcGroup.merge(
   FileUploadRpcGroup,
@@ -36,7 +40,7 @@ export const AllRpcsGroup = AuthRpcGroup.merge(
   WorkspaceIntegrationConnectionRpcGroup,
   WorkspaceInvitationRpcGroup,
   WorkspaceMemberRpcGroup
-);
+).middleware(RpcCauseLoggingMiddleware);
 
 export const AllRpcsGroupLayer = Layer.mergeAll(
   AuthRpcGroupLayer,
@@ -49,5 +53,6 @@ export const AllRpcsGroupLayer = Layer.mergeAll(
   WorkspaceRpcGroupLayer,
   WorkspaceIntegrationConnectionRpcGroupLayer,
   WorkspaceInvitationRpcGroupLayer,
-  WorkspaceMemberRpcGroupLayer
+  WorkspaceMemberRpcGroupLayer,
+  RpcCauseLoggingMiddlewareLayer
 );
