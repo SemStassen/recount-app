@@ -1,4 +1,4 @@
-app.recount.localhost {
+web.recount.localhost {
 	tls internal
 	reverse_proxy localhost:8002
 }

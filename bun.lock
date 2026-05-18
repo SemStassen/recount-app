@@ -44,7 +44,7 @@
         "typescript": "catalog:dev",
       },
     },
-    "apps/desktop": {
+    "apps/desktop-tauri": {
       "name": "tauri-app",
       "version": "0.1.0",
       "dependencies": {
@@ -172,16 +172,6 @@
         "typescript": "catalog:dev",
       },
     },
-    "packages/adapters": {
-      "name": "@recount/adapters",
-      "dependencies": {
-        "effect": "catalog:",
-      },
-      "devDependencies": {
-        "@recount/config": "workspace:*",
-        "typescript": "catalog:dev",
-      },
-    },
     "packages/application": {
       "name": "@recount/application",
       "dependencies": {
@@ -218,6 +208,9 @@
     },
     "packages/config": {
       "name": "@recount/config",
+      "devDependencies": {
+        "vite": "catalog:dev",
+      },
     },
     "packages/core": {
       "name": "@recount/core",
@@ -998,8 +991,6 @@
     "@poppinss/exception": ["@poppinss/exception@1.2.3", "", {}, "sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw=="],
 
     "@preact/signals-core": ["@preact/signals-core@1.14.2", "", {}, "sha512-RZHdBj9ZF4n40Rp4jS052EHHjBWf96P9oNdXPfhQTovCuWY9iQn3Gq+gOTJSgBO9A/JBuPfMOWsSX/lIU9Pc/A=="],
-
-    "@recount/adapters": ["@recount/adapters@workspace:packages/adapters"],
 
     "@recount/application": ["@recount/application@workspace:packages/application"],
 
@@ -2453,7 +2444,7 @@
 
     "tapable": ["tapable@2.3.3", "", {}, "sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A=="],
 
-    "tauri-app": ["tauri-app@workspace:apps/desktop"],
+    "tauri-app": ["tauri-app@workspace:apps/desktop-tauri"],
 
     "terminal-size": ["terminal-size@4.0.1", "", {}, "sha512-avMLDQpUI9I5XFrklECw1ZEUPJhqzcwSWsyyI8blhRLT+8N1jLJWLWWYQpB2q2xthq8xDvjZPISVh53T/+CLYQ=="],
 

@@ -1,3 +1,4 @@
+import { startupMessage } from "@recount/config/vite-plugins/startup-message.ts";
 import { createInterfaceViteConfig } from "@recount/interface/vite";
 import { defineConfig, mergeConfig } from "vite";
 
@@ -25,5 +26,13 @@ export default mergeConfig(
     build: {
       outDir: "../dist",
     },
+    plugins: [
+      startupMessage({
+        messages: [
+          "🚀 Web server running",
+          "Accessible via: http://web.recount.localhost",
+        ],
+      }),
+    ],
   })
 );

@@ -2,7 +2,8 @@
   "name": "@recount/config",
   "type": "module",
   "exports": {
-    "./*": "./src/*"
+    "./*": "./src/*",
+    "./vite-plugins/*": "./src/vite-plugins/*"
   },
   "private": true,
   "scripts": {
@@ -10,5 +11,8 @@
     "format": "oxfmt --write .",
     "lint": "oxlint .",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "vite": "catalog:dev"
   }
 }
