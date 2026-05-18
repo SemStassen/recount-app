@@ -144,7 +144,7 @@ export function TasksList({ projectId, tasks }: TasksListProps) {
           variant="outline"
           onClick={() =>
             createTaskDialogHandle.openWithPayload({
-              initialProjectId: projectId,
+              defaultProjectId: projectId,
             })
           }
         >

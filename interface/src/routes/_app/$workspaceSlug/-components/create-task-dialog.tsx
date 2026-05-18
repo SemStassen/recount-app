@@ -1,5 +1,5 @@
 import { Task } from "@recount/core/modules/project";
-import type { ProjectId } from "@recount/core/shared/schemas";
+import { ProjectId, TaskId } from "@recount/core/shared/schemas";
 import {
   Dialog,
   DialogFooter,
@@ -10,9 +10,9 @@ import {
   DialogTitle,
 } from "@recount/ui/dialog";
 import { Form, FormPrimitive } from "@recount/ui/form";
-import { useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams, useRouterState } from "@tanstack/react-router";
 import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
@@ -22,12 +22,14 @@ import { createSchemaForm } from "~/lib/form";
 import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 interface Payload {
-  initialProjectId?: ProjectId;
+  defaultProjectId?: ProjectId;
 }
 
 export const createTaskDialogHandle = DialogPrimitive.createHandle<Payload>();
 
 export function CreateTaskDialog() {
+  const defaultProjectId = useAssociatedRouteProjectId();
+
   useRegisterCommands([
     {
       id: "create-task",
@@ -35,7 +37,9 @@ export function CreateTaskDialog() {
       title: "Create new task",
       perform: async ({ close }) => {
         await close();
-        createTaskDialogHandle.open(null);
+        createTaskDialogHandle.openWithPayload({
+          defaultProjectId,
+        });
       },
     },
   ]);
@@ -53,13 +57,15 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
   const navigate = useNavigate();
 
   const workspaceDb = useWorkspaceDb();
-  const { data: projects, isLoading } = useLiveQuery((q) =>
-    q
-      .from({ p: workspaceDb.collections.activeProjectsCollection })
-      .select(({ p }) => ({
-        id: p.id,
-        name: p.name,
-      }))
+  const { data: projects, isLoading } = useLiveQuery(
+    (q) =>
+      q
+        .from({ p: workspaceDb.collections.activeProjectsCollection })
+        .select(({ p }) => ({
+          id: p.id,
+          name: p.name,
+        })),
+    []
   );
 
   const createTask = useWorkspaceMutation("Task.Create");
@@ -68,7 +74,7 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
     formId: "create-task-form",
     defaultValues: {
       name: "",
-      projectId: payload?.initialProjectId ?? "",
+      projectId: payload?.defaultProjectId ?? "",
     },
     validationLogic: revalidateLogic(),
     validators: {
@@ -158,4 +164,46 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
       </DialogFooter>
     </DialogPopup>
   );
+}
+
+function useAssociatedRouteProjectId() {
+  const { projectId, taskId } = useRouterState({
+    // Branded ids are not structurally shareable in TanStack Router selectors.
+    structuralSharing: false,
+    select: (state) => {
+      const context: { projectId?: ProjectId; taskId?: TaskId } = {};
+
+      for (const match of state.matches) {
+        if ("projectId" in match.params) {
+          context.projectId = ProjectId.make(match.params.projectId);
+        }
+
+        if ("taskId" in match.params) {
+          context.taskId = TaskId.make(match.params.taskId);
+        }
+      }
+
+      return context;
+    },
+  });
+
+  const workspaceDb = useWorkspaceDb();
+  const { data: routeTask } = useLiveQuery(
+    (q) => {
+      if (!taskId || projectId) {
+        return undefined;
+      }
+
+      return q
+        .from({ t: workspaceDb.collections.activeTasksCollection })
+        .where(({ t }) => eq(t.id, taskId))
+        .select(({ t }) => ({
+          projectId: t.projectId,
+        }))
+        .findOne();
+    },
+    [projectId, taskId]
+  );
+
+  return projectId ?? routeTask?.projectId;
 }
