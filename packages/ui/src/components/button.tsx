@@ -10,12 +10,15 @@ import { Spinner } from "./old/spinner.coss";
 
 export const buttonVariants = cva(
   [
-    "relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border font-medium text-base outline-none transition-colors",
-    "pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11",
+    "relative inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border font-medium text-base",
+    "cursor-pointer outline-none transition-colors",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
     "data-loading:select-none data-loading:text-transparent",
     "disabled:pointer-events-none disabled:opacity-64",
-    "[&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+    "pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+    "[&_svg:not([class*='opacity-'])]:opacity-80",
+    "[&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
   ],
   {
     defaultVariants: {

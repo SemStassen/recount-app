@@ -33,8 +33,9 @@ export function AccordionTrigger({
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
         className={cn(
-          "flex flex-1 items-start justify-between text-sm py-4 font-medium rounded-md cursor-pointer outline-none gap-4 transition-all",
-          "focus-visible:ring-ring focus-visible:ring-[3px]",
+          "flex flex-1 items-start justify-between gap-4 rounded-md py-4 font-medium text-sm",
+          "cursor-pointer outline-none transition-all",
+          "focus-visible:ring-[3px] focus-visible:ring-ring",
           "disabled:pointer-events-none disabled:opacity-64",
           "data-panel-open:*:data-[slot=accordion-indicator]:rotate-180",
           className
@@ -59,7 +60,11 @@ export function AccordionPanel({
 }: AccordionPrimitive.Panel.Props): React.ReactElement {
   return (
     <AccordionPrimitive.Panel
-      className="h-(--accordion-panel-height) overflow-hidden text-muted-foreground text-sm transition-[height] duration-200 ease-in-out data-ending-style:h-0 data-starting-style:h-0"
+      className={cn(
+        "h-(--accordion-panel-height) overflow-hidden text-muted-foreground text-sm",
+        "transition-[height] duration-200 ease-in-out",
+        "data-ending-style:h-0 data-starting-style:h-0"
+      )}
       data-slot="accordion-panel"
       {...props}
     >

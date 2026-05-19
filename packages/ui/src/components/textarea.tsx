@@ -9,7 +9,8 @@ import { FieldPrimitive } from "./old/field.coss";
 
 export const textareaVariants = cva(
   [
-    "field-sizing-content min-h-17.5 w-full border text-base text-foreground px-3 py-1.5 outline-none",
+    "field-sizing-content min-h-17.5 w-full border px-3 py-1.5 text-base text-foreground",
+    "outline-none",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
     "disabled:pointer-events-none disabled:opacity-64",
   ],

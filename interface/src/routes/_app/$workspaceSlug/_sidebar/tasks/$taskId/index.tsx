@@ -1,6 +1,6 @@
 import { TaskId } from "@recount/core/shared/schemas";
 import { eq, useLiveQuery } from "@tanstack/react-db";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
@@ -8,7 +8,9 @@ import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 import {
+  Page,
   PageContainer,
+  PageMain,
   PageTopBar,
   PageTopBarBreadcrumbs,
 } from "../../-components/page";
@@ -68,12 +70,12 @@ function RouteComponent() {
   }
 
   if (!task?.name) {
-    return notFound();
+    throw notFound({ routeId: rootRouteId });
   }
 
   return (
-    <div className="flex flex-row w-full h-full">
-      <div className="flex flex-col w-full">
+    <Page>
+      <PageMain>
         <PageTopBar
           left={
             <PageTopBarBreadcrumbs
@@ -113,7 +115,7 @@ function RouteComponent() {
         <PageContainer className="space-y-2">
           <h1 className="text-2xl font-semibold">{task.name}</h1>
         </PageContainer>
-      </div>
-    </div>
+      </PageMain>
+    </Page>
   );
 }

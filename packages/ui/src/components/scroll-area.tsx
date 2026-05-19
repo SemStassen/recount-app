@@ -3,10 +3,11 @@ import type React from "react";
 
 import { cn } from "#utils/cn";
 
-interface ScrollAreaProps extends ScrollAreaPrimitive.Root.Props {
+export interface ScrollAreaProps extends ScrollAreaPrimitive.Root.Props {
   scrollFade?: boolean;
   scrollbarGutter?: boolean;
 }
+
 export function ScrollArea({
   className,
   children,
@@ -21,7 +22,8 @@ export function ScrollArea({
     >
       <ScrollAreaPrimitive.Viewport
         className={cn(
-          "h-full rounded-[inherit] outline-none transition-shadows",
+          "h-full rounded-[inherit] outline-none",
+          "transition-shadows",
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
           "data-has-overflow-y:overscroll-y-none data-has-overflow-x:overscroll-x-none",
           scrollFade &&
@@ -48,7 +50,13 @@ export function ScrollBar({
   return (
     <ScrollAreaPrimitive.Scrollbar
       className={cn(
-        "m-1 flex opacity-0 transition-opacity delay-300 data-[orientation=horizontal]:h-1.5 data-[orientation=vertical]:w-1.5 data-[orientation=horizontal]:flex-col data-hovering:opacity-100 data-scrolling:opacity-100 data-hovering:delay-0 data-scrolling:delay-0 data-hovering:duration-100 data-scrolling:duration-100",
+        "m-1 flex opacity-0",
+        "transition-opacity delay-300",
+        "data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:flex-col",
+        "data-[orientation=vertical]:w-1.5",
+        "data-hovering:opacity-100 data-scrolling:opacity-100",
+        "data-hovering:delay-0 data-scrolling:delay-0",
+        "data-hovering:duration-100 data-scrolling:duration-100",
         className
       )}
       data-slot="scroll-area-scrollbar"

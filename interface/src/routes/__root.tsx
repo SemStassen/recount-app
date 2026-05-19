@@ -21,6 +21,8 @@ import { BackendAtomHttpApiClient } from "~/lib/api/atom-client";
 import { env } from "~/lib/env";
 import { runtime } from "~/lib/runtime";
 
+import { NotFoundPage } from "./-not-found";
+
 export const Route = createRootRoute({
   beforeLoad: async () => {
     const auth = await runtime.runPromise(
@@ -35,6 +37,7 @@ export const Route = createRootRoute({
     };
   },
   component: RootLayout,
+  notFoundComponent: NotFoundPage,
   head: () => ({
     scripts: [
       // <!-- ********** -->

@@ -2,7 +2,7 @@ import { HexColor, ProjectId } from "@recount/core/shared/schemas";
 import { RichTextEditor } from "@recount/editor";
 import { Separator } from "@recount/ui/separator";
 import { eq, toArray, useLiveQuery } from "@tanstack/react-db";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 
 import { ColorPicker } from "~/components/color-picker";
 import { useWorkspaceDb } from "~/db/workspace/context";
@@ -11,7 +11,9 @@ import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 import {
+  Page,
   PageContainer,
+  PageMain,
   PageTopBar,
   PageTopBarBreadcrumbs,
 } from "../../-components/page";
@@ -73,12 +75,12 @@ function RouteComponent() {
   }
 
   if (!project) {
-    return notFound();
+    throw notFound({ routeId: rootRouteId });
   }
 
   return (
-    <div className="flex flex-row w-full h-full">
-      <div className="flex flex-col w-full">
+    <Page>
+      <PageMain>
         <PageTopBar
           left={
             <PageTopBarBreadcrumbs
@@ -124,7 +126,7 @@ function RouteComponent() {
             <TasksList projectId={project.id} tasks={project.tasks} />
           </section>
         </PageContainer>
-      </div>
-    </div>
+      </PageMain>
+    </Page>
   );
 }

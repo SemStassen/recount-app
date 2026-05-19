@@ -18,6 +18,24 @@ import { Fragment } from "react";
 
 import { isNavigationSidebarOpenAtom } from "~/atoms/ui-atoms";
 
+interface PageProps extends React.ComponentProps<"div"> {}
+export function Page({ children, className, ...props }: PageProps) {
+  return (
+    <div className={cn("flex flex-row w-full h-full", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+interface PageMainProps extends React.ComponentProps<"div"> {}
+export function PageMain({ children, className, ...props }: PageMainProps) {
+  return (
+    <div className={cn("flex flex-col w-full", className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
 interface PageContainerProps extends React.ComponentProps<"div"> {}
 export function PageContainer({
   children,

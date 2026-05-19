@@ -66,4 +66,19 @@ export const defaultCommands: Array<Command> = [
     },
     title: "Go to profile",
   },
+  {
+    id: "navigation.go-to-archive",
+    category: "navigation",
+    icon: Icons.ArrowRight,
+    perform: ({ close }) => {
+      router.navigate(
+        linkOptions({
+          to: "/$workspaceSlug/archive/projects",
+          from: "/$workspaceSlug/",
+        })
+      );
+      close();
+    },
+    title: "Go to archive",
+  },
 ];

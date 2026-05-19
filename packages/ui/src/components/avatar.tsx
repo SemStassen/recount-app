@@ -1,11 +1,15 @@
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import type React from "react";
 
 import { cn } from "#utils/cn";
 
-const avatarVariants = cva(
-  "inline-flex shrink-0 select-none items-center justify-center overflow-hidden align-middle font-medium text-xs",
+export const avatarVariants = cva(
+  [
+    "inline-flex shrink-0 items-center justify-center overflow-hidden align-middle",
+    "select-none font-medium text-xs",
+  ],
   {
     defaultVariants: {
       size: "default",
@@ -24,7 +28,7 @@ const avatarVariants = cva(
   }
 );
 
-interface AvatarProps
+export interface AvatarProps
   extends AvatarPrimitive.Root.Props, VariantProps<typeof avatarVariants> {}
 
 export function Avatar({
@@ -62,7 +66,8 @@ export function AvatarFallback({
   return (
     <AvatarPrimitive.Fallback
       className={cn(
-        "flex size-full items-center justify-center rounded-full bg-muted",
+        "flex size-full items-center justify-center rounded-full",
+        "bg-muted",
         className
       )}
       data-slot="avatar-fallback"

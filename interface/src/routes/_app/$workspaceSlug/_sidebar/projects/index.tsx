@@ -5,7 +5,12 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { m } from "~/paraglide/messages";
 
-import { PageTopBar, PageTopBarBreadcrumbs } from "../-components/page";
+import {
+  Page,
+  PageMain,
+  PageTopBar,
+  PageTopBarBreadcrumbs,
+} from "../-components/page";
 import { CreateProjectSidebar } from "./-components/create-project-sidebar";
 import { isCreateProjectSidebarOpenAtom } from "./-components/create-project-sidebar/atoms";
 import { ProjectsList } from "./-components/projects-list";
@@ -22,8 +27,8 @@ function RouteComponent() {
   );
 
   return (
-    <div className="flex flex-row w-full h-full">
-      <div className="flex min-w-0 flex-1 flex-col">
+    <Page>
+      <PageMain>
         <PageTopBar
           left={
             <PageTopBarBreadcrumbs
@@ -49,8 +54,8 @@ function RouteComponent() {
           }
         />
         <ProjectsList />
-      </div>
+      </PageMain>
       <CreateProjectSidebar />
-    </div>
+    </Page>
   );
 }

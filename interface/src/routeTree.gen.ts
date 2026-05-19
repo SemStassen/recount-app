@@ -28,6 +28,7 @@ import { Route as AppWorkspaceSlugSidebarProjectsIndexRouteImport } from './rout
 import { Route as AppWorkspaceSlugSettingsIntegrationsProvidersRouteRouteImport } from './routes/_app/$workspaceSlug/settings/integrations/_providers/route'
 import { Route as AppWorkspaceSlugSidebarTasksTaskIdIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/tasks/$taskId/index'
 import { Route as AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/projects/$projectId/index'
+import { Route as AppWorkspaceSlugSidebarArchiveProjectsIndexRouteImport } from './routes/_app/$workspaceSlug/_sidebar/archive/projects/index'
 import { Route as AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRouteImport } from './routes/_app/$workspaceSlug/settings/integrations/_providers/linear/index'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
@@ -133,6 +134,12 @@ const AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute =
     path: '/projects/$projectId/',
     getParentRoute: () => AppWorkspaceSlugSidebarRouteRoute,
   } as any)
+const AppWorkspaceSlugSidebarArchiveProjectsIndexRoute =
+  AppWorkspaceSlugSidebarArchiveProjectsIndexRouteImport.update({
+    id: '/archive/projects/',
+    path: '/archive/projects/',
+    getParentRoute: () => AppWorkspaceSlugSidebarRouteRoute,
+  } as any)
 const AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute =
   AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRouteImport.update({
     id: '/linear/',
@@ -143,7 +150,7 @@ const AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/$workspaceSlug': typeof AppWorkspaceSlugSidebarRouteRouteWithChildren
+  '/$workspaceSlug': typeof AppWorkspaceSlugRouteRouteWithChildren
   '/$workspaceSlug/settings': typeof AppWorkspaceSlugSettingsRouteRouteWithChildren
   '/sign-in/': typeof AuthSignInIndexRoute
   '/sign-up/': typeof AuthSignUpIndexRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/$workspaceSlug/settings/': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
   '/$workspaceSlug/settings/integrations/': typeof AppWorkspaceSlugSettingsIntegrationsIndexRoute
   '/$workspaceSlug/settings/profile/': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/$workspaceSlug/archive/projects/': typeof AppWorkspaceSlugSidebarArchiveProjectsIndexRoute
   '/$workspaceSlug/projects/$projectId/': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
   '/$workspaceSlug/tasks/$taskId/': typeof AppWorkspaceSlugSidebarTasksTaskIdIndexRoute
   '/$workspaceSlug/settings/integrations/linear/': typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute
@@ -170,6 +178,7 @@ export interface FileRoutesByTo {
   '/$workspaceSlug/projects': typeof AppWorkspaceSlugSidebarProjectsIndexRoute
   '/$workspaceSlug/settings': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
   '/$workspaceSlug/settings/profile': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/$workspaceSlug/archive/projects': typeof AppWorkspaceSlugSidebarArchiveProjectsIndexRoute
   '/$workspaceSlug/projects/$projectId': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
   '/$workspaceSlug/tasks/$taskId': typeof AppWorkspaceSlugSidebarTasksTaskIdIndexRoute
   '/$workspaceSlug/settings/integrations/linear': typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute
@@ -193,6 +202,7 @@ export interface FileRoutesById {
   '/_app/$workspaceSlug/settings/_preferences/': typeof AppWorkspaceSlugSettingsPreferencesIndexRoute
   '/_app/$workspaceSlug/settings/integrations/': typeof AppWorkspaceSlugSettingsIntegrationsIndexRoute
   '/_app/$workspaceSlug/settings/profile/': typeof AppWorkspaceSlugSettingsProfileIndexRoute
+  '/_app/$workspaceSlug/_sidebar/archive/projects/': typeof AppWorkspaceSlugSidebarArchiveProjectsIndexRoute
   '/_app/$workspaceSlug/_sidebar/projects/$projectId/': typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
   '/_app/$workspaceSlug/_sidebar/tasks/$taskId/': typeof AppWorkspaceSlugSidebarTasksTaskIdIndexRoute
   '/_app/$workspaceSlug/settings/integrations/_providers/linear/': typeof AppWorkspaceSlugSettingsIntegrationsProvidersLinearIndexRoute
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/$workspaceSlug/settings/'
     | '/$workspaceSlug/settings/integrations/'
     | '/$workspaceSlug/settings/profile/'
+    | '/$workspaceSlug/archive/projects/'
     | '/$workspaceSlug/projects/$projectId/'
     | '/$workspaceSlug/tasks/$taskId/'
     | '/$workspaceSlug/settings/integrations/linear/'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/$workspaceSlug/projects'
     | '/$workspaceSlug/settings'
     | '/$workspaceSlug/settings/profile'
+    | '/$workspaceSlug/archive/projects'
     | '/$workspaceSlug/projects/$projectId'
     | '/$workspaceSlug/tasks/$taskId'
     | '/$workspaceSlug/settings/integrations/linear'
@@ -250,6 +262,7 @@ export interface FileRouteTypes {
     | '/_app/$workspaceSlug/settings/_preferences/'
     | '/_app/$workspaceSlug/settings/integrations/'
     | '/_app/$workspaceSlug/settings/profile/'
+    | '/_app/$workspaceSlug/_sidebar/archive/projects/'
     | '/_app/$workspaceSlug/_sidebar/projects/$projectId/'
     | '/_app/$workspaceSlug/_sidebar/tasks/$taskId/'
     | '/_app/$workspaceSlug/settings/integrations/_providers/linear/'
@@ -395,6 +408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRouteImport
       parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute
     }
+    '/_app/$workspaceSlug/_sidebar/archive/projects/': {
+      id: '/_app/$workspaceSlug/_sidebar/archive/projects/'
+      path: '/archive/projects'
+      fullPath: '/$workspaceSlug/archive/projects/'
+      preLoaderRoute: typeof AppWorkspaceSlugSidebarArchiveProjectsIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugSidebarRouteRoute
+    }
     '/_app/$workspaceSlug/settings/integrations/_providers/linear/': {
       id: '/_app/$workspaceSlug/settings/integrations/_providers/linear/'
       path: '/linear'
@@ -408,6 +428,7 @@ declare module '@tanstack/react-router' {
 interface AppWorkspaceSlugSidebarRouteRouteChildren {
   AppWorkspaceSlugSidebarIndexRoute: typeof AppWorkspaceSlugSidebarIndexRoute
   AppWorkspaceSlugSidebarProjectsIndexRoute: typeof AppWorkspaceSlugSidebarProjectsIndexRoute
+  AppWorkspaceSlugSidebarArchiveProjectsIndexRoute: typeof AppWorkspaceSlugSidebarArchiveProjectsIndexRoute
   AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute: typeof AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute
   AppWorkspaceSlugSidebarTasksTaskIdIndexRoute: typeof AppWorkspaceSlugSidebarTasksTaskIdIndexRoute
 }
@@ -417,6 +438,8 @@ const AppWorkspaceSlugSidebarRouteRouteChildren: AppWorkspaceSlugSidebarRouteRou
     AppWorkspaceSlugSidebarIndexRoute: AppWorkspaceSlugSidebarIndexRoute,
     AppWorkspaceSlugSidebarProjectsIndexRoute:
       AppWorkspaceSlugSidebarProjectsIndexRoute,
+    AppWorkspaceSlugSidebarArchiveProjectsIndexRoute:
+      AppWorkspaceSlugSidebarArchiveProjectsIndexRoute,
     AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute:
       AppWorkspaceSlugSidebarProjectsProjectIdIndexRoute,
     AppWorkspaceSlugSidebarTasksTaskIdIndexRoute:
