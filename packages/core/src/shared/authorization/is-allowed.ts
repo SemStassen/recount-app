@@ -21,11 +21,11 @@ const permissionRules: Record<Action, ReadonlyArray<WorkspaceRole>> = {
   "project:create": ["owner"],
   "project:patch": ["owner"],
   "project:archive": ["owner"],
-  "project:restore": ["owner"],
+  "project:unarchive": ["owner"],
   "project:create_task": ["owner"],
   "project:patch_task": ["owner"],
   "project:archive_task": ["owner"],
-  "project:restore_task": ["owner"],
+  "project:unarchive_task": ["owner"],
 
   "time:create_time_entry": ["owner"],
   "time:update_time_entry": ["owner"],

@@ -83,7 +83,7 @@ export const archiveProject = (params: {
   });
 };
 
-export const restoreProject = (params: {
+export const unarchiveProject = (params: {
   project: Project;
 }): Result.Result<{
   entity: Project;

@@ -15,7 +15,7 @@ import { Task } from "./task.entity";
 import {
   archiveTask,
   createTask,
-  restoreTask,
+  unarchiveTask,
   updateTask,
 } from "./task.transitions";
 
@@ -130,7 +130,7 @@ describe("Task transitions", () => {
       archivedAt: Option.some(now),
     });
 
-    const result = restoreTask({ task, project });
+    const result = unarchiveTask({ task, project });
 
     expect(Option.getOrThrow(Result.getFailure(result))).toBeInstanceOf(
       ProjectArchivedError

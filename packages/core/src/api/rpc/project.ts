@@ -7,8 +7,8 @@ import {
   ArchiveProjectResult,
   CreateProjectCommand,
   CreateProjectResult,
-  RestoreProjectCommand,
-  RestoreProjectResult,
+  UnarchiveProjectCommand,
+  UnarchiveProjectResult,
   UpdateProjectCommand,
   UpdateProjectResult,
 } from "#api/contracts/index";
@@ -54,9 +54,9 @@ export const ProjectRpcGroup = RpcGroup.make(
     .middleware(RpcWorkspaceMiddleware)
     .middleware(RpcSessionMiddleware),
 
-  Rpc.make("Project.Restore", {
-    payload: RestoreProjectCommand,
-    success: RestoreProjectResult,
+  Rpc.make("Project.Unarchive", {
+    payload: UnarchiveProjectCommand,
+    success: UnarchiveProjectResult,
     error: Schema.Union([
       AuthorizationError,
       ProjectNotFoundError,

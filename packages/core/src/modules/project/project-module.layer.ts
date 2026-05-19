@@ -114,28 +114,30 @@ export const ProjectModuleLayer = Layer.effect(
             }),
         });
       }),
-      restoreProject: Effect.fn("project.restoreProject")(function* (params) {
-        const project = yield* getProjectById({
-          workspaceId: params.workspaceId,
-          id: params.id,
-        });
+      unarchiveProject: Effect.fn("project.unarchiveProject")(
+        function* (params) {
+          const project = yield* getProjectById({
+            workspaceId: params.workspaceId,
+            id: params.id,
+          });
 
-        const { entity, patch } = yield* Effect.fromResult(
-          projectTransitions.restoreProject({
-            project,
-          })
-        );
+          const { entity, patch } = yield* Effect.fromResult(
+            projectTransitions.unarchiveProject({
+              project,
+            })
+          );
 
-        yield* Option.match(patch, {
-          onNone: () => Effect.void,
-          onSome: (update) =>
-            projectRepo.update({
-              workspaceId: entity.workspaceId,
-              id: entity.id,
-              update,
-            }),
-        });
-      }),
+          yield* Option.match(patch, {
+            onNone: () => Effect.void,
+            onSome: (update) =>
+              projectRepo.update({
+                workspaceId: entity.workspaceId,
+                id: entity.id,
+                update,
+              }),
+          });
+        }
+      ),
       createTasks: Effect.fn("project.createTasks")(function* (params) {
         if (params.data.length === 0) {
           return [];
@@ -217,7 +219,7 @@ export const ProjectModuleLayer = Layer.effect(
             }),
         });
       }),
-      restoreTask: Effect.fn("project.restoreTask")(function* (params) {
+      unarchiveTask: Effect.fn("project.unarchiveTask")(function* (params) {
         const task = yield* getTaskById({
           workspaceId: params.workspaceId,
           id: params.id,
@@ -229,7 +231,7 @@ export const ProjectModuleLayer = Layer.effect(
         });
 
         const { entity, patch } = yield* Effect.fromResult(
-          taskTransitions.restoreTask({ task, project })
+          taskTransitions.unarchiveTask({ task, project })
         );
 
         yield* Option.match(patch, {

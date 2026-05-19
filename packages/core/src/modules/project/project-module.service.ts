@@ -39,7 +39,7 @@ interface ProjectModuleShape {
     id: Project["id"];
     workspaceId: Project["workspaceId"];
   }) => Effect.Effect<void, ProjectNotFoundError | RepositoryError>;
-  readonly restoreProject: (params: {
+  readonly unarchiveProject: (params: {
     id: Project["id"];
     workspaceId: Project["workspaceId"];
   }) => Effect.Effect<void, ProjectNotFoundError | RepositoryError>;
@@ -66,7 +66,7 @@ interface ProjectModuleShape {
     id: Task["id"];
     workspaceId: Task["workspaceId"];
   }) => Effect.Effect<void, TaskNotFoundError | RepositoryError>;
-  readonly restoreTask: (params: {
+  readonly unarchiveTask: (params: {
     id: Task["id"];
     workspaceId: Task["workspaceId"];
   }) => Effect.Effect<

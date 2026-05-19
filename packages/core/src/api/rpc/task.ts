@@ -7,8 +7,8 @@ import {
   ArchiveTaskResult,
   CreateTaskCommand,
   CreateTaskResult,
-  RestoreTaskCommand,
-  RestoreTaskResult,
+  UnarchiveTaskCommand,
+  UnarchiveTaskResult,
   UpdateTaskCommand,
   UpdateTaskResult,
 } from "#api/contracts/index";
@@ -61,9 +61,9 @@ export const TaskRpcGroup = RpcGroup.make(
     .middleware(RpcWorkspaceMiddleware)
     .middleware(RpcSessionMiddleware),
 
-  Rpc.make("Task.Restore", {
-    payload: RestoreTaskCommand,
-    success: RestoreTaskResult,
+  Rpc.make("Task.Unarchive", {
+    payload: UnarchiveTaskCommand,
+    success: UnarchiveTaskResult,
     error: Schema.Union([
       AuthorizationError,
       TaskNotFoundError,

@@ -20,11 +20,11 @@ const ProjectAction = Schema.Literals([
   "project:create",
   "project:patch",
   "project:archive",
-  "project:restore",
+  "project:unarchive",
   "project:create_task",
   "project:patch_task",
   "project:archive_task",
-  "project:restore_task",
+  "project:unarchive_task",
 ]);
 
 const TimeAction = Schema.Literals([

@@ -1,6 +1,7 @@
 import {
   archiveTaskFlow,
   createTaskFlow,
+  unarchiveTaskFlow,
   updateTaskFlow,
 } from "@recount/application/modules/project";
 import { TaskRpcGroup } from "@recount/core/rpc";
@@ -11,9 +12,9 @@ export const TaskRpcGroupLayer = TaskRpcGroup.toLayer(
   Effect.succeed({
     "Task.Create": Effect.fn("rpc.task.create")(
       function* (payload) {
-        const project = yield* createTaskFlow(payload);
+        const task = yield* createTaskFlow(payload);
 
-        return project;
+        return task;
       },
       Effect.catchTags({
         RepositoryError: () =>
@@ -22,9 +23,9 @@ export const TaskRpcGroupLayer = TaskRpcGroup.toLayer(
     ),
     "Task.Update": Effect.fn("rpc.task.update")(
       function* (payload) {
-        const project = yield* updateTaskFlow(payload);
+        const task = yield* updateTaskFlow(payload);
 
-        return project;
+        return task;
       },
       Effect.catchTags({
         RepositoryError: () =>
@@ -33,20 +34,20 @@ export const TaskRpcGroupLayer = TaskRpcGroup.toLayer(
     ),
     "Task.Archive": Effect.fn("rpc.task.archive")(
       function* (payload) {
-        const project = yield* archiveTaskFlow(payload);
+        const task = yield* archiveTaskFlow(payload);
 
-        return project;
+        return task;
       },
       Effect.catchTags({
         RepositoryError: () =>
           Effect.fail(new HttpApiError.InternalServerError()),
       })
     ),
-    "Task.Restore": Effect.fn("rpc.task.restore")(
+    "Task.Unarchive": Effect.fn("rpc.task.unarchive")(
       function* (payload) {
-        const project = yield* archiveTaskFlow(payload);
+        const task = yield* unarchiveTaskFlow(payload);
 
-        return project;
+        return task;
       },
       Effect.catchTags({
         RepositoryError: () =>

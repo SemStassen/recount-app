@@ -1,20 +1,27 @@
 import { useAtomSet } from "@effect/atom-react";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import { useRouteContext } from "@tanstack/react-router";
+import type { Exit } from "effect";
+import type { Atom } from "effect/unstable/reactivity";
 
 import { BackendAtomRpcClient } from "./atom-client";
 
+type WorkspaceMutationName = Parameters<typeof BackendAtomRpcClient.mutation>[0];
+
+type PromiseExit<T> = T extends Atom.AtomResultFn<infer Arg, infer A, infer E>
+  ? (request: Arg) => Promise<Exit.Exit<A, E>>
+  : never;
+
 export function useWorkspaceMutation<
-  const Name extends Parameters<typeof BackendAtomRpcClient.mutation>[0],
+  const Name extends WorkspaceMutationName,
 >(name: Name) {
   const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
-  const command = useAtomSet(BackendAtomRpcClient.mutation(name), {
+  const mutation = BackendAtomRpcClient.mutation(name);
+  const command = useAtomSet(mutation, {
     mode: "promiseExit",
-  });
+  }) as PromiseExit<typeof mutation>;
 
-  type CommandRequest = Extract<Parameters<typeof command>[0], object>;
-
-  return (request: CommandRequest) => {
+  return ((request) => {
     return command({
       ...request,
       headers: {
@@ -22,5 +29,5 @@ export function useWorkspaceMutation<
         [WORKSPACE_ID_HEADER]: workspace.id,
       },
     });
-  };
+  }) as PromiseExit<typeof mutation>;
 }

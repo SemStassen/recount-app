@@ -73,7 +73,7 @@ export const archiveTask = (params: {
   });
 };
 
-export const restoreTask = (params: {
+export const unarchiveTask = (params: {
   task: Task;
   project: Project;
 }): Result.Result<

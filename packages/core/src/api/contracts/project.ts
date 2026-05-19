@@ -16,7 +16,7 @@ export const ArchiveProjectCommand = Schema.Struct({
 });
 export const ArchiveProjectResult = Schema.Void;
 
-export const RestoreProjectCommand = Schema.Struct({
+export const UnarchiveProjectCommand = Schema.Struct({
   id: Project.fields.id,
 });
-export const RestoreProjectResult = Schema.Void;
+export const UnarchiveProjectResult = Schema.Void;

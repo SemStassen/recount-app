@@ -8,7 +8,7 @@ import { Project } from "./project.entity";
 import {
   archiveProject,
   createProject,
-  restoreProject,
+  unarchiveProject,
   updateProject,
 } from "./project.transitions";
 
@@ -47,10 +47,10 @@ describe("Project transitions", () => {
     expect(result.patch).toStrictEqual(Option.none());
   });
 
-  it("restores an archived Project", () => {
+  it("unarchives an archived Project", () => {
     const project = makeProject({ archivedAt: Option.some(now) });
 
-    const result = Result.getOrThrow(restoreProject({ project }));
+    const result = Result.getOrThrow(unarchiveProject({ project }));
 
     expect(result.entity.archivedAt).toStrictEqual(Option.none());
     expect(result.patch).toStrictEqual(
@@ -61,7 +61,7 @@ describe("Project transitions", () => {
   it("does not write a patch when restoring an active Project", () => {
     const project = makeProject();
 
-    const result = Result.getOrThrow(restoreProject({ project }));
+    const result = Result.getOrThrow(unarchiveProject({ project }));
 
     expect(result.entity).toBe(project);
     expect(result.patch).toStrictEqual(Option.none());

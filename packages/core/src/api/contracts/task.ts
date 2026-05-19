@@ -16,7 +16,7 @@ export const ArchiveTaskCommand = Schema.Struct({
 });
 export const ArchiveTaskResult = Schema.Void;
 
-export const RestoreTaskCommand = Schema.Struct({
+export const UnarchiveTaskCommand = Schema.Struct({
   id: Task.fields.id,
 });
-export const RestoreTaskResult = Schema.Void;
+export const UnarchiveTaskResult = Schema.Void;

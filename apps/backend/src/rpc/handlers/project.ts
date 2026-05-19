@@ -1,7 +1,7 @@
 import {
   archiveProjectFlow,
   createProjectFlow,
-  restoreProjectFlow,
+  unarchiveProjectFlow,
   updateProjectFlow,
 } from "@recount/application/modules/project";
 import { ProjectRpcGroup } from "@recount/core/rpc";
@@ -43,9 +43,9 @@ export const ProjectRpcGroupLayer = ProjectRpcGroup.toLayer(
           Effect.fail(new HttpApiError.InternalServerError()),
       })
     ),
-    "Project.Restore": Effect.fn("rpc.project.restore")(
+    "Project.Unarchive": Effect.fn("rpc.project.unarchive")(
       function* (payload) {
-        const project = yield* restoreProjectFlow(payload);
+        const project = yield* unarchiveProjectFlow(payload);
 
         return project;
       },

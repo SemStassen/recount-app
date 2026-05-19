@@ -12,7 +12,7 @@ import {
 import { Form, FormPrimitive } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
-import { useNavigate, useParams, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
@@ -81,19 +81,19 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(async ({ value }) => {
+    onSubmit: schema.handleSubmit(async ({ value: payload }) => {
       const res = await createTask({
-        payload: value,
+        payload,
       });
 
       Exit.match(res, {
         onFailure: () => {},
-        onSuccess: () => {
+        onSuccess: (value) => {
           navigate({
             from: "/$workspaceSlug/",
-            to: "/$workspaceSlug/projects/$projectId",
+            to: "/$workspaceSlug/tasks/$taskId",
             params: {
-              projectId: value.projectId,
+              taskId: value.id,
             },
           });
 

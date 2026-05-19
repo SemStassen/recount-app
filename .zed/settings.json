@@ -1,6 +1,18 @@
 {
   "format_on_save": "on",
   "formatter": "language_server",
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.svn",
+    "**/.hg",
+    "**/.jj",
+    "**/CVS",
+    "**/.DS_Store",
+    "**/Thumbs.db",
+    "**/.classpath",
+    "**/.settings",
+    ".better-agents/**"
+  ],
   "lsp": {
     "typescript-language-server": {
       "settings": {
