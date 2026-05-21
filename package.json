@@ -4,7 +4,7 @@
   "scripts": {
     "build": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide && turbo build",
     "clean": "turbo clean --parallel && rm -rf .turbo/cache node_modules",
-    "dev": "bun run dev:caddy & bun run dev:apps",
+    "dev": "turbo run dev //#dev:caddy --parallel --filter=@recount/backend --filter=@recount/electric-proxy --filter=@recount/web",
     "dev:apps": "turbo dev --parallel --filter=@recount/backend --filter=@recount/electric-proxy --filter=@recount/web",
     "dev:caddy": "caddy run --config Caddyfile",
     "format": "oxfmt --write .",
