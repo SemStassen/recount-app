@@ -22,8 +22,8 @@ import type { InputProps } from "@recount/ui/input";
 import { Popover, PopoverPopup, PopoverTrigger } from "@recount/ui/popover";
 import {
   Select,
+  SelectContent,
   SelectItem,
-  SelectPopup,
   SelectTrigger,
   SelectValue,
   type SelectValueProps,
@@ -215,13 +215,13 @@ function SelectField<Value>({
         <SelectTrigger>
           <SelectValue {...selectValue} />
         </SelectTrigger>
-        <SelectPopup>
+        <SelectContent>
           {select.items.map(({ label, value }) => (
             <SelectItem key={String(value)} value={value}>
               {label}
             </SelectItem>
           ))}
-        </SelectPopup>
+        </SelectContent>
       </Select>
     </BaseField>
   );

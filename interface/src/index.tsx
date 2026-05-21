@@ -1,5 +1,4 @@
 import { RegistryContext } from "@effect/atom-react";
-import { AnchoredToastProvider, ToastProvider } from "@recount/ui/toast";
 import { TooltipProvider } from "@recount/ui/tooltip";
 
 import "./global.css";
@@ -34,13 +33,9 @@ export function renderRecountInterface() {
         <RegistryContext.Provider value={atomRegistry}>
           <HotkeysProvider>
             <TooltipProvider delay={100}>
-              <ToastProvider>
-                <AnchoredToastProvider>
-                  <ThemeProvider>
-                    <RouterProvider router={router} />
-                  </ThemeProvider>
-                </AnchoredToastProvider>
-              </ToastProvider>
+              <ThemeProvider>
+                <RouterProvider router={router} />
+              </ThemeProvider>
             </TooltipProvider>
           </HotkeysProvider>
         </RegistryContext.Provider>

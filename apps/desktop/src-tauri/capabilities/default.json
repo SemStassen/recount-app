@@ -7,16 +7,6 @@
     "core:default",
     "opener:default",
     "os:default",
-    "deep-link:default",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "http://localhost:8002"
-        }
-      ]
-    },
-    "fs:default",
-    "stronghold:default"
+    "deep-link:default"
   ]
 }

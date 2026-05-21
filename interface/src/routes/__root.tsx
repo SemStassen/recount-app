@@ -8,6 +8,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@recount/ui/popover";
+import { AnchoredToastProvider, ToastProvider } from "@recount/ui/toast";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
 import { createRootRoute, HeadContent, Outlet } from "@tanstack/react-router";
@@ -61,46 +62,48 @@ function RootLayout() {
   );
 
   return (
-    <>
-      <HeadContent />
-      <Outlet />
-      {AsyncResult.isFailure(ping) && (
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button
-                variant="destructive"
-                size="icon-lg"
-                className="fixed bottom-3 left-3"
-              >
-                <Icons.Warning />
-              </Button>
-            }
-          />
-          <PopoverContent align="start">
-            <PopoverTitle>Possible service degradation</PopoverTitle>
-            <PopoverDescription>
-              We hope to get this resolved soon.
-            </PopoverDescription>
-          </PopoverContent>
-        </Popover>
-      )}
-      {env.VITE_DEV && (
-        <>
-          <TanStackDevtools
-            plugins={[
-              {
-                name: "TanStack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              {
-                name: "TanStack Form",
-                render: <FormDevtoolsPanel />,
-              },
-            ]}
-          />
-        </>
-      )}
-    </>
+    <ToastProvider>
+      <AnchoredToastProvider>
+        <HeadContent />
+        <Outlet />
+        {AsyncResult.isFailure(ping) && (
+          <Popover>
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="destructive"
+                  size="icon-lg"
+                  className="fixed bottom-3 left-3"
+                >
+                  <Icons.Warning />
+                </Button>
+              }
+            />
+            <PopoverContent align="start">
+              <PopoverTitle>Possible service degradation</PopoverTitle>
+              <PopoverDescription>
+                We hope to get this resolved soon.
+              </PopoverDescription>
+            </PopoverContent>
+          </Popover>
+        )}
+        {env.VITE_DEV && (
+          <>
+            <TanStackDevtools
+              plugins={[
+                {
+                  name: "TanStack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+                {
+                  name: "TanStack Form",
+                  render: <FormDevtoolsPanel />,
+                },
+              ]}
+            />
+          </>
+        )}
+      </AnchoredToastProvider>
+    </ToastProvider>
   );
 }

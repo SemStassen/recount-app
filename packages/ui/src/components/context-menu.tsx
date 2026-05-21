@@ -66,7 +66,10 @@ export function ContextMenuPopup({
 }: ContextMenuPrimitive.Popup.Props): React.ReactElement {
   return (
     <ContextMenuPrimitive.Popup
-      className={cn("relative", className)}
+      className={cn(
+        "origin-(--transform-origin) text-foreground outline-none",
+        className
+      )}
       data-slot="context-menu-popup"
       {...props}
     />
@@ -158,11 +161,7 @@ export function ContextMenuContent({
         sideOffset={sideOffset}
       >
         <ContextMenuPopup
-          className={cn(
-            "rounded-md bg-popover py-1 text-popover-foreground shadow-md",
-            "overlay-outline animate-popup",
-            className
-          )}
+          className={cn("min-w-36 rounded-lg border bg-popover p-1", className)}
           data-slot="context-menu-content"
           {...props}
         >
@@ -195,13 +194,14 @@ export function ContextMenuSubContent({
 
 export const contextMenuItemVariants = cva(
   [
-    "flex items-center gap-2 px-3.5 py-1.5 text-sm",
-    "cursor-default select-none outline-none",
-    "highlight-on-active",
-    "data-disabled:pointer-events-none data-disabled:opacity-50",
+    "flex min-h-8 items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base",
+    "cursor-default outline-none select-none",
+    "data-disabled:pointer-events-none data-disabled:opacity-64",
+    "data-highlighted:bg-accent data-highlighted:text-accent-foreground",
+    "sm:min-h-7 sm:text-sm",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",
-    "[&_svg:not([class*='size-'])]:size-4",
-    "[&_svg:not([class*='text-'])]:text-muted-foreground hover:[&_svg:not([class*='text-'])]:text-foreground",
+    "[&_svg:not([class*='opacity-'])]:opacity-80",
+    "[&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
   ],
   {
     defaultVariants: {
@@ -212,8 +212,8 @@ export const contextMenuItemVariants = cva(
         default: "",
         destructive: [
           "text-destructive *:[svg]:!text-destructive",
-          "data-[highlighted]:text-destructive",
-          "data-[highlighted]:before:bg-destructive/10 dark:data-[highlighted]:before:bg-destructive/20",
+          "data-highlighted:bg-destructive/8 data-highlighted:text-destructive",
+          "dark:data-highlighted:bg-destructive/16",
         ],
       },
     },
@@ -302,12 +302,13 @@ export function ContextMenuCheckboxItemContent({
     <ContextMenuPrimitive.CheckboxItem
       checked={checked}
       className={cn(
-        "grid items-center gap-2 py-1.5 pr-3 text-sm",
-        "cursor-default select-none outline-none",
-        "highlight-on-active",
-        "data-disabled:pointer-events-none data-disabled:opacity-50",
-        indicatorPlacement === "start" && "grid-cols-[1rem_1fr] pl-3.5",
-        indicatorPlacement === "end" && "grid-cols-[1fr_1rem] pl-3.5",
+        "grid min-h-8 items-center gap-2 rounded-sm py-1 pe-4 text-base",
+        "cursor-default outline-none select-none",
+        "data-disabled:pointer-events-none data-disabled:opacity-64",
+        "data-highlighted:bg-accent data-highlighted:text-accent-foreground",
+        "sm:min-h-7 sm:text-sm",
+        indicatorPlacement === "start" && "grid-cols-[1rem_1fr] ps-2",
+        indicatorPlacement === "end" && "grid-cols-[1fr_1rem] ps-2",
         className
       )}
       data-slot="context-menu-checkbox-item-content"
@@ -317,7 +318,7 @@ export function ContextMenuCheckboxItemContent({
         className={cn(
           "row-start-1 flex items-center justify-center",
           "[&_svg]:pointer-events-none [&_svg]:shrink-0",
-          "[&_svg:not([class*='size-'])]:size-4",
+          "[&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
           indicatorPlacement === "start" ? "col-start-1" : "col-start-2"
         )}
       >
@@ -351,12 +352,13 @@ export function ContextMenuRadioItemContent({
   return (
     <ContextMenuPrimitive.RadioItem
       className={cn(
-        "grid items-center gap-2 py-1.5 pr-3 text-sm",
-        "cursor-default select-none outline-none",
-        "highlight-on-active",
-        "data-disabled:pointer-events-none data-disabled:opacity-50",
-        indicatorPlacement === "start" && "grid-cols-[1rem_1fr] pl-2",
-        indicatorPlacement === "end" && "grid-cols-[1fr_1rem] pl-4",
+        "grid min-h-8 items-center gap-2 rounded-sm py-1 pe-4 text-base",
+        "cursor-default outline-none select-none",
+        "data-disabled:pointer-events-none data-disabled:opacity-64",
+        "data-highlighted:bg-accent data-highlighted:text-accent-foreground",
+        "sm:min-h-7 sm:text-sm",
+        indicatorPlacement === "start" && "grid-cols-[1rem_1fr] ps-2",
+        indicatorPlacement === "end" && "grid-cols-[1fr_1rem] ps-2",
         className
       )}
       data-slot="context-menu-radio-item-content"
@@ -366,7 +368,7 @@ export function ContextMenuRadioItemContent({
         className={cn(
           "row-start-1 flex items-center justify-center",
           "[&_svg]:pointer-events-none [&_svg]:shrink-0",
-          "[&_svg:not([class*='size-'])]:size-4",
+          "[&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
           indicatorPlacement === "start" ? "col-start-1" : "col-start-2"
         )}
       >
@@ -426,7 +428,7 @@ export function ContextMenuSeparator({
 }: ContextMenuPrimitive.Separator.Props): React.ReactElement {
   return (
     <ContextMenuPrimitive.Separator
-      className={cn("pointer-events-none my-1 h-px bg-border", className)}
+      className={cn("pointer-events-none mx-2 my-1 h-px bg-border", className)}
       data-slot="context-menu-separator"
       {...props}
     />
@@ -446,8 +448,8 @@ export function ContextMenuLabel({
   return (
     <ContextMenuPrimitive.GroupLabel
       className={cn(
-        "px-3.5 py-1.5 font-medium text-muted-foreground text-xs",
-        "select-none data-inset:pl-8",
+        "px-2 py-1.5 font-medium text-muted-foreground text-xs",
+        "select-none data-inset:ps-8",
         className
       )}
       data-inset={inset}

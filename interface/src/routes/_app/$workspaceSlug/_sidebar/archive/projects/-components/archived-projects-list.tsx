@@ -1,14 +1,13 @@
-import { useAtomSet } from "@effect/atom-react";
 import type { Project } from "@recount/core/modules/project";
+import type { ProjectId } from "@recount/core/shared/schemas";
 import { Button } from "@recount/ui/button";
 import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@recount/ui/empty";
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@recount/ui/context-menu";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@recount/ui/empty";
 import { Icons } from "@recount/ui/icons";
 import {
   List,
@@ -18,6 +17,7 @@ import {
   ListHeader,
   ListRow,
 } from "@recount/ui/list";
+import { toastManager } from "@recount/ui/toast";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Link } from "@tanstack/react-router";
 import {
@@ -28,9 +28,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { Exit } from "effect";
 import { useMemo, useRef } from "react";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 const columnHelper = createColumnHelper<Project>();
 
@@ -60,6 +62,49 @@ export function ArchivedProjectsList() {
   const { data: projects } = useLiveQuery((q) =>
     q.from({ p: workspaceDb.collections.archivedProjectsCollection })
   );
+
+  const unarchiveProject = useWorkspaceMutation("Project.Unarchive");
+
+  const handleUnarchiveProject = async (projectId: ProjectId) => {
+    const exit = await unarchiveProject({
+      payload: {
+        id: projectId,
+      },
+    });
+
+    Exit.match(exit, {
+      onSuccess: () => {
+        const toastId = `project-unarchive-${projectId}`;
+
+        toastManager.add({
+          id: toastId,
+          type: "success",
+          title: "Project restored",
+          description: (
+            <Button
+              variant="ghost"
+              render={
+                <Link
+                  to="/$workspaceSlug/projects/$projectId"
+                  from="/$workspaceSlug"
+                  params={{ projectId }}
+                  onClick={() => toastManager.close(toastId)}
+                >
+                  View project
+                </Link>
+              }
+            />
+          ),
+        });
+      },
+      onFailure: () => {
+        toastManager.add({
+          type: "error",
+          title: "Something went wrong",
+        });
+      },
+    });
+  };
 
   const columns = useMemo(() => createColumns(), []);
 
@@ -113,21 +158,36 @@ export function ArchivedProjectsList() {
         {virtualizer.getVirtualItems().map((virtualRow, index) => {
           const row = rows[virtualRow.index];
           return (
-            <ListRow
-              key={row.id}
-              style={{
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${
-                  virtualRow.start - index * virtualRow.size
-                }px)`,
-              }}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <ListCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </ListCell>
-              ))}
-            </ListRow>
+            <ContextMenu key={row.id}>
+              <ContextMenuTrigger
+                render={
+                  <ListRow
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${
+                        virtualRow.start - index * virtualRow.size
+                      }px)`,
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <ListCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </ListCell>
+                    ))}
+                  </ListRow>
+                }
+              />
+              <ContextMenuContent>
+                <ContextMenuItem
+                  onClick={() => handleUnarchiveProject(row.original.id)}
+                >
+                  Unarchive
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           );
         })}
       </ListBody>

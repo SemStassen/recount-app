@@ -1,6 +1,13 @@
 import { useAtomSet } from "@effect/atom-react";
 import type { Project } from "@recount/core/modules/project";
+import type { ProjectId } from "@recount/core/shared/schemas";
 import { Button } from "@recount/ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@recount/ui/context-menu";
 import {
   Empty,
   EmptyContent,
@@ -18,6 +25,7 @@ import {
   ListHeader,
   ListRow,
 } from "@recount/ui/list";
+import { toastManager } from "@recount/ui/toast";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Link } from "@tanstack/react-router";
 import {
@@ -28,9 +36,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { Exit } from "effect";
 import { useMemo, useRef } from "react";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
+import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 import { isCreateProjectSidebarOpenAtom } from "./create-project-sidebar/atoms";
 
@@ -72,6 +82,48 @@ export function ProjectsList() {
   const { data: projects } = useLiveQuery((q) =>
     q.from({ p: workspaceDb.collections.activeProjectsCollection })
   );
+
+  const archiveProject = useWorkspaceMutation("Project.Archive");
+
+  const handleArchiveProject = async (projectId: ProjectId) => {
+    const exit = await archiveProject({
+      payload: {
+        id: projectId,
+      },
+    });
+
+    Exit.match(exit, {
+      onSuccess: () => {
+        const toastId = `project-archive-${projectId}`;
+
+        toastManager.add({
+          id: toastId,
+          type: "success",
+          title: "Project archived",
+          description: (
+            <Button
+              variant="ghost"
+              render={
+                <Link
+                  to="/$workspaceSlug/archive/projects"
+                  from="/$workspaceSlug"
+                  onClick={() => toastManager.close(toastId)}
+                >
+                  View archive
+                </Link>
+              }
+            />
+          ),
+        });
+      },
+      onFailure: () => {
+        toastManager.add({
+          type: "error",
+          title: "Something went wrong",
+        });
+      },
+    });
+  };
 
   const columns = useMemo(() => createColumns(), []);
 
@@ -125,30 +177,45 @@ export function ProjectsList() {
         {virtualizer.getVirtualItems().map((virtualRow, index) => {
           const row = rows[virtualRow.index];
           return (
-            <ListRow
-              key={row.id}
-              render={
-                <Link
-                  to="/$workspaceSlug/projects/$projectId"
-                  from="/$workspaceSlug"
-                  params={{
-                    projectId: row.original.id,
-                  }}
-                />
-              }
-              style={{
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${
-                  virtualRow.start - index * virtualRow.size
-                }px)`,
-              }}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <ListCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </ListCell>
-              ))}
-            </ListRow>
+            <ContextMenu key={row.id}>
+              <ContextMenuTrigger
+                render={
+                  <ListRow
+                    render={
+                      <Link
+                        to="/$workspaceSlug/projects/$projectId"
+                        from="/$workspaceSlug"
+                        params={{
+                          projectId: row.original.id,
+                        }}
+                      />
+                    }
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${
+                        virtualRow.start - index * virtualRow.size
+                      }px)`,
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <ListCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </ListCell>
+                    ))}
+                  </ListRow>
+                }
+              />
+              <ContextMenuContent>
+                <ContextMenuItem
+                  onClick={() => handleArchiveProject(row.original.id)}
+                >
+                  Archive
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           );
         })}
       </ListBody>

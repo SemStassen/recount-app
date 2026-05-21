@@ -7,12 +7,23 @@ import type * as React from "react";
 
 import { cn } from "#utils/cn";
 
-import { Icons } from "../icons";
+import { Icons } from "./icons";
 
 export const Select: typeof SelectPrimitive.Root = SelectPrimitive.Root;
 
 export const selectTriggerVariants = cva(
-  "inline-flex min-h-9 w-full min-w-36 select-none items-center justify-between gap-2 rounded-lg border border-input bg-background px-[calc(--spacing(3)-1px)] text-left text-base text-foreground outline-none ring-ring/24 transition-colors pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 focus-visible:border-ring focus-visible:ring-[3px] aria-invalid:border-destructive/36 focus-visible:aria-invalid:border-destructive/64 focus-visible:aria-invalid:ring-destructive/16 data-disabled:pointer-events-none data-disabled:opacity-64 sm:min-h-8 sm:text-sm dark:bg-input/32 dark:aria-invalid:ring-destructive/24 [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  [
+    "inline-flex min-h-9 w-full min-w-36 items-center justify-between gap-2 rounded-lg border border-input bg-background px-[calc(--spacing(3)-1px)] text-left text-base text-foreground",
+    "select-none outline-none ring-ring/24 transition-colors",
+    "focus-visible:border-ring focus-visible:ring-[3px]",
+    "aria-invalid:border-destructive/36 focus-visible:aria-invalid:border-destructive/64 focus-visible:aria-invalid:ring-destructive/16 dark:aria-invalid:ring-destructive/24",
+    "data-disabled:pointer-events-none data-disabled:opacity-64",
+    "pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11",
+    "sm:min-h-8 sm:text-sm dark:bg-input/32",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+    "[&_svg:not([class*='opacity-'])]:opacity-80",
+    "[&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
+  ],
   {
     defaultVariants: {
       size: "default",
@@ -104,6 +115,31 @@ export function SelectValue({
 
 export function SelectPopup({
   className,
+  ...props
+}: SelectPrimitive.Popup.Props): React.ReactElement {
+  return (
+    <SelectPrimitive.Popup
+      className={cn(
+        "origin-(--transform-origin) text-foreground outline-none",
+        className
+      )}
+      data-slot="select-popup"
+      {...props}
+    />
+  );
+}
+
+export interface SelectContentProps extends SelectPrimitive.Popup.Props {
+  side?: SelectPrimitive.Positioner.Props["side"];
+  sideOffset?: SelectPrimitive.Positioner.Props["sideOffset"];
+  align?: SelectPrimitive.Positioner.Props["align"];
+  alignOffset?: SelectPrimitive.Positioner.Props["alignOffset"];
+  alignItemWithTrigger?: SelectPrimitive.Positioner.Props["alignItemWithTrigger"];
+  anchor?: SelectPrimitive.Positioner.Props["anchor"];
+}
+
+export function SelectContent({
+  className,
   children,
   side = "bottom",
   sideOffset = 4,
@@ -112,14 +148,7 @@ export function SelectPopup({
   alignItemWithTrigger = true,
   anchor,
   ...props
-}: SelectPrimitive.Popup.Props & {
-  side?: SelectPrimitive.Positioner.Props["side"];
-  sideOffset?: SelectPrimitive.Positioner.Props["sideOffset"];
-  align?: SelectPrimitive.Positioner.Props["align"];
-  alignOffset?: SelectPrimitive.Positioner.Props["alignOffset"];
-  alignItemWithTrigger?: SelectPrimitive.Positioner.Props["alignItemWithTrigger"];
-  anchor?: SelectPrimitive.Positioner.Props["anchor"];
-}): React.ReactElement {
+}: SelectContentProps): React.ReactElement {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
@@ -132,13 +161,9 @@ export function SelectPopup({
         side={side}
         sideOffset={sideOffset}
       >
-        <SelectPrimitive.Popup
-          className="origin-(--transform-origin) text-foreground outline-none"
-          data-slot="select-popup"
-          {...props}
-        >
+        <SelectPopup {...props}>
           <SelectPrimitive.ScrollUpArrow
-            className="top-0 z-50 flex h-6 w-full cursor-default items-center justify-center before:pointer-events-none before:absolute before:inset-x-px before:top-px before:h-[200%] before:rounded-t-[calc(var(--radius-lg)-1px)] before:bg-linear-to-b before:from-50% before:from-popover"
+            className="top-0 z-50 flex h-6 w-full items-center justify-center cursor-default before:pointer-events-none before:absolute before:inset-x-px before:top-px before:h-[200%] before:rounded-t-[calc(var(--radius-lg)-1px)] before:bg-linear-to-b before:from-50% before:from-popover"
             data-slot="select-scroll-up-arrow"
           >
             <Icons.ChevronUp className="relative size-4.5 sm:size-4" />
@@ -155,12 +180,12 @@ export function SelectPopup({
             </SelectPrimitive.List>
           </div>
           <SelectPrimitive.ScrollDownArrow
-            className="bottom-0 z-50 flex h-6 w-full cursor-default items-center justify-center before:pointer-events-none before:absolute before:inset-x-px before:bottom-px before:h-[200%] before:rounded-b-[calc(var(--radius-lg)-1px)] before:bg-linear-to-t before:from-50% before:from-popover"
+            className="bottom-0 z-50 flex h-6 w-full items-center justify-center cursor-default before:pointer-events-none before:absolute before:inset-x-px before:bottom-px before:h-[200%] before:rounded-b-[calc(var(--radius-lg)-1px)] before:bg-linear-to-t before:from-50% before:from-popover"
             data-slot="select-scroll-down-arrow"
           >
             <Icons.ChevronDown className="relative size-4.5 sm:size-4" />
           </SelectPrimitive.ScrollDownArrow>
-        </SelectPrimitive.Popup>
+        </SelectPopup>
       </SelectPrimitive.Positioner>
     </SelectPrimitive.Portal>
   );
@@ -174,7 +199,13 @@ export function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "grid min-h-8 in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] cursor-default grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base outline-none data-disabled:pointer-events-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:opacity-64 sm:min-h-7 sm:text-sm [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "grid min-h-8 grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base",
+        "cursor-default outline-none",
+        "data-disabled:pointer-events-none data-disabled:opacity-64",
+        "data-highlighted:bg-accent data-highlighted:text-accent-foreground",
+        "in-data-[side=none]:min-w-[calc(var(--anchor-width)+1.25rem)] sm:min-h-7 sm:text-sm",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "[&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4",
         className
       )}
       data-slot="select-item"
@@ -229,7 +260,8 @@ export function SelectLabel({
   return (
     <SelectPrimitive.Label
       className={cn(
-        "not-in-data-[slot=field]:mb-2 inline-flex cursor-default items-center gap-2 font-medium text-base/4.5 text-foreground sm:text-sm/4",
+        "inline-flex items-center gap-2 font-medium text-base/4.5 text-foreground",
+        "cursor-default sm:text-sm/4 not-in-data-[slot=field]:mb-2",
         className
       )}
       data-slot="select-label"
@@ -250,4 +282,4 @@ export function SelectGroupLabel(
   );
 }
 
-export { SelectPrimitive, SelectPopup as SelectContent };
+export { SelectPrimitive };
