@@ -12,7 +12,9 @@
     "machine-translate": "inlang machine translate --project project.inlang"
   },
   "dependencies": {
-    "@recount/interface": "workspace:*"
+    "@recount/interface": "workspace:*",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",
