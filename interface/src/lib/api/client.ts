@@ -3,6 +3,7 @@ import { Effect, Layer, Context } from "effect";
 import { HttpClient, HttpClientError } from "effect/unstable/http";
 import { HttpApiClient } from "effect/unstable/httpapi";
 
+import { setAuthHeaders } from "../auth";
 import { env } from "../env";
 
 export class BackendHttpApiClient extends Context.Service<BackendHttpApiClient>()(
@@ -13,6 +14,7 @@ export class BackendHttpApiClient extends Context.Service<BackendHttpApiClient>(
         baseUrl: env.VITE_BACKEND_URL,
         transformClient: (client) =>
           client.pipe(
+            HttpClient.mapRequest(setAuthHeaders),
             HttpClient.retry({
               times: 3,
               // Only retry server errors (5xx), not client errors (4xx) like 401/403

@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/ast-grep/ast-grep/main/schemas/typescript_rule.json
+
+id: no-static-service-members-except-layers
+language: tsx
+severity: error
+message: "Context.Service classes should only expose static layers"
+
+rule:
+  any:
+    - all:
+        - pattern: |
+            class $CLASS extends Context.Service<$$$TYPES>()($$$ARGS) {
+              $$$BEFORE
+              static readonly $NAME = $$$VALUE
+              $$$AFTER
+            }
+        - not:
+            any:
+              - pattern: |
+                  class $CLASS extends Context.Service<$$$TYPES>()($$$ARGS) {
+                    $$$BEFORE
+                    static readonly layer = $$$VALUE
+                    $$$AFTER
+                  }
+              - pattern: |
+                  class $CLASS extends Context.Service<$$$TYPES>()($$$ARGS) {
+                    $$$BEFORE
+                    static readonly $NAME = Layer.$METHOD($$$LAYER_ARGS)
+                    $$$AFTER
+                  }
+              - pattern: |
+                  class $CLASS extends Context.Service<$$$TYPES>()($$$ARGS) {
+                    $$$BEFORE
+                    static readonly $NAME = Layer.$METHOD($$$LAYER_ARGS).pipe($$$PIPE_ARGS)
+                    $$$AFTER
+                  }
+    - pattern: |
+        class $CLASS extends Context.Service<$$$TYPES>()($$$ARGS) {
+          $$$BEFORE
+          static $NAME($$$PARAMS) { $$$BODY }
+          $$$AFTER
+        }
+
+files:
+  - "apps/**/*.ts"
+  - "apps/**/*.tsx"
+  - "interface/**/*.ts"
+  - "interface/**/*.tsx"
+  - "packages/**/*.ts"
+  - "packages/**/*.tsx"
+
+note: |
+  Effect service classes should define the service tag and static layers only.
+  Put helper effects/functions next to call sites or in separate modules so the
+  service class stays a tag plus layer definitions.
+
+  ```typescript
+  // ❌ Bad
+  class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+    static readonly getToken = Effect.flatMap(Auth, (_) => _.getToken);
+  }
+
+  // ✅ Good
+  class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+    static readonly layer = Layer.succeed(Auth, { ... });
+  }
+  ```
+
+ignores:
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/node_modules/**"

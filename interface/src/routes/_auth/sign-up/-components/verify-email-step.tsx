@@ -9,7 +9,7 @@ import { Schema } from "effect";
 import type { Dispatch, SetStateAction } from "react";
 
 import { useAppForm } from "~/components/form";
-import { betterAuthClient } from "~/lib/better-auth";
+import { signInWithEmailOtp } from "~/lib/auth";
 import { createSchemaForm } from "~/lib/form";
 import { m } from "~/paraglide/messages";
 
@@ -41,7 +41,7 @@ function VerifyEmailStep({
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      await betterAuthClient.signIn.emailOtp({
+      await signInWithEmailOtp({
         email: value.email,
         otp: value.otp,
       });

@@ -20,7 +20,7 @@ import {
 import { AtomRpc, Reactivity } from "effect/unstable/reactivity";
 import { RpcClient, RpcSerialization } from "effect/unstable/rpc";
 
-import { RpcSessionMiddlewareLayerClient } from "./middleware";
+import { RpcSessionMiddlewareLayerClient } from "../auth";
 
 const allRpcGroups = AuthRpcGroup.merge(
   FileUploadRpcGroup,

@@ -1,12 +1,37 @@
 /// <reference types="vite/client" />
 
-declare const __PLATFORM__: "web" | "desktop";
+declare global {
+  const __PLATFORM__: "web" | "desktop";
 
-interface ImportMetaEnv {
-  readonly VITE_BACKEND_URL: string;
-  readonly VITE_ELECTRIC_PROXY_URL: string;
+  interface Window {
+    readonly __TAURI__: {
+      readonly http: {
+        readonly fetch: typeof fetch;
+      };
+      readonly opener: {
+        readonly openUrl: (
+          url: string | URL,
+          openWith?: "inAppBrowser" | string
+        ) => Promise<void>;
+      };
+      readonly deepLink: {
+        readonly getCurrent: () => Promise<Array<string> | null>;
+        readonly onOpenUrl: (
+          handler: (urls: Array<string>) => void
+        ) => Promise<() => void>;
+      };
+    };
+  }
+
+  interface ImportMetaEnv {
+    readonly VITE_BACKEND_URL: string;
+    readonly VITE_ELECTRIC_PROXY_URL: string;
+  }
+
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+// Required so `declare global` augments globals from a module file.
+export {};

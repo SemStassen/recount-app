@@ -13,7 +13,7 @@ import { Link, useRouteContext } from "@tanstack/react-router";
 
 import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
 import { useWorkspaceDb } from "~/db/workspace/context";
-import { betterAuthClient } from "~/lib/better-auth";
+import { signOut } from "~/lib/auth";
 
 export function UserDropdownMenu() {
   const { user } = useRouteContext({
@@ -29,7 +29,7 @@ export function UserDropdownMenu() {
   );
 
   const handleSignOut = async () => {
-    await betterAuthClient.signOut();
+    await signOut();
   };
 
   return (

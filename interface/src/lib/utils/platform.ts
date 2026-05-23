@@ -25,3 +25,5 @@ export const PLATFORM: Platform =
         onOpenUrl: window.__TAURI__.deepLink.onOpenUrl,
       } as const)
     : ({ platform: "web" } as const);
+
+export const isDesktop = PLATFORM.platform === "desktop";

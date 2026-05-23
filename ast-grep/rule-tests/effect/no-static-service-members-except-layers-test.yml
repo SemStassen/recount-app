@@ -1,0 +1,30 @@
+id: no-static-service-members-except-layers
+
+valid:
+  - |
+    class Auth extends Context.Service<Auth, AuthShape>()("Auth") {}
+  - |
+    class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+      static readonly layer = Layer.succeed(Auth, {});
+    }
+  - |
+    class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+      static readonly webLayer = Layer.succeed(Auth, {});
+      static readonly desktopLayer = Layer.effect(Auth, makeAuth).pipe(Layer.provide(Config.layer));
+    }
+
+invalid:
+  - |
+    class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+      static readonly getToken = Effect.flatMap(Auth, (auth) => auth.getToken);
+    }
+  - |
+    class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+      static readonly runSync = <A>(effect: Effect.Effect<A>) => Effect.runSync(effect);
+    }
+  - |
+    class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+      static getToken() {
+        return Effect.flatMap(Auth, (auth) => auth.getToken);
+      }
+    }

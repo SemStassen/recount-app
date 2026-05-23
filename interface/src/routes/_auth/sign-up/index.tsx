@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type React from "react";
 import { useState } from "react";
 
-import { betterAuthClient } from "~/lib/better-auth";
+import { signInWithGoogle } from "~/lib/auth";
 import { m } from "~/paraglide/messages";
 
 import { EnterEmailStep } from "./-components/enter-email-step";
@@ -23,10 +23,7 @@ function SignUpPage() {
   // Used to share state between the 'enterEmail' and 'verifyEmail' steps
   const [email, setEmail] = useState("");
 
-  const handleGoogleSignUp = async () =>
-    await betterAuthClient.signIn.social({
-      provider: "google",
-    });
+  const handleGoogleSignUp = async () => await signInWithGoogle();
 
   const stepContent: Record<SignUpStep, React.ReactElement> = {
     chooseMethod: (

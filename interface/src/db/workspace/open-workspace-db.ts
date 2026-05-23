@@ -9,17 +9,22 @@ import {
 } from "@tanstack/react-db";
 import { Option } from "effect";
 
+import { authFetch } from "~/lib/auth";
+
 import { workspaceShapes } from "../sync-shapes";
 
 export type WorkspaceDb = Awaited<ReturnType<typeof openWorkspaceDb>>;
+
+const fetchWithPreconnect = fetch as typeof fetch & {
+  preconnect?: typeof fetch;
+};
 
 export async function openWorkspaceDb(workspaceId: string) {
   const abortController = new AbortController();
   const workspaceFetchClient: typeof fetch = Object.assign(
     (url: RequestInfo | URL, options?: RequestInit) =>
-      fetch(url, {
+      authFetch(url, {
         ...options,
-        credentials: "include",
         cache: "no-store",
         headers: {
           ...options?.headers,
@@ -27,7 +32,7 @@ export async function openWorkspaceDb(workspaceId: string) {
         },
       }),
     {
-      preconnect: fetch.preconnect?.bind(fetch),
+      preconnect: fetchWithPreconnect.preconnect?.bind(fetch),
     }
   );
 

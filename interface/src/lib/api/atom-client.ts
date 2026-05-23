@@ -7,7 +7,14 @@ import { env } from "../env";
 import type { BackendHttpApiClient } from "./client";
 
 const HttpClientLayer = FetchHttpClient.layer.pipe(
-  Layer.provide(Layer.succeed(HttpClient.TracerPropagationEnabled, false))
+  Layer.provide(
+    Layer.mergeAll(
+      Layer.succeed(HttpClient.TracerPropagationEnabled, false),
+      Layer.succeed(FetchHttpClient.RequestInit, {
+        credentials: "include",
+      })
+    )
+  )
 );
 
 export class BackendAtomHttpApiClient extends AtomHttpApi.Service<BackendHttpApiClient>()(

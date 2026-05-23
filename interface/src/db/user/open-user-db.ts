@@ -2,21 +2,26 @@ import { snakeCamelMapper } from "@electric-sql/client";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import { createCollection } from "@tanstack/react-db";
 
+import { authFetch } from "~/lib/auth";
+
 import { userShapes } from "../sync-shapes";
 
 export type UserDb = ReturnType<typeof openUserDb>;
+
+const fetchWithPreconnect = fetch as typeof fetch & {
+  preconnect?: typeof fetch;
+};
 
 export function openUserDb(userId: string) {
   const abortController = new AbortController();
   const userFetchClient: typeof fetch = Object.assign(
     (url: RequestInfo | URL, options?: RequestInit) =>
-      fetch(url, {
+      authFetch(url, {
         ...options,
         cache: "no-store",
-        credentials: "include",
       }),
     {
-      preconnect: fetch.preconnect?.bind(fetch),
+      preconnect: fetchWithPreconnect.preconnect?.bind(fetch),
     }
   );
 
