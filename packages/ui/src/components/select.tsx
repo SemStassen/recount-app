@@ -145,7 +145,7 @@ export function SelectContent({
   sideOffset = 4,
   align = "start",
   alignOffset = 0,
-  alignItemWithTrigger = true,
+  alignItemWithTrigger = false,
   anchor,
   ...props
 }: SelectContentProps): React.ReactElement {
@@ -199,7 +199,7 @@ export function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "grid min-h-8 grid-cols-[1rem_1fr] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base",
+        "grid min-h-8 grid-cols-[1rem_auto_1fr_auto] items-center gap-2 rounded-sm py-1 ps-2 pe-4 text-base",
         "cursor-default outline-none",
         "data-disabled:pointer-events-none data-disabled:opacity-64",
         "data-highlighted:bg-accent data-highlighted:text-accent-foreground",
@@ -211,7 +211,23 @@ export function SelectItem({
       data-slot="select-item"
       {...props}
     >
-      <SelectPrimitive.ItemIndicator className="col-start-1">
+      <SelectItemIndicator />
+      {children}
+    </SelectPrimitive.Item>
+  );
+}
+
+export function SelectItemIndicator({
+  className,
+  children,
+  ...props
+}: SelectPrimitive.ItemIndicator.Props): React.ReactElement {
+  return (
+    <SelectPrimitive.ItemIndicator
+      className={cn("col-start-4", className)}
+      {...props}
+    >
+      {children ?? (
         <svg
           aria-hidden="true"
           fill="none"
@@ -226,11 +242,20 @@ export function SelectItem({
         >
           <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
         </svg>
-      </SelectPrimitive.ItemIndicator>
-      <SelectPrimitive.ItemText className="col-start-2 min-w-0">
-        {children}
-      </SelectPrimitive.ItemText>
-    </SelectPrimitive.Item>
+      )}
+    </SelectPrimitive.ItemIndicator>
+  );
+}
+
+export function SelectItemText({
+  className,
+  ...props
+}: SelectPrimitive.ItemText.Props): React.ReactElement {
+  return (
+    <SelectPrimitive.ItemText
+      className={cn("col-start-2 min-w-0", className)}
+      {...props}
+    />
   );
 }
 

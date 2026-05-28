@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/ast-grep/ast-grep/main/schemas/typescript_rule.json
+
+id: select-item-requires-item-text
+language: tsx
+severity: error
+message: "Wrap SelectItem's accessible label in SelectItemText"
+
+rule:
+  all:
+    - pattern: "<SelectItem $$$PROPS>$$$CHILDREN</SelectItem>"
+    - not:
+        has:
+          pattern: "<SelectItemText $$$TEXT_PROPS>$$$TEXT_CHILDREN</SelectItemText>"
+          stopBy: end
+
+files:
+  - "interface/**/*.tsx"
+  - "packages/**/*.tsx"
+
+note: |
+  SelectItem renders the selected checkmark indicator, but callers must place
+  the accessible option label inside SelectItemText. Decorative markup such as
+  color dots or icons should be siblings of SelectItemText and use aria-hidden
+  when it does not add semantic meaning.
+
+  Example:
+  ```tsx
+  <SelectItem value={project.id}>
+    <span aria-hidden="true" className="size-2 rounded-full" />
+    <SelectItemText>{project.name}</SelectItemText>
+  </SelectItem>
+  ```
+
+ignores:
+  - "**/node_modules/**"

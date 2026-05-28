@@ -24,6 +24,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemText,
   SelectTrigger,
   SelectValue,
   type SelectValueProps,
@@ -53,6 +54,7 @@ export const { useAppForm, withFieldGroup } = createFormHook({
     DatePickerField,
     TimePickerField,
     SelectField,
+    ProjectSelectField,
     ColorPickerField,
     EditorField,
   },
@@ -218,7 +220,87 @@ function SelectField<Value>({
         <SelectContent>
           {select.items.map(({ label, value }) => (
             <SelectItem key={String(value)} value={value}>
-              {label}
+              <SelectItemText>{label}</SelectItemText>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </BaseField>
+  );
+}
+
+interface ProjectSelectFieldProject<Value> {
+  id: Value;
+  name: string;
+  color?: string | null;
+}
+
+export interface ProjectSelectFieldProps<
+  Value extends string,
+> extends BaseFieldProps {
+  projects: Array<ProjectSelectFieldProject<Value>>;
+  placeholder?: string;
+  select?: Omit<
+    SelectPrimitive.Root.Props<Value, false>,
+    "items" | "multiple" | "onValueChange" | "value"
+  >;
+}
+
+function ProjectSelectField<Value extends string>({
+  projects,
+  placeholder = "Choose a project",
+  select,
+  ...props
+}: ProjectSelectFieldProps<Value>) {
+  const fieldCtx = useFieldContext<Value | undefined>();
+  const selectedProject = projects.find(
+    (project) => project.id === fieldCtx.state.value
+  );
+
+  return (
+    <BaseField {...props}>
+      <Select
+        value={fieldCtx.state.value}
+        onValueChange={(value) => fieldCtx.handleChange(value ?? undefined)}
+        items={projects.map((project) => ({
+          label: project.name,
+          value: project.id,
+        }))}
+        {...select}
+      >
+        <SelectTrigger>
+          {selectedProject ? (
+            <>
+              {selectedProject.color && (
+                <span
+                  aria-hidden="true"
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: selectedProject.color }}
+                />
+              )}
+              <span className="truncate">{selectedProject.name}</span>
+            </>
+          ) : (
+            <span className="flex-1 truncate text-muted-foreground">
+              {placeholder}
+            </span>
+          )}
+        </SelectTrigger>
+        <SelectContent>
+          {projects.map((project) => (
+            <SelectItem key={project.id} value={project.id}>
+              {project.color && (
+                <span
+                  aria-hidden="true"
+                  className="col-start-2 size-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: project.color }}
+                />
+              )}
+              <SelectItemText
+                className={project.color ? "col-start-3" : undefined}
+              >
+                {project.name}
+              </SelectItemText>
             </SelectItem>
           ))}
         </SelectContent>

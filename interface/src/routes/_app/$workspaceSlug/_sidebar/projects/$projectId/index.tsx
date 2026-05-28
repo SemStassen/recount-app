@@ -5,6 +5,7 @@ import { eq, toArray, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 
 import { ColorPicker } from "~/components/color-picker";
+import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
 import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
@@ -46,7 +47,6 @@ function RouteComponent() {
   );
 
   const archiveProject = useWorkspaceMutation("Project.Archive");
-  const updateProject = useWorkspaceMutation("Project.Update");
 
   useRegisterCommands(
     [
@@ -69,6 +69,13 @@ function RouteComponent() {
       id: "archive-project",
     }
   );
+
+  const testProjectForm = useAppForm({
+    formId: "test-project-form",
+    defaultValues: {
+      name: project?.name ?? "",
+    },
+  });
 
   if (isLoading) {
     return null;
@@ -105,20 +112,44 @@ function RouteComponent() {
           }
         />
         <PageContainer className="space-y-2">
-          <ColorPicker
-            value={project.color}
-            onValueChange={(color) => {
-              if (!color || color === project.color) return;
+          <div className="flex flex-row gap-2 items-center">
+            <ColorPicker
+              value={project.color}
+              onValueChange={(color) => {
+                if (!color || color === project.color) return;
 
-              updateProject({
-                payload: {
-                  id: ProjectId.make(projectId),
-                  data: { color: HexColor.make(color) },
+                workspaceDb.collections.allProjectsCollection.update(
+                  project.id,
+                  (draft) => {
+                    draft.color = HexColor.make(color);
+                  }
+                );
+              }}
+            />
+            <testProjectForm.AppField
+              name="name"
+              listeners={{
+                onBlur: ({ fieldApi, value }) => {
+                  workspaceDb.collections.allProjectsCollection.update(
+                    ProjectId.make(projectId),
+                    (draft) => {
+                      draft[fieldApi.name] = value;
+                    }
+                  );
                 },
-              });
-            }}
-          />
-          <h1 className="text-2xl font-semibold">{project.name}</h1>
+              }}
+              children={(field) => (
+                <field.TextField
+                  direction="vertical"
+                  label={{
+                    children: "Name",
+                    className: "sr-only",
+                  }}
+                />
+              )}
+            />
+            {/*<h1 className="text-2xl font-semibold">{project.name}</h1>*/}
+          </div>
           <RichTextEditor content={project.notes} onChange={(value) => {}} />
           <Separator orientation="horizontal" />
           <section>

@@ -2,6 +2,12 @@ import type { Task } from "@recount/core/modules/project";
 import type { ProjectId } from "@recount/core/shared/schemas";
 import { Button } from "@recount/ui/button";
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@recount/ui/context-menu";
+import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -102,30 +108,53 @@ export function TasksList({ projectId, tasks }: TasksListProps) {
         {virtualizer.getVirtualItems().map((virtualRow, index) => {
           const row = rows[virtualRow.index];
           return (
-            <ListRow
-              key={row.id}
-              render={
-                <Link
-                  to="/$workspaceSlug/tasks/$taskId"
-                  from="/$workspaceSlug"
-                  params={{
-                    taskId: row.original.id,
-                  }}
+            <ContextMenu key={row.id}>
+              <ContextMenuTrigger
+                render={
+                  <ListRow
+                    render={
+                      <Link
+                        to="/$workspaceSlug/tasks/$taskId"
+                        from="/$workspaceSlug"
+                        params={{
+                          taskId: row.original.id,
+                        }}
+                      />
+                    }
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${
+                        virtualRow.start - index * virtualRow.size
+                      }px)`,
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <ListCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </ListCell>
+                    ))}
+                  </ListRow>
+                }
+              />
+              <ContextMenuContent>
+                <ContextMenuItem
+                  render={
+                    <Link
+                      from="/$workspaceSlug"
+                      to="/$workspaceSlug/tasks/$taskId"
+                      params={{
+                        taskId: row.original.id,
+                      }}
+                    >
+                      Open task...
+                    </Link>
+                  }
                 />
-              }
-              style={{
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${
-                  virtualRow.start - index * virtualRow.size
-                }px)`,
-              }}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <ListCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </ListCell>
-              ))}
-            </ListRow>
+              </ContextMenuContent>
+            </ContextMenu>
           );
         })}
       </ListBody>

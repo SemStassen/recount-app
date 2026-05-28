@@ -2,11 +2,13 @@
 
 ruleDirs:
   - ast-grep/rules/shared # Rules for all TypeScript code
+  - ast-grep/rules/ui # UI component and accessibility patterns
   - ast-grep/rules/effect # Effect library patterns
 
 # Test configuration
 testConfigs:
   - testDir: ast-grep/rule-tests/shared
+  - testDir: ast-grep/rule-tests/ui
   - testDir: ast-grep/rule-tests/effect
 
 # Treat .ts files as TSX for unified rule handling

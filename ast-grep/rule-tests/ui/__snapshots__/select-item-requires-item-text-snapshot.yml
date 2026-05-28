@@ -1,0 +1,23 @@
+id: select-item-requires-item-text
+snapshots:
+  ? |
+    <SelectItem value={project.id}>
+      <span aria-hidden="true" className="size-2 rounded-full" />
+      <span>{project.name}</span>
+    </SelectItem>
+  : labels:
+    - source: |-
+        <SelectItem value={project.id}>
+          <span aria-hidden="true" className="size-2 rounded-full" />
+          <span>{project.name}</span>
+        </SelectItem>
+      style: primary
+      start: 0
+      end: 137
+  ? |
+    <SelectItem value={project.id}>{project.name}</SelectItem>
+  : labels:
+    - source: <SelectItem value={project.id}>{project.name}</SelectItem>
+      style: primary
+      start: 0
+      end: 58

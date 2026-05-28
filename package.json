@@ -51,7 +51,7 @@
       },
       "frontend": {
         "@base-ui/react": "^1.5.0",
-        "@tanstack/react-form": "^1.29.2",
+        "@tanstack/react-form": "^1.32.1",
         "class-variance-authority": "^0.7.1",
         "motion": "^12.39.0",
         "react": "^19.2.6",

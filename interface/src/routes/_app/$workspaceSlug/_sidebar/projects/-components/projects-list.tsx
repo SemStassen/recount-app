@@ -1,4 +1,3 @@
-import { useAtomSet } from "@effect/atom-react";
 import type { Project } from "@recount/core/modules/project";
 import type { ProjectId } from "@recount/core/shared/schemas";
 import { Button } from "@recount/ui/button";
@@ -6,6 +5,7 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@recount/ui/context-menu";
 import {
@@ -42,7 +42,7 @@ import { useMemo, useRef } from "react";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
-import { isCreateProjectSidebarOpenAtom } from "./create-project-sidebar/atoms";
+import { createProjectDialogHandle } from "../../../-components/create-project-dialog";
 
 const columnHelper = createColumnHelper<Project>();
 
@@ -74,10 +74,6 @@ const createColumns = () => [
 ];
 
 export function ProjectsList() {
-  const setIsCreateProjectSidebarOpen = useAtomSet(
-    isCreateProjectSidebarOpenAtom
-  );
-
   const workspaceDb = useWorkspaceDb();
   const { data: projects } = useLiveQuery((q) =>
     q.from({ p: workspaceDb.collections.activeProjectsCollection })
@@ -210,6 +206,20 @@ export function ProjectsList() {
               />
               <ContextMenuContent>
                 <ContextMenuItem
+                  render={
+                    <Link
+                      from="/$workspaceSlug"
+                      to="/$workspaceSlug/projects/$projectId"
+                      params={{
+                        projectId: row.original.id,
+                      }}
+                    >
+                      Open project...
+                    </Link>
+                  }
+                />
+                <ContextMenuSeparator />
+                <ContextMenuItem
                   onClick={() => handleArchiveProject(row.original.id)}
                 >
                   Archive
@@ -232,7 +242,7 @@ export function ProjectsList() {
       <EmptyContent>
         <Button
           variant="outline"
-          onClick={() => setIsCreateProjectSidebarOpen(true)}
+          onClick={() => createProjectDialogHandle.open(null)}
         >
           New project
         </Button>

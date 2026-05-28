@@ -1,0 +1,21 @@
+id: select-item-requires-item-text
+
+valid:
+  - |
+    <SelectItem value={project.id}>
+      <SelectItemText>{project.name}</SelectItemText>
+    </SelectItem>
+  - |
+    <SelectItem value={project.id}>
+      <span aria-hidden="true" className="size-2 rounded-full" />
+      <SelectItemText>{project.name}</SelectItemText>
+    </SelectItem>
+
+invalid:
+  - |
+    <SelectItem value={project.id}>{project.name}</SelectItem>
+  - |
+    <SelectItem value={project.id}>
+      <span aria-hidden="true" className="size-2 rounded-full" />
+      <span>{project.name}</span>
+    </SelectItem>

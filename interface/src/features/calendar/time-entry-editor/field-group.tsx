@@ -33,6 +33,7 @@ export const TimeEntryFieldGroup = withFieldGroup({
     projects: [] as Array<{
       id: string;
       name: string;
+      color?: string | null;
       tasks: Array<{
         id: string;
         name: string;
@@ -72,17 +73,12 @@ export const TimeEntryFieldGroup = withFieldGroup({
         <group.AppField
           name="projectId"
           children={(field) => (
-            <field.SelectField
+            <field.ProjectSelectField
               direction="vertical"
               label={{
                 children: "Project",
               }}
-              select={{
-                items: projects.map((project) => ({
-                  value: project.id,
-                  label: project.name,
-                })),
-              }}
+              projects={projects}
             />
           )}
         />

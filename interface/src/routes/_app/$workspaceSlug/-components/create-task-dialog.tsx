@@ -64,6 +64,7 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
         .select(({ p }) => ({
           id: p.id,
           name: p.name,
+          color: p.color,
         })),
     []
   );
@@ -138,17 +139,12 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
               />
               <form.AppField
                 children={(field) => (
-                  <field.SelectField
+                  <field.ProjectSelectField
                     direction="vertical"
                     label={{
                       children: "Project",
                     }}
-                    select={{
-                      items: projects.map((p) => ({
-                        label: p.name,
-                        value: p.id,
-                      })),
-                    }}
+                    projects={projects}
                   />
                 )}
                 name="projectId"

@@ -1,4 +1,3 @@
-import { useAtomSet } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 import { createFileRoute } from "@tanstack/react-router";
@@ -11,8 +10,7 @@ import {
   PageTopBar,
   PageTopBarBreadcrumbs,
 } from "../-components/page";
-import { CreateProjectSidebar } from "./-components/create-project-sidebar";
-import { isCreateProjectSidebarOpenAtom } from "./-components/create-project-sidebar/atoms";
+import { createProjectDialogHandle } from "../../-components/create-project-dialog";
 import { ProjectsList } from "./-components/projects-list";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
@@ -22,10 +20,6 @@ export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
 );
 
 function RouteComponent() {
-  const setIsCreateProjectSidebarOpen = useAtomSet(
-    isCreateProjectSidebarOpenAtom
-  );
-
   return (
     <Page>
       <PageMain>
@@ -47,7 +41,7 @@ function RouteComponent() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsCreateProjectSidebarOpen(true)}
+              onClick={() => createProjectDialogHandle.open(null)}
             >
               <Icons.Plus />
             </Button>
@@ -55,7 +49,6 @@ function RouteComponent() {
         />
         <ProjectsList />
       </PageMain>
-      <CreateProjectSidebar />
     </Page>
   );
 }
