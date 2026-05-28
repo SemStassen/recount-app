@@ -14,7 +14,7 @@ export const workspaceShapes = {
     getKey: (workspaceMember) => workspaceMember.id,
     decodeRow: (row) =>
       Schema.decodeUnknownSync(
-        WorkspaceMember.json.mapFields(Struct.map(Schema.optionalKey))
+        WorkspaceMember.json.mapFields(Struct.map(Schema.optionalKey)),
       )(row),
   }),
   workspaceIntegrationConnections: defineShape({
@@ -29,15 +29,22 @@ export const workspaceShapes = {
           .mapFields(
             Struct.evolve({
               createdAt: () => Schema.DateTimeUtcFromString,
-            })
+            }),
           )
-          .mapFields(Struct.map(Schema.optionalKey))
+          .mapFields(Struct.map(Schema.optionalKey)),
       )(row),
   }),
   projects: defineShape({
     name: "projects",
     routePath: "/projects",
-    schema: Schema.toStandardSchemaV1(Project.json),
+    schema: Schema.toStandardSchemaV1(
+      Project.json.mapFields(
+        Struct.evolve({
+          archivedAt: () => Schema.Option(Schema.DateTimeUtc),
+          notes: () => Schema.Option(Schema.Json),
+        }),
+      ),
+    ),
     getKey: (project) => project.id,
     decodeRow: (row) =>
       Schema.decodeUnknownSync(
@@ -46,9 +53,9 @@ export const workspaceShapes = {
             Struct.evolve({
               archivedAt: () =>
                 Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-            })
+            }),
           )
-          .mapFields(Struct.map(Schema.optionalKey))
+          .mapFields(Struct.map(Schema.optionalKey)),
       )(row),
   }),
   tasks: defineShape({
@@ -58,7 +65,7 @@ export const workspaceShapes = {
     getKey: (task) => task.id,
     decodeRow: (row) =>
       Schema.decodeUnknownSync(
-        Task.json.mapFields(Struct.map(Schema.optionalKey))
+        Task.json.mapFields(Struct.map(Schema.optionalKey)),
       )(row),
   }),
   timeEntries: defineShape({
@@ -74,9 +81,9 @@ export const workspaceShapes = {
               startedAt: () => Schema.DateTimeUtcFromString,
               stoppedAt: () =>
                 Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-            })
+            }),
           )
-          .mapFields(Struct.map(Schema.optionalKey))
+          .mapFields(Struct.map(Schema.optionalKey)),
       )(row),
   }),
 };

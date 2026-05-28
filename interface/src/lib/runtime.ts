@@ -5,7 +5,7 @@ import { BackendHttpApiClient } from "./api/client";
 import { BackendAtomRpcClient } from "./rpc/atom-client";
 import { TracerLayer } from "./telemetry";
 
-export const runtimeLayer = Layer.mergeAll(
+export const appRuntimeLayer = Layer.mergeAll(
   BackendHttpApiClient.layer,
   BackendAtomRpcClient.layer,
   TracerLayer
@@ -18,6 +18,6 @@ export const runtimeLayer = Layer.mergeAll(
  * layer memoization when they build overlapping services. That allows shared
  * dependencies to be reused instead of rebuilt independently.
  */
-export const runtime = ManagedRuntime.make(runtimeLayer, {
+export const appRuntime = ManagedRuntime.make(appRuntimeLayer, {
   memoMap: Atom.defaultMemoMap,
 });

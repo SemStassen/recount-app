@@ -14,7 +14,7 @@ import { Effect } from "effect";
 import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
-import { runtime } from "~/lib/runtime";
+import { appRuntime } from "~/lib/runtime";
 
 export const Route = createFileRoute("/_app/_onboarding/create-workspace/")({
   component: RouteComponent,
@@ -36,7 +36,7 @@ function RouteComponent() {
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      await runtime.runPromise(
+      await appRuntime.runPromise(
         Effect.gen(function* () {
           const client = yield* BackendAtomRpcClient;
 

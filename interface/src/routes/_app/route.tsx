@@ -4,7 +4,7 @@ import { AtomRegistry } from "effect/unstable/reactivity";
 import { workspacesAtom } from "~/atoms/auth.atoms";
 import { atomRegistry } from "~/atoms/registry";
 import { getUserDb } from "~/db/user/get-user-db";
-import { runtime } from "~/lib/runtime";
+import { appRuntime } from "~/lib/runtime";
 
 import { AppProviders } from "./-app-providers";
 
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_app")({
       throw redirect({ to: "/sign-up" });
     }
 
-    const workspaces = await runtime.runPromise(
+    const workspaces = await appRuntime.runPromise(
       AtomRegistry.getResult(atomRegistry, workspacesAtom, {
         suspendOnWaiting: true,
       })

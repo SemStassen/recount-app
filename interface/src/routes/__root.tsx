@@ -20,13 +20,13 @@ import { sessionAtom } from "~/atoms/auth.atoms";
 import { atomRegistry } from "~/atoms/registry";
 import { BackendAtomHttpApiClient } from "~/lib/api/atom-client";
 import { env } from "~/lib/env";
-import { runtime } from "~/lib/runtime";
+import { appRuntime } from "~/lib/runtime";
 
 import { NotFoundPage } from "./-not-found";
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
-    const auth = await runtime.runPromise(
+    const auth = await appRuntime.runPromise(
       AtomRegistry.getResult(atomRegistry, sessionAtom, {
         suspendOnWaiting: true,
       }).pipe(Effect.catch(() => Effect.succeed(null)))

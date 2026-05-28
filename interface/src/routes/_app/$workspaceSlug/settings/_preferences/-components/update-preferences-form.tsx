@@ -8,7 +8,7 @@ import { useAppForm } from "~/components/form";
 import { useUserDb } from "~/db/user/context";
 import { createSchemaForm } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
-import { runtime } from "~/lib/runtime";
+import { appRuntime } from "~/lib/runtime";
 
 const schema = createSchemaForm(UserSettings.jsonUpdate);
 
@@ -35,7 +35,7 @@ export function UpdatePreferencesForm() {
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      await runtime.runPromise(
+      await appRuntime.runPromise(
         Effect.gen(function* () {
           const client = yield* BackendAtomRpcClient;
 

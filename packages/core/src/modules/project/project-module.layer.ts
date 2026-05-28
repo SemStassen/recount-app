@@ -65,9 +65,9 @@ export const ProjectModuleLayer = Layer.effect(
           )
         );
 
-        const persistedProjects = yield* projectRepo.insertMany(projects);
+        const createdProjects = yield* projectRepo.insertMany(projects);
 
-        return persistedProjects;
+        return createdProjects;
       }),
       updateProject: Effect.fn("project.updateProject")(function* (params) {
         const project = yield* getProjectById({
@@ -82,13 +82,13 @@ export const ProjectModuleLayer = Layer.effect(
           })
         );
 
-        const persistedProject = yield* projectRepo.update({
+        const updatedProject = yield* projectRepo.update({
           workspaceId: entity.workspaceId,
           id: entity.id,
           update: patch,
         });
 
-        return persistedProject;
+        return updatedProject;
       }),
       archiveProject: Effect.fn("project.archiveProject")(function* (params) {
         const project = yield* getProjectById({
@@ -171,9 +171,9 @@ export const ProjectModuleLayer = Layer.effect(
           })
         );
 
-        const persistedTasks = yield* taskRepo.insertMany(tasks);
+        const createdTasks = yield* taskRepo.insertMany(tasks);
 
-        return persistedTasks;
+        return createdTasks;
       }),
       updateTask: Effect.fn("project.updateTask")(function* (params) {
         const task = yield* getTaskById({
@@ -190,13 +190,13 @@ export const ProjectModuleLayer = Layer.effect(
           taskTransitions.updateTask({ task, project, data: params.data })
         );
 
-        const persistedTask = yield* taskRepo.update({
+        const updatedTask = yield* taskRepo.update({
           id: entity.id,
           workspaceId: entity.workspaceId,
           update: patch,
         });
 
-        return persistedTask;
+        return updatedTask;
       }),
       archiveTask: Effect.fn("project.archiveTask")(function* (params) {
         const task = yield* getTaskById({
