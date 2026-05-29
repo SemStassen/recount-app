@@ -41,16 +41,6 @@ const toCollectionInsert = (task: Task): TaskCollectionInsert => ({
   ),
 });
 
-const getAcceptedTask = (tasksCollection: TaskCollection, id: Task["id"]) => {
-  const acceptedTask = tasksCollection.get(id);
-
-  if (!acceptedTask) {
-    throw new Error(`Task ${id} was not found after local write`);
-  }
-
-  return normalizeTask(acceptedTask);
-};
-
 export function createClientTaskRepositoryLayer(
   tasksCollection: TaskCollection
 ) {
@@ -61,25 +51,23 @@ export function createClientTaskRepositoryLayer(
           const tasks = data.map(normalizeTask);
           tasksCollection.insert(tasks.map(toCollectionInsert));
 
-          return tasks.map((task) => getAcceptedTask(tasksCollection, task.id));
+          return tasks;
         },
         catch: toRepositoryError,
       }),
-    update: ({ workspaceId, id, update }) =>
+    update: ({ id, update }) =>
       Effect.try({
         try: () => {
           tasksCollection.update(id, (draftValue) => {
-            const draft = draftValue as Task;
-            Object.assign(draft, update);
+            const draft = draftValue as Record<keyof typeof update, unknown>;
+            for (const key of Object.keys(update) as Array<
+              keyof typeof update
+            >) {
+              draft[key] = update[key];
+            }
           });
 
-          const acceptedTask = getAcceptedTask(tasksCollection, id);
-
-          if (acceptedTask.workspaceId !== workspaceId) {
-            throw new Error(`Task ${id} was not found in workspace`);
-          }
-
-          return acceptedTask;
+          return undefined;
         },
         catch: toRepositoryError,
       }),
