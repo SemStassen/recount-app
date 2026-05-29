@@ -19,7 +19,6 @@ import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
 import { createSchemaForm } from "~/lib/form";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 interface Payload {
   defaultProjectId?: ProjectId;
@@ -69,8 +68,6 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
     []
   );
 
-  const createTask = useWorkspaceMutation("Task.Create");
-
   const form = useAppForm({
     formId: "create-task-form",
     defaultValues: {
@@ -82,19 +79,17 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(async ({ value: payload }) => {
-      const res = await createTask({
-        payload,
-      });
+    onSubmit: schema.handleSubmit(({ value: payload }) => {
+      const result = workspaceDb.actions.createTask(payload);
 
-      Exit.match(res, {
+      Exit.match(result, {
         onFailure: () => {},
-        onSuccess: (value) => {
+        onSuccess: ({ id }) => {
           navigate({
             from: "/$workspaceSlug/",
             to: "/$workspaceSlug/tasks/$taskId",
             params: {
-              taskId: value.id,
+              taskId: id,
             },
           });
 

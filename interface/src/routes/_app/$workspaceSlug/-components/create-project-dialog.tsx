@@ -11,6 +11,7 @@ import {
 import { Form, FormPrimitive } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
+import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
@@ -68,19 +69,23 @@ function CreateProjectDialogContent({
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(async ({ value: payload }) => {
-      const { id, transaction } = workspaceDb.actions.createProject(payload);
-      await transaction.isPersisted.promise;
+    onSubmit: schema.handleSubmit(({ value: payload }) => {
+      const result = workspaceDb.actions.createProject(payload);
 
-      navigate({
-        from: "/$workspaceSlug/",
-        to: "/$workspaceSlug/projects/$projectId",
-        params: {
-          projectId: id,
+      Exit.match(result, {
+        onFailure: () => {},
+        onSuccess: ({ id }) => {
+          navigate({
+            from: "/$workspaceSlug/",
+            to: "/$workspaceSlug/projects/$projectId",
+            params: {
+              projectId: id,
+            },
+          });
+
+          createProjectDialogHandle.close();
         },
       });
-
-      createProjectDialogHandle.close();
     }),
   });
 

@@ -8,7 +8,6 @@ import { Option } from "effect";
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 const schema = createSchemaForm(Project.jsonUpdate);
@@ -30,7 +29,7 @@ export function UpdateProjectForm({ projectId }: { projectId: ProjectId }) {
 }
 
 function UpdateProjectFormContent({ project }: { project: Project }) {
-  const updateProject = useWorkspaceMutation("Project.Update");
+  const workspaceDb = useWorkspaceDb();
 
   const defaultValues: ProjectFormValues = {
     name: project.name,
@@ -48,12 +47,7 @@ function UpdateProjectFormContent({ project }: { project: Project }) {
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(({ value }) => {
-      updateProject({
-        payload: {
-          id: project.id,
-          data: value,
-        },
-      });
+      workspaceDb.actions.updateProject(project.id, value);
     }),
   });
 

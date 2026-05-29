@@ -118,24 +118,18 @@ function RouteComponent() {
               onValueChange={(color) => {
                 if (!color || color === project.color) return;
 
-                workspaceDb.collections.allProjectsCollection.update(
-                  project.id,
-                  (draft) => {
-                    draft.color = HexColor.make(color);
-                  }
-                );
+                workspaceDb.actions.updateProject(project.id, {
+                  color: HexColor.make(color),
+                });
               }}
             />
             <testProjectForm.AppField
               name="name"
               listeners={{
                 onBlur: ({ fieldApi, value }) => {
-                  workspaceDb.collections.allProjectsCollection.update(
-                    ProjectId.make(projectId),
-                    (draft) => {
-                      draft[fieldApi.name] = value;
-                    }
-                  );
+                  workspaceDb.actions.updateProject(ProjectId.make(projectId), {
+                    [fieldApi.name]: value,
+                  });
                 },
               }}
               children={(field) => (
