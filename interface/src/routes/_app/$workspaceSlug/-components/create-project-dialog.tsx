@@ -74,12 +74,12 @@ function CreateProjectDialogContent({
 
       Exit.match(result, {
         onFailure: () => {},
-        onSuccess: ({ id }) => {
+        onSuccess: (project) => {
           navigate({
             from: "/$workspaceSlug/",
             to: "/$workspaceSlug/projects/$projectId",
             params: {
-              projectId: id,
+              projectId: project.id,
             },
           });
 

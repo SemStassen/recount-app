@@ -68,6 +68,18 @@ _Avoid_: Integration, synced object
 The region where a workspace's data is stored.
 _Avoid_: Server region, locale
 
+**Local Workspace State**:
+The frontend's short-lived local view of a workspace, used for optimistic updates and brief offline tolerance before backend reconciliation.
+_Avoid_: Offline source of truth, local backend
+
+**Optimistic Workspace Data**:
+Workspace data that local workspace state may change before backend reconciliation.
+_Avoid_: Server-only workspace data, offline source of truth
+
+**Backend Reconciliation**:
+The process where authoritative backend state replaces or confirms local workspace state after a local action.
+_Avoid_: Conflict resolution, sync merge
+
 ## Relationships
 
 - A **User** can be a **Workspace Member** in zero or more **Workspaces**, at most once per **Workspace**
@@ -104,6 +116,16 @@ _Avoid_: Server region, locale
 - An **External Reference** can remain after an **Integration Connection** is disconnected
 - A **Workspace** has exactly one **Data Residency Region**, chosen at creation
 - Workspace-owned objects must not reference objects owned by another **Workspace**
+- **Local Workspace State** may decide optimistic **Project**, **Task**, and **Time Entry** changes before backend confirmation
+- **Project**, **Task**, and **Time Entry** are currently **Optimistic Workspace Data**
+- More workspace data may become **Optimistic Workspace Data** as Recount grows
+- **Workspace Invitation** and **Integration Connection** are server-only unless explicitly made **Optimistic Workspace Data**
+- **Local Workspace State** is not authoritative; **Backend Reconciliation** may silently replace it with backend truth
+- **Local Workspace State** should support brief offline tolerance, not weeks of divergent offline work
+- Future local persistence should make unpersisted **Optimistic Workspace Data** visible without forcing callers to await **Backend Reconciliation** for local acceptance
+- Optimistic **WorkspaceDb** actions should return local acceptance synchronously; server-only workspace concerns should stay asynchronous because they wait for backend authority
+- Workspace routes should preload **WorkspaceDb** before rendering optimistic interactions; missing required local data after preload is a local state error, not a normal loading path
+- **Backend Reconciliation** should preserve backend authority over permissions, validation, and persisted workspace data
 
 ## Example dialogue
 
@@ -130,3 +152,5 @@ _Avoid_: Server region, locale
 - External object **Linking** vs **Importing** is unresolved; a Recount object may be manually linked to a provider object or created from one during import.
 - Integration **Import** and **Sync** vocabulary is unresolved; import likely creates or updates Recount objects from external provider objects, while sync likely keeps already-linked objects aligned over time.
 - **Client** is future vocabulary for project-related billing/reporting concerns and must not be used as a synonym for **Project**.
+- **Local Workspace State** is a product behaviour, not a storage choice; IndexedDB, TanStack DB, SQLite, PGlite, or Turso are adapter options.
+- Long-lived offline conflict resolution is not currently a product goal.

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
       throw notFound();
     }
 
-    const workspaceDb = await getWorkspaceDb(workspace.id);
+    const workspaceDb = await getWorkspaceDb(workspace.id, context.user.id);
 
     return {
       workspace,

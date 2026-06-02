@@ -4,6 +4,7 @@ interface Disposable {
 
 interface CreateSingleKeyResourceOptions<TKey, TValue extends Disposable> {
   create: (key: TKey) => Promise<TValue> | TValue;
+  equals?: (a: TKey, b: TKey) => boolean;
 }
 
 /**
@@ -16,6 +17,7 @@ interface CreateSingleKeyResourceOptions<TKey, TValue extends Disposable> {
  */
 export function createSingleKeyResource<TKey, TValue extends Disposable>({
   create,
+  equals = Object.is,
 }: CreateSingleKeyResourceOptions<TKey, TValue>) {
   let currentKey: TKey | null = null;
   let currentValue: TValue | null = null;
@@ -25,7 +27,7 @@ export function createSingleKeyResource<TKey, TValue extends Disposable>({
    * Returns the current resource for `key`, creating it when needed.
    */
   const get = async (key: TKey): Promise<TValue> => {
-    if (currentKey !== null && Object.is(currentKey, key)) {
+    if (currentKey !== null && equals(currentKey, key)) {
       if (currentValue) {
         return currentValue;
       }

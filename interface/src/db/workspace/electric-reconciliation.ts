@@ -4,9 +4,9 @@ import {
 } from "@tanstack/electric-db-collection";
 import type { Collection } from "@tanstack/react-db";
 
-type ElectricOperation = "insert" | "update" | "delete";
+export type ElectricOperation = "insert" | "update" | "delete";
 
-type ReconciledCollection = Collection<
+export type ReconciledCollection = Collection<
   any,
   any,
   ElectricCollectionUtils<any>,

@@ -3,24 +3,13 @@ import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { WorkspaceId } from "@recount/core/shared/schemas";
 import { ProjectId, TaskId } from "@recount/core/shared/schemas";
 import { generateUUID } from "@recount/core/shared/utils";
-import type { ElectricCollectionUtils } from "@tanstack/electric-db-collection";
-import type { Collection } from "@tanstack/react-db";
-import { createTransaction } from "@tanstack/react-db";
 import { Effect, ManagedRuntime, Option } from "effect";
 
 import { BackendHttpApiClient } from "~/lib/api/client";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
-import { awaitCollectionChanges } from "./electric-reconciliation";
-import { runOptimisticWorkspaceAction } from "./optimistic-workspace-action";
-
-type ElectricCollection = Collection<
-  any,
-  any,
-  ElectricCollectionUtils<any>,
-  any,
-  any
->;
+import type { ReconciledCollection } from "./electric-reconciliation";
+import { runSyncedWorkspaceAction } from "./optimistic-workspace-action";
 
 type ProjectActionsRuntime = ManagedRuntime.ManagedRuntime<
   ProjectModule | BackendAtomRpcClient | BackendHttpApiClient,
@@ -30,8 +19,8 @@ type ProjectActionsRuntime = ManagedRuntime.ManagedRuntime<
 interface CreateProjectActionsParams {
   readonly workspaceId: WorkspaceId;
   readonly workspaceRuntime: ProjectActionsRuntime;
-  readonly allProjectsCollection: ElectricCollection;
-  readonly allTasksCollection: ElectricCollection;
+  readonly allProjectsCollection: ReconciledCollection;
+  readonly allTasksCollection: ReconciledCollection;
 }
 
 export function createProjectActions(params: CreateProjectActionsParams) {
@@ -46,15 +35,10 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       id: Option.some(id),
     };
 
-    return runOptimisticWorkspaceAction<
+    return runSyncedWorkspaceAction<
       Project,
-      { readonly id: Project["id"]; readonly project: Project | undefined },
-      ReadonlyArray<Project>,
-      {
-        readonly id: Project["id"];
-        readonly project: Project | undefined;
-        readonly transaction: ReturnType<typeof createTransaction<Project>>;
-      }
+      Project,
+      Project
     >({
       mutateLocal: () => {
         const project = params.workspaceRuntime.runSync(
@@ -70,45 +54,33 @@ export function createProjectActions(params: CreateProjectActionsParams) {
           })
         );
 
-        return { id, project };
-      },
-      persistRemote: async ({ transaction }) =>
-        Promise.all(
-          transaction.mutations.map(({ modified }) =>
-            params.workspaceRuntime.runPromise(
-              Effect.gen(function* () {
-                const client = yield* BackendAtomRpcClient;
+        if (!project) {
+          throw new Error("Project was not created in local state");
+        }
 
-                return yield* client(
-                  "Project.Create",
-                  {
-                    id: Option.some(modified.id),
-                    name: modified.name,
-                    color: modified.color,
-                    isBillable: modified.isBillable,
-                    notes: modified.notes,
-                  },
-                  {
-                    headers: {
-                      [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-                    },
-                  }
-                );
-              })
-            )
-          )
+        return project;
+      },
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "Project.Create",
+              data,
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
         ),
-      awaitRemoteSync: ({ remoteResult }) =>
-        awaitCollectionChanges({
-          collection: params.allProjectsCollection,
-          operation: "insert",
-          ids: remoteResult.map((project) => project.id),
-        }).then(() => {}),
-      toSuccess: ({ accepted, transaction }) => ({
-        id: accepted.id,
-        project: accepted.project,
-        transaction,
-      }),
+      remoteSync: {
+        collection: params.allProjectsCollection,
+        operation: "insert",
+        getIds: (remoteResult) => [remoteResult.id],
+      },
     });
   };
 
@@ -116,14 +88,10 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     id: Project["id"],
     data: typeof Project.jsonUpdate.Type
   ) =>
-    runOptimisticWorkspaceAction<
+    runSyncedWorkspaceAction<
       Project,
-      { readonly project: Project | undefined },
-      ReadonlyArray<Project>,
-      {
-        readonly project: Project | undefined;
-        readonly transaction: ReturnType<typeof createTransaction<Project>>;
-      }
+      Project,
+      Project
     >({
       mutateLocal: () => {
         const project = params.workspaceRuntime.runSync(
@@ -138,43 +106,32 @@ export function createProjectActions(params: CreateProjectActionsParams) {
           })
         );
 
-        return { project };
+        return project;
       },
-      persistRemote: async ({ transaction }) =>
-        Promise.all(
-          transaction.mutations.map(({ changes, original }) => {
-            const project = original as Project;
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
 
-            return params.workspaceRuntime.runPromise(
-              Effect.gen(function* () {
-                const client = yield* BackendAtomRpcClient;
-
-                return yield* client(
-                  "Project.Update",
-                  {
-                    id: project.id,
-                    data: changes,
-                  },
-                  {
-                    headers: {
-                      [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-                    },
-                  }
-                );
-              })
+            return yield* client(
+              "Project.Update",
+              {
+                id,
+                data,
+              },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
             );
           })
         ),
-      awaitRemoteSync: ({ remoteResult }) =>
-        awaitCollectionChanges({
-          collection: params.allProjectsCollection,
-          operation: "update",
-          ids: remoteResult.map((project) => project.id),
-        }).then(() => {}),
-      toSuccess: ({ accepted, transaction }) => ({
-        project: accepted.project,
-        transaction,
-      }),
+      remoteSync: {
+        collection: params.allProjectsCollection,
+        operation: "update",
+        getIds: (remoteResult) => [remoteResult.id],
+      },
     });
 
   const createTask = (payload: typeof Task.jsonCreate.Type) => {
@@ -184,15 +141,10 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       id: Option.some(id),
     };
 
-    return runOptimisticWorkspaceAction<
+    return runSyncedWorkspaceAction<
       Task,
-      { readonly id: Task["id"]; readonly task: Task | undefined },
-      ReadonlyArray<Task>,
-      {
-        readonly id: Task["id"];
-        readonly task: Task | undefined;
-        readonly transaction: ReturnType<typeof createTransaction<Task>>;
-      }
+      Task,
+      Task
     >({
       mutateLocal: () => {
         const task = params.workspaceRuntime.runSync(
@@ -208,55 +160,41 @@ export function createProjectActions(params: CreateProjectActionsParams) {
           })
         );
 
-        return { id, task };
-      },
-      persistRemote: async ({ transaction }) =>
-        Promise.all(
-          transaction.mutations.map(({ modified }) =>
-            params.workspaceRuntime.runPromise(
-              Effect.gen(function* () {
-                const client = yield* BackendAtomRpcClient;
+        if (!task) {
+          throw new Error("Task was not created in local state");
+        }
 
-                return yield* client(
-                  "Task.Create",
-                  {
-                    id: Option.some(modified.id),
-                    projectId: modified.projectId,
-                    name: modified.name,
-                  },
-                  {
-                    headers: {
-                      [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-                    },
-                  }
-                );
-              })
-            )
-          )
+        return task;
+      },
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "Task.Create",
+              data,
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
         ),
-      awaitRemoteSync: ({ remoteResult }) =>
-        awaitCollectionChanges({
-          collection: params.allTasksCollection,
-          operation: "insert",
-          ids: remoteResult.map((task) => task.id),
-        }).then(() => {}),
-      toSuccess: ({ accepted, transaction }) => ({
-        id: accepted.id,
-        task: accepted.task,
-        transaction,
-      }),
+      remoteSync: {
+        collection: params.allTasksCollection,
+        operation: "insert",
+        getIds: (remoteResult) => [remoteResult.id],
+      },
     });
   };
 
   const updateTask = (id: Task["id"], data: typeof Task.jsonUpdate.Type) =>
-    runOptimisticWorkspaceAction<
+    runSyncedWorkspaceAction<
       Task,
-      { readonly task: Task | undefined },
-      ReadonlyArray<Task>,
-      {
-        readonly task: Task | undefined;
-        readonly transaction: ReturnType<typeof createTransaction<Task>>;
-      }
+      Task,
+      Task
     >({
       mutateLocal: () => {
         const task = params.workspaceRuntime.runSync(
@@ -271,43 +209,32 @@ export function createProjectActions(params: CreateProjectActionsParams) {
           })
         );
 
-        return { task };
+        return task;
       },
-      persistRemote: async ({ transaction }) =>
-        Promise.all(
-          transaction.mutations.map(({ changes, original }) => {
-            const task = original as Task;
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
 
-            return params.workspaceRuntime.runPromise(
-              Effect.gen(function* () {
-                const client = yield* BackendAtomRpcClient;
-
-                return yield* client(
-                  "Task.Update",
-                  {
-                    id: task.id,
-                    data: changes,
-                  },
-                  {
-                    headers: {
-                      [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-                    },
-                  }
-                );
-              })
+            return yield* client(
+              "Task.Update",
+              {
+                id,
+                data,
+              },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
             );
           })
         ),
-      awaitRemoteSync: ({ remoteResult }) =>
-        awaitCollectionChanges({
-          collection: params.allTasksCollection,
-          operation: "update",
-          ids: remoteResult.map((task) => task.id),
-        }).then(() => {}),
-      toSuccess: ({ accepted, transaction }) => ({
-        task: accepted.task,
-        transaction,
-      }),
+      remoteSync: {
+        collection: params.allTasksCollection,
+        operation: "update",
+        getIds: (remoteResult) => [remoteResult.id],
+      },
     });
 
   return {

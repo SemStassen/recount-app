@@ -1,7 +1,8 @@
 import { snakeCamelMapper } from "@electric-sql/client";
 import { ProjectModuleLayer } from "@recount/core/modules/project";
+import { TimeModuleLayer } from "@recount/core/modules/time";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
-import { WorkspaceId } from "@recount/core/shared/schemas";
+import { UserId, WorkspaceId } from "@recount/core/shared/schemas";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import {
   createCollection,
@@ -15,9 +16,11 @@ import { authFetch } from "~/lib/auth";
 import { appRuntimeLayer } from "~/lib/runtime";
 import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
 import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
+import { createClientTimeEntryRepositoryLayer } from "~/lib/services/client-time-entry-repository.layer";
 
 import { workspaceShapes } from "../sync-shapes";
 import { createProjectActions } from "./project-actions";
+import { createTimeEntryActions } from "./time-entry-actions";
 
 export type WorkspaceDb = Awaited<ReturnType<typeof openWorkspaceDb>>;
 
@@ -25,7 +28,7 @@ const fetchWithPreconnect = fetch as typeof fetch & {
   preconnect?: typeof fetch;
 };
 
-export async function openWorkspaceDb(workspaceId: string) {
+export async function openWorkspaceDb(workspaceId: string, userId: string) {
   const abortController = new AbortController();
   const workspaceFetchClient: typeof fetch = Object.assign(
     (url: RequestInfo | URL, options?: RequestInit) =>
@@ -45,6 +48,7 @@ export async function openWorkspaceDb(workspaceId: string) {
   const createCollectionId = (collectionId: string) =>
     `workspace:${workspaceId}:${collectionId}`;
   const brandedWorkspaceId = WorkspaceId.make(workspaceId);
+  const brandedUserId = UserId.make(userId);
 
   const workspaceMembersCollection = createCollection(
     electricCollectionOptions({
@@ -152,12 +156,18 @@ export async function openWorkspaceDb(workspaceId: string) {
   );
   const taskRepositoryLayer =
     createClientTaskRepositoryLayer(allTasksCollection);
+  const timeEntryRepositoryLayer = createClientTimeEntryRepositoryLayer(
+    timeEntriesCollection
+  );
   const workspaceRuntime = ManagedRuntime.make(
     Layer.mergeAll(
       appRuntimeLayer,
       ProjectModuleLayer.pipe(
         Layer.provide(projectRepositoryLayer),
         Layer.provide(taskRepositoryLayer)
+      ),
+      TimeModuleLayer.pipe(
+        Layer.provide(timeEntryRepositoryLayer)
       )
     )
   );
@@ -168,11 +178,21 @@ export async function openWorkspaceDb(workspaceId: string) {
     allProjectsCollection,
     allTasksCollection,
   });
+  const timeEntryActions = createTimeEntryActions({
+    userId: brandedUserId,
+    workspaceId: brandedWorkspaceId,
+    workspaceRuntime,
+    workspaceMembersCollection,
+    timeEntriesCollection,
+  });
 
   let preloadPromise: Promise<void> | null = null;
 
   return {
-    actions: projectActions,
+    actions: {
+      ...projectActions,
+      ...timeEntryActions,
+    },
     collections: {
       workspaceMembersCollection,
       workspaceIntegrationConnectionsCollection,

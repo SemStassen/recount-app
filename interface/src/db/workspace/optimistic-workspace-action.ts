@@ -1,44 +1,36 @@
 import { createTransaction } from "@tanstack/react-db";
 import { Exit } from "effect";
 
+import {
+  awaitCollectionChanges,
+  type ElectricOperation,
+  type ReconciledCollection,
+} from "./electric-reconciliation";
+
 interface OptimisticWorkspaceActionParams<
   Entity extends object,
-  Accepted,
   RemoteResult,
   Success,
 > {
-  readonly mutateLocal: () => Accepted;
-  readonly persistRemote: (params: {
-    readonly transaction: ReturnType<typeof createTransaction<Entity>>;
-    readonly accepted: Accepted;
-  }) => Promise<RemoteResult>;
+  readonly mutateLocal: () => Success;
+  readonly persistRemote: (params: { readonly accepted: Success }) =>
+    Promise<RemoteResult>;
   readonly awaitRemoteSync: (params: {
-    readonly transaction: ReturnType<typeof createTransaction<Entity>>;
-    readonly accepted: Accepted;
+    readonly accepted: Success;
     readonly remoteResult: RemoteResult;
   }) => Promise<void>;
-  readonly toSuccess: (params: {
-    readonly accepted: Accepted;
-    readonly transaction: ReturnType<typeof createTransaction<Entity>>;
-  }) => Success;
 }
 
 export function runOptimisticWorkspaceAction<
   Entity extends object,
-  Accepted,
   RemoteResult,
   Success,
 >(
-  params: OptimisticWorkspaceActionParams<
-    Entity,
-    Accepted,
-    RemoteResult,
-    Success
-  >
+  params: OptimisticWorkspaceActionParams<Entity, RemoteResult, Success>
 ) {
-  let accepted: Accepted | undefined;
+  let accepted: Success | undefined;
   const transaction = createTransaction<Entity>({
-    mutationFn: async ({ transaction }) => {
+    mutationFn: async () => {
       if (accepted === undefined) {
         throw new Error(
           "Optimistic action was persisted before local mutation"
@@ -46,12 +38,10 @@ export function runOptimisticWorkspaceAction<
       }
 
       const remoteResult = await params.persistRemote({
-        transaction,
         accepted,
       });
 
       await params.awaitRemoteSync({
-        transaction,
         accepted,
         remoteResult,
       });
@@ -67,13 +57,44 @@ export function runOptimisticWorkspaceAction<
       throw new Error("Optimistic action did not produce a local result");
     }
 
-    return Exit.succeed(
-      params.toSuccess({
-        accepted,
-        transaction,
-      })
-    );
+    return Exit.succeed(accepted);
   } catch (cause) {
     return Exit.fail(cause);
   }
+}
+
+interface SyncedWorkspaceActionParams<
+  Entity extends object,
+  RemoteResult,
+  Success,
+  Id,
+> {
+  readonly mutateLocal: () => Success;
+  readonly persistRemote: (params: { readonly accepted: Success }) =>
+    Promise<RemoteResult>;
+  readonly remoteSync: {
+    readonly collection: ReconciledCollection;
+    readonly operation: ElectricOperation;
+    readonly getIds: (remoteResult: RemoteResult) => ReadonlyArray<Id>;
+  };
+}
+
+export function runSyncedWorkspaceAction<
+  Entity extends object,
+  RemoteResult,
+  Success,
+  Id = unknown,
+>(
+  params: SyncedWorkspaceActionParams<Entity, RemoteResult, Success, Id>
+) {
+  return runOptimisticWorkspaceAction<Entity, RemoteResult, Success>({
+    mutateLocal: params.mutateLocal,
+    persistRemote: params.persistRemote,
+    awaitRemoteSync: ({ remoteResult }) =>
+      awaitCollectionChanges({
+        collection: params.remoteSync.collection,
+        operation: params.remoteSync.operation,
+        ids: params.remoteSync.getIds(remoteResult),
+      }).then(() => {}),
+  });
 }

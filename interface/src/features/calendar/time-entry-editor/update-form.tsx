@@ -4,12 +4,12 @@ import type { TimeEntryId } from "@recount/core/shared/schemas";
 import { Form } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
+import { Exit } from "effect";
 import { useEffect } from "react";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
 import {
@@ -68,7 +68,7 @@ function UpdateTimeEntryFormContent({
   projects: Array<TimeEntryFormProject>;
   timeEntry: typeof TimeEntry.json.Type;
 }) {
-  const updateTimeEntry = useWorkspaceMutation("TimeEntry.Update");
+  const workspaceDb = useWorkspaceDb();
   const setPreview = useAtomSet(editingPreviewAtom);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
   const initialStartedAtMs = initialRange?.startedAt.getTime();
@@ -97,13 +97,16 @@ function UpdateTimeEntryFormContent({
       onChange: ({ formApi }) => publishPreview(formApi.state.values),
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      await updateTimeEntry({
-        payload: {
-          timeEntryId: timeEntry.id,
-          data: value,
+      const result = workspaceDb.actions.updateTimeEntry(timeEntry.id, value);
+
+      Exit.match(result, {
+        onFailure: (cause) => {
+          throw cause;
+        },
+        onSuccess: () => {
+          closeEditor(undefined);
         },
       });
-      closeEditor(undefined);
     }),
   });
 

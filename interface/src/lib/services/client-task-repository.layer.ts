@@ -1,16 +1,15 @@
 import { Task, TaskRepository } from "@recount/core/modules/project";
 import { RepositoryError } from "@recount/core/shared/repository";
+import { eq, queryOnce } from "@tanstack/react-db";
 import { DateTime, Effect, Layer, Option } from "effect";
 
-interface TaskCollection {
-  get: (id: Task["id"]) => Task | undefined;
-  insert: (data: Array<TaskCollectionInsert>) => unknown;
-  update: {
-    (ids: Array<unknown>, update: (drafts: Array<unknown>) => void): unknown;
-    (id: unknown, update: (draft: unknown) => void): unknown;
-  };
-  values: () => Iterable<Task>;
-}
+import {
+  type ClientRepositoryCollection,
+  updateCollectionItem,
+} from "./client-repository-collection";
+
+type TaskRow = typeof Task.json.Type;
+type TaskCollection = ClientRepositoryCollection<TaskRow>;
 
 interface TaskCollectionInsert {
   readonly id: string;
@@ -22,7 +21,7 @@ interface TaskCollectionInsert {
 
 const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
 
-const normalizeTask = (task: Task): Task =>
+const normalizeTask = (task: TaskRow): Task =>
   Task.make({
     id: task.id,
     workspaceId: task.workspaceId,
@@ -56,25 +55,34 @@ export function createClientTaskRepositoryLayer(
         catch: toRepositoryError,
       }),
     update: ({ id, update }) =>
-      Effect.try({
-        try: () => {
-          tasksCollection.update(id, (draftValue) => {
-            const draft = draftValue as Record<keyof typeof update, unknown>;
-            for (const key of Object.keys(update) as Array<
-              keyof typeof update
-            >) {
-              draft[key] = update[key];
-            }
-          });
+      Effect.tryPromise({
+        try: async () => {
+          updateCollectionItem(tasksCollection, id, update);
 
-          return undefined;
+          const task = await queryOnce((q) =>
+            q
+              .from({ task: tasksCollection })
+              .where(({ task }) => eq(task.id, id))
+              .findOne()
+          );
+
+          if (!task) {
+            throw new Error(`Task ${id} was not found after local write`);
+          }
+
+          return normalizeTask(task);
         },
         catch: toRepositoryError,
       }),
     findById: ({ workspaceId, id }) =>
-      Effect.try({
-        try: () => {
-          const task = tasksCollection.get(id);
+      Effect.tryPromise({
+        try: async () => {
+          const task = await queryOnce((q) =>
+            q
+              .from({ task: tasksCollection })
+              .where(({ task }) => eq(task.id, id))
+              .findOne()
+          );
 
           if (!task || task.workspaceId !== workspaceId) {
             return Option.none<Task>();

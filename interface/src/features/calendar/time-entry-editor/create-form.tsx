@@ -2,10 +2,11 @@ import { useAtomSet } from "@effect/atom-react";
 import { TimeEntry } from "@recount/core/modules/time";
 import { Form } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
+import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
+import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
 import {
@@ -28,9 +29,9 @@ export function CreateTimeEntryForm({
 }) {
   const setPreview = useAtomSet(editingPreviewAtom);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
+  const workspaceDb = useWorkspaceDb();
   const { data: projects = [] } = useTimeEntryFormProjects();
 
-  const createTimeEntry = useWorkspaceMutation("TimeEntry.Create");
   const publishPreview = (values: TimeEntryFormValues) => {
     setPreview(getCreateTimeEntryPreview(values));
   };
@@ -48,8 +49,16 @@ export function CreateTimeEntryForm({
       onChange: ({ formApi }) => publishPreview(formApi.state.values),
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      await createTimeEntry({ payload: value });
-      closeEditor(undefined);
+      const result = workspaceDb.actions.createTimeEntry(value);
+
+      Exit.match(result, {
+        onFailure: (cause) => {
+          throw cause;
+        },
+        onSuccess: () => {
+          closeEditor(undefined);
+        },
+      });
     }),
   });
 
