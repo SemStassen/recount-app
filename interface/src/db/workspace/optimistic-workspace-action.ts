@@ -19,35 +19,39 @@ interface OptimisticWorkspaceActionParams<RemoteResult, Success> {
 export function runOptimisticWorkspaceAction<RemoteResult, Success>(
   params: OptimisticWorkspaceActionParams<RemoteResult, Success>
 ) {
-  let accepted: Success | undefined;
+  let accepted: readonly [Success] | undefined;
   const transaction = createTransaction({
     mutationFn: async () => {
-      if (accepted === undefined) {
+      if (!accepted) {
         throw new Error(
           "Optimistic action was persisted before local mutation"
         );
       }
 
+      const [acceptedValue] = accepted;
+
       const remoteResult = await params.persistRemote({
-        accepted,
+        accepted: acceptedValue,
       });
 
       await params.awaitRemoteSync({
-        accepted,
+        accepted: acceptedValue,
         remoteResult,
       });
     },
   });
 
   transaction.mutate(() => {
-    accepted = params.mutateLocal();
+    accepted = [params.mutateLocal()];
   });
 
-  if (accepted === undefined) {
+  if (!accepted) {
     throw new Error("Optimistic action did not produce a local result");
   }
 
-  return accepted;
+  const [acceptedValue] = accepted;
+
+  return acceptedValue;
 }
 
 interface SyncedWorkspaceActionParams<RemoteResult, Success> {

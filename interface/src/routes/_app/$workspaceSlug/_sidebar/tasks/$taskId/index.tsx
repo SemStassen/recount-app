@@ -4,7 +4,6 @@ import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 import {
@@ -41,8 +40,6 @@ function RouteComponent() {
       .findOne()
   );
 
-  const archiveTask = useWorkspaceMutation("Task.Archive");
-
   useRegisterCommands(
     [
       {
@@ -50,11 +47,7 @@ function RouteComponent() {
         category: "project",
         title: "Archive task",
         perform: ({ close }) => {
-          archiveTask({
-            payload: {
-              id: TaskId.make(taskId),
-            },
-          });
+          workspaceDb.actions.archiveTask(TaskId.make(taskId));
           navigate({ to: "/$workspaceSlug/projects" });
           close();
         },

@@ -10,6 +10,7 @@ import { BackendHttpApiClient } from "~/lib/api/client";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
 import {
+  deletedRecords,
   insertedRecords,
   type ReconciledCollection,
   updatedRecords,
@@ -50,6 +51,41 @@ const getCurrentWorkspaceMember = (params: {
 
 export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
   const workspaceIdHeader = params.workspaceId;
+
+  const deleteTimeEntry = (id: TimeEntry["id"]) =>
+    runSyncedWorkspaceAction<void, void>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const timeModule = yield* TimeModule;
+
+            yield* timeModule.hardDeleteTimeEntries({
+              workspaceId: params.workspaceId,
+              ids: [id],
+            });
+          })
+        ),
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "TimeEntry.Delete",
+              { timeEntryId: id },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
+        ),
+      remoteSync: deletedRecords({
+        collection: params.timeEntriesCollection,
+        getIds: () => [id],
+      }),
+    });
 
   const createTimeEntry = (payload: typeof TimeEntry.jsonCreate.Type) => {
     const id = Option.getOrElse(payload.id, () =>
@@ -152,6 +188,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
 
   return {
     createTimeEntry,
+    deleteTimeEntry,
     updateTimeEntry,
   };
 }

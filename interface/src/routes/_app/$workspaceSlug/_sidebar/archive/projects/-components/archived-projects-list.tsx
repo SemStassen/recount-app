@@ -28,11 +28,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Exit } from "effect";
 import { useMemo, useRef } from "react";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 const columnHelper = createColumnHelper<Project>();
 
@@ -63,46 +61,38 @@ export function ArchivedProjectsList() {
     q.from({ p: workspaceDb.collections.archivedProjectsCollection })
   );
 
-  const unarchiveProject = useWorkspaceMutation("Project.Unarchive");
+  const handleUnarchiveProject = (projectId: ProjectId) => {
+    try {
+      workspaceDb.actions.unarchiveProject(projectId);
+    } catch {
+      toastManager.add({
+        type: "error",
+        title: "Something went wrong",
+      });
+      return;
+    }
 
-  const handleUnarchiveProject = async (projectId: ProjectId) => {
-    const exit = await unarchiveProject({
-      payload: {
-        id: projectId,
-      },
-    });
+    const toastId = `project-unarchive-${projectId}`;
 
-    Exit.match(exit, {
-      onSuccess: () => {
-        const toastId = `project-unarchive-${projectId}`;
-
-        toastManager.add({
-          id: toastId,
-          type: "success",
-          title: "Project restored",
-          description: (
-            <Button
-              variant="ghost"
-              render={
-                <Link
-                  to="/$workspaceSlug/projects/$projectId"
-                  from="/$workspaceSlug"
-                  params={{ projectId }}
-                  onClick={() => toastManager.close(toastId)}
-                >
-                  View project
-                </Link>
-              }
-            />
-          ),
-        });
-      },
-      onFailure: () => {
-        toastManager.add({
-          type: "error",
-          title: "Something went wrong",
-        });
-      },
+    toastManager.add({
+      id: toastId,
+      type: "success",
+      title: "Project restored",
+      description: (
+        <Button
+          variant="ghost"
+          render={
+            <Link
+              to="/$workspaceSlug/projects/$projectId"
+              from="/$workspaceSlug"
+              params={{ projectId }}
+              onClick={() => toastManager.close(toastId)}
+            >
+              View project
+            </Link>
+          }
+        />
+      ),
     });
   };
 

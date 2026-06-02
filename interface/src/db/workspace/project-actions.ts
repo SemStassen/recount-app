@@ -30,6 +30,41 @@ interface CreateProjectActionsParams {
 export function createProjectActions(params: CreateProjectActionsParams) {
   const workspaceIdHeader = params.workspaceId;
 
+  const archiveProject = (id: Project["id"]) =>
+    runSyncedWorkspaceAction<void, void>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const projectModule = yield* ProjectModule;
+
+            yield* projectModule.archiveProject({
+              workspaceId: params.workspaceId,
+              id,
+            });
+          })
+        ),
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "Project.Archive",
+              { id },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
+        ),
+      remoteSync: updatedRecords({
+        collection: params.allProjectsCollection,
+        getIds: () => [id],
+      }),
+    });
+
   const createProject = (payload: typeof Project.jsonCreate.Type) => {
     const id = Option.getOrElse(payload.id, () =>
       ProjectId.make(generateUUID())
@@ -124,6 +159,41 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       }),
     });
 
+  const unarchiveProject = (id: Project["id"]) =>
+    runSyncedWorkspaceAction<void, void>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const projectModule = yield* ProjectModule;
+
+            yield* projectModule.unarchiveProject({
+              workspaceId: params.workspaceId,
+              id,
+            });
+          })
+        ),
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "Project.Unarchive",
+              { id },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
+        ),
+      remoteSync: updatedRecords({
+        collection: params.allProjectsCollection,
+        getIds: () => [id],
+      }),
+    });
+
   const createTask = (payload: typeof Task.jsonCreate.Type) => {
     const id = Option.getOrElse(payload.id, () => TaskId.make(generateUUID()));
     const data = {
@@ -213,9 +283,83 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       }),
     });
 
+  const archiveTask = (id: Task["id"]) =>
+    runSyncedWorkspaceAction<void, void>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const projectModule = yield* ProjectModule;
+
+            yield* projectModule.archiveTask({
+              workspaceId: params.workspaceId,
+              id,
+            });
+          })
+        ),
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "Task.Archive",
+              { id },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
+        ),
+      remoteSync: updatedRecords({
+        collection: params.allTasksCollection,
+        getIds: () => [id],
+      }),
+    });
+
+  const unarchiveTask = (id: Task["id"]) =>
+    runSyncedWorkspaceAction<void, void>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const projectModule = yield* ProjectModule;
+
+            yield* projectModule.unarchiveTask({
+              workspaceId: params.workspaceId,
+              id,
+            });
+          })
+        ),
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "Task.Unarchive",
+              { id },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
+        ),
+      remoteSync: updatedRecords({
+        collection: params.allTasksCollection,
+        getIds: () => [id],
+      }),
+    });
+
   return {
+    archiveProject,
+    archiveTask,
     createProject,
     createTask,
+    unarchiveProject,
+    unarchiveTask,
     updateProject,
     updateTask,
   };

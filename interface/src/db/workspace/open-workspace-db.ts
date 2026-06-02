@@ -166,9 +166,7 @@ export async function openWorkspaceDb(workspaceId: string, userId: string) {
         Layer.provide(projectRepositoryLayer),
         Layer.provide(taskRepositoryLayer)
       ),
-      TimeModuleLayer.pipe(
-        Layer.provide(timeEntryRepositoryLayer)
-      )
+      TimeModuleLayer.pipe(Layer.provide(timeEntryRepositoryLayer))
     )
   );
 

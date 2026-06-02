@@ -36,11 +36,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Exit } from "effect";
 import { useMemo, useRef } from "react";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 import { createProjectDialogHandle } from "../../../-components/create-project-dialog";
 
@@ -79,45 +77,37 @@ export function ProjectsList() {
     q.from({ p: workspaceDb.collections.activeProjectsCollection })
   );
 
-  const archiveProject = useWorkspaceMutation("Project.Archive");
+  const handleArchiveProject = (projectId: ProjectId) => {
+    try {
+      workspaceDb.actions.archiveProject(projectId);
+    } catch {
+      toastManager.add({
+        type: "error",
+        title: "Something went wrong",
+      });
+      return;
+    }
 
-  const handleArchiveProject = async (projectId: ProjectId) => {
-    const exit = await archiveProject({
-      payload: {
-        id: projectId,
-      },
-    });
+    const toastId = `project-archive-${projectId}`;
 
-    Exit.match(exit, {
-      onSuccess: () => {
-        const toastId = `project-archive-${projectId}`;
-
-        toastManager.add({
-          id: toastId,
-          type: "success",
-          title: "Project archived",
-          description: (
-            <Button
-              variant="ghost"
-              render={
-                <Link
-                  to="/$workspaceSlug/archive/projects"
-                  from="/$workspaceSlug"
-                  onClick={() => toastManager.close(toastId)}
-                >
-                  View archive
-                </Link>
-              }
-            />
-          ),
-        });
-      },
-      onFailure: () => {
-        toastManager.add({
-          type: "error",
-          title: "Something went wrong",
-        });
-      },
+    toastManager.add({
+      id: toastId,
+      type: "success",
+      title: "Project archived",
+      description: (
+        <Button
+          variant="ghost"
+          render={
+            <Link
+              to="/$workspaceSlug/archive/projects"
+              from="/$workspaceSlug"
+              onClick={() => toastManager.close(toastId)}
+            >
+              View archive
+            </Link>
+          }
+        />
+      ),
     });
   };
 
