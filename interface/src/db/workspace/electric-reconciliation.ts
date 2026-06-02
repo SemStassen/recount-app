@@ -4,7 +4,7 @@ import {
 } from "@tanstack/electric-db-collection";
 import type { Collection } from "@tanstack/react-db";
 
-export type ElectricOperation = "insert" | "update" | "delete";
+type ElectricOperation = "insert" | "update" | "delete";
 
 export type ReconciledCollection = Collection<
   any,
@@ -14,7 +14,16 @@ export type ReconciledCollection = Collection<
   any
 >;
 
-export function awaitCollectionChange<Id>(params: {
+interface BackendReconciliationTarget<RemoteResult, Id> {
+  readonly collection: ReconciledCollection;
+  readonly operation: ElectricOperation;
+  readonly getIds: (remoteResult: RemoteResult) => ReadonlyArray<Id>;
+}
+
+export type AnyBackendReconciliationTarget<RemoteResult> =
+  BackendReconciliationTarget<RemoteResult, unknown>;
+
+function awaitCollectionChange<Id>(params: {
   readonly collection: ReconciledCollection;
   readonly operation: ElectricOperation;
   readonly id: Id;
@@ -36,7 +45,7 @@ export function awaitCollectionChange<Id>(params: {
   });
 }
 
-export function awaitCollectionChanges<Id>(params: {
+function awaitCollectionChanges<Id>(params: {
   readonly collection: ReconciledCollection;
   readonly operation: ElectricOperation;
   readonly ids: ReadonlyArray<Id>;
@@ -50,4 +59,45 @@ export function awaitCollectionChanges<Id>(params: {
       })
     )
   );
+}
+
+export function insertedRecords<RemoteResult, Id>(params: {
+  readonly collection: ReconciledCollection;
+  readonly getIds: (remoteResult: RemoteResult) => ReadonlyArray<Id>;
+}): BackendReconciliationTarget<RemoteResult, Id> {
+  return {
+    ...params,
+    operation: "insert",
+  };
+}
+
+export function updatedRecords<RemoteResult, Id>(params: {
+  readonly collection: ReconciledCollection;
+  readonly getIds: (remoteResult: RemoteResult) => ReadonlyArray<Id>;
+}): BackendReconciliationTarget<RemoteResult, Id> {
+  return {
+    ...params,
+    operation: "update",
+  };
+}
+
+export function deletedRecords<RemoteResult, Id>(params: {
+  readonly collection: ReconciledCollection;
+  readonly getIds: (remoteResult: RemoteResult) => ReadonlyArray<Id>;
+}): BackendReconciliationTarget<RemoteResult, Id> {
+  return {
+    ...params,
+    operation: "delete",
+  };
+}
+
+export function awaitBackendReconciliation<RemoteResult>(params: {
+  readonly target: AnyBackendReconciliationTarget<RemoteResult>;
+  readonly remoteResult: RemoteResult;
+}) {
+  return awaitCollectionChanges({
+    collection: params.target.collection,
+    operation: params.target.operation,
+    ids: params.target.getIds(params.remoteResult),
+  }).then(() => {});
 }

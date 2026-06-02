@@ -13,7 +13,6 @@ import { Form, FormPrimitive } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
@@ -80,22 +79,17 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(({ value: payload }) => {
-      const result = workspaceDb.actions.createTask(payload);
+      const task = workspaceDb.actions.createTask(payload);
 
-      Exit.match(result, {
-        onFailure: () => {},
-        onSuccess: ({ id }) => {
-          navigate({
-            from: "/$workspaceSlug/",
-            to: "/$workspaceSlug/tasks/$taskId",
-            params: {
-              taskId: id,
-            },
-          });
-
-          createTaskDialogHandle.close();
+      navigate({
+        from: "/$workspaceSlug/",
+        to: "/$workspaceSlug/tasks/$taskId",
+        params: {
+          taskId: task.id,
         },
       });
+
+      createTaskDialogHandle.close();
     }),
   });
 

@@ -9,7 +9,11 @@ import { Effect, ManagedRuntime, Option } from "effect";
 import { BackendHttpApiClient } from "~/lib/api/client";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
-import type { ReconciledCollection } from "./electric-reconciliation";
+import {
+  insertedRecords,
+  type ReconciledCollection,
+  updatedRecords,
+} from "./electric-reconciliation";
 import { runSyncedWorkspaceAction } from "./optimistic-workspace-action";
 
 type WorkspaceMemberCollection = {
@@ -56,11 +60,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
       id: Option.some(id),
     };
 
-    return runSyncedWorkspaceAction<
-      TimeEntryResult,
-      TimeEntryResult,
-      TimeEntry
-    >({
+    return runSyncedWorkspaceAction<TimeEntryResult, TimeEntry>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
           userId: params.userId,
@@ -91,22 +91,17 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client(
-              "TimeEntry.Create",
-              data,
-              {
-                headers: {
-                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-                },
-              }
-            );
+            return yield* client("TimeEntry.Create", data, {
+              headers: {
+                [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+              },
+            });
           })
         ),
-      remoteSync: {
+      remoteSync: insertedRecords({
         collection: params.timeEntriesCollection,
-        operation: "insert",
         getIds: (remoteResult) => [remoteResult.id],
-      },
+      }),
     });
   };
 
@@ -114,11 +109,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
     id: TimeEntry["id"],
     data: typeof TimeEntry.jsonUpdate.Type
   ) =>
-    runSyncedWorkspaceAction<
-      TimeEntryResult,
-      TimeEntryResult,
-      TimeEntryResult
-    >({
+    runSyncedWorkspaceAction<TimeEntryResult, TimeEntryResult>({
       mutateLocal: () => {
         const timeEntry = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
@@ -153,11 +144,10 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
             );
           })
         ),
-      remoteSync: {
+      remoteSync: updatedRecords({
         collection: params.timeEntriesCollection,
-        operation: "update",
         getIds: (remoteResult) => [remoteResult.id],
-      },
+      }),
     });
 
   return {

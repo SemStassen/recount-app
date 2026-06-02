@@ -8,7 +8,11 @@ import { Effect, ManagedRuntime, Option } from "effect";
 import { BackendHttpApiClient } from "~/lib/api/client";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
-import type { ReconciledCollection } from "./electric-reconciliation";
+import {
+  insertedRecords,
+  type ReconciledCollection,
+  updatedRecords,
+} from "./electric-reconciliation";
 import { runSyncedWorkspaceAction } from "./optimistic-workspace-action";
 
 type ProjectActionsRuntime = ManagedRuntime.ManagedRuntime<
@@ -35,11 +39,7 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       id: Option.some(id),
     };
 
-    return runSyncedWorkspaceAction<
-      Project,
-      Project,
-      Project
-    >({
+    return runSyncedWorkspaceAction<Project, Project>({
       mutateLocal: () => {
         const project = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
@@ -65,22 +65,17 @@ export function createProjectActions(params: CreateProjectActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client(
-              "Project.Create",
-              data,
-              {
-                headers: {
-                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-                },
-              }
-            );
+            return yield* client("Project.Create", data, {
+              headers: {
+                [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+              },
+            });
           })
         ),
-      remoteSync: {
+      remoteSync: insertedRecords({
         collection: params.allProjectsCollection,
-        operation: "insert",
         getIds: (remoteResult) => [remoteResult.id],
-      },
+      }),
     });
   };
 
@@ -88,11 +83,7 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     id: Project["id"],
     data: typeof Project.jsonUpdate.Type
   ) =>
-    runSyncedWorkspaceAction<
-      Project,
-      Project,
-      Project
-    >({
+    runSyncedWorkspaceAction<Project, Project>({
       mutateLocal: () => {
         const project = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
@@ -127,11 +118,10 @@ export function createProjectActions(params: CreateProjectActionsParams) {
             );
           })
         ),
-      remoteSync: {
+      remoteSync: updatedRecords({
         collection: params.allProjectsCollection,
-        operation: "update",
         getIds: (remoteResult) => [remoteResult.id],
-      },
+      }),
     });
 
   const createTask = (payload: typeof Task.jsonCreate.Type) => {
@@ -141,11 +131,7 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       id: Option.some(id),
     };
 
-    return runSyncedWorkspaceAction<
-      Task,
-      Task,
-      Task
-    >({
+    return runSyncedWorkspaceAction<Task, Task>({
       mutateLocal: () => {
         const task = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
@@ -171,31 +157,22 @@ export function createProjectActions(params: CreateProjectActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client(
-              "Task.Create",
-              data,
-              {
-                headers: {
-                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-                },
-              }
-            );
+            return yield* client("Task.Create", data, {
+              headers: {
+                [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+              },
+            });
           })
         ),
-      remoteSync: {
+      remoteSync: insertedRecords({
         collection: params.allTasksCollection,
-        operation: "insert",
         getIds: (remoteResult) => [remoteResult.id],
-      },
+      }),
     });
   };
 
   const updateTask = (id: Task["id"], data: typeof Task.jsonUpdate.Type) =>
-    runSyncedWorkspaceAction<
-      Task,
-      Task,
-      Task
-    >({
+    runSyncedWorkspaceAction<Task, Task>({
       mutateLocal: () => {
         const task = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
@@ -230,11 +207,10 @@ export function createProjectActions(params: CreateProjectActionsParams) {
             );
           })
         ),
-      remoteSync: {
+      remoteSync: updatedRecords({
         collection: params.allTasksCollection,
-        operation: "update",
         getIds: (remoteResult) => [remoteResult.id],
-      },
+      }),
     });
 
   return {

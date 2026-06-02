@@ -1,9 +1,15 @@
 import { WorkspaceIntegrationConnection } from "@recount/core/modules/integration";
-import { Project, Task } from "@recount/core/modules/project";
-import { TimeEntry } from "@recount/core/modules/time";
 import { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { Schema, Struct } from "effect";
 
+import {
+  decodeWorkspaceProjectRow,
+  decodeWorkspaceTaskRow,
+  decodeWorkspaceTimeEntryRow,
+  projectCollectionSchema,
+  taskCollectionSchema,
+  timeEntryCollectionSchema,
+} from "../workspace/workspace-collection-codecs";
 import { defineShape } from "./define-shape";
 
 export const workspaceShapes = {
@@ -14,7 +20,7 @@ export const workspaceShapes = {
     getKey: (workspaceMember) => workspaceMember.id,
     decodeRow: (row) =>
       Schema.decodeUnknownSync(
-        WorkspaceMember.json.mapFields(Struct.map(Schema.optionalKey)),
+        WorkspaceMember.json.mapFields(Struct.map(Schema.optionalKey))
       )(row),
   }),
   workspaceIntegrationConnections: defineShape({
@@ -29,61 +35,30 @@ export const workspaceShapes = {
           .mapFields(
             Struct.evolve({
               createdAt: () => Schema.DateTimeUtcFromString,
-            }),
+            })
           )
-          .mapFields(Struct.map(Schema.optionalKey)),
+          .mapFields(Struct.map(Schema.optionalKey))
       )(row),
   }),
   projects: defineShape({
     name: "projects",
     routePath: "/projects",
-    schema: Schema.toStandardSchemaV1(
-      Project.json.mapFields(
-        Struct.evolve({
-          archivedAt: () => Schema.Option(Schema.DateTimeUtc),
-          notes: () => Schema.Option(Schema.Json),
-        }),
-      ),
-    ),
+    schema: projectCollectionSchema,
     getKey: (project) => project.id,
-    decodeRow: (row) =>
-      Schema.decodeUnknownSync(
-        Project.json
-          .mapFields(
-            Struct.evolve({
-              archivedAt: () =>
-                Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-            }),
-          )
-          .mapFields(Struct.map(Schema.optionalKey)),
-      )(row),
+    decodeRow: decodeWorkspaceProjectRow,
   }),
   tasks: defineShape({
     name: "tasks",
     routePath: "/tasks",
-    schema: Schema.toStandardSchemaV1(Task.json),
+    schema: taskCollectionSchema,
     getKey: (task) => task.id,
-    decodeRow: (row) =>
-      Schema.decodeUnknownSync(
-        Task.json.mapFields(Struct.map(Schema.optionalKey)),
-      )(row),
+    decodeRow: decodeWorkspaceTaskRow,
   }),
   timeEntries: defineShape({
     name: "time-entries",
     routePath: "/time-entries",
-    schema: Schema.toStandardSchemaV1(TimeEntry.json),
+    schema: timeEntryCollectionSchema,
     getKey: (timeEntry) => timeEntry.id,
-    decodeRow: (row) =>
-      Schema.decodeUnknownSync(
-        TimeEntry.json
-          .mapFields(
-            Struct.evolve({
-              startedAt: () => Schema.DateTimeUtcFromString,
-              stoppedAt: () =>
-                Schema.OptionFromNullOr(Schema.DateTimeUtcFromString),
-            }),
-          )
-          .mapFields(Struct.map(Schema.optionalKey)),
-      )(row),
+    decodeRow: decodeWorkspaceTimeEntryRow,
   }),
 };

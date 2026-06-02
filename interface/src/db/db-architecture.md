@@ -35,6 +35,11 @@ They stay separate because they have different lifetimes:
 - `WorkspaceDbProvider` sits at the workspace route boundary
 - providers pass the whole DB instance through context
 - each DB instance exposes a single `dispose()` method
+- workspace routes call `WorkspaceDb.preload()` before rendering optimistic interactions
+- `WorkspaceDb.actions` return local acceptance synchronously for optimistic workspace changes
+- `WorkspaceDb.actions` throw when required local state is missing after preload
+- backend persistence and reconciliation stay behind the `WorkspaceDb.actions` seam
+- server-only workspace concerns stay async and wait for backend authority
 
 ### Query access
 

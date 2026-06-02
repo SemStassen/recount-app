@@ -1,67 +1,45 @@
 import { TimeEntry, TimeEntryRepository } from "@recount/core/modules/time";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { and, eq, queryOnce } from "@tanstack/react-db";
-import { DateTime, Effect, Layer, Option, Schema } from "effect";
+import { Effect, Layer, Option } from "effect";
+
+import {
+  type TimeEntryCollectionInsert,
+  type TimeEntryRow,
+  toTimeEntryCollectionInsert,
+  toTimeEntryEntity,
+} from "~/db/workspace/workspace-collection-codecs";
 
 import {
   deleteCollectionItems,
   type ClientRepositoryCollection,
+  toQueryableCollection,
   updateCollectionItem,
 } from "./client-repository-collection";
 
-type TimeEntryRow = typeof TimeEntry.json.Type;
-type TimeEntryCollection = ClientRepositoryCollection<TimeEntryRow>;
-
-interface TimeEntryCollectionInsert {
-  readonly id: string;
-  readonly workspaceId: string;
-  readonly workspaceMemberId: string;
-  readonly projectId: string;
-  readonly taskId: string | null;
-  readonly startedAt: Date;
-  readonly stoppedAt: Date | null;
-  readonly notes: Schema.Json;
-}
+type TimeEntryCollection = ClientRepositoryCollection<
+  TimeEntryRow,
+  TimeEntryCollectionInsert
+>;
 
 const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
-
-const normalizeTimeEntry = (timeEntry: TimeEntryRow): TimeEntry =>
-  TimeEntry.make({
-    id: timeEntry.id,
-    workspaceId: timeEntry.workspaceId,
-    workspaceMemberId: timeEntry.workspaceMemberId,
-    projectId: timeEntry.projectId,
-    taskId: timeEntry.taskId,
-    startedAt: timeEntry.startedAt,
-    stoppedAt: timeEntry.stoppedAt,
-    notes: timeEntry.notes,
-  });
-
-const optionDateTimeToDate = (value: Option.Option<DateTime.Utc>) =>
-  Option.map(value, DateTime.toDateUtc).pipe(Option.getOrNull);
-
-const toCollectionInsert = (
-  timeEntry: TimeEntry
-): TimeEntryCollectionInsert => ({
-  id: timeEntry.id,
-  workspaceId: timeEntry.workspaceId,
-  workspaceMemberId: timeEntry.workspaceMemberId,
-  projectId: timeEntry.projectId,
-  taskId: Option.getOrNull(timeEntry.taskId),
-  startedAt: DateTime.toDateUtc(timeEntry.startedAt),
-  stoppedAt: optionDateTimeToDate(timeEntry.stoppedAt),
-  notes: Option.getOrNull(timeEntry.notes),
-});
 
 export function createClientTimeEntryRepositoryLayer(
   timeEntriesCollection: TimeEntryCollection
 ) {
+  const queryableTimeEntriesCollection = toQueryableCollection<
+    TimeEntryRow,
+    TimeEntryCollectionInsert
+  >(timeEntriesCollection);
+
   return Layer.succeed(TimeEntryRepository, {
     insertMany: (data) =>
       Effect.try({
         try: () => {
-          const timeEntries = data.map(normalizeTimeEntry);
-          timeEntriesCollection.insert(timeEntries.map(toCollectionInsert));
+          const timeEntries = data.map(toTimeEntryEntity);
+          timeEntriesCollection.insert(
+            timeEntries.map(toTimeEntryCollectionInsert)
+          );
 
           return timeEntries;
         },
@@ -70,11 +48,15 @@ export function createClientTimeEntryRepositoryLayer(
     update: ({ workspaceId, id, update }) =>
       Effect.tryPromise({
         try: async () => {
-          updateCollectionItem(timeEntriesCollection, id, update);
+          updateCollectionItem<TimeEntryRow, TimeEntryCollectionInsert>(
+            timeEntriesCollection,
+            id,
+            update
+          );
 
           const timeEntry = await queryOnce((q) =>
             q
-              .from({ timeEntry: timeEntriesCollection })
+              .from({ timeEntry: queryableTimeEntriesCollection })
               .where(({ timeEntry }) => eq(timeEntry.id, id))
               .findOne()
           );
@@ -83,7 +65,7 @@ export function createClientTimeEntryRepositoryLayer(
             throw new Error(`Time entry ${id} was not found after local write`);
           }
 
-          return normalizeTimeEntry(timeEntry);
+          return toTimeEntryEntity(timeEntry);
         },
         catch: toRepositoryError,
       }),
@@ -99,7 +81,7 @@ export function createClientTimeEntryRepositoryLayer(
         try: async () => {
           const timeEntry = await queryOnce((q) =>
             q
-              .from({ timeEntry: timeEntriesCollection })
+              .from({ timeEntry: queryableTimeEntriesCollection })
               .where(({ timeEntry }) => eq(timeEntry.id, id))
               .findOne()
           );
@@ -108,7 +90,7 @@ export function createClientTimeEntryRepositoryLayer(
             return Option.none<TimeEntry>();
           }
 
-          return Option.some(normalizeTimeEntry(timeEntry));
+          return Option.some(toTimeEntryEntity(timeEntry));
         },
         catch: toRepositoryError,
       }),
@@ -117,7 +99,7 @@ export function createClientTimeEntryRepositoryLayer(
         try: async () => {
           const timeEntry = await queryOnce((q) =>
             q
-              .from({ timeEntry: timeEntriesCollection })
+              .from({ timeEntry: queryableTimeEntriesCollection })
               .where(({ timeEntry }) =>
                 and(
                   eq(timeEntry.workspaceMemberId, workspaceMemberId),
@@ -135,7 +117,7 @@ export function createClientTimeEntryRepositoryLayer(
             return Option.none<TimeEntry>();
           }
 
-          return Option.some(normalizeTimeEntry(timeEntry));
+          return Option.some(toTimeEntryEntity(timeEntry));
         },
         catch: toRepositoryError,
       }),

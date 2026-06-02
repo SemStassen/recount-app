@@ -4,34 +4,37 @@ import { eq, inArray, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option } from "effect";
 
 import {
+  type ProjectCollectionInsert,
+  type ProjectRow,
+  toProjectEntity,
+} from "~/db/workspace/workspace-collection-codecs";
+
+import {
   type ClientRepositoryCollection,
+  toQueryableCollection,
   updateCollectionItem,
 } from "./client-repository-collection";
 
-type ProjectRow = typeof Project.json.Type;
-type ProjectCollection = ClientRepositoryCollection<ProjectRow>;
+type ProjectCollection = ClientRepositoryCollection<
+  ProjectRow,
+  ProjectCollectionInsert
+>;
 
 const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
-
-const normalizeProject = (project: ProjectRow): Project =>
-  Project.make({
-    id: project.id,
-    workspaceId: project.workspaceId,
-    name: project.name,
-    color: project.color,
-    isBillable: project.isBillable,
-    notes: project.notes,
-    archivedAt: project.archivedAt,
-  });
 
 export function createClientProjectRepositoryLayer(
   projectsCollection: ProjectCollection
 ) {
+  const queryableProjectsCollection = toQueryableCollection<
+    ProjectRow,
+    ProjectCollectionInsert
+  >(projectsCollection);
+
   return Layer.succeed(ProjectRepository, {
     insertMany: (data) =>
       Effect.try({
         try: () => {
-          const projects = data.map(normalizeProject);
+          const projects = data.map(toProjectEntity);
           projectsCollection.insert(projects);
 
           return projects;
@@ -41,11 +44,15 @@ export function createClientProjectRepositoryLayer(
     update: ({ id, update }) =>
       Effect.tryPromise({
         try: async () => {
-          updateCollectionItem(projectsCollection, id, update);
+          updateCollectionItem<ProjectRow, ProjectCollectionInsert>(
+            projectsCollection,
+            id,
+            update
+          );
 
           const project = await queryOnce((q) =>
             q
-              .from({ project: projectsCollection })
+              .from({ project: queryableProjectsCollection })
               .where(({ project }) => eq(project.id, id))
               .findOne()
           );
@@ -54,7 +61,7 @@ export function createClientProjectRepositoryLayer(
             throw new Error(`Project ${id} was not found after local write`);
           }
 
-          return normalizeProject(project);
+          return toProjectEntity(project);
         },
         catch: toRepositoryError,
       }),
@@ -63,7 +70,7 @@ export function createClientProjectRepositoryLayer(
         try: async () => {
           const project = await queryOnce((q) =>
             q
-              .from({ project: projectsCollection })
+              .from({ project: queryableProjectsCollection })
               .where(({ project }) => eq(project.id, id))
               .findOne()
           );
@@ -72,7 +79,7 @@ export function createClientProjectRepositoryLayer(
             return Option.none<Project>();
           }
 
-          return Option.some(normalizeProject(project));
+          return Option.some(toProjectEntity(project));
         },
         catch: toRepositoryError,
       }),
@@ -81,13 +88,13 @@ export function createClientProjectRepositoryLayer(
         try: async () => {
           const projects = await queryOnce((q) =>
             q
-              .from({ project: projectsCollection })
+              .from({ project: queryableProjectsCollection })
               .where(({ project }) => inArray(project.id, [...ids]))
           );
 
           return projects
             .filter((project) => project.workspaceId === workspaceId)
-            .map(normalizeProject);
+            .map(toProjectEntity);
         },
         catch: toRepositoryError,
       }),

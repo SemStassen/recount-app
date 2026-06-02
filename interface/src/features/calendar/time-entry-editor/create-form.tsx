@@ -2,7 +2,6 @@ import { useAtomSet } from "@effect/atom-react";
 import { TimeEntry } from "@recount/core/modules/time";
 import { Form } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
-import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
@@ -49,16 +48,8 @@ export function CreateTimeEntryForm({
       onChange: ({ formApi }) => publishPreview(formApi.state.values),
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      const result = workspaceDb.actions.createTimeEntry(value);
-
-      Exit.match(result, {
-        onFailure: (cause) => {
-          throw cause;
-        },
-        onSuccess: () => {
-          closeEditor(undefined);
-        },
-      });
+      workspaceDb.actions.createTimeEntry(value);
+      closeEditor(undefined);
     }),
   });
 

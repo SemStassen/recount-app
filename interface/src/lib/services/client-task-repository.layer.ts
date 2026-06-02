@@ -1,54 +1,39 @@
 import { Task, TaskRepository } from "@recount/core/modules/project";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { eq, queryOnce } from "@tanstack/react-db";
-import { DateTime, Effect, Layer, Option } from "effect";
+import { Effect, Layer, Option } from "effect";
+
+import {
+  type TaskCollectionInsert,
+  type TaskRow,
+  toTaskCollectionInsert,
+  toTaskEntity,
+} from "~/db/workspace/workspace-collection-codecs";
 
 import {
   type ClientRepositoryCollection,
+  toQueryableCollection,
   updateCollectionItem,
 } from "./client-repository-collection";
 
-type TaskRow = typeof Task.json.Type;
-type TaskCollection = ClientRepositoryCollection<TaskRow>;
-
-interface TaskCollectionInsert {
-  readonly id: string;
-  readonly workspaceId: string;
-  readonly projectId: string;
-  readonly name: string;
-  readonly archivedAt: Date | null;
-}
+type TaskCollection = ClientRepositoryCollection<TaskRow, TaskCollectionInsert>;
 
 const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
-
-const normalizeTask = (task: TaskRow): Task =>
-  Task.make({
-    id: task.id,
-    workspaceId: task.workspaceId,
-    projectId: task.projectId,
-    name: task.name,
-    archivedAt: task.archivedAt,
-  });
-
-const toCollectionInsert = (task: Task): TaskCollectionInsert => ({
-  id: task.id,
-  workspaceId: task.workspaceId,
-  projectId: task.projectId,
-  name: task.name,
-  archivedAt: Option.map(task.archivedAt, DateTime.toDateUtc).pipe(
-    Option.getOrNull
-  ),
-});
 
 export function createClientTaskRepositoryLayer(
   tasksCollection: TaskCollection
 ) {
+  const queryableTasksCollection = toQueryableCollection<
+    TaskRow,
+    TaskCollectionInsert
+  >(tasksCollection);
+
   return Layer.succeed(TaskRepository, {
     insertMany: (data) =>
       Effect.try({
         try: () => {
-          const tasks = data.map(normalizeTask);
-          tasksCollection.insert(tasks.map(toCollectionInsert));
+          const tasks = data.map(toTaskEntity);
+          tasksCollection.insert(tasks.map(toTaskCollectionInsert));
 
           return tasks;
         },
@@ -57,11 +42,15 @@ export function createClientTaskRepositoryLayer(
     update: ({ id, update }) =>
       Effect.tryPromise({
         try: async () => {
-          updateCollectionItem(tasksCollection, id, update);
+          updateCollectionItem<TaskRow, TaskCollectionInsert>(
+            tasksCollection,
+            id,
+            update
+          );
 
           const task = await queryOnce((q) =>
             q
-              .from({ task: tasksCollection })
+              .from({ task: queryableTasksCollection })
               .where(({ task }) => eq(task.id, id))
               .findOne()
           );
@@ -70,7 +59,7 @@ export function createClientTaskRepositoryLayer(
             throw new Error(`Task ${id} was not found after local write`);
           }
 
-          return normalizeTask(task);
+          return toTaskEntity(task);
         },
         catch: toRepositoryError,
       }),
@@ -79,7 +68,7 @@ export function createClientTaskRepositoryLayer(
         try: async () => {
           const task = await queryOnce((q) =>
             q
-              .from({ task: tasksCollection })
+              .from({ task: queryableTasksCollection })
               .where(({ task }) => eq(task.id, id))
               .findOne()
           );
@@ -88,7 +77,7 @@ export function createClientTaskRepositoryLayer(
             return Option.none<Task>();
           }
 
-          return Option.some(normalizeTask(task));
+          return Option.some(toTaskEntity(task));
         },
         catch: toRepositoryError,
       }),

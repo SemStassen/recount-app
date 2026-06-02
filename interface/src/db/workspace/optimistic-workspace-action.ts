@@ -1,35 +1,26 @@
 import { createTransaction } from "@tanstack/react-db";
-import { Exit } from "effect";
 
 import {
-  awaitCollectionChanges,
-  type ElectricOperation,
-  type ReconciledCollection,
+  awaitBackendReconciliation,
+  type AnyBackendReconciliationTarget,
 } from "./electric-reconciliation";
 
-interface OptimisticWorkspaceActionParams<
-  Entity extends object,
-  RemoteResult,
-  Success,
-> {
+interface OptimisticWorkspaceActionParams<RemoteResult, Success> {
   readonly mutateLocal: () => Success;
-  readonly persistRemote: (params: { readonly accepted: Success }) =>
-    Promise<RemoteResult>;
+  readonly persistRemote: (params: {
+    readonly accepted: Success;
+  }) => Promise<RemoteResult>;
   readonly awaitRemoteSync: (params: {
     readonly accepted: Success;
     readonly remoteResult: RemoteResult;
   }) => Promise<void>;
 }
 
-export function runOptimisticWorkspaceAction<
-  Entity extends object,
-  RemoteResult,
-  Success,
->(
-  params: OptimisticWorkspaceActionParams<Entity, RemoteResult, Success>
+export function runOptimisticWorkspaceAction<RemoteResult, Success>(
+  params: OptimisticWorkspaceActionParams<RemoteResult, Success>
 ) {
   let accepted: Success | undefined;
-  const transaction = createTransaction<Entity>({
+  const transaction = createTransaction({
     mutationFn: async () => {
       if (accepted === undefined) {
         throw new Error(
@@ -48,53 +39,35 @@ export function runOptimisticWorkspaceAction<
     },
   });
 
-  try {
-    transaction.mutate(() => {
-      accepted = params.mutateLocal();
-    });
+  transaction.mutate(() => {
+    accepted = params.mutateLocal();
+  });
 
-    if (accepted === undefined) {
-      throw new Error("Optimistic action did not produce a local result");
-    }
-
-    return Exit.succeed(accepted);
-  } catch (cause) {
-    return Exit.fail(cause);
+  if (accepted === undefined) {
+    throw new Error("Optimistic action did not produce a local result");
   }
+
+  return accepted;
 }
 
-interface SyncedWorkspaceActionParams<
-  Entity extends object,
-  RemoteResult,
-  Success,
-  Id,
-> {
+interface SyncedWorkspaceActionParams<RemoteResult, Success> {
   readonly mutateLocal: () => Success;
-  readonly persistRemote: (params: { readonly accepted: Success }) =>
-    Promise<RemoteResult>;
-  readonly remoteSync: {
-    readonly collection: ReconciledCollection;
-    readonly operation: ElectricOperation;
-    readonly getIds: (remoteResult: RemoteResult) => ReadonlyArray<Id>;
-  };
+  readonly persistRemote: (params: {
+    readonly accepted: Success;
+  }) => Promise<RemoteResult>;
+  readonly remoteSync: AnyBackendReconciliationTarget<RemoteResult>;
 }
 
-export function runSyncedWorkspaceAction<
-  Entity extends object,
-  RemoteResult,
-  Success,
-  Id = unknown,
->(
-  params: SyncedWorkspaceActionParams<Entity, RemoteResult, Success, Id>
+export function runSyncedWorkspaceAction<RemoteResult, Success>(
+  params: SyncedWorkspaceActionParams<RemoteResult, Success>
 ) {
-  return runOptimisticWorkspaceAction<Entity, RemoteResult, Success>({
+  return runOptimisticWorkspaceAction<RemoteResult, Success>({
     mutateLocal: params.mutateLocal,
     persistRemote: params.persistRemote,
     awaitRemoteSync: ({ remoteResult }) =>
-      awaitCollectionChanges({
-        collection: params.remoteSync.collection,
-        operation: params.remoteSync.operation,
-        ids: params.remoteSync.getIds(remoteResult),
-      }).then(() => {}),
+      awaitBackendReconciliation({
+        target: params.remoteSync,
+        remoteResult,
+      }),
   });
 }

@@ -4,7 +4,6 @@ import type { TimeEntryId } from "@recount/core/shared/schemas";
 import { Form } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
-import { Exit } from "effect";
 import { useEffect } from "react";
 
 import { useAppForm } from "~/components/form";
@@ -97,16 +96,8 @@ function UpdateTimeEntryFormContent({
       onChange: ({ formApi }) => publishPreview(formApi.state.values),
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      const result = workspaceDb.actions.updateTimeEntry(timeEntry.id, value);
-
-      Exit.match(result, {
-        onFailure: (cause) => {
-          throw cause;
-        },
-        onSuccess: () => {
-          closeEditor(undefined);
-        },
-      });
+      workspaceDb.actions.updateTimeEntry(timeEntry.id, value);
+      closeEditor(undefined);
     }),
   });
 
