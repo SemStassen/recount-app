@@ -1,6 +1,4 @@
 import { snakeCamelMapper } from "@electric-sql/client";
-import { ProjectModuleLayer } from "@recount/core/modules/project";
-import { TimeModuleLayer } from "@recount/core/modules/time";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import { UserId, WorkspaceId } from "@recount/core/shared/schemas";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
@@ -10,17 +8,14 @@ import {
   eq,
   not,
 } from "@tanstack/react-db";
-import { Layer, ManagedRuntime, Option } from "effect";
+import { Option } from "effect";
 
 import { authFetch } from "~/lib/auth";
-import { appRuntimeLayer } from "~/lib/runtime";
-import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
-import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
-import { createClientTimeEntryRepositoryLayer } from "~/lib/services/client-time-entry-repository.layer";
 
 import { workspaceShapes } from "../sync-shapes";
 import { createProjectActions } from "./project-actions";
 import { createTimeEntryActions } from "./time-entry-actions";
+import { createWorkspaceRuntime } from "./workspace-runtime";
 
 export type WorkspaceDb = Awaited<ReturnType<typeof openWorkspaceDb>>;
 
@@ -151,24 +146,11 @@ export async function openWorkspaceDb(workspaceId: string, userId: string) {
     })
   );
 
-  const projectRepositoryLayer = createClientProjectRepositoryLayer(
-    allProjectsCollection
-  );
-  const taskRepositoryLayer =
-    createClientTaskRepositoryLayer(allTasksCollection);
-  const timeEntryRepositoryLayer = createClientTimeEntryRepositoryLayer(
-    timeEntriesCollection
-  );
-  const workspaceRuntime = ManagedRuntime.make(
-    Layer.mergeAll(
-      appRuntimeLayer,
-      ProjectModuleLayer.pipe(
-        Layer.provide(projectRepositoryLayer),
-        Layer.provide(taskRepositoryLayer)
-      ),
-      TimeModuleLayer.pipe(Layer.provide(timeEntryRepositoryLayer))
-    )
-  );
+  const workspaceRuntime = createWorkspaceRuntime({
+    allProjectsCollection,
+    allTasksCollection,
+    timeEntriesCollection,
+  });
 
   const projectActions = createProjectActions({
     workspaceId: brandedWorkspaceId,

@@ -3,9 +3,8 @@ import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { WorkspaceId } from "@recount/core/shared/schemas";
 import { ProjectId, TaskId } from "@recount/core/shared/schemas";
 import { generateUUID } from "@recount/core/shared/utils";
-import { Effect, ManagedRuntime, Option } from "effect";
+import { Effect, Option } from "effect";
 
-import { BackendHttpApiClient } from "~/lib/api/client";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
 import {
@@ -14,15 +13,11 @@ import {
   updatedRecords,
 } from "./electric-reconciliation";
 import { runSyncedWorkspaceAction } from "./optimistic-workspace-action";
-
-type ProjectActionsRuntime = ManagedRuntime.ManagedRuntime<
-  ProjectModule | BackendAtomRpcClient | BackendHttpApiClient,
-  never
->;
+import type { WorkspaceRuntime } from "./workspace-runtime";
 
 interface CreateProjectActionsParams {
   readonly workspaceId: WorkspaceId;
-  readonly workspaceRuntime: ProjectActionsRuntime;
+  readonly workspaceRuntime: WorkspaceRuntime;
   readonly allProjectsCollection: ReconciledCollection;
   readonly allTasksCollection: ReconciledCollection;
 }

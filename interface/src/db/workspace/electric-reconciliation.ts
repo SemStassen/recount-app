@@ -1,18 +1,17 @@
 import {
-  isChangeMessage,
   type ElectricCollectionUtils,
+  isChangeMessage,
 } from "@tanstack/electric-db-collection";
-import type { Collection } from "@tanstack/react-db";
+import type { Row } from "@tanstack/react-db";
 
 type ElectricOperation = "insert" | "update" | "delete";
 
-export type ReconciledCollection = Collection<
-  any,
-  any,
-  ElectricCollectionUtils<any>,
-  any,
-  any
->;
+export interface ReconciledCollection {
+  // Reconciliation only depends on Electric's awaitMatch utility.
+  // Keep this boundary narrow so TanStack DB collection generics do not leak into action code,
+  // while package-version changes to ElectricCollectionUtils still typecheck.
+  readonly utils: Pick<ElectricCollectionUtils<Row<unknown>>, "awaitMatch">;
+}
 
 interface BackendReconciliationTarget<RemoteResult, Id> {
   readonly collection: ReconciledCollection;

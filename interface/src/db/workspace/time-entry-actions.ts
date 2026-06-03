@@ -4,9 +4,8 @@ import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { UserId, WorkspaceId } from "@recount/core/shared/schemas";
 import { TimeEntryId } from "@recount/core/shared/schemas";
 import { generateUUID } from "@recount/core/shared/utils";
-import { Effect, ManagedRuntime, Option } from "effect";
+import { Effect, Option } from "effect";
 
-import { BackendHttpApiClient } from "~/lib/api/client";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
 import {
@@ -16,6 +15,7 @@ import {
   updatedRecords,
 } from "./electric-reconciliation";
 import { runSyncedWorkspaceAction } from "./optimistic-workspace-action";
+import type { WorkspaceRuntime } from "./workspace-runtime";
 
 type WorkspaceMemberCollection = {
   values: () => Iterable<typeof WorkspaceMember.json.Type>;
@@ -23,15 +23,10 @@ type WorkspaceMemberCollection = {
 
 type TimeEntryResult = typeof TimeEntry.json.Type;
 
-type TimeEntryActionsRuntime = ManagedRuntime.ManagedRuntime<
-  TimeModule | BackendAtomRpcClient | BackendHttpApiClient,
-  never
->;
-
 interface CreateTimeEntryActionsParams {
   readonly userId: UserId;
   readonly workspaceId: WorkspaceId;
-  readonly workspaceRuntime: TimeEntryActionsRuntime;
+  readonly workspaceRuntime: WorkspaceRuntime;
   readonly workspaceMembersCollection: WorkspaceMemberCollection;
   readonly timeEntriesCollection: ReconciledCollection;
 }
