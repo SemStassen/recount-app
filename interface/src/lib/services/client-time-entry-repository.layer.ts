@@ -97,7 +97,7 @@ export function createClientTimeEntryRepositoryLayer(
         },
         catch: toRepositoryError,
       }),
-    findRunningByWorkspaceMember: ({ workspaceId, workspaceMemberId }) =>
+    findTimerRecordByWorkspaceMember: ({ workspaceId, workspaceMemberId }) =>
       Effect.tryPromise({
         try: async () => {
           const timeEntry = await queryOnce((q) =>
@@ -124,14 +124,14 @@ export function createClientTimeEntryRepositoryLayer(
         },
         catch: toRepositoryError,
       }),
-    updateRunningByWorkspaceMember: ({
+    updateTimerRecordByWorkspaceMember: ({
       workspaceId,
       workspaceMemberId,
       update,
     }) =>
       Effect.tryPromise({
         try: async () => {
-          const runningTimeEntry = await queryOnce((q) =>
+          const timerRecord = await queryOnce((q) =>
             q
               .from({ timeEntry: queryableTimeEntriesCollection })
               .where(({ timeEntry }) =>
@@ -144,23 +144,23 @@ export function createClientTimeEntryRepositoryLayer(
           );
 
           if (
-            !runningTimeEntry ||
-            runningTimeEntry.workspaceId !== workspaceId ||
-            Option.isSome(runningTimeEntry.stoppedAt)
+            !timerRecord ||
+            timerRecord.workspaceId !== workspaceId ||
+            Option.isSome(timerRecord.stoppedAt)
           ) {
             return Option.none<TimeEntryRecord>();
           }
 
           updateCollectionItem<TimeEntryRow, TimeEntryCollectionInsert>(
             timeEntriesCollection,
-            runningTimeEntry.id,
+            timerRecord.id,
             update
           );
 
           const updatedTimeEntry = await queryOnce((q) =>
             q
               .from({ timeEntry: queryableTimeEntriesCollection })
-              .where(({ timeEntry }) => eq(timeEntry.id, runningTimeEntry.id))
+              .where(({ timeEntry }) => eq(timeEntry.id, timerRecord.id))
               .findOne()
           );
 

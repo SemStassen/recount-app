@@ -51,7 +51,7 @@ export function UpdateTimeEntryForm({
     return null;
   }
 
-  const stoppedTimeEntry = TimeEntry.make({
+  const completedTimeEntry = TimeEntry.make({
     id: timeEntry.id,
     workspaceId: timeEntry.workspaceId,
     workspaceMemberId: timeEntry.workspaceMemberId,
@@ -67,7 +67,7 @@ export function UpdateTimeEntryForm({
       key={timeEntry.id}
       initialRange={initialRange}
       projects={projects}
-      timeEntry={stoppedTimeEntry}
+      timeEntry={completedTimeEntry}
     />
   );
 }

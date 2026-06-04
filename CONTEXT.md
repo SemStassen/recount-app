@@ -25,15 +25,15 @@ An optional project-scoped subdivision of work that time can be tracked against.
 _Avoid_: Todo, issue
 
 **Time Entry**:
-A single interval of work tracked by a workspace member against a project.
-_Avoid_: Timer, timesheet row, log
+A completed interval of work tracked by a workspace member against a project.
+_Avoid_: Timer, running time entry, timesheet row, log
 
-**Running Time Entry**:
-A time entry that has started but has not stopped.
-_Avoid_: Timer
+**Timer**:
+Active tracking for a workspace member's current work interval, backed by a time entry record that has not stopped.
+_Avoid_: Running Time Entry, Time Entry
 
 **Duration**:
-The elapsed length of a stopped time entry.
+The elapsed length of a time entry.
 _Avoid_: Hours, billable time
 
 **Archived**:
@@ -90,7 +90,7 @@ _Avoid_: Full replacement, overwrite, merge
 - A **Workspace Member** belongs to exactly one **Workspace**
 - A **Workspace Member** belongs to exactly one **User**
 - A **Workspace Member** has workspace-specific presentation such as display name and avatar
-- A **Workspace** contains its own projects, tasks, time entries, workspace members, invitations, and integration connections
+- A **Workspace** contains its own projects, tasks, timers, time entries, workspace members, invitations, and integration connections
 - A **Project** belongs to exactly one **Workspace**
 - A **Time Entry** is recorded against exactly one **Project**
 - A **Task** belongs to exactly one **Project**
@@ -98,12 +98,13 @@ _Avoid_: Full replacement, overwrite, merge
 - A **Time Entry** may be recorded against one **Task**
 - A **Time Entry** with a **Task** is recorded against that task's **Project**
 - A **Time Entry** belongs to exactly one **Workspace Member**
-- A stopped **Time Entry** stops after it starts
-- A stopped **Time Entry** has one **Duration**
-- A **Running Time Entry** does not have a final **Duration**
-- A **Workspace Member** can have at most one **Running Time Entry** in a **Workspace**
-- Starting a **Running Time Entry** fails if the **Workspace Member** already has one running in the workspace
-- Stopped **Time Entries** for the same **Workspace Member** may overlap
+- A **Time Entry** stops after it starts
+- A **Time Entry** has one **Duration**
+- A **Timer** does not have a final **Duration**
+- A **Workspace Member** can have at most one **Timer** in a **Workspace**
+- Starting a **Timer** fails if the **Workspace Member** already has one in the workspace
+- Stopping a **Timer** creates a **Time Entry**
+- **Time Entries** for the same **Workspace Member** may overlap
 - Overlapping **Time Entries** count as separate tracked durations, not unique elapsed clock time
 - An **Archived** project or task can still be referenced by historical **Time Entries**
 - A **Removed Workspace Member** can still be referenced by historical **Time Entries**
@@ -137,7 +138,7 @@ _Avoid_: Full replacement, overwrite, merge
 ## Example dialogue
 
 > **Dev:** "When a user starts a timer for a Linear issue, do we create a todo in Recount?"
-> **Domain expert:** "No. A **Workspace Member** starts a **Running Time Entry** against a **Project** and optionally a **Task**. If that task maps to Linear, it has an **External Reference**; Linear owns the todo state."
+> **Domain expert:** "No. A **Workspace Member** starts a **Timer** against a **Project** and optionally a **Task**. Stopping the **Timer** creates a **Time Entry**. If that task maps to Linear, it has an **External Reference**; Linear owns the todo state."
 
 ## Flagged ambiguities
 
@@ -146,7 +147,8 @@ _Avoid_: Full replacement, overwrite, merge
 - "organization" must not be used as a synonym for **Workspace**.
 - "team" is reserved for a future grouping within a **Workspace** and must not be used as a synonym for **Workspace**.
 - "task" in Recount is not a todo item; external tools own todo state such as status, assignee, priority, and due date.
-- "timer" describes active tracking behavior, not the persisted **Time Entry**.
+- **Timer** describes active tracking behavior, not completed historical work.
+- **Time Entry** describes completed historical work, not active tracking.
 - "timesheet" must not be used unless Recount introduces a submission or approval period for time entries.
 - "archived" does not mean deleted; archived projects and tasks remain part of historical time records.
 - "deleted" and "soft-deleted" are implementation language for workspace members; use **Removed Workspace Member** in product discussions.

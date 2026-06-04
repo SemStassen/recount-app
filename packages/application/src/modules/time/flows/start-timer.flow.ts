@@ -1,15 +1,15 @@
 import type {
-  StartRunningTimeEntryCommand,
-  StartRunningTimeEntryResult,
+  StartTimerCommand,
+  StartTimerResult,
 } from "@recount/core/contracts";
 import { TimeModule } from "@recount/core/modules/time";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
 
-export const startRunningTimeEntryFlow = Effect.fn(
-  "flows.startRunningTimeEntryFlow"
-)(function* (request: typeof StartRunningTimeEntryCommand.Type) {
+export const startTimerFlow = Effect.fn(
+  "flows.startTimerFlow"
+)(function* (request: typeof StartTimerCommand.Type) {
   const appContext = yield* ApplicationContext;
   const timeModule = yield* TimeModule;
 
@@ -17,11 +17,11 @@ export const startRunningTimeEntryFlow = Effect.fn(
     "time:create_time_entry"
   );
 
-  const runningTimeEntry = yield* timeModule.startRunningTimeEntry({
+  const timer = yield* timeModule.startTimer({
     workspaceId: workspace.id,
     workspaceMemberId: workspaceMember.id,
     data: request,
   });
 
-  return runningTimeEntry satisfies typeof StartRunningTimeEntryResult.Type;
+  return timer satisfies typeof StartTimerResult.Type;
 });

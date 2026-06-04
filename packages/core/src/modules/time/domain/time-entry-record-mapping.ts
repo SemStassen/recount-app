@@ -1,11 +1,11 @@
 import { Option } from "effect";
 
-import { isRunningTimeEntryRecord, TimeEntryRecord } from "./time-entry-record";
-import { RunningTimeEntry, TimeEntry } from "./time-entry.entity";
+import { Timer, TimeEntry } from "./time-entry.entity";
+import { isTimerRecord, TimeEntryRecord } from "./time-entry.record";
 
-export type TimeEntryApiShape = TimeEntry | RunningTimeEntry;
+export type TimeEntryOrTimer = TimeEntry | Timer;
 
-export const stoppedTimeEntryFromRecord = (record: TimeEntryRecord) =>
+export const timeEntryFromRecord = (record: TimeEntryRecord) =>
   TimeEntry.make({
     id: record.id,
     workspaceId: record.workspaceId,
@@ -17,8 +17,8 @@ export const stoppedTimeEntryFromRecord = (record: TimeEntryRecord) =>
     notes: record.notes,
   });
 
-export const runningTimeEntryFromRecord = (record: TimeEntryRecord) =>
-  RunningTimeEntry.make({
+export const timerFromRecord = (record: TimeEntryRecord) =>
+  Timer.make({
     id: record.id,
     workspaceId: record.workspaceId,
     workspaceMemberId: record.workspaceMemberId,
@@ -28,21 +28,21 @@ export const runningTimeEntryFromRecord = (record: TimeEntryRecord) =>
     notes: record.notes,
   });
 
-export const timeEntryApiShapeFromRecord = (
+export const timeEntryOrTimerFromRecord = (
   record: TimeEntryRecord
-): TimeEntryApiShape =>
-  isRunningTimeEntryRecord(record)
-    ? runningTimeEntryFromRecord(record)
-    : stoppedTimeEntryFromRecord(record);
+): TimeEntryOrTimer =>
+  isTimerRecord(record)
+    ? timerFromRecord(record)
+    : timeEntryFromRecord(record);
 
-export const recordFromStoppedTimeEntry = (timeEntry: TimeEntry) =>
+export const recordFromTimeEntry = (timeEntry: TimeEntry) =>
   TimeEntryRecord.make({
     ...timeEntry,
     stoppedAt: Option.some(timeEntry.stoppedAt),
   });
 
-export const recordFromRunningTimeEntry = (timeEntry: RunningTimeEntry) =>
+export const recordFromTimer = (timer: Timer) =>
   TimeEntryRecord.make({
-    ...timeEntry,
+    ...timer,
     stoppedAt: Option.none(),
   });

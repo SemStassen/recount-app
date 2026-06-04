@@ -3,7 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import { TimeEntryRecord } from "./domain/time-entry-record";
+import { TimeEntryRecord } from "./domain/time-entry.record";
 
 export interface TimeEntryRepositoryShape {
   readonly insertMany: (
@@ -22,11 +22,11 @@ export interface TimeEntryRepositoryShape {
     workspaceId: TimeEntryRecord["workspaceId"];
     id: TimeEntryRecord["id"];
   }) => Effect.Effect<Option.Option<TimeEntryRecord>, RepositoryError>;
-  readonly findRunningByWorkspaceMember: (params: {
+  readonly findTimerRecordByWorkspaceMember: (params: {
     workspaceId: TimeEntryRecord["workspaceId"];
     workspaceMemberId: TimeEntryRecord["workspaceMemberId"];
   }) => Effect.Effect<Option.Option<TimeEntryRecord>, RepositoryError>;
-  readonly updateRunningByWorkspaceMember: (params: {
+  readonly updateTimerRecordByWorkspaceMember: (params: {
     workspaceId: TimeEntryRecord["workspaceId"];
     workspaceMemberId: TimeEntryRecord["workspaceMemberId"];
     update: typeof TimeEntryRecord.update.Type;

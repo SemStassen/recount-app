@@ -9,15 +9,15 @@ import {
 } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
-import { TimeEntryRecord } from "./time-entry-record";
 import {
-  recordFromRunningTimeEntry,
-  recordFromStoppedTimeEntry,
-  runningTimeEntryFromRecord,
-  stoppedTimeEntryFromRecord,
-  timeEntryApiShapeFromRecord,
+  recordFromTimer,
+  recordFromTimeEntry,
+  timerFromRecord,
+  timeEntryFromRecord,
+  timeEntryOrTimerFromRecord,
 } from "./time-entry-record-mapping";
-import { RunningTimeEntry, TimeEntry } from "./time-entry.entity";
+import { Timer, TimeEntry } from "./time-entry.entity";
+import { TimeEntryRecord } from "./time-entry.record";
 
 const startedAt = DateTime.makeUnsafe(new Date("2026-01-01T09:00:00.000Z"));
 const stoppedAt = DateTime.makeUnsafe(new Date("2026-01-01T10:00:00.000Z"));
@@ -36,42 +36,42 @@ const makeRecord = (overrides: Partial<TimeEntryRecord> = {}) =>
   });
 
 describe("Time Entry record mapping", () => {
-  it("maps a stopped Time Entry Record to a Time Entry", () => {
+  it("maps a completed Time Entry Record to a Time Entry", () => {
     const record = makeRecord();
 
-    const timeEntry = stoppedTimeEntryFromRecord(record);
+    const timeEntry = timeEntryFromRecord(record);
 
     expect(timeEntry).toBeInstanceOf(TimeEntry);
     expect(timeEntry.stoppedAt).toBe(stoppedAt);
   });
 
-  it("maps a running Time Entry Record to a Running Time Entry", () => {
+  it("maps a running Time Entry Record to a Timer", () => {
     const record = makeRecord({ stoppedAt: Option.none() });
 
-    const timeEntry = runningTimeEntryFromRecord(record);
+    const timeEntry = timerFromRecord(record);
 
-    expect(timeEntry).toBeInstanceOf(RunningTimeEntry);
+    expect(timeEntry).toBeInstanceOf(Timer);
     expect("stoppedAt" in timeEntry).toBe(false);
   });
 
   it("classifies Time Entry Records by stoppedAt", () => {
-    expect(timeEntryApiShapeFromRecord(makeRecord())).toBeInstanceOf(TimeEntry);
+    expect(timeEntryOrTimerFromRecord(makeRecord())).toBeInstanceOf(TimeEntry);
     expect(
-      timeEntryApiShapeFromRecord(makeRecord({ stoppedAt: Option.none() }))
-    ).toBeInstanceOf(RunningTimeEntry);
+      timeEntryOrTimerFromRecord(makeRecord({ stoppedAt: Option.none() }))
+    ).toBeInstanceOf(Timer);
   });
 
   it("maps API-shaped Time Entries back to records", () => {
-    const stoppedRecord = makeRecord();
-    const stoppedTimeEntry = stoppedTimeEntryFromRecord(stoppedRecord);
-    const runningTimeEntry = runningTimeEntryFromRecord(
+    const timeEntryRecord = makeRecord();
+    const timeEntry = timeEntryFromRecord(timeEntryRecord);
+    const timer = timerFromRecord(
       makeRecord({ stoppedAt: Option.none() })
     );
 
-    expect(recordFromStoppedTimeEntry(stoppedTimeEntry).stoppedAt).toEqual(
+    expect(recordFromTimeEntry(timeEntry).stoppedAt).toEqual(
       Option.some(stoppedAt)
     );
-    expect(recordFromRunningTimeEntry(runningTimeEntry).stoppedAt).toEqual(
+    expect(recordFromTimer(timer).stoppedAt).toEqual(
       Option.none()
     );
   });

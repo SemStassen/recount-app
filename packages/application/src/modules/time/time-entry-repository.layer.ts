@@ -49,7 +49,7 @@ export const TimeEntryRepositoryLayer = Layer.effect(
         ),
     });
 
-    const updateRunningTimeEntryByWorkspaceMember = SqlSchema.findOneOption({
+    const updateTimerRecordByWorkspaceMember = SqlSchema.findOneOption({
       Request: Schema.Struct({
         workspaceId: TimeEntryRecord.fields.workspaceId,
         workspaceMemberId: TimeEntryRecord.fields.workspaceMemberId,
@@ -116,7 +116,7 @@ export const TimeEntryRepositoryLayer = Layer.effect(
         ),
     });
 
-    const findRunningTimeEntryByWorkspaceMemberId = SqlSchema.findOneOption({
+    const findTimerRecordByWorkspaceMemberId = SqlSchema.findOneOption({
       Request: Schema.Struct({
         workspaceId: TimeEntryRecord.fields.workspaceId,
         workspaceMemberId: TimeEntryRecord.fields.workspaceMemberId,
@@ -158,12 +158,12 @@ export const TimeEntryRepositoryLayer = Layer.effect(
         findTimeEntryById(params).pipe(
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
-      findRunningByWorkspaceMember: (params) =>
-        findRunningTimeEntryByWorkspaceMemberId(params).pipe(
+      findTimerRecordByWorkspaceMember: (params) =>
+        findTimerRecordByWorkspaceMemberId(params).pipe(
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
-      updateRunningByWorkspaceMember: (params) =>
-        updateRunningTimeEntryByWorkspaceMember(params).pipe(
+      updateTimerRecordByWorkspaceMember: (params) =>
+        updateTimerRecordByWorkspaceMember(params).pipe(
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
     };

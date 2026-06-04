@@ -31,20 +31,20 @@ export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
   {
     identifier: "TimeEntry",
     title: "Time Entry",
-    description: "A stopped time entry tracking work on a project",
+    description: "A completed work interval tracked against a project",
   }
 ) {}
 
-export class RunningTimeEntry extends EntityModel.Class<RunningTimeEntry>(
-  "RunningTimeEntry"
+export class Timer extends EntityModel.Class<Timer>(
+  "Timer"
 )(
   {
     ...timeEntryBaseFields,
     startedAt: EntityModel.ReadOnly(Schema.DateTimeUtcFromDate),
   },
   {
-    identifier: "RunningTimeEntry",
-    title: "Running Time Entry",
-    description: "A time entry that has started but has not stopped",
+    identifier: "Timer",
+    title: "Timer",
+    description: "Active tracking for a work interval that has not stopped",
   }
 ) {}

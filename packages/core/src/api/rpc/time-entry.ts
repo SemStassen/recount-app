@@ -7,19 +7,19 @@ import {
   CreateTimeEntryResult,
   DeleteTimeEntryCommand,
   DeleteTimeEntryResult,
-  StartRunningTimeEntryCommand,
-  StartRunningTimeEntryResult,
-  StopRunningTimeEntryCommand,
-  StopRunningTimeEntryResult,
-  UpdateRunningTimeEntryCommand,
-  UpdateRunningTimeEntryResult,
+  StartTimerCommand,
+  StartTimerResult,
+  StopTimerCommand,
+  StopTimerResult,
+  UpdateTimerCommand,
+  UpdateTimerResult,
   UpdateTimeEntryCommand,
   UpdateTimeEntryResult,
 } from "#api/contracts/index";
 import {
-  CannotUpdateRunningTimeEntryError,
-  RunningTimeEntryNotFoundError,
-  TimeEntryAlreadyRunningError,
+  CannotUpdateTimerError,
+  TimerNotFoundError,
+  TimerAlreadyRunningError,
   TimeEntryNotFoundError,
   TimeEntryStoppedAtBeforeStartedAtError,
 } from "#modules/time/index";
@@ -46,7 +46,7 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     error: Schema.Union([
       AuthorizationError,
       TimeEntryNotFoundError,
-      CannotUpdateRunningTimeEntryError,
+      CannotUpdateTimerError,
       TimeEntryStoppedAtBeforeStartedAtError,
       HttpApiError.InternalServerError,
     ]),
@@ -66,36 +66,36 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     .middleware(RpcWorkspaceMiddleware)
     .middleware(RpcSessionMiddleware),
 
-  Rpc.make("RunningTimeEntry.Start", {
-    payload: StartRunningTimeEntryCommand,
-    success: StartRunningTimeEntryResult,
+  Rpc.make("Timer.Start", {
+    payload: StartTimerCommand,
+    success: StartTimerResult,
     error: Schema.Union([
       AuthorizationError,
-      TimeEntryAlreadyRunningError,
+      TimerAlreadyRunningError,
       HttpApiError.InternalServerError,
     ]),
   })
     .middleware(RpcWorkspaceMiddleware)
     .middleware(RpcSessionMiddleware),
 
-  Rpc.make("RunningTimeEntry.Update", {
-    payload: UpdateRunningTimeEntryCommand,
-    success: UpdateRunningTimeEntryResult,
+  Rpc.make("Timer.Update", {
+    payload: UpdateTimerCommand,
+    success: UpdateTimerResult,
     error: Schema.Union([
       AuthorizationError,
-      RunningTimeEntryNotFoundError,
+      TimerNotFoundError,
       HttpApiError.InternalServerError,
     ]),
   })
     .middleware(RpcWorkspaceMiddleware)
     .middleware(RpcSessionMiddleware),
 
-  Rpc.make("RunningTimeEntry.Stop", {
-    payload: StopRunningTimeEntryCommand,
-    success: StopRunningTimeEntryResult,
+  Rpc.make("Timer.Stop", {
+    payload: StopTimerCommand,
+    success: StopTimerResult,
     error: Schema.Union([
       AuthorizationError,
-      RunningTimeEntryNotFoundError,
+      TimerNotFoundError,
       TimeEntryStoppedAtBeforeStartedAtError,
       HttpApiError.InternalServerError,
     ]),

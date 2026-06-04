@@ -3,7 +3,7 @@ import { DateTime, Option, Result } from "effect";
 import { TimeEntryId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
-import { RunningTimeEntry, TimeEntry } from "./time-entry.entity";
+import { Timer, TimeEntry } from "./time-entry.entity";
 import { TimeEntryStoppedAtBeforeStartedAtError } from "./time-entry.errors";
 
 const ensureValidDateRange = (
@@ -41,29 +41,17 @@ export const createTimeEntry = (params: {
     return createdTimeEntry;
   });
 
-export const createStoppedTimeEntry = (params: {
-  workspaceId: TimeEntry["workspaceId"];
-  workspaceMemberId: TimeEntry["workspaceMemberId"];
-  data: typeof TimeEntry.jsonCreate.Type;
+export const startTimer = (params: {
+  workspaceId: Timer["workspaceId"];
+  workspaceMemberId: Timer["workspaceMemberId"];
+  data: typeof Timer.jsonCreate.Type;
   now: DateTime.Utc;
-}): Result.Result<TimeEntry, TimeEntryStoppedAtBeforeStartedAtError> =>
-  Result.gen(function* () {
-    const timeEntry = yield* createTimeEntry(params);
-
-    return timeEntry;
-  });
-
-export const startRunningTimeEntry = (params: {
-  workspaceId: RunningTimeEntry["workspaceId"];
-  workspaceMemberId: RunningTimeEntry["workspaceMemberId"];
-  data: typeof RunningTimeEntry.jsonCreate.Type;
-  now: DateTime.Utc;
-}): Result.Result<RunningTimeEntry, never> =>
+}): Result.Result<Timer, never> =>
   Result.succeed(
     (() => {
       const { id, ...data } = params.data;
 
-      return RunningTimeEntry.make({
+      return Timer.make({
         taskId: Option.none(),
         notes: Option.none(),
         ...data,
@@ -99,41 +87,41 @@ export const updateTimeEntry = (params: {
     };
   });
 
-export const updateRunningTimeEntry = (params: {
-  timeEntry: RunningTimeEntry;
-  data: typeof RunningTimeEntry.jsonUpdate.Type;
+export const updateTimer = (params: {
+  timer: Timer;
+  data: typeof Timer.jsonUpdate.Type;
 }): Result.Result<
   {
-    entity: RunningTimeEntry;
-    changes: typeof RunningTimeEntry.jsonUpdate.Type;
+    entity: Timer;
+    changes: typeof Timer.jsonUpdate.Type;
   },
   never
 > =>
   Result.succeed({
-    entity: RunningTimeEntry.make({
-      ...params.timeEntry,
+    entity: Timer.make({
+      ...params.timer,
       ...params.data,
     }),
     changes: params.data,
   });
 
-export const stopRunningTimeEntry = (params: {
-  timeEntry: RunningTimeEntry;
+export const stopTimer = (params: {
+  timer: Timer;
   now: DateTime.Utc;
 }): Result.Result<
   { entity: TimeEntry; changes: typeof TimeEntry.jsonUpdate.Type },
   TimeEntryStoppedAtBeforeStartedAtError
 > =>
   Result.gen(function* () {
-    const stoppedTimeEntry = TimeEntry.make({
-      ...params.timeEntry,
+    const timeEntry = TimeEntry.make({
+      ...params.timer,
       stoppedAt: params.now,
     });
 
-    yield* ensureValidDateRange(stoppedTimeEntry.startedAt, params.now);
+    yield* ensureValidDateRange(timeEntry.startedAt, params.now);
 
     return {
-      entity: stoppedTimeEntry,
+      entity: timeEntry,
       changes: {
         stoppedAt: params.now,
       },

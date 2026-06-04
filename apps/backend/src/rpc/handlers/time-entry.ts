@@ -1,9 +1,9 @@
 import {
   createTimeEntryFlow,
   deleteTimeEntryFlow,
-  startRunningTimeEntryFlow,
-  stopRunningTimeEntryFlow,
-  updateRunningTimeEntryFlow,
+  startTimerFlow,
+  stopTimerFlow,
+  updateTimerFlow,
   updateTimeEntryFlow,
 } from "@recount/application/modules/time";
 import { TimeEntryRpcGroup } from "@recount/core/rpc";
@@ -43,33 +43,33 @@ export const TimeEntryRpcGroupLayer = TimeEntryRpcGroup.toLayer(
           Effect.fail(new HttpApiError.InternalServerError()),
       })
     ),
-    "RunningTimeEntry.Start": Effect.fn("rpc.runningTimeEntry.start")(
+    "Timer.Start": Effect.fn("rpc.timer.start")(
       function* (payload) {
-        const runningTimeEntry = yield* startRunningTimeEntryFlow(payload);
+        const timer = yield* startTimerFlow(payload);
 
-        return runningTimeEntry;
+        return timer;
       },
       Effect.catchTags({
         RepositoryError: () =>
           Effect.fail(new HttpApiError.InternalServerError()),
       })
     ),
-    "RunningTimeEntry.Update": Effect.fn("rpc.runningTimeEntry.update")(
+    "Timer.Update": Effect.fn("rpc.timer.update")(
       function* (payload) {
-        const runningTimeEntry = yield* updateRunningTimeEntryFlow(payload);
+        const timer = yield* updateTimerFlow(payload);
 
-        return runningTimeEntry;
+        return timer;
       },
       Effect.catchTags({
         RepositoryError: () =>
           Effect.fail(new HttpApiError.InternalServerError()),
       })
     ),
-    "RunningTimeEntry.Stop": Effect.fn("rpc.runningTimeEntry.stop")(
+    "Timer.Stop": Effect.fn("rpc.timer.stop")(
       function* () {
-        const runningTimeEntry = yield* stopRunningTimeEntryFlow();
+        const timeEntry = yield* stopTimerFlow();
 
-        return runningTimeEntry;
+        return timeEntry;
       },
       Effect.catchTags({
         RepositoryError: () =>

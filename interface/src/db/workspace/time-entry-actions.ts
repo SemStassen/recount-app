@@ -1,5 +1,5 @@
 import {
-  RunningTimeEntry,
+  Timer,
   TimeEntry,
   TimeModule,
 } from "@recount/core/modules/time";
@@ -152,8 +152,8 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
     });
   };
 
-  const startRunningTimeEntry = (
-    payload: typeof RunningTimeEntry.jsonCreate.Type
+  const startTimer = (
+    payload: typeof Timer.jsonCreate.Type
   ) => {
     const id = Option.getOrElse(payload.id, () =>
       TimeEntryId.make(generateUUID())
@@ -163,7 +163,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
       id: Option.some(id),
     };
 
-    return runSyncedWorkspaceAction<RunningTimeEntry, RunningTimeEntry>({
+    return runSyncedWorkspaceAction<Timer, Timer>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
           userId: params.userId,
@@ -174,7 +174,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const timeModule = yield* TimeModule;
 
-            return yield* timeModule.startRunningTimeEntry({
+            return yield* timeModule.startTimer({
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
               data,
@@ -188,7 +188,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
             const client = yield* BackendAtomRpcClient;
 
             return yield* client(
-              "RunningTimeEntry.Start",
+              "Timer.Start",
               {
                 id: data.id,
                 projectId: data.projectId,
@@ -210,10 +210,10 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
     });
   };
 
-  const updateRunningTimeEntry = (
-    data: typeof RunningTimeEntry.jsonUpdate.Type
+  const updateTimer = (
+    data: typeof Timer.jsonUpdate.Type
   ) =>
-    runSyncedWorkspaceAction<RunningTimeEntry, RunningTimeEntry>({
+    runSyncedWorkspaceAction<Timer, Timer>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
           userId: params.userId,
@@ -224,7 +224,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const timeModule = yield* TimeModule;
 
-            return yield* timeModule.updateRunningTimeEntry({
+            return yield* timeModule.updateTimer({
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
               data,
@@ -237,7 +237,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("RunningTimeEntry.Update", data, {
+            return yield* client("Timer.Update", data, {
               headers: {
                 [WORKSPACE_ID_HEADER]: workspaceIdHeader,
               },
@@ -250,7 +250,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
       }),
     });
 
-  const stopRunningTimeEntry = () =>
+  const stopTimer = () =>
     runSyncedWorkspaceAction<TimeEntryResult, TimeEntryResult>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
@@ -262,7 +262,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const timeModule = yield* TimeModule;
 
-            return yield* timeModule.stopRunningTimeEntry({
+            return yield* timeModule.stopTimer({
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
             });
@@ -274,7 +274,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("RunningTimeEntry.Stop", undefined, {
+            return yield* client("Timer.Stop", undefined, {
               headers: {
                 [WORKSPACE_ID_HEADER]: workspaceIdHeader,
               },
@@ -335,9 +335,9 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
   return {
     createTimeEntry,
     deleteTimeEntry,
-    startRunningTimeEntry,
-    stopRunningTimeEntry,
+    startTimer,
+    stopTimer,
     updateTimeEntry,
-    updateRunningTimeEntry,
+    updateTimer,
   };
 }

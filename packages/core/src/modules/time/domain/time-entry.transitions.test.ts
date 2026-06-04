@@ -9,12 +9,12 @@ import {
 } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
-import { RunningTimeEntry } from "./time-entry.entity";
+import { Timer } from "./time-entry.entity";
 import {
-  createStoppedTimeEntry,
-  startRunningTimeEntry,
-  stopRunningTimeEntry,
-  updateRunningTimeEntry,
+  createTimeEntry,
+  startTimer,
+  stopTimer,
+  updateTimer,
 } from "./time-entry.transitions";
 
 const workspaceId = () => WorkspaceId.make(generateUUID());
@@ -26,8 +26,8 @@ const startedAt = DateTime.makeUnsafe(new Date("2026-01-01T09:00:00.000Z"));
 const stoppedAt = DateTime.makeUnsafe(new Date("2026-01-01T10:00:00.000Z"));
 const now = DateTime.makeUnsafe(new Date("2026-01-01T11:00:00.000Z"));
 
-const makeRunningTimeEntry = (overrides: Partial<RunningTimeEntry> = {}) =>
-  RunningTimeEntry.make({
+const makeTimer = (overrides: Partial<Timer> = {}) =>
+  Timer.make({
     id: timeEntryId(),
     workspaceId: workspaceId(),
     workspaceMemberId: workspaceMemberId(),
@@ -39,9 +39,9 @@ const makeRunningTimeEntry = (overrides: Partial<RunningTimeEntry> = {}) =>
   });
 
 describe("Time Entry transitions", () => {
-  it("creates a stopped Time Entry with an explicit stoppedAt", () => {
+  it("creates a Time Entry with an explicit stoppedAt", () => {
     const result = Result.getOrThrow(
-      createStoppedTimeEntry({
+      createTimeEntry({
         workspaceId: workspaceId(),
         workspaceMemberId: workspaceMemberId(),
         now,
@@ -58,9 +58,9 @@ describe("Time Entry transitions", () => {
     expect(result.stoppedAt).toBe(stoppedAt);
   });
 
-  it("starts a Running Time Entry with backend time", () => {
+  it("starts a Timer with backend time", () => {
     const result = Result.getOrThrow(
-      startRunningTimeEntry({
+      startTimer({
         workspaceId: workspaceId(),
         workspaceMemberId: workspaceMemberId(),
         now,
@@ -74,13 +74,13 @@ describe("Time Entry transitions", () => {
     expect(result.startedAt).toBe(now);
   });
 
-  it("updates a Running Time Entry without clock changes", () => {
-    const runningTimeEntry = makeRunningTimeEntry();
+  it("updates a Timer without clock changes", () => {
+    const timer = makeTimer();
     const nextProjectId = projectId();
 
     const result = Result.getOrThrow(
-      updateRunningTimeEntry({
-        timeEntry: runningTimeEntry,
+      updateTimer({
+        timer,
         data: {
           projectId: nextProjectId,
         },
@@ -92,12 +92,12 @@ describe("Time Entry transitions", () => {
     expect(result.changes).toStrictEqual({ projectId: nextProjectId });
   });
 
-  it("stops a Running Time Entry with backend time", () => {
-    const runningTimeEntry = makeRunningTimeEntry();
+  it("stops a Timer with backend time", () => {
+    const timer = makeTimer();
 
     const result = Result.getOrThrow(
-      stopRunningTimeEntry({
-        timeEntry: runningTimeEntry,
+      stopTimer({
+        timer,
         now,
       })
     );

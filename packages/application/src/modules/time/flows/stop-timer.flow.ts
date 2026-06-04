@@ -1,11 +1,11 @@
-import type { StopRunningTimeEntryResult } from "@recount/core/contracts";
+import type { StopTimerResult } from "@recount/core/contracts";
 import { TimeModule } from "@recount/core/modules/time";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
 
-export const stopRunningTimeEntryFlow = Effect.fn(
-  "flows.stopRunningTimeEntryFlow"
+export const stopTimerFlow = Effect.fn(
+  "flows.stopTimerFlow"
 )(function* () {
   const appContext = yield* ApplicationContext;
   const timeModule = yield* TimeModule;
@@ -14,10 +14,10 @@ export const stopRunningTimeEntryFlow = Effect.fn(
     "time:update_time_entry"
   );
 
-  const stoppedTimeEntry = yield* timeModule.stopRunningTimeEntry({
+  const timeEntry = yield* timeModule.stopTimer({
     workspaceId: workspace.id,
     workspaceMemberId: workspaceMember.id,
   });
 
-  return stoppedTimeEntry satisfies typeof StopRunningTimeEntryResult.Type;
+  return timeEntry satisfies typeof StopTimerResult.Type;
 });

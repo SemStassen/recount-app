@@ -5,17 +5,17 @@ export class TimeEntryStoppedAtBeforeStartedAtError extends Schema.TaggedErrorCl
   {}
 ) {}
 
-export class TimeEntryAlreadyRunningError extends Schema.TaggedErrorClass<TimeEntryAlreadyRunningError>()(
-  "time/TimeEntryAlreadyRunningError",
+export class TimerAlreadyRunningError extends Schema.TaggedErrorClass<TimerAlreadyRunningError>()(
+  "time/TimerAlreadyRunningError",
   {}
 ) {}
 
-export class RunningTimeEntryNotFoundError extends Schema.TaggedErrorClass<RunningTimeEntryNotFoundError>()(
-  "time/RunningTimeEntryNotFoundError",
+export class TimerNotFoundError extends Schema.TaggedErrorClass<TimerNotFoundError>()(
+  "time/TimerNotFoundError",
   {}
 ) {}
 
-export class CannotUpdateRunningTimeEntryError extends Schema.TaggedErrorClass<CannotUpdateRunningTimeEntryError>()(
-  "time/CannotUpdateRunningTimeEntryError",
+export class CannotUpdateTimerError extends Schema.TaggedErrorClass<CannotUpdateTimerError>()(
+  "time/CannotUpdateTimerError",
   {}
 ) {}

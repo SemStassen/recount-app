@@ -29,12 +29,12 @@ module seams.
 ## Time Entry Validation Case
 
 Time Entry is the first validation point for this pattern. The database stores
-stopped **Time Entries** and **Running Time Entries** in one table, where
-nullable `stoppedAt` identifies a running record. The product vocabulary has two
-caller-facing lifecycle concepts:
+**Time Entries** and **Timers** in one table, where nullable `stoppedAt`
+identifies a timer record. The product vocabulary has two caller-facing
+lifecycle concepts:
 
 - **Time Entry**: a completed interval with required `stoppedAt`.
-- **Running Time Entry**: an active interval with no caller-facing `stoppedAt`.
+- **Timer**: active tracking with no caller-facing `stoppedAt`.
 
 The Time module is the translation seam between persistence records and these
 lifecycle entities. Repository Adapters deal with storage records; module, RPC,

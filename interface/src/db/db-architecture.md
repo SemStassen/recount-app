@@ -91,7 +91,7 @@ server-authoritative instead of optimistic.
 Do not duplicate core invariants in `interface/src/db`. Examples:
 
 - Project and Task archive constraints belong to `ProjectModule`
-- Running Time Entry constraints belong to `TimeModule`
+- Timer constraints belong to `TimeModule`
 - repository mutations should remain in client repository layers
 
 Derived collections should update from base collections. For example,

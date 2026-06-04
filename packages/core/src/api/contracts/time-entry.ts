@@ -1,18 +1,18 @@
 import { Schema } from "effect";
 
-import { RunningTimeEntry, TimeEntry } from "#modules/time/index";
+import { Timer, TimeEntry } from "#modules/time/index";
 
 export const CreateTimeEntryCommand = TimeEntry.jsonCreate;
 export const CreateTimeEntryResult = TimeEntry.json;
 
-export const StartRunningTimeEntryCommand = RunningTimeEntry.jsonCreate;
-export const StartRunningTimeEntryResult = RunningTimeEntry.json;
+export const StartTimerCommand = Timer.jsonCreate;
+export const StartTimerResult = Timer.json;
 
-export const UpdateRunningTimeEntryCommand = RunningTimeEntry.jsonUpdate;
-export const UpdateRunningTimeEntryResult = RunningTimeEntry.json;
+export const UpdateTimerCommand = Timer.jsonUpdate;
+export const UpdateTimerResult = Timer.json;
 
-export const StopRunningTimeEntryCommand = Schema.Void;
-export const StopRunningTimeEntryResult = TimeEntry.json;
+export const StopTimerCommand = Schema.Void;
+export const StopTimerResult = TimeEntry.json;
 
 export const UpdateTimeEntryCommand = Schema.Struct({
   timeEntryId: TimeEntry.fields.id,

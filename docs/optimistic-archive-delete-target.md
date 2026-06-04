@@ -274,7 +274,7 @@ They are acceptable even when frontend actions call them with one item.
 
 The important invariant remains in core:
 
-- `TimeModuleLayer` owns the “one Running Time Entry per Workspace Member” rule.
+- `TimeModuleLayer` owns the “one Timer per Workspace Member” rule.
 - `ProjectModuleLayer` owns Project/Task archive constraints.
 
 Do not duplicate these rules in `interface/src/db`.

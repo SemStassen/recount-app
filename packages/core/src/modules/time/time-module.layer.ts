@@ -1,18 +1,18 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
-import { isRunningTimeEntryRecord } from "./domain/time-entry-record";
 import {
-  recordFromRunningTimeEntry,
-  recordFromStoppedTimeEntry,
-  runningTimeEntryFromRecord,
-  stoppedTimeEntryFromRecord,
+  recordFromTimer,
+  recordFromTimeEntry,
+  timerFromRecord,
+  timeEntryFromRecord,
 } from "./domain/time-entry-record-mapping";
 import { TimeEntry } from "./domain/time-entry.entity";
 import {
-  CannotUpdateRunningTimeEntryError,
-  RunningTimeEntryNotFoundError,
-  TimeEntryAlreadyRunningError,
+  CannotUpdateTimerError,
+  TimerNotFoundError,
+  TimerAlreadyRunningError,
 } from "./domain/time-entry.errors";
+import { isTimerRecord } from "./domain/time-entry.record";
 import * as timeEntryTransitions from "./domain/time-entry.transitions";
 import { TimeEntryRepository } from "./time-entry-repository.service";
 import { TimeEntryNotFoundError, TimeModule } from "./time-module.service";
@@ -22,24 +22,24 @@ export const TimeModuleLayer = Layer.effect(
   Effect.gen(function* () {
     const timeEntryRepo = yield* TimeEntryRepository;
 
-    const ensureNoOtherRunningTimeEntry = Effect.fn(
-      "time.ensureNoOtherRunningTimeEntry"
+    const ensureNoOtherTimer = Effect.fn(
+      "time.ensureNoOtherTimer"
     )(function* (params: {
       workspaceId: TimeEntry["workspaceId"];
       workspaceMemberId: TimeEntry["workspaceMemberId"];
       excludeTimeEntryId?: TimeEntry["id"];
     }) {
-      const maybeRunningTimeEntry =
-        yield* timeEntryRepo.findRunningByWorkspaceMember({
+      const maybeTimer =
+        yield* timeEntryRepo.findTimerRecordByWorkspaceMember({
           workspaceId: params.workspaceId,
           workspaceMemberId: params.workspaceMemberId,
         });
 
       if (
-        Option.isSome(maybeRunningTimeEntry) &&
-        maybeRunningTimeEntry.value.id !== params.excludeTimeEntryId
+        Option.isSome(maybeTimer) &&
+        maybeTimer.value.id !== params.excludeTimeEntryId
       ) {
-        return yield* new TimeEntryAlreadyRunningError();
+        return yield* new TimerAlreadyRunningError();
       }
     });
 
@@ -54,7 +54,7 @@ export const TimeModuleLayer = Layer.effect(
 
           const timeEntries = yield* Effect.forEach(params.data, (data) =>
             Effect.fromResult(
-              timeEntryTransitions.createStoppedTimeEntry({
+              timeEntryTransitions.createTimeEntry({
                 workspaceId: params.workspaceId,
                 workspaceMemberId: params.workspaceMemberId,
                 data,
@@ -64,10 +64,10 @@ export const TimeModuleLayer = Layer.effect(
           );
 
           const persistedTimeEntries = yield* timeEntryRepo.insertMany(
-            timeEntries.map(recordFromStoppedTimeEntry)
+            timeEntries.map(recordFromTimeEntry)
           );
 
-          return persistedTimeEntries.map(stoppedTimeEntryFromRecord);
+          return persistedTimeEntries.map(timeEntryFromRecord);
         }
       ),
       updateTimeEntry: Effect.fn("time.updateTimeEntry")(function* (params) {
@@ -87,13 +87,13 @@ export const TimeModuleLayer = Layer.effect(
             )
           );
 
-        if (isRunningTimeEntryRecord(timeEntry)) {
-          return yield* new CannotUpdateRunningTimeEntryError();
+        if (isTimerRecord(timeEntry)) {
+          return yield* new CannotUpdateTimerError();
         }
 
         const { entity, changes } = yield* Effect.fromResult(
           timeEntryTransitions.updateTimeEntry({
-            timeEntry: stoppedTimeEntryFromRecord(timeEntry),
+            timeEntry: timeEntryFromRecord(timeEntry),
             data: params.data,
           })
         );
@@ -113,19 +113,19 @@ export const TimeModuleLayer = Layer.effect(
           update,
         });
 
-        return stoppedTimeEntryFromRecord(persistedTimeEntry);
+        return timeEntryFromRecord(persistedTimeEntry);
       }),
-      startRunningTimeEntry: Effect.fn("time.startRunningTimeEntry")(
+      startTimer: Effect.fn("time.startTimer")(
         function* (params) {
           const now = yield* DateTime.now;
 
-          yield* ensureNoOtherRunningTimeEntry({
+          yield* ensureNoOtherTimer({
             workspaceId: params.workspaceId,
             workspaceMemberId: params.workspaceMemberId,
           });
 
           const timeEntry = yield* Effect.fromResult(
-            timeEntryTransitions.startRunningTimeEntry({
+            timeEntryTransitions.startTimer({
               workspaceId: params.workspaceId,
               workspaceMemberId: params.workspaceMemberId,
               data: params.data,
@@ -134,67 +134,67 @@ export const TimeModuleLayer = Layer.effect(
           );
 
           const [persistedTimeEntry] = yield* timeEntryRepo.insertMany([
-            recordFromRunningTimeEntry(timeEntry),
+            recordFromTimer(timeEntry),
           ]);
 
-          return runningTimeEntryFromRecord(persistedTimeEntry);
+          return timerFromRecord(persistedTimeEntry);
         }
       ),
-      updateRunningTimeEntry: Effect.fn("time.updateRunningTimeEntry")(
+      updateTimer: Effect.fn("time.updateTimer")(
         function* (params) {
           const maybeTimeEntry =
-            yield* timeEntryRepo.findRunningByWorkspaceMember({
+            yield* timeEntryRepo.findTimerRecordByWorkspaceMember({
               workspaceId: params.workspaceId,
               workspaceMemberId: params.workspaceMemberId,
             });
 
           if (Option.isNone(maybeTimeEntry)) {
-            return yield* new RunningTimeEntryNotFoundError();
+            return yield* new TimerNotFoundError();
           }
 
           const { changes } = yield* Effect.fromResult(
-            timeEntryTransitions.updateRunningTimeEntry({
-              timeEntry: runningTimeEntryFromRecord(maybeTimeEntry.value),
+            timeEntryTransitions.updateTimer({
+              timer: timerFromRecord(maybeTimeEntry.value),
               data: params.data,
             })
           );
 
           const persistedTimeEntry =
-            yield* timeEntryRepo.updateRunningByWorkspaceMember({
+            yield* timeEntryRepo.updateTimerRecordByWorkspaceMember({
               workspaceId: params.workspaceId,
               workspaceMemberId: params.workspaceMemberId,
               update: changes,
             });
 
           if (Option.isNone(persistedTimeEntry)) {
-            return yield* new RunningTimeEntryNotFoundError();
+            return yield* new TimerNotFoundError();
           }
 
-          return runningTimeEntryFromRecord(persistedTimeEntry.value);
+          return timerFromRecord(persistedTimeEntry.value);
         }
       ),
-      stopRunningTimeEntry: Effect.fn("time.stopRunningTimeEntry")(
+      stopTimer: Effect.fn("time.stopTimer")(
         function* (params) {
           const now = yield* DateTime.now;
           const maybeTimeEntry =
-            yield* timeEntryRepo.findRunningByWorkspaceMember({
+            yield* timeEntryRepo.findTimerRecordByWorkspaceMember({
               workspaceId: params.workspaceId,
               workspaceMemberId: params.workspaceMemberId,
             });
 
           if (Option.isNone(maybeTimeEntry)) {
-            return yield* new RunningTimeEntryNotFoundError();
+            return yield* new TimerNotFoundError();
           }
 
           const { entity } = yield* Effect.fromResult(
-            timeEntryTransitions.stopRunningTimeEntry({
-              timeEntry: runningTimeEntryFromRecord(maybeTimeEntry.value),
+            timeEntryTransitions.stopTimer({
+              timer: timerFromRecord(maybeTimeEntry.value),
               now,
             })
           );
 
           const persistedTimeEntry =
-            yield* timeEntryRepo.updateRunningByWorkspaceMember({
+            yield* timeEntryRepo.updateTimerRecordByWorkspaceMember({
               workspaceId: params.workspaceId,
               workspaceMemberId: params.workspaceMemberId,
               update: {
@@ -203,10 +203,10 @@ export const TimeModuleLayer = Layer.effect(
             });
 
           if (Option.isNone(persistedTimeEntry)) {
-            return yield* new RunningTimeEntryNotFoundError();
+            return yield* new TimerNotFoundError();
           }
 
-          return stoppedTimeEntryFromRecord(persistedTimeEntry.value);
+          return timeEntryFromRecord(persistedTimeEntry.value);
         }
       ),
       hardDeleteTimeEntries: Effect.fn("time.hardDeleteTimeEntries")(

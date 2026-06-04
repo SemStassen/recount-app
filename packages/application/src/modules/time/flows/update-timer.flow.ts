@@ -1,15 +1,15 @@
 import type {
-  UpdateRunningTimeEntryCommand,
-  UpdateRunningTimeEntryResult,
+  UpdateTimerCommand,
+  UpdateTimerResult,
 } from "@recount/core/contracts";
 import { TimeModule } from "@recount/core/modules/time";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
 
-export const updateRunningTimeEntryFlow = Effect.fn(
-  "flows.updateRunningTimeEntryFlow"
-)(function* (request: typeof UpdateRunningTimeEntryCommand.Type) {
+export const updateTimerFlow = Effect.fn(
+  "flows.updateTimerFlow"
+)(function* (request: typeof UpdateTimerCommand.Type) {
   const appContext = yield* ApplicationContext;
   const timeModule = yield* TimeModule;
 
@@ -17,11 +17,11 @@ export const updateRunningTimeEntryFlow = Effect.fn(
     "time:update_time_entry"
   );
 
-  const runningTimeEntry = yield* timeModule.updateRunningTimeEntry({
+  const timer = yield* timeModule.updateTimer({
     workspaceId: workspace.id,
     workspaceMemberId: workspaceMember.id,
     data: request,
   });
 
-  return runningTimeEntry satisfies typeof UpdateRunningTimeEntryResult.Type;
+  return timer satisfies typeof UpdateTimerResult.Type;
 });

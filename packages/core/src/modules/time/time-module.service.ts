@@ -4,11 +4,11 @@ import type { Effect } from "effect";
 import type { RepositoryError } from "#shared/repository/index";
 import { TimeEntryId } from "#shared/schemas/index";
 
-import type { RunningTimeEntry, TimeEntry } from "./domain/time-entry.entity";
+import type { Timer, TimeEntry } from "./domain/time-entry.entity";
 import type {
-  CannotUpdateRunningTimeEntryError,
-  RunningTimeEntryNotFoundError,
-  TimeEntryAlreadyRunningError,
+  CannotUpdateTimerError,
+  TimerNotFoundError,
+  TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
 } from "./domain/time-entry.errors";
 
@@ -36,31 +36,31 @@ interface TimeModuleShape {
     TimeEntry,
     | TimeEntryNotFoundError
     | TimeEntryStoppedAtBeforeStartedAtError
-    | CannotUpdateRunningTimeEntryError
+    | CannotUpdateTimerError
     | RepositoryError
   >;
-  readonly startRunningTimeEntry: (params: {
-    workspaceId: RunningTimeEntry["workspaceId"];
-    workspaceMemberId: RunningTimeEntry["workspaceMemberId"];
-    data: typeof RunningTimeEntry.jsonCreate.Type;
+  readonly startTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+    data: typeof Timer.jsonCreate.Type;
   }) => Effect.Effect<
-    RunningTimeEntry,
-    TimeEntryAlreadyRunningError | RepositoryError
+    Timer,
+    TimerAlreadyRunningError | RepositoryError
   >;
-  readonly updateRunningTimeEntry: (params: {
-    workspaceId: RunningTimeEntry["workspaceId"];
-    workspaceMemberId: RunningTimeEntry["workspaceMemberId"];
-    data: typeof RunningTimeEntry.jsonUpdate.Type;
+  readonly updateTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+    data: typeof Timer.jsonUpdate.Type;
   }) => Effect.Effect<
-    RunningTimeEntry,
-    RunningTimeEntryNotFoundError | RepositoryError
+    Timer,
+    TimerNotFoundError | RepositoryError
   >;
-  readonly stopRunningTimeEntry: (params: {
-    workspaceId: RunningTimeEntry["workspaceId"];
-    workspaceMemberId: RunningTimeEntry["workspaceMemberId"];
+  readonly stopTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
   }) => Effect.Effect<
     TimeEntry,
-    | RunningTimeEntryNotFoundError
+    | TimerNotFoundError
     | TimeEntryStoppedAtBeforeStartedAtError
     | RepositoryError
   >;

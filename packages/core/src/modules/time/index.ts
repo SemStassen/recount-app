@@ -1,21 +1,21 @@
-export { RunningTimeEntry, TimeEntry } from "./domain/time-entry.entity";
+export { Timer, TimeEntry } from "./domain/time-entry.entity";
 export {
-  isRunningTimeEntryRecord,
+  isTimerRecord,
   TimeEntryRecord,
-} from "./domain/time-entry-record";
+} from "./domain/time-entry.record";
 export {
-  recordFromRunningTimeEntry,
-  recordFromStoppedTimeEntry,
-  runningTimeEntryFromRecord,
-  stoppedTimeEntryFromRecord,
-  timeEntryApiShapeFromRecord,
-  type TimeEntryApiShape,
+  recordFromTimer,
+  recordFromTimeEntry,
+  timerFromRecord,
+  timeEntryFromRecord,
+  timeEntryOrTimerFromRecord,
+  type TimeEntryOrTimer,
 } from "./domain/time-entry-record-mapping";
 
 export {
-  CannotUpdateRunningTimeEntryError,
-  RunningTimeEntryNotFoundError,
-  TimeEntryAlreadyRunningError,
+  CannotUpdateTimerError,
+  TimerNotFoundError,
+  TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
 } from "./domain/time-entry.errors";
 export { TimeEntryRepository } from "./time-entry-repository.service";

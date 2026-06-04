@@ -25,9 +25,9 @@ export class TimeEntryRecord extends RecordModel.Class<TimeEntryRecord>(
   {
     identifier: "TimeEntryRecord",
     title: "Time Entry Record",
-    description: "The persistence record for a stopped or running time entry",
+    description: "The persistence record for a timer or time entry",
   }
 ) {}
 
-export const isRunningTimeEntryRecord = (record: TimeEntryRecord) =>
+export const isTimerRecord = (record: TimeEntryRecord) =>
   Option.isNone(record.stoppedAt);
