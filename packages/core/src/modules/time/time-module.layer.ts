@@ -1,7 +1,18 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
-import type { TimeEntry } from "./domain/time-entry.entity";
-import { TimeEntryAlreadyRunningError } from "./domain/time-entry.errors";
+import { isRunningTimeEntryRecord } from "./domain/time-entry-record";
+import {
+  recordFromRunningTimeEntry,
+  recordFromStoppedTimeEntry,
+  runningTimeEntryFromRecord,
+  stoppedTimeEntryFromRecord,
+} from "./domain/time-entry-record-mapping";
+import { TimeEntry } from "./domain/time-entry.entity";
+import {
+  CannotUpdateRunningTimeEntryError,
+  RunningTimeEntryNotFoundError,
+  TimeEntryAlreadyRunningError,
+} from "./domain/time-entry.errors";
 import * as timeEntryTransitions from "./domain/time-entry.transitions";
 import { TimeEntryRepository } from "./time-entry-repository.service";
 import { TimeEntryNotFoundError, TimeModule } from "./time-module.service";
@@ -40,9 +51,10 @@ export const TimeModuleLayer = Layer.effect(
           }
 
           const now = yield* DateTime.now;
+
           const timeEntries = yield* Effect.forEach(params.data, (data) =>
             Effect.fromResult(
-              timeEntryTransitions.createTimeEntry({
+              timeEntryTransitions.createStoppedTimeEntry({
                 workspaceId: params.workspaceId,
                 workspaceMemberId: params.workspaceMemberId,
                 data,
@@ -51,23 +63,11 @@ export const TimeModuleLayer = Layer.effect(
             )
           );
 
-          const runningEntries = timeEntries.filter((e) => e.isRunning());
+          const persistedTimeEntries = yield* timeEntryRepo.insertMany(
+            timeEntries.map(recordFromStoppedTimeEntry)
+          );
 
-          if (runningEntries.length > 1) {
-            return yield* new TimeEntryAlreadyRunningError();
-          }
-
-          if (runningEntries.length === 1) {
-            yield* ensureNoOtherRunningTimeEntry({
-              workspaceId: params.workspaceId,
-              workspaceMemberId: params.workspaceMemberId,
-            });
-          }
-
-          const persistedTimeEntries =
-            yield* timeEntryRepo.insertMany(timeEntries);
-
-          return persistedTimeEntries;
+          return persistedTimeEntries.map(stoppedTimeEntryFromRecord);
         }
       ),
       updateTimeEntry: Effect.fn("time.updateTimeEntry")(function* (params) {
@@ -87,29 +87,128 @@ export const TimeModuleLayer = Layer.effect(
             )
           );
 
+        if (isRunningTimeEntryRecord(timeEntry)) {
+          return yield* new CannotUpdateRunningTimeEntryError();
+        }
+
         const { entity, changes } = yield* Effect.fromResult(
           timeEntryTransitions.updateTimeEntry({
-            timeEntry,
+            timeEntry: stoppedTimeEntryFromRecord(timeEntry),
             data: params.data,
           })
         );
 
-        if (entity.isRunning()) {
-          yield* ensureNoOtherRunningTimeEntry({
-            workspaceId: params.workspaceId,
-            workspaceMemberId: entity.workspaceMemberId,
-            excludeTimeEntryId: entity.id,
-          });
-        }
+        const { stoppedAt, ...otherChanges } = changes;
+        const update =
+          stoppedAt === undefined
+            ? otherChanges
+            : {
+                ...otherChanges,
+                stoppedAt: Option.some(stoppedAt),
+              };
 
         const persistedTimeEntry = yield* timeEntryRepo.update({
           id: entity.id,
           workspaceId: entity.workspaceId,
-          update: changes,
+          update,
         });
 
-        return persistedTimeEntry;
+        return stoppedTimeEntryFromRecord(persistedTimeEntry);
       }),
+      startRunningTimeEntry: Effect.fn("time.startRunningTimeEntry")(
+        function* (params) {
+          const now = yield* DateTime.now;
+
+          yield* ensureNoOtherRunningTimeEntry({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
+
+          const timeEntry = yield* Effect.fromResult(
+            timeEntryTransitions.startRunningTimeEntry({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: params.workspaceMemberId,
+              data: params.data,
+              now,
+            })
+          );
+
+          const [persistedTimeEntry] = yield* timeEntryRepo.insertMany([
+            recordFromRunningTimeEntry(timeEntry),
+          ]);
+
+          return runningTimeEntryFromRecord(persistedTimeEntry);
+        }
+      ),
+      updateRunningTimeEntry: Effect.fn("time.updateRunningTimeEntry")(
+        function* (params) {
+          const maybeTimeEntry =
+            yield* timeEntryRepo.findRunningByWorkspaceMember({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: params.workspaceMemberId,
+            });
+
+          if (Option.isNone(maybeTimeEntry)) {
+            return yield* new RunningTimeEntryNotFoundError();
+          }
+
+          const { changes } = yield* Effect.fromResult(
+            timeEntryTransitions.updateRunningTimeEntry({
+              timeEntry: runningTimeEntryFromRecord(maybeTimeEntry.value),
+              data: params.data,
+            })
+          );
+
+          const persistedTimeEntry =
+            yield* timeEntryRepo.updateRunningByWorkspaceMember({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: params.workspaceMemberId,
+              update: changes,
+            });
+
+          if (Option.isNone(persistedTimeEntry)) {
+            return yield* new RunningTimeEntryNotFoundError();
+          }
+
+          return runningTimeEntryFromRecord(persistedTimeEntry.value);
+        }
+      ),
+      stopRunningTimeEntry: Effect.fn("time.stopRunningTimeEntry")(
+        function* (params) {
+          const now = yield* DateTime.now;
+          const maybeTimeEntry =
+            yield* timeEntryRepo.findRunningByWorkspaceMember({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: params.workspaceMemberId,
+            });
+
+          if (Option.isNone(maybeTimeEntry)) {
+            return yield* new RunningTimeEntryNotFoundError();
+          }
+
+          const { entity } = yield* Effect.fromResult(
+            timeEntryTransitions.stopRunningTimeEntry({
+              timeEntry: runningTimeEntryFromRecord(maybeTimeEntry.value),
+              now,
+            })
+          );
+
+          const persistedTimeEntry =
+            yield* timeEntryRepo.updateRunningByWorkspaceMember({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: params.workspaceMemberId,
+              update: {
+                stoppedAt: Option.some(entity.stoppedAt),
+              },
+            });
+
+          if (Option.isNone(persistedTimeEntry)) {
+            return yield* new RunningTimeEntryNotFoundError();
+          }
+
+          return stoppedTimeEntryFromRecord(persistedTimeEntry.value);
+        }
+      ),
       hardDeleteTimeEntries: Effect.fn("time.hardDeleteTimeEntries")(
         function* (params) {
           if (params.ids.length === 0) {

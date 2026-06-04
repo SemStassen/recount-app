@@ -3,29 +3,34 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import type { TimeEntry } from "./domain/time-entry.entity";
+import { TimeEntryRecord } from "./domain/time-entry-record";
 
 export interface TimeEntryRepositoryShape {
   readonly insertMany: (
-    data: ReadonlyArray<typeof TimeEntry.insert.Type>
-  ) => Effect.Effect<ReadonlyArray<TimeEntry>, RepositoryError>;
+    data: ReadonlyArray<typeof TimeEntryRecord.insert.Type>
+  ) => Effect.Effect<ReadonlyArray<TimeEntryRecord>, RepositoryError>;
   readonly update: (params: {
-    workspaceId: TimeEntry["workspaceId"];
-    id: TimeEntry["id"];
-    update: typeof TimeEntry.update.Type;
-  }) => Effect.Effect<TimeEntry, RepositoryError>;
+    workspaceId: TimeEntryRecord["workspaceId"];
+    id: TimeEntryRecord["id"];
+    update: typeof TimeEntryRecord.update.Type;
+  }) => Effect.Effect<TimeEntryRecord, RepositoryError>;
   readonly hardDeleteMany: (params: {
-    workspaceId: TimeEntry["workspaceId"];
-    ids: ReadonlyArray<TimeEntry["id"]>;
+    workspaceId: TimeEntryRecord["workspaceId"];
+    ids: ReadonlyArray<TimeEntryRecord["id"]>;
   }) => Effect.Effect<void, RepositoryError>;
   readonly findById: (params: {
-    workspaceId: TimeEntry["workspaceId"];
-    id: TimeEntry["id"];
-  }) => Effect.Effect<Option.Option<TimeEntry>, RepositoryError>;
+    workspaceId: TimeEntryRecord["workspaceId"];
+    id: TimeEntryRecord["id"];
+  }) => Effect.Effect<Option.Option<TimeEntryRecord>, RepositoryError>;
   readonly findRunningByWorkspaceMember: (params: {
-    workspaceId: TimeEntry["workspaceId"];
-    workspaceMemberId: TimeEntry["workspaceMemberId"];
-  }) => Effect.Effect<Option.Option<TimeEntry>, RepositoryError>;
+    workspaceId: TimeEntryRecord["workspaceId"];
+    workspaceMemberId: TimeEntryRecord["workspaceMemberId"];
+  }) => Effect.Effect<Option.Option<TimeEntryRecord>, RepositoryError>;
+  readonly updateRunningByWorkspaceMember: (params: {
+    workspaceId: TimeEntryRecord["workspaceId"];
+    workspaceMemberId: TimeEntryRecord["workspaceMemberId"];
+    update: typeof TimeEntryRecord.update.Type;
+  }) => Effect.Effect<Option.Option<TimeEntryRecord>, RepositoryError>;
 }
 
 export class TimeEntryRepository extends Context.Service<

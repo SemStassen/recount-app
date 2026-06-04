@@ -1,6 +1,6 @@
-import { Option, Schema } from "effect";
+import { Schema } from "effect";
 
-import { Model } from "#internal/effect/index";
+import { EntityModel } from "#internal/effect/index";
 import {
   ProjectId,
   TaskId,
@@ -9,33 +9,42 @@ import {
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
-export class TimeEntry extends Model.Class<TimeEntry>("TimeEntry")(
+const timeEntryBaseFields = {
+  id: EntityModel.CreateOptional(TimeEntryId),
+  workspaceId: EntityModel.ReadOnly(WorkspaceId),
+  workspaceMemberId: EntityModel.ReadOnly(WorkspaceMemberId),
+  projectId: EntityModel.CreateUpdate(ProjectId),
+  taskId: EntityModel.CreateUpdateNullable(TaskId),
+  notes: EntityModel.CreateUpdateNullable(Schema.Json),
+} as const;
+
+export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
   {
-    id: Model.ServerImmutableClientImmutableCreateOptional(TimeEntryId),
-    workspaceId: Model.ServerImmutable(WorkspaceId),
-    workspaceMemberId: Model.ServerImmutable(WorkspaceMemberId),
-    projectId: Model.ServerMutableClientMutable(ProjectId),
-    taskId: Model.ServerMutableClientMutableOptional(TaskId),
-    startedAt: Model.Field({
-      select: Schema.DateTimeUtcFromDate,
-      insert: Schema.DateTimeUtcFromDate,
-      update: Schema.optionalKey(Schema.DateTimeUtcFromDate),
+    ...timeEntryBaseFields,
+    startedAt: EntityModel.Field({
       json: Schema.DateTimeUtcFromDate,
       jsonCreate: Schema.optionalKey(Schema.DateTimeUtcFromDate),
       jsonUpdate: Schema.optionalKey(Schema.DateTimeUtcFromDate),
     }),
-    stoppedAt: Model.ServerMutableClientMutableOptional(
-      Schema.DateTimeUtcFromDate
-    ),
-    notes: Model.ServerMutableClientMutableOptional(Schema.Json),
+    stoppedAt: EntityModel.CreateUpdate(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "TimeEntry",
     title: "Time Entry",
-    description: "A time entry tracking work on a project",
+    description: "A stopped time entry tracking work on a project",
   }
-) {
-  isRunning(): boolean {
-    return Option.isNone(this.stoppedAt);
+) {}
+
+export class RunningTimeEntry extends EntityModel.Class<RunningTimeEntry>(
+  "RunningTimeEntry"
+)(
+  {
+    ...timeEntryBaseFields,
+    startedAt: EntityModel.ReadOnly(Schema.DateTimeUtcFromDate),
+  },
+  {
+    identifier: "RunningTimeEntry",
+    title: "Running Time Entry",
+    description: "A time entry that has started but has not stopped",
   }
-}
+) {}

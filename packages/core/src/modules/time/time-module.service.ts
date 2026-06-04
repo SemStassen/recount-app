@@ -4,8 +4,10 @@ import type { Effect } from "effect";
 import type { RepositoryError } from "#shared/repository/index";
 import { TimeEntryId } from "#shared/schemas/index";
 
-import type { TimeEntry } from "./domain/time-entry.entity";
+import type { RunningTimeEntry, TimeEntry } from "./domain/time-entry.entity";
 import type {
+  CannotUpdateRunningTimeEntryError,
+  RunningTimeEntryNotFoundError,
   TimeEntryAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
 } from "./domain/time-entry.errors";
@@ -24,9 +26,7 @@ interface TimeModuleShape {
     data: ReadonlyArray<typeof TimeEntry.jsonCreate.Type>;
   }) => Effect.Effect<
     ReadonlyArray<TimeEntry>,
-    | TimeEntryStoppedAtBeforeStartedAtError
-    | TimeEntryAlreadyRunningError
-    | RepositoryError
+    TimeEntryStoppedAtBeforeStartedAtError | RepositoryError
   >;
   readonly updateTimeEntry: (params: {
     workspaceId: TimeEntry["workspaceId"];
@@ -36,7 +36,32 @@ interface TimeModuleShape {
     TimeEntry,
     | TimeEntryNotFoundError
     | TimeEntryStoppedAtBeforeStartedAtError
-    | TimeEntryAlreadyRunningError
+    | CannotUpdateRunningTimeEntryError
+    | RepositoryError
+  >;
+  readonly startRunningTimeEntry: (params: {
+    workspaceId: RunningTimeEntry["workspaceId"];
+    workspaceMemberId: RunningTimeEntry["workspaceMemberId"];
+    data: typeof RunningTimeEntry.jsonCreate.Type;
+  }) => Effect.Effect<
+    RunningTimeEntry,
+    TimeEntryAlreadyRunningError | RepositoryError
+  >;
+  readonly updateRunningTimeEntry: (params: {
+    workspaceId: RunningTimeEntry["workspaceId"];
+    workspaceMemberId: RunningTimeEntry["workspaceMemberId"];
+    data: typeof RunningTimeEntry.jsonUpdate.Type;
+  }) => Effect.Effect<
+    RunningTimeEntry,
+    RunningTimeEntryNotFoundError | RepositoryError
+  >;
+  readonly stopRunningTimeEntry: (params: {
+    workspaceId: RunningTimeEntry["workspaceId"];
+    workspaceMemberId: RunningTimeEntry["workspaceMemberId"];
+  }) => Effect.Effect<
+    TimeEntry,
+    | RunningTimeEntryNotFoundError
+    | TimeEntryStoppedAtBeforeStartedAtError
     | RepositoryError
   >;
   readonly hardDeleteTimeEntries: (params: {

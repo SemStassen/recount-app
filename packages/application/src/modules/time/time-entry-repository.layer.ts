@@ -1,4 +1,7 @@
-import { TimeEntry, TimeEntryRepository } from "@recount/core/modules/time";
+import {
+  TimeEntryRecord,
+  TimeEntryRepository,
+} from "@recount/core/modules/time";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq, inArray, isNull } from "drizzle-orm";
@@ -11,8 +14,8 @@ export const TimeEntryRepositoryLayer = Layer.effect(
     const db = yield* Database;
 
     const insertManyTimeEntries = SqlSchema.findAll({
-      Request: Schema.Array(TimeEntry.insert),
-      Result: TimeEntry,
+      Request: Schema.Array(TimeEntryRecord.insert),
+      Result: TimeEntryRecord,
       execute: (data) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -25,11 +28,11 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const updateTimeEntry = SqlSchema.findOne({
       Request: Schema.Struct({
-        workspaceId: TimeEntry.fields.workspaceId,
-        id: TimeEntry.fields.id,
-        update: TimeEntry.update,
+        workspaceId: TimeEntryRecord.fields.workspaceId,
+        id: TimeEntryRecord.fields.id,
+        update: TimeEntryRecord.update,
       }),
-      Result: TimeEntry,
+      Result: TimeEntryRecord,
       execute: ({ workspaceId, id, update }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -46,10 +49,37 @@ export const TimeEntryRepositoryLayer = Layer.effect(
         ),
     });
 
+    const updateRunningTimeEntryByWorkspaceMember = SqlSchema.findOneOption({
+      Request: Schema.Struct({
+        workspaceId: TimeEntryRecord.fields.workspaceId,
+        workspaceMemberId: TimeEntryRecord.fields.workspaceMemberId,
+        update: TimeEntryRecord.update,
+      }),
+      Result: TimeEntryRecord,
+      execute: ({ workspaceId, workspaceMemberId, update }) =>
+        db.drizzle((drizzle) =>
+          drizzle
+            .update(schema.timeEntriesTable)
+            .set(update)
+            .where(
+              and(
+                eq(schema.timeEntriesTable.workspaceId, workspaceId),
+                eq(
+                  schema.timeEntriesTable.workspaceMemberId,
+                  workspaceMemberId
+                ),
+                isNull(schema.timeEntriesTable.stoppedAt)
+              )
+            )
+            .returning()
+            .execute()
+        ),
+    });
+
     const hardDeleteManyTimeEntries = SqlSchema.void({
       Request: Schema.Struct({
-        workspaceId: TimeEntry.fields.workspaceId,
-        ids: Schema.Array(TimeEntry.fields.id),
+        workspaceId: TimeEntryRecord.fields.workspaceId,
+        ids: Schema.Array(TimeEntryRecord.fields.id),
       }),
       execute: ({ workspaceId, ids }) =>
         db.drizzle((drizzle) =>
@@ -67,10 +97,10 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const findTimeEntryById = SqlSchema.findOneOption({
       Request: Schema.Struct({
-        workspaceId: TimeEntry.fields.workspaceId,
-        id: TimeEntry.fields.id,
+        workspaceId: TimeEntryRecord.fields.workspaceId,
+        id: TimeEntryRecord.fields.id,
       }),
-      Result: TimeEntry,
+      Result: TimeEntryRecord,
       execute: ({ workspaceId, id }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -88,10 +118,10 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const findRunningTimeEntryByWorkspaceMemberId = SqlSchema.findOneOption({
       Request: Schema.Struct({
-        workspaceId: TimeEntry.fields.workspaceId,
-        workspaceMemberId: TimeEntry.fields.workspaceMemberId,
+        workspaceId: TimeEntryRecord.fields.workspaceId,
+        workspaceMemberId: TimeEntryRecord.fields.workspaceMemberId,
       }),
-      Result: TimeEntry,
+      Result: TimeEntryRecord,
       execute: ({ workspaceId, workspaceMemberId }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -130,6 +160,10 @@ export const TimeEntryRepositoryLayer = Layer.effect(
         ),
       findRunningByWorkspaceMember: (params) =>
         findRunningTimeEntryByWorkspaceMemberId(params).pipe(
+          Effect.mapError((e) => new RepositoryError({ cause: e }))
+        ),
+      updateRunningByWorkspaceMember: (params) =>
+        updateRunningTimeEntryByWorkspaceMember(params).pipe(
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
     };

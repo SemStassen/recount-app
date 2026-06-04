@@ -1,10 +1,14 @@
-import { TimeEntry, TimeModule } from "@recount/core/modules/time";
+import {
+  RunningTimeEntry,
+  TimeEntry,
+  TimeModule,
+} from "@recount/core/modules/time";
 import { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { UserId, WorkspaceId } from "@recount/core/shared/schemas";
 import { TimeEntryId } from "@recount/core/shared/schemas";
 import { generateUUID } from "@recount/core/shared/utils";
-import { Effect, Option } from "effect";
+import { DateTime, Effect, Option } from "effect";
 
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
@@ -100,7 +104,6 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
         const timeEntry = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const timeModule = yield* TimeModule;
-
             const [createdTimeEntry] = yield* timeModule.createTimeEntries({
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
@@ -122,11 +125,24 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("TimeEntry.Create", data, {
-              headers: {
-                [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+            const startedAt = data.startedAt ?? (yield* DateTime.now);
+
+            return yield* client(
+              "TimeEntry.Create",
+              {
+                id: data.id,
+                projectId: data.projectId,
+                taskId: data.taskId ?? Option.none(),
+                startedAt,
+                stoppedAt: data.stoppedAt,
+                notes: data.notes ?? Option.none(),
               },
-            });
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
           })
         ),
       remoteSync: insertedRecords({
@@ -135,6 +151,141 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
       }),
     });
   };
+
+  const startRunningTimeEntry = (
+    payload: typeof RunningTimeEntry.jsonCreate.Type
+  ) => {
+    const id = Option.getOrElse(payload.id, () =>
+      TimeEntryId.make(generateUUID())
+    );
+    const data = {
+      ...payload,
+      id: Option.some(id),
+    };
+
+    return runSyncedWorkspaceAction<RunningTimeEntry, RunningTimeEntry>({
+      mutateLocal: () => {
+        const workspaceMember = getCurrentWorkspaceMember({
+          userId: params.userId,
+          workspaceMembersCollection: params.workspaceMembersCollection,
+        });
+
+        return params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const timeModule = yield* TimeModule;
+
+            return yield* timeModule.startRunningTimeEntry({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: workspaceMember.id,
+              data,
+            });
+          })
+        );
+      },
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client(
+              "RunningTimeEntry.Start",
+              {
+                id: data.id,
+                projectId: data.projectId,
+                taskId: data.taskId ?? Option.none(),
+                notes: data.notes ?? Option.none(),
+              },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
+          })
+        ),
+      remoteSync: insertedRecords({
+        collection: params.timeEntriesCollection,
+        getIds: (remoteResult) => [remoteResult.id],
+      }),
+    });
+  };
+
+  const updateRunningTimeEntry = (
+    data: typeof RunningTimeEntry.jsonUpdate.Type
+  ) =>
+    runSyncedWorkspaceAction<RunningTimeEntry, RunningTimeEntry>({
+      mutateLocal: () => {
+        const workspaceMember = getCurrentWorkspaceMember({
+          userId: params.userId,
+          workspaceMembersCollection: params.workspaceMembersCollection,
+        });
+
+        return params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const timeModule = yield* TimeModule;
+
+            return yield* timeModule.updateRunningTimeEntry({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: workspaceMember.id,
+              data,
+            });
+          })
+        );
+      },
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client("RunningTimeEntry.Update", data, {
+              headers: {
+                [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+              },
+            });
+          })
+        ),
+      remoteSync: updatedRecords({
+        collection: params.timeEntriesCollection,
+        getIds: (remoteResult) => [remoteResult.id],
+      }),
+    });
+
+  const stopRunningTimeEntry = () =>
+    runSyncedWorkspaceAction<TimeEntryResult, TimeEntryResult>({
+      mutateLocal: () => {
+        const workspaceMember = getCurrentWorkspaceMember({
+          userId: params.userId,
+          workspaceMembersCollection: params.workspaceMembersCollection,
+        });
+
+        return params.workspaceRuntime.runSync(
+          Effect.gen(function* () {
+            const timeModule = yield* TimeModule;
+
+            return yield* timeModule.stopRunningTimeEntry({
+              workspaceId: params.workspaceId,
+              workspaceMemberId: workspaceMember.id,
+            });
+          })
+        );
+      },
+      persistRemote: async () =>
+        params.workspaceRuntime.runPromise(
+          Effect.gen(function* () {
+            const client = yield* BackendAtomRpcClient;
+
+            return yield* client("RunningTimeEntry.Stop", undefined, {
+              headers: {
+                [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+              },
+            });
+          })
+        ),
+      remoteSync: updatedRecords({
+        collection: params.timeEntriesCollection,
+        getIds: (remoteResult) => [remoteResult.id],
+      }),
+    });
 
   const updateTimeEntry = (
     id: TimeEntry["id"],
@@ -184,6 +335,9 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
   return {
     createTimeEntry,
     deleteTimeEntry,
+    startRunningTimeEntry,
+    stopRunningTimeEntry,
     updateTimeEntry,
+    updateRunningTimeEntry,
   };
 }

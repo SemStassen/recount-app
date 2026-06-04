@@ -8,7 +8,7 @@ import type { TimeEntryFormValues } from "./field-group";
 type StoredTimeEntry = {
   id: TimeEntryId;
   startedAt: DateTime.DateTime;
-  stoppedAt: Option.Option<DateTime.DateTime>;
+  stoppedAt: DateTime.DateTime;
   projectId: string;
   taskId: Option.Option<string>;
   notes: Option.Option<unknown>;
@@ -41,12 +41,7 @@ export function getUpdateTimeEntryFormDefaults({
 }): TimeEntryFormValues {
   return {
     startedAt: initialRange?.startedAt ?? DateTime.toDate(timeEntry.startedAt),
-    stoppedAt:
-      initialRange?.stoppedAt ??
-      Option.match(timeEntry.stoppedAt, {
-        onNone: () => null,
-        onSome: DateTime.toDate,
-      }),
+    stoppedAt: initialRange?.stoppedAt ?? DateTime.toDate(timeEntry.stoppedAt),
     projectId: timeEntry.projectId,
     taskId: Option.getOrNull(timeEntry.taskId),
     notes: Option.getOrNull(timeEntry.notes),

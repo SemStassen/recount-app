@@ -1,5 +1,5 @@
 import { Project, Task } from "@recount/core/modules/project";
-import { TimeEntry } from "@recount/core/modules/time";
+import { TimeEntryRecord } from "@recount/core/modules/time";
 import { DateTime, Option, Schema, Struct } from "effect";
 
 type StandardSchemaOutput<TSchema extends { readonly "~standard": object }> =
@@ -44,7 +44,7 @@ export const projectCollectionSchema = Schema.toStandardSchemaV1(
 export const taskCollectionSchema = Schema.toStandardSchemaV1(Task.json);
 
 export const timeEntryCollectionSchema = Schema.toStandardSchemaV1(
-  TimeEntry.json
+  TimeEntryRecord.select
 );
 
 export type ProjectRow = StandardSchemaOutput<typeof projectCollectionSchema>;
@@ -78,7 +78,7 @@ export const decodeWorkspaceTaskRow = Schema.decodeUnknownSync(
 );
 
 export const decodeWorkspaceTimeEntryRow = Schema.decodeUnknownSync(
-  TimeEntry.json
+  TimeEntryRecord.select
     .mapFields(
       Struct.evolve({
         startedAt: () => Schema.DateTimeUtcFromString,
@@ -110,8 +110,8 @@ export function toTaskEntity(task: TaskRow): Task {
   });
 }
 
-export function toTimeEntryEntity(timeEntry: TimeEntryRow): TimeEntry {
-  return TimeEntry.make({
+export function toTimeEntryRecord(timeEntry: TimeEntryRow): TimeEntryRecord {
+  return TimeEntryRecord.make({
     id: timeEntry.id,
     workspaceId: timeEntry.workspaceId,
     workspaceMemberId: timeEntry.workspaceMemberId,
@@ -139,7 +139,7 @@ const optionDateTimeToDate = (value: Option.Option<DateTime.Utc>) =>
   Option.map(value, DateTime.toDateUtc).pipe(Option.getOrNull);
 
 export function toTimeEntryCollectionInsert(
-  timeEntry: TimeEntry
+  timeEntry: TimeEntryRecord
 ): TimeEntryCollectionInsert {
   return {
     id: timeEntry.id,

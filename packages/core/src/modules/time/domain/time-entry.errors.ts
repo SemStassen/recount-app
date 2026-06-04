@@ -9,3 +9,13 @@ export class TimeEntryAlreadyRunningError extends Schema.TaggedErrorClass<TimeEn
   "time/TimeEntryAlreadyRunningError",
   {}
 ) {}
+
+export class RunningTimeEntryNotFoundError extends Schema.TaggedErrorClass<RunningTimeEntryNotFoundError>()(
+  "time/RunningTimeEntryNotFoundError",
+  {}
+) {}
+
+export class CannotUpdateRunningTimeEntryError extends Schema.TaggedErrorClass<CannotUpdateRunningTimeEntryError>()(
+  "time/CannotUpdateRunningTimeEntryError",
+  {}
+) {}

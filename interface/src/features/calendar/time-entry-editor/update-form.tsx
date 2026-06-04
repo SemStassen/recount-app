@@ -4,6 +4,7 @@ import type { TimeEntryId } from "@recount/core/shared/schemas";
 import { Form } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
+import { Option } from "effect";
 import { useEffect } from "react";
 
 import { useAppForm } from "~/components/form";
@@ -46,14 +47,27 @@ export function UpdateTimeEntryForm({
 
   const { data: projects = [] } = useTimeEntryFormProjects();
 
-  if (isLoading || !timeEntry) return null;
+  if (isLoading || !timeEntry || Option.isNone(timeEntry.stoppedAt)) {
+    return null;
+  }
+
+  const stoppedTimeEntry = TimeEntry.make({
+    id: timeEntry.id,
+    workspaceId: timeEntry.workspaceId,
+    workspaceMemberId: timeEntry.workspaceMemberId,
+    projectId: timeEntry.projectId,
+    taskId: timeEntry.taskId,
+    startedAt: timeEntry.startedAt,
+    stoppedAt: timeEntry.stoppedAt.value,
+    notes: timeEntry.notes,
+  });
 
   return (
     <UpdateTimeEntryFormContent
       key={timeEntry.id}
       initialRange={initialRange}
       projects={projects}
-      timeEntry={timeEntry}
+      timeEntry={stoppedTimeEntry}
     />
   );
 }
