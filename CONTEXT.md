@@ -80,6 +80,10 @@ _Avoid_: Server-only workspace data, offline source of truth
 The process where authoritative backend state replaces or confirms local workspace state after a local action.
 _Avoid_: Conflict resolution, sync merge
 
+**Partial Update**:
+A request to change only the supplied fields of an existing Recount object.
+_Avoid_: Full replacement, overwrite, merge
+
 ## Relationships
 
 - A **User** can be a **Workspace Member** in zero or more **Workspaces**, at most once per **Workspace**
@@ -126,6 +130,9 @@ _Avoid_: Conflict resolution, sync merge
 - Optimistic **WorkspaceDb** actions should return local acceptance synchronously; server-only workspace concerns should stay asynchronous because they wait for backend authority
 - Workspace routes should preload **WorkspaceDb** before rendering optimistic interactions; missing required local data after preload is a local state error, not a normal loading path
 - **Backend Reconciliation** should preserve backend authority over permissions, validation, and persisted workspace data
+- A **Partial Update** must persist only the fields supplied by the request
+- Omitted fields in a **Partial Update** must remain unchanged
+- Independent **Partial Updates** to different fields of the same object can both be preserved during **Backend Reconciliation**
 
 ## Example dialogue
 

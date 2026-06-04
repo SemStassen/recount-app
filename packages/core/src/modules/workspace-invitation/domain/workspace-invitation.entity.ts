@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Model } from "#internal/effect/index";
+import { SharedModel } from "#internal/effect/index";
 import { WorkspaceRole } from "#shared/authorization/index";
 import {
   Email,
@@ -9,19 +9,19 @@ import {
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
-export class WorkspaceInvitation extends Model.Class<WorkspaceInvitation>(
+export class WorkspaceInvitation extends SharedModel.Class<WorkspaceInvitation>(
   "WorkspaceInvitation"
 )(
   {
-    id: Model.ServerImmutable(WorkspaceInvitationId),
-    inviterId: Model.ServerImmutable(WorkspaceMemberId),
-    workspaceId: Model.ServerImmutable(WorkspaceId),
-    email: Model.ServerMutableClientImmutable(Email),
-    role: Model.ServerMutableClientImmutable(WorkspaceRole),
-    status: Model.ServerMutable(
+    id: SharedModel.ImmutableReadOnly(WorkspaceInvitationId),
+    inviterId: SharedModel.ImmutableReadOnly(WorkspaceMemberId),
+    workspaceId: SharedModel.ImmutableReadOnly(WorkspaceId),
+    email: SharedModel.MutableCreate(Email),
+    role: SharedModel.MutableCreate(WorkspaceRole),
+    status: SharedModel.MutableReadOnly(
       Schema.Literals(["pending", "accepted", "rejected", "canceled"])
     ),
-    expiresAt: Model.ServerMutable(Schema.DateTimeUtcFromDate),
+    expiresAt: SharedModel.MutableReadOnly(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "WorkspaceInvitation",

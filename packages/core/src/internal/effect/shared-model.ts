@@ -30,31 +30,33 @@ const optionalNullableOptionKey = <S extends Schema.Top>(schema: S) =>
   Schema.optionalKey(Schema.OptionFromNullOr(schema));
 
 /**
- * Named helpers cover the common matrix of shared DB and JSON contracts.
+ * Named helpers cover the common matrix of same-shape record and entity
+ * contracts.
  *
  * Reach for `Field(...)` directly when a field has asymmetric behavior across
  * variants, such as different DB/JSON schemas or omitted JSON read variants.
  *
  * Naming rules:
- * - Start with the authoritative server contract: `ServerImmutable` or
- *   `ServerMutable`
- * - Add the client contract only when client input is part of the field's API:
- *   `ClientImmutable` or `ClientMutable`
- * - Append whole-field modifiers last: `Optional`, `CreateOptional`
- * - `Optional` describes the field shape as a whole, not a separate per-actor
- *   contract
+ * - Start with record mutability: `Immutable` or `Mutable`.
+ * - Add entity API operation inclusion: `ReadOnly`, `Create`, or
+ *   `CreateUpdate`.
+ * - Append modifiers last: `Nullable`, `CreateOptional`.
+ * - `Nullable` means the field value can be absent/null and decodes to Option.
+ * - `Optional` means the input key may be omitted.
+ * - `Update` always means Partial Update semantics: omitted update keys are not
+ *   updates; present nullable `Option.none` values clear the field.
  * - If the name starts to describe transport quirks instead of the core
- *   contract, prefer an explicit `Field(...)`
+ *   contract, prefer an explicit `Field(...)`.
  *
  * Grammar:
- * `Server<Mutability>[Client<Mutability>][FieldModifier][CreateModifier]`
+ * `<Record mutability><API inclusion><modifier>`
  */
 
 // ---------------------------------------------------------------------------
-// ServerImmutable
+// ImmutableReadOnly
 // ---------------------------------------------------------------------------
 
-export interface ServerImmutable<
+export interface ImmutableReadOnly<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: S;
@@ -63,17 +65,17 @@ export interface ServerImmutable<
 }> {}
 
 /**
- * Field set once by the server and never updated.
+ * Immutable record field exposed in read output only.
  *
  * Absent from the update variant and all JSON input variants.
  *
  * @example
- * id: ServerImmutable(WorkspaceId)
- * createdAt: ServerImmutable(Timestamp)
+ * workspaceId: ImmutableReadOnly(WorkspaceId)
+ * createdAt: ImmutableReadOnly(Timestamp)
  */
-export const ServerImmutable = <S extends Schema.Top>(
+export const ImmutableReadOnly = <S extends Schema.Top>(
   schema: S
-): ServerImmutable<S> =>
+): ImmutableReadOnly<S> =>
   Field({
     select: schema,
     insert: schema,
@@ -81,10 +83,10 @@ export const ServerImmutable = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerMutable
+// MutableReadOnly
 // ---------------------------------------------------------------------------
 
-export interface ServerMutable<
+export interface MutableReadOnly<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: S;
@@ -94,17 +96,17 @@ export interface ServerMutable<
 }> {}
 
 /**
- * Field managed entirely by the server over the entity lifecycle.
+ * Mutable record field exposed in read output only.
  *
  * Absent from all client-facing create and update payloads.
  *
  * @example
- * emailVerified: ServerMutable(Schema.Boolean)
- * status: ServerMutable(Schema.Literals(["pending", "accepted"]))
+ * emailVerified: MutableReadOnly(Schema.Boolean)
+ * status: MutableReadOnly(Schema.Literals(["pending", "accepted"]))
  */
-export const ServerMutable = <S extends Schema.Top>(
+export const MutableReadOnly = <S extends Schema.Top>(
   schema: S
-): ServerMutable<S> =>
+): MutableReadOnly<S> =>
   Field({
     select: schema,
     insert: schema,
@@ -113,10 +115,10 @@ export const ServerMutable = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerMutableOptional
+// MutableNullableReadOnly
 // ---------------------------------------------------------------------------
 
-export interface ServerMutableOptional<
+export interface MutableNullableReadOnly<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: Schema.OptionFromNullOr<S>;
@@ -126,17 +128,17 @@ export interface ServerMutableOptional<
 }> {}
 
 /**
- * Optional field managed entirely by the server.
+ * Mutable nullable record field exposed in read output only.
  *
  * DB variants use OptionFromNullOr so SQL NULLs decode to None.
  *
  * @example
- * archivedAt: ServerMutableOptional(Schema.DateTimeUtcFromDate)
- * activeWorkspaceId: ServerMutableOptional(WorkspaceId)
+ * archivedAt: MutableNullableReadOnly(Schema.DateTimeUtcFromDate)
+ * activeWorkspaceId: MutableNullableReadOnly(WorkspaceId)
  */
-export const ServerMutableOptional = <S extends Schema.Top>(
+export const MutableNullableReadOnly = <S extends Schema.Top>(
   schema: S
-): ServerMutableOptional<S> =>
+): MutableNullableReadOnly<S> =>
   Field({
     select: Schema.OptionFromNullOr(schema),
     insert: Schema.OptionFromNullOr(schema),
@@ -145,10 +147,10 @@ export const ServerMutableOptional = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerImmutableClientImmutableCreateOptional
+// ImmutableCreateOptional
 // ---------------------------------------------------------------------------
 
-export interface ServerImmutableClientImmutableCreateOptional<
+export interface ImmutableCreateOptional<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: S;
@@ -158,20 +160,20 @@ export interface ServerImmutableClientImmutableCreateOptional<
 }> {}
 
 /**
- * Field immutable to both server and client after insert, but optional in the
- * client create payload.
+ * Immutable record field exposed in read output and optional in create input.
  *
  * Useful for IDs that can be client-supplied for optimistic writes and
  * server-generated when omitted.
  *
+ * Omitted create keys decode to `Option.none` so the service layer must
+ * explicitly choose or generate the inserted value.
+ *
  * @example
- * id: ServerImmutableClientImmutableCreateOptional(ProjectId)
+ * id: ImmutableCreateOptional(ProjectId)
  */
-export const ServerImmutableClientImmutableCreateOptional = <
-  S extends Schema.Top,
->(
+export const ImmutableCreateOptional = <S extends Schema.Top>(
   schema: S
-): ServerImmutableClientImmutableCreateOptional<S> =>
+): ImmutableCreateOptional<S> =>
   Field({
     select: schema,
     insert: schema,
@@ -180,10 +182,10 @@ export const ServerImmutableClientImmutableCreateOptional = <
   });
 
 // ---------------------------------------------------------------------------
-// ServerImmutableClientImmutable
+// ImmutableCreate
 // ---------------------------------------------------------------------------
 
-export interface ServerImmutableClientImmutable<
+export interface ImmutableCreate<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: S;
@@ -193,15 +195,14 @@ export interface ServerImmutableClientImmutable<
 }> {}
 
 /**
- * Field the client must provide on create and that is immutable for both
- * server and client after insert.
+ * Immutable record field exposed in read output and required in create input.
  *
  * @example
- * provider: ServerImmutableClientImmutable(WorkspaceIntegrationConnectionProvider)
+ * provider: ImmutableCreate(WorkspaceIntegrationConnectionProvider)
  */
-export const ServerImmutableClientImmutable = <S extends Schema.Top>(
+export const ImmutableCreate = <S extends Schema.Top>(
   schema: S
-): ServerImmutableClientImmutable<S> =>
+): ImmutableCreate<S> =>
   Field({
     select: schema,
     insert: schema,
@@ -210,10 +211,10 @@ export const ServerImmutableClientImmutable = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerMutableClientImmutable
+// MutableCreate
 // ---------------------------------------------------------------------------
 
-export interface ServerMutableClientImmutable<
+export interface MutableCreate<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: S;
@@ -224,16 +225,16 @@ export interface ServerMutableClientImmutable<
 }> {}
 
 /**
- * Field the client must provide on create and cannot update afterward.
+ * Mutable record field exposed in read output and required in create input.
  *
  * The server retains an internal update escape hatch via the update variant.
  *
  * @example
- * email: ServerMutableClientImmutable(Email)
+ * email: MutableCreate(Email)
  */
-export const ServerMutableClientImmutable = <S extends Schema.Top>(
+export const MutableCreate = <S extends Schema.Top>(
   schema: S
-): ServerMutableClientImmutable<S> =>
+): MutableCreate<S> =>
   Field({
     select: schema,
     insert: schema,
@@ -243,10 +244,10 @@ export const ServerMutableClientImmutable = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerMutableClientMutable
+// MutableCreateUpdate
 // ---------------------------------------------------------------------------
 
-export interface ServerMutableClientMutable<
+export interface MutableCreateUpdate<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: S;
@@ -258,14 +259,15 @@ export interface ServerMutableClientMutable<
 }> {}
 
 /**
- * Required field the client can provide on create and update freely.
+ * Mutable record field exposed in read output, required in create input, and
+ * optional in update input for Partial Update semantics.
  *
  * @example
- * name: ServerMutableClientMutable(Schema.NonEmptyTrimmedString)
+ * name: MutableCreateUpdate(Schema.NonEmptyTrimmedString)
  */
-export const ServerMutableClientMutable = <S extends Schema.Top>(
+export const MutableCreateUpdate = <S extends Schema.Top>(
   schema: S
-): ServerMutableClientMutable<S> =>
+): MutableCreateUpdate<S> =>
   Field({
     select: schema,
     insert: schema,
@@ -276,10 +278,10 @@ export const ServerMutableClientMutable = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerMutableClientMutableCreateOptional
+// MutableCreateOptionalUpdate
 // ---------------------------------------------------------------------------
 
-export interface ServerMutableClientMutableCreateOptional<
+export interface MutableCreateOptionalUpdate<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: S;
@@ -291,17 +293,18 @@ export interface ServerMutableClientMutableCreateOptional<
 }> {}
 
 /**
- * Required field the client can update freely, but may omit on create.
+ * Mutable record field exposed in read output and optional in create/update
+ * input.
  *
  * When absent from the create payload, the value must be derived by the
  * service layer before calling the repository.
  *
  * @example
- * displayName: ServerMutableClientMutableCreateOptional(NonEmptyTrimmedString)
+ * displayName: MutableCreateOptionalUpdate(NonEmptyTrimmedString)
  */
-export const ServerMutableClientMutableCreateOptional = <S extends Schema.Top>(
+export const MutableCreateOptionalUpdate = <S extends Schema.Top>(
   schema: S
-): ServerMutableClientMutableCreateOptional<S> =>
+): MutableCreateOptionalUpdate<S> =>
   Field({
     select: schema,
     insert: schema,
@@ -312,10 +315,10 @@ export const ServerMutableClientMutableCreateOptional = <S extends Schema.Top>(
   });
 
 // ---------------------------------------------------------------------------
-// ServerMutableClientMutableOptional
+// MutableCreateUpdateNullable
 // ---------------------------------------------------------------------------
 
-export interface ServerMutableClientMutableOptional<
+export interface MutableCreateUpdateNullable<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly select: Schema.OptionFromNullOr<S>;
@@ -327,14 +330,20 @@ export interface ServerMutableClientMutableOptional<
 }> {}
 
 /**
- * Optional field the client can create, update, clear, or leave unchanged.
+ * Mutable nullable record field exposed in read output and optional in
+ * create/update input.
+ *
+ * Omitted create keys stay omitted at the command boundary and should be
+ * normalized by entity construction. Omitted update keys are not updates.
+ * Present `Option.none` values clear the field. Present `Option.some(value)`
+ * values set it.
  *
  * @example
- * logoUrl: ServerMutableClientMutableOptional(Schema.NonEmptyTrimmedString)
+ * logoUrl: MutableCreateUpdateNullable(Schema.NonEmptyTrimmedString)
  */
-export const ServerMutableClientMutableOptional = <S extends Schema.Top>(
+export const MutableCreateUpdateNullable = <S extends Schema.Top>(
   schema: S
-): ServerMutableClientMutableOptional<S> =>
+): MutableCreateUpdateNullable<S> =>
   Field({
     select: Schema.OptionFromNullOr(schema),
     insert: Schema.OptionFromNullOr(schema),
