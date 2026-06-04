@@ -35,9 +35,7 @@ export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
   }
 ) {}
 
-export class Timer extends EntityModel.Class<Timer>(
-  "Timer"
-)(
+export class Timer extends EntityModel.Class<Timer>("Timer")(
   {
     ...timeEntryBaseFields,
     startedAt: EntityModel.ReadOnly(Schema.DateTimeUtcFromDate),

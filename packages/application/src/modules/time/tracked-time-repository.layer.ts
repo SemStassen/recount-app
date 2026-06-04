@@ -1,6 +1,6 @@
 import {
-  TimeEntryRecord,
-  TimeEntryRepository,
+  TrackedTimeRecord,
+  TrackedTimeRepository,
 } from "@recount/core/modules/time";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
@@ -8,18 +8,18 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import { Effect, Layer, Schema } from "effect";
 import { SqlSchema } from "effect/unstable/sql";
 
-export const TimeEntryRepositoryLayer = Layer.effect(
-  TimeEntryRepository,
+export const TrackedTimeRepositoryLayer = Layer.effect(
+  TrackedTimeRepository,
   Effect.gen(function* () {
     const db = yield* Database;
 
     const insertManyTimeEntries = SqlSchema.findAll({
-      Request: Schema.Array(TimeEntryRecord.insert),
-      Result: TimeEntryRecord,
+      Request: Schema.Array(TrackedTimeRecord.insert),
+      Result: TrackedTimeRecord,
       execute: (data) =>
         db.drizzle((drizzle) =>
           drizzle
-            .insert(schema.timeEntriesTable)
+            .insert(schema.trackedTimeRecordsTable)
             .values([...data])
             .returning()
             .execute()
@@ -28,20 +28,20 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const updateTimeEntry = SqlSchema.findOne({
       Request: Schema.Struct({
-        workspaceId: TimeEntryRecord.fields.workspaceId,
-        id: TimeEntryRecord.fields.id,
-        update: TimeEntryRecord.update,
+        workspaceId: TrackedTimeRecord.fields.workspaceId,
+        id: TrackedTimeRecord.fields.id,
+        update: TrackedTimeRecord.update,
       }),
-      Result: TimeEntryRecord,
+      Result: TrackedTimeRecord,
       execute: ({ workspaceId, id, update }) =>
         db.drizzle((drizzle) =>
           drizzle
-            .update(schema.timeEntriesTable)
+            .update(schema.trackedTimeRecordsTable)
             .set(update)
             .where(
               and(
-                eq(schema.timeEntriesTable.workspaceId, workspaceId),
-                eq(schema.timeEntriesTable.id, id)
+                eq(schema.trackedTimeRecordsTable.workspaceId, workspaceId),
+                eq(schema.trackedTimeRecordsTable.id, id)
               )
             )
             .returning()
@@ -51,24 +51,24 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const updateTimerRecordByWorkspaceMember = SqlSchema.findOneOption({
       Request: Schema.Struct({
-        workspaceId: TimeEntryRecord.fields.workspaceId,
-        workspaceMemberId: TimeEntryRecord.fields.workspaceMemberId,
-        update: TimeEntryRecord.update,
+        workspaceId: TrackedTimeRecord.fields.workspaceId,
+        workspaceMemberId: TrackedTimeRecord.fields.workspaceMemberId,
+        update: TrackedTimeRecord.update,
       }),
-      Result: TimeEntryRecord,
+      Result: TrackedTimeRecord,
       execute: ({ workspaceId, workspaceMemberId, update }) =>
         db.drizzle((drizzle) =>
           drizzle
-            .update(schema.timeEntriesTable)
+            .update(schema.trackedTimeRecordsTable)
             .set(update)
             .where(
               and(
-                eq(schema.timeEntriesTable.workspaceId, workspaceId),
+                eq(schema.trackedTimeRecordsTable.workspaceId, workspaceId),
                 eq(
-                  schema.timeEntriesTable.workspaceMemberId,
+                  schema.trackedTimeRecordsTable.workspaceMemberId,
                   workspaceMemberId
                 ),
-                isNull(schema.timeEntriesTable.stoppedAt)
+                isNull(schema.trackedTimeRecordsTable.stoppedAt)
               )
             )
             .returning()
@@ -78,17 +78,17 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const hardDeleteManyTimeEntries = SqlSchema.void({
       Request: Schema.Struct({
-        workspaceId: TimeEntryRecord.fields.workspaceId,
-        ids: Schema.Array(TimeEntryRecord.fields.id),
+        workspaceId: TrackedTimeRecord.fields.workspaceId,
+        ids: Schema.Array(TrackedTimeRecord.fields.id),
       }),
       execute: ({ workspaceId, ids }) =>
         db.drizzle((drizzle) =>
           drizzle
-            .delete(schema.timeEntriesTable)
+            .delete(schema.trackedTimeRecordsTable)
             .where(
               and(
-                eq(schema.timeEntriesTable.workspaceId, workspaceId),
-                inArray(schema.timeEntriesTable.id, ids)
+                eq(schema.trackedTimeRecordsTable.workspaceId, workspaceId),
+                inArray(schema.trackedTimeRecordsTable.id, ids)
               )
             )
             .execute()
@@ -97,19 +97,19 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const findTimeEntryById = SqlSchema.findOneOption({
       Request: Schema.Struct({
-        workspaceId: TimeEntryRecord.fields.workspaceId,
-        id: TimeEntryRecord.fields.id,
+        workspaceId: TrackedTimeRecord.fields.workspaceId,
+        id: TrackedTimeRecord.fields.id,
       }),
-      Result: TimeEntryRecord,
+      Result: TrackedTimeRecord,
       execute: ({ workspaceId, id }) =>
         db.drizzle((drizzle) =>
           drizzle
             .select()
-            .from(schema.timeEntriesTable)
+            .from(schema.trackedTimeRecordsTable)
             .where(
               and(
-                eq(schema.timeEntriesTable.workspaceId, workspaceId),
-                eq(schema.timeEntriesTable.id, id)
+                eq(schema.trackedTimeRecordsTable.workspaceId, workspaceId),
+                eq(schema.trackedTimeRecordsTable.id, id)
               )
             )
             .execute()
@@ -118,23 +118,23 @@ export const TimeEntryRepositoryLayer = Layer.effect(
 
     const findTimerRecordByWorkspaceMemberId = SqlSchema.findOneOption({
       Request: Schema.Struct({
-        workspaceId: TimeEntryRecord.fields.workspaceId,
-        workspaceMemberId: TimeEntryRecord.fields.workspaceMemberId,
+        workspaceId: TrackedTimeRecord.fields.workspaceId,
+        workspaceMemberId: TrackedTimeRecord.fields.workspaceMemberId,
       }),
-      Result: TimeEntryRecord,
+      Result: TrackedTimeRecord,
       execute: ({ workspaceId, workspaceMemberId }) =>
         db.drizzle((drizzle) =>
           drizzle
             .select()
-            .from(schema.timeEntriesTable)
+            .from(schema.trackedTimeRecordsTable)
             .where(
               and(
-                eq(schema.timeEntriesTable.workspaceId, workspaceId),
+                eq(schema.trackedTimeRecordsTable.workspaceId, workspaceId),
                 eq(
-                  schema.timeEntriesTable.workspaceMemberId,
+                  schema.trackedTimeRecordsTable.workspaceMemberId,
                   workspaceMemberId
                 ),
-                isNull(schema.timeEntriesTable.stoppedAt)
+                isNull(schema.trackedTimeRecordsTable.stoppedAt)
               )
             )
             .execute()

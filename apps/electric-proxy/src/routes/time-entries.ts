@@ -17,7 +17,7 @@ export const TimeEntriesRouteLayer = HttpRouter.add(
   "GET",
   "/time-entries",
   createElectricProxyHandler({
-    table: schema.timeEntriesTable,
+    table: schema.trackedTimeRecordsTable,
     buildShapeParams: (table) =>
       Effect.gen(function* () {
         const workspaceContext = yield* WorkspaceContext;

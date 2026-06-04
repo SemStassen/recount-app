@@ -1,5 +1,5 @@
 import { Project, Task } from "@recount/core/modules/project";
-import { TimeEntryRecord } from "@recount/core/modules/time";
+import { TrackedTimeRecord } from "@recount/core/modules/time";
 import { DateTime, Option, Schema, Struct } from "effect";
 
 type StandardSchemaOutput<TSchema extends { readonly "~standard": object }> =
@@ -19,7 +19,7 @@ export interface TaskCollectionInsert {
   readonly archivedAt: Date | null;
 }
 
-export interface TimeEntryCollectionInsert {
+export interface TrackedTimeRecordCollectionInsert {
   readonly id: string;
   readonly workspaceId: string;
   readonly workspaceMemberId: string;
@@ -43,14 +43,14 @@ export const projectCollectionSchema = Schema.toStandardSchemaV1(
 
 export const taskCollectionSchema = Schema.toStandardSchemaV1(Task.json);
 
-export const timeEntryCollectionSchema = Schema.toStandardSchemaV1(
-  TimeEntryRecord.select
+export const trackedTimeRecordCollectionSchema = Schema.toStandardSchemaV1(
+  TrackedTimeRecord.select
 );
 
 export type ProjectRow = StandardSchemaOutput<typeof projectCollectionSchema>;
 export type TaskRow = StandardSchemaOutput<typeof taskCollectionSchema>;
-export type TimeEntryRow = StandardSchemaOutput<
-  typeof timeEntryCollectionSchema
+export type TrackedTimeRecordRow = StandardSchemaOutput<
+  typeof trackedTimeRecordCollectionSchema
 >;
 
 export interface ProjectCollectionInsert {
@@ -77,8 +77,8 @@ export const decodeWorkspaceTaskRow = Schema.decodeUnknownSync(
   Task.json.mapFields(optionalFields)
 );
 
-export const decodeWorkspaceTimeEntryRow = Schema.decodeUnknownSync(
-  TimeEntryRecord.select
+export const decodeWorkspaceTrackedTimeRecordRow = Schema.decodeUnknownSync(
+  TrackedTimeRecord.select
     .mapFields(
       Struct.evolve({
         startedAt: () => Schema.DateTimeUtcFromString,
@@ -110,8 +110,10 @@ export function toTaskEntity(task: TaskRow): Task {
   });
 }
 
-export function toTimeEntryRecord(timeEntry: TimeEntryRow): TimeEntryRecord {
-  return TimeEntryRecord.make({
+export function toTrackedTimeRecord(
+  timeEntry: TrackedTimeRecordRow
+): TrackedTimeRecord {
+  return TrackedTimeRecord.make({
     id: timeEntry.id,
     workspaceId: timeEntry.workspaceId,
     workspaceMemberId: timeEntry.workspaceMemberId,
@@ -138,9 +140,9 @@ export function toTaskCollectionInsert(task: Task): TaskCollectionInsert {
 const optionDateTimeToDate = (value: Option.Option<DateTime.Utc>) =>
   Option.map(value, DateTime.toDateUtc).pipe(Option.getOrNull);
 
-export function toTimeEntryCollectionInsert(
-  timeEntry: TimeEntryRecord
-): TimeEntryCollectionInsert {
+export function toTrackedTimeRecordCollectionInsert(
+  timeEntry: TrackedTimeRecord
+): TrackedTimeRecordCollectionInsert {
   return {
     id: timeEntry.id,
     workspaceId: timeEntry.workspaceId,

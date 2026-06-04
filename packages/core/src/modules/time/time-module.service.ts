@@ -43,18 +43,12 @@ interface TimeModuleShape {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];
     data: typeof Timer.jsonCreate.Type;
-  }) => Effect.Effect<
-    Timer,
-    TimerAlreadyRunningError | RepositoryError
-  >;
+  }) => Effect.Effect<Timer, TimerAlreadyRunningError | RepositoryError>;
   readonly updateTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];
     data: typeof Timer.jsonUpdate.Type;
-  }) => Effect.Effect<
-    Timer,
-    TimerNotFoundError | RepositoryError
-  >;
+  }) => Effect.Effect<Timer, TimerNotFoundError | RepositoryError>;
   readonly stopTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];

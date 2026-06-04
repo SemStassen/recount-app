@@ -10,15 +10,15 @@ import { appRuntimeLayer } from "~/lib/runtime";
 import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
 import type { ClientRepositoryCollection } from "~/lib/services/client-repository-collection";
 import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
-import { createClientTimeEntryRepositoryLayer } from "~/lib/services/client-time-entry-repository.layer";
+import { createClientTrackedTimeRepositoryLayer } from "~/lib/services/client-tracked-time-repository.layer";
 
 import type {
   ProjectCollectionInsert,
   ProjectRow,
   TaskCollectionInsert,
   TaskRow,
-  TimeEntryCollectionInsert,
-  TimeEntryRow,
+  TrackedTimeRecordCollectionInsert,
+  TrackedTimeRecordRow,
 } from "./workspace-collection-codecs";
 
 type WorkspaceProjectCollection = ClientRepositoryCollection<
@@ -31,9 +31,9 @@ type WorkspaceTaskCollection = ClientRepositoryCollection<
   TaskCollectionInsert
 >;
 
-type WorkspaceTimeEntryCollection = ClientRepositoryCollection<
-  TimeEntryRow,
-  TimeEntryCollectionInsert
+type WorkspaceTrackedTimeRecordCollection = ClientRepositoryCollection<
+  TrackedTimeRecordRow,
+  TrackedTimeRecordCollectionInsert
 >;
 
 export type WorkspaceRuntime = ManagedRuntime.ManagedRuntime<
@@ -44,7 +44,7 @@ export type WorkspaceRuntime = ManagedRuntime.ManagedRuntime<
 export function createWorkspaceRuntime(params: {
   readonly allProjectsCollection: WorkspaceProjectCollection;
   readonly allTasksCollection: WorkspaceTaskCollection;
-  readonly timeEntriesCollection: WorkspaceTimeEntryCollection;
+  readonly timeEntriesCollection: WorkspaceTrackedTimeRecordCollection;
 }): WorkspaceRuntime {
   const projectRepositoryLayer = createClientProjectRepositoryLayer(
     params.allProjectsCollection
@@ -52,7 +52,7 @@ export function createWorkspaceRuntime(params: {
   const taskRepositoryLayer = createClientTaskRepositoryLayer(
     params.allTasksCollection
   );
-  const timeEntryRepositoryLayer = createClientTimeEntryRepositoryLayer(
+  const trackedTimeRepositoryLayer = createClientTrackedTimeRepositoryLayer(
     params.timeEntriesCollection
   );
 
@@ -63,7 +63,7 @@ export function createWorkspaceRuntime(params: {
         Layer.provide(projectRepositoryLayer),
         Layer.provide(taskRepositoryLayer)
       ),
-      TimeModuleLayer.pipe(Layer.provide(timeEntryRepositoryLayer))
+      TimeModuleLayer.pipe(Layer.provide(trackedTimeRepositoryLayer))
     )
   );
 }

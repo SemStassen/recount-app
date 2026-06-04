@@ -24,6 +24,10 @@ _Avoid_: Job, client, initiative
 An optional project-scoped subdivision of work that time can be tracked against.
 _Avoid_: Todo, issue
 
+**Tracked Time**:
+A work interval recorded by a workspace member, either active as a timer or completed as a time entry.
+_Avoid_: Time record, time log, timesheet row
+
 **Time Entry**:
 A completed interval of work tracked by a workspace member against a project.
 _Avoid_: Timer, running time entry, timesheet row, log
@@ -95,6 +99,7 @@ _Avoid_: Full replacement, overwrite, merge
 - A **Time Entry** is recorded against exactly one **Project**
 - A **Task** belongs to exactly one **Project**
 - A **Task** belongs to the same **Workspace** as its **Project**
+- **Tracked Time** is either a **Timer** or a **Time Entry**
 - A **Time Entry** may be recorded against one **Task**
 - A **Time Entry** with a **Task** is recorded against that task's **Project**
 - A **Time Entry** belongs to exactly one **Workspace Member**
@@ -148,6 +153,7 @@ _Avoid_: Full replacement, overwrite, merge
 - "team" is reserved for a future grouping within a **Workspace** and must not be used as a synonym for **Workspace**.
 - "task" in Recount is not a todo item; external tools own todo state such as status, assignee, priority, and due date.
 - **Timer** describes active tracking behavior, not completed historical work.
+- **Tracked Time** is the umbrella term for active and completed tracked work intervals; use **Timer** or **Time Entry** when the lifecycle state matters.
 - **Time Entry** describes completed historical work, not active tracking.
 - "timesheet" must not be used unless Recount introduces a submission or approval period for time entries.
 - "archived" does not mean deleted; archived projects and tasks remain part of historical time records.

@@ -1,16 +1,15 @@
 export { Timer, TimeEntry } from "./domain/time-entry.entity";
-export {
-  isTimerRecord,
-  TimeEntryRecord,
-} from "./domain/time-entry.record";
+export { isTimerRecord, TrackedTimeRecord } from "./domain/tracked-time-record";
 export {
   recordFromTimer,
   recordFromTimeEntry,
+  recordUpdateFromTimeEntryChanges,
+  recordUpdateFromTimerChanges,
   timerFromRecord,
   timeEntryFromRecord,
-  timeEntryOrTimerFromRecord,
-  type TimeEntryOrTimer,
-} from "./domain/time-entry-record-mapping";
+  trackedTimeFromRecord,
+  type TrackedTime,
+} from "./domain/tracked-time-record-mapping";
 
 export {
   CannotUpdateTimerError,
@@ -18,6 +17,6 @@ export {
   TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
 } from "./domain/time-entry.errors";
-export { TimeEntryRepository } from "./time-entry-repository.service";
 export { TimeModuleLayer } from "./time-module.layer";
 export { TimeEntryNotFoundError, TimeModule } from "./time-module.service";
+export { TrackedTimeRepository } from "./tracked-time-repository.service";

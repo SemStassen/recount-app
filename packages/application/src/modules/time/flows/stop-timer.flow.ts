@@ -4,9 +4,7 @@ import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
 
-export const stopTimerFlow = Effect.fn(
-  "flows.stopTimerFlow"
-)(function* () {
+export const stopTimerFlow = Effect.fn("flows.stopTimerFlow")(function* () {
   const appContext = yield* ApplicationContext;
   const timeModule = yield* TimeModule;
 

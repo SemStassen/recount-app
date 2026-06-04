@@ -1,16 +1,16 @@
 import {
-  TimeEntryRecord,
-  TimeEntryRepository,
+  TrackedTimeRecord,
+  TrackedTimeRepository,
 } from "@recount/core/modules/time";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { and, eq, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option } from "effect";
 
 import {
-  type TimeEntryCollectionInsert,
-  type TimeEntryRow,
-  toTimeEntryCollectionInsert,
-  toTimeEntryRecord,
+  type TrackedTimeRecordCollectionInsert,
+  type TrackedTimeRecordRow,
+  toTrackedTimeRecordCollectionInsert,
+  toTrackedTimeRecord,
 } from "~/db/workspace/workspace-collection-codecs";
 
 import {
@@ -20,28 +20,28 @@ import {
   updateCollectionItem,
 } from "./client-repository-collection";
 
-type TimeEntryCollection = ClientRepositoryCollection<
-  TimeEntryRow,
-  TimeEntryCollectionInsert
+type TrackedTimeRecordCollection = ClientRepositoryCollection<
+  TrackedTimeRecordRow,
+  TrackedTimeRecordCollectionInsert
 >;
 
 const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
 
-export function createClientTimeEntryRepositoryLayer(
-  timeEntriesCollection: TimeEntryCollection
+export function createClientTrackedTimeRepositoryLayer(
+  timeEntriesCollection: TrackedTimeRecordCollection
 ) {
   const queryableTimeEntriesCollection = toQueryableCollection<
-    TimeEntryRow,
-    TimeEntryCollectionInsert
+    TrackedTimeRecordRow,
+    TrackedTimeRecordCollectionInsert
   >(timeEntriesCollection);
 
-  return Layer.succeed(TimeEntryRepository, {
+  return Layer.succeed(TrackedTimeRepository, {
     insertMany: (data) =>
       Effect.try({
         try: () => {
-          const timeEntries = data.map(toTimeEntryRecord);
+          const timeEntries = data.map(toTrackedTimeRecord);
           timeEntriesCollection.insert(
-            timeEntries.map(toTimeEntryCollectionInsert)
+            timeEntries.map(toTrackedTimeRecordCollectionInsert)
           );
 
           return timeEntries;
@@ -51,11 +51,10 @@ export function createClientTimeEntryRepositoryLayer(
     update: ({ workspaceId, id, update }) =>
       Effect.tryPromise({
         try: async () => {
-          updateCollectionItem<TimeEntryRow, TimeEntryCollectionInsert>(
-            timeEntriesCollection,
-            id,
-            update
-          );
+          updateCollectionItem<
+            TrackedTimeRecordRow,
+            TrackedTimeRecordCollectionInsert
+          >(timeEntriesCollection, id, update);
 
           const timeEntry = await queryOnce((q) =>
             q
@@ -68,7 +67,7 @@ export function createClientTimeEntryRepositoryLayer(
             throw new Error(`Time entry ${id} was not found after local write`);
           }
 
-          return toTimeEntryRecord(timeEntry);
+          return toTrackedTimeRecord(timeEntry);
         },
         catch: toRepositoryError,
       }),
@@ -90,10 +89,10 @@ export function createClientTimeEntryRepositoryLayer(
           );
 
           if (!timeEntry || timeEntry.workspaceId !== workspaceId) {
-            return Option.none<TimeEntryRecord>();
+            return Option.none<TrackedTimeRecord>();
           }
 
-          return Option.some(toTimeEntryRecord(timeEntry));
+          return Option.some(toTrackedTimeRecord(timeEntry));
         },
         catch: toRepositoryError,
       }),
@@ -117,10 +116,10 @@ export function createClientTimeEntryRepositoryLayer(
             timeEntry.workspaceId !== workspaceId ||
             Option.isSome(timeEntry.stoppedAt)
           ) {
-            return Option.none<TimeEntryRecord>();
+            return Option.none<TrackedTimeRecord>();
           }
 
-          return Option.some(toTimeEntryRecord(timeEntry));
+          return Option.some(toTrackedTimeRecord(timeEntry));
         },
         catch: toRepositoryError,
       }),
@@ -148,14 +147,13 @@ export function createClientTimeEntryRepositoryLayer(
             timerRecord.workspaceId !== workspaceId ||
             Option.isSome(timerRecord.stoppedAt)
           ) {
-            return Option.none<TimeEntryRecord>();
+            return Option.none<TrackedTimeRecord>();
           }
 
-          updateCollectionItem<TimeEntryRow, TimeEntryCollectionInsert>(
-            timeEntriesCollection,
-            timerRecord.id,
-            update
-          );
+          updateCollectionItem<
+            TrackedTimeRecordRow,
+            TrackedTimeRecordCollectionInsert
+          >(timeEntriesCollection, timerRecord.id, update);
 
           const updatedTimeEntry = await queryOnce((q) =>
             q
@@ -165,10 +163,10 @@ export function createClientTimeEntryRepositoryLayer(
           );
 
           if (!updatedTimeEntry) {
-            return Option.none<TimeEntryRecord>();
+            return Option.none<TrackedTimeRecord>();
           }
 
-          return Option.some(toTimeEntryRecord(updatedTimeEntry));
+          return Option.some(toTrackedTimeRecord(updatedTimeEntry));
         },
         catch: toRepositoryError,
       }),

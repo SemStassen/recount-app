@@ -5,10 +5,10 @@ import { Schema, Struct } from "effect";
 import {
   decodeWorkspaceProjectRow,
   decodeWorkspaceTaskRow,
-  decodeWorkspaceTimeEntryRow,
+  decodeWorkspaceTrackedTimeRecordRow,
   projectCollectionSchema,
   taskCollectionSchema,
-  timeEntryCollectionSchema,
+  trackedTimeRecordCollectionSchema,
 } from "../workspace/workspace-collection-codecs";
 import { defineShape } from "./define-shape";
 
@@ -57,8 +57,8 @@ export const workspaceShapes = {
   timeEntries: defineShape({
     name: "time-entries",
     routePath: "/time-entries",
-    schema: timeEntryCollectionSchema,
+    schema: trackedTimeRecordCollectionSchema,
     getKey: (timeEntry) => timeEntry.id,
-    decodeRow: decodeWorkspaceTimeEntryRow,
+    decodeRow: decodeWorkspaceTrackedTimeRecordRow,
   }),
 };

@@ -7,9 +7,9 @@ import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
 
-export const startTimerFlow = Effect.fn(
-  "flows.startTimerFlow"
-)(function* (request: typeof StartTimerCommand.Type) {
+export const startTimerFlow = Effect.fn("flows.startTimerFlow")(function* (
+  request: typeof StartTimerCommand.Type
+) {
   const appContext = yield* ApplicationContext;
   const timeModule = yield* TimeModule;
 

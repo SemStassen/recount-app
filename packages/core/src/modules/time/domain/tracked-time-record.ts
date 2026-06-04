@@ -9,8 +9,8 @@ import {
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
-export class TimeEntryRecord extends RecordModel.Class<TimeEntryRecord>(
-  "TimeEntryRecord"
+export class TrackedTimeRecord extends RecordModel.Class<TrackedTimeRecord>(
+  "TrackedTimeRecord"
 )(
   {
     id: RecordModel.Immutable(TimeEntryId),
@@ -23,11 +23,11 @@ export class TimeEntryRecord extends RecordModel.Class<TimeEntryRecord>(
     notes: RecordModel.MutableNullable(Schema.Json),
   },
   {
-    identifier: "TimeEntryRecord",
-    title: "Time Entry Record",
-    description: "The persistence record for a timer or time entry",
+    identifier: "TrackedTimeRecord",
+    title: "Tracked Time Record",
+    description: "The persistence record for tracked time",
   }
 ) {}
 
-export const isTimerRecord = (record: TimeEntryRecord) =>
+export const isTimerRecord = (record: TrackedTimeRecord) =>
   Option.isNone(record.stoppedAt);
