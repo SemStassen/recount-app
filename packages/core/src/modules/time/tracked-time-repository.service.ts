@@ -1,36 +1,53 @@
-import { Context } from "effect";
+import { Context, Schema } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
+import { WorkspaceId, WorkspaceMemberId } from "#shared/schemas/index";
 
-import { TrackedTimeRecord } from "./domain/tracked-time-record";
+import type { Timer, TimeEntry } from "./domain/time-entry.entity";
+
+export class CurrentTimerConflictError extends Schema.TaggedErrorClass<CurrentTimerConflictError>()(
+  "time/CurrentTimerConflictError",
+  {
+    workspaceId: WorkspaceId,
+    workspaceMemberId: WorkspaceMemberId,
+  }
+) {}
 
 export interface TrackedTimeRepositoryShape {
-  readonly insertMany: (
-    data: ReadonlyArray<typeof TrackedTimeRecord.insert.Type>
-  ) => Effect.Effect<ReadonlyArray<TrackedTimeRecord>, RepositoryError>;
-  readonly update: (params: {
-    workspaceId: TrackedTimeRecord["workspaceId"];
-    id: TrackedTimeRecord["id"];
-    update: typeof TrackedTimeRecord.update.Type;
-  }) => Effect.Effect<TrackedTimeRecord, RepositoryError>;
+  readonly insertTimeEntries: (
+    timeEntries: ReadonlyArray<TimeEntry>
+  ) => Effect.Effect<ReadonlyArray<TimeEntry>, RepositoryError>;
+  readonly updateTimeEntry: (params: {
+    workspaceId: TimeEntry["workspaceId"];
+    id: TimeEntry["id"];
+    data: typeof TimeEntry.jsonUpdate.Type;
+  }) => Effect.Effect<TimeEntry, RepositoryError>;
   readonly hardDeleteMany: (params: {
-    workspaceId: TrackedTimeRecord["workspaceId"];
-    ids: ReadonlyArray<TrackedTimeRecord["id"]>;
+    workspaceId: TimeEntry["workspaceId"];
+    ids: ReadonlyArray<TimeEntry["id"]>;
   }) => Effect.Effect<void, RepositoryError>;
-  readonly findById: (params: {
-    workspaceId: TrackedTimeRecord["workspaceId"];
-    id: TrackedTimeRecord["id"];
-  }) => Effect.Effect<Option.Option<TrackedTimeRecord>, RepositoryError>;
-  readonly findTimerRecordByWorkspaceMember: (params: {
-    workspaceId: TrackedTimeRecord["workspaceId"];
-    workspaceMemberId: TrackedTimeRecord["workspaceMemberId"];
-  }) => Effect.Effect<Option.Option<TrackedTimeRecord>, RepositoryError>;
-  readonly updateTimerRecordByWorkspaceMember: (params: {
-    workspaceId: TrackedTimeRecord["workspaceId"];
-    workspaceMemberId: TrackedTimeRecord["workspaceMemberId"];
-    update: typeof TrackedTimeRecord.update.Type;
-  }) => Effect.Effect<Option.Option<TrackedTimeRecord>, RepositoryError>;
+  readonly findTimeEntry: (params: {
+    workspaceId: TimeEntry["workspaceId"];
+    id: TimeEntry["id"];
+  }) => Effect.Effect<Option.Option<TimeEntry>, RepositoryError>;
+  readonly findCurrentTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+  }) => Effect.Effect<Option.Option<Timer>, RepositoryError>;
+  readonly insertCurrentTimer: (
+    timer: Timer
+  ) => Effect.Effect<Timer, CurrentTimerConflictError | RepositoryError>;
+  readonly updateCurrentTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+    data: typeof Timer.jsonUpdate.Type;
+  }) => Effect.Effect<Option.Option<Timer>, RepositoryError>;
+  readonly completeCurrentTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+    timeEntry: TimeEntry;
+  }) => Effect.Effect<Option.Option<TimeEntry>, RepositoryError>;
 }
 
 export class TrackedTimeRepository extends Context.Service<

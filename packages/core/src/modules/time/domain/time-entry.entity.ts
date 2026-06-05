@@ -4,13 +4,13 @@ import { EntityModel } from "#internal/effect/index";
 import {
   ProjectId,
   TaskId,
+  TimerId,
   TimeEntryId,
   WorkspaceId,
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
 const timeEntryBaseFields = {
-  id: EntityModel.CreateOptional(TimeEntryId),
   workspaceId: EntityModel.ReadOnly(WorkspaceId),
   workspaceMemberId: EntityModel.ReadOnly(WorkspaceMemberId),
   projectId: EntityModel.CreateUpdate(ProjectId),
@@ -21,6 +21,7 @@ const timeEntryBaseFields = {
 export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
   {
     ...timeEntryBaseFields,
+    id: EntityModel.CreateOptional(TimeEntryId),
     startedAt: EntityModel.Field({
       json: Schema.DateTimeUtcFromDate,
       jsonCreate: Schema.optionalKey(Schema.DateTimeUtcFromDate),
@@ -38,6 +39,7 @@ export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
 export class Timer extends EntityModel.Class<Timer>("Timer")(
   {
     ...timeEntryBaseFields,
+    id: EntityModel.CreateOptional(TimerId),
     startedAt: EntityModel.ReadOnly(Schema.DateTimeUtcFromDate),
   },
   {

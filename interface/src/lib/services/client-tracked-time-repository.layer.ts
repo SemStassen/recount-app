@@ -1,16 +1,23 @@
 import {
-  TrackedTimeRecord,
+  CurrentTimerConflictError,
+  timerFromTrackedTime,
+  timeEntryFromTrackedTime,
+  TrackedTime,
+  trackedTimeFromTimeEntry,
+  trackedTimeFromTimer,
   TrackedTimeRepository,
+  trackedTimeUpdateFromTimeEntryChanges,
+  trackedTimeUpdateFromTimerChanges,
 } from "@recount/core/modules/time";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { and, eq, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option } from "effect";
 
 import {
-  type TrackedTimeRecordCollectionInsert,
-  type TrackedTimeRecordRow,
-  toTrackedTimeRecordCollectionInsert,
-  toTrackedTimeRecord,
+  type TrackedTimeCollectionInsert,
+  type TrackedTimeRow,
+  toTrackedTimeCollectionInsert,
+  toTrackedTime,
 } from "~/db/workspace/workspace-collection-codecs";
 
 import {
@@ -20,41 +27,72 @@ import {
   updateCollectionItem,
 } from "./client-repository-collection";
 
-type TrackedTimeRecordCollection = ClientRepositoryCollection<
-  TrackedTimeRecordRow,
-  TrackedTimeRecordCollectionInsert
+type TrackedTimeCollection = ClientRepositoryCollection<
+  TrackedTimeRow,
+  TrackedTimeCollectionInsert
 >;
 
 const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
 
 export function createClientTrackedTimeRepositoryLayer(
-  timeEntriesCollection: TrackedTimeRecordCollection
+  timeEntriesCollection: TrackedTimeCollection
 ) {
   const queryableTimeEntriesCollection = toQueryableCollection<
-    TrackedTimeRecordRow,
-    TrackedTimeRecordCollectionInsert
+    TrackedTimeRow,
+    TrackedTimeCollectionInsert
   >(timeEntriesCollection);
 
+  const findCurrentTrackedTime = async ({
+    workspaceId,
+    workspaceMemberId,
+  }: {
+    workspaceId: TrackedTime["workspaceId"];
+    workspaceMemberId: TrackedTime["workspaceMemberId"];
+  }) => {
+    const timeEntry = await queryOnce((q) =>
+      q
+        .from({ timeEntry: queryableTimeEntriesCollection })
+        .where(({ timeEntry }) =>
+          and(
+            eq(timeEntry.workspaceMemberId, workspaceMemberId),
+            eq(timeEntry.stoppedAt, Option.none())
+          )
+        )
+        .findOne()
+    );
+
+    if (
+      !timeEntry ||
+      timeEntry.workspaceId !== workspaceId ||
+      Option.isSome(timeEntry.stoppedAt)
+    ) {
+      return Option.none<TrackedTime>();
+    }
+
+    return Option.some(toTrackedTime(timeEntry));
+  };
+
   return Layer.succeed(TrackedTimeRepository, {
-    insertMany: (data) =>
+    insertTimeEntries: (timeEntries) =>
       Effect.try({
         try: () => {
-          const timeEntries = data.map(toTrackedTimeRecord);
+          const trackedTimes = timeEntries.map(trackedTimeFromTimeEntry);
           timeEntriesCollection.insert(
-            timeEntries.map(toTrackedTimeRecordCollectionInsert)
+            trackedTimes.map(toTrackedTimeCollectionInsert)
           );
 
-          return timeEntries;
+          return trackedTimes.map(timeEntryFromTrackedTime);
         },
         catch: toRepositoryError,
       }),
-    update: ({ workspaceId, id, update }) =>
+    updateTimeEntry: ({ workspaceId, id, data }) =>
       Effect.tryPromise({
         try: async () => {
-          updateCollectionItem<
-            TrackedTimeRecordRow,
-            TrackedTimeRecordCollectionInsert
-          >(timeEntriesCollection, id, update);
+          updateCollectionItem<TrackedTimeRow, TrackedTimeCollectionInsert>(
+            timeEntriesCollection,
+            id,
+            trackedTimeUpdateFromTimeEntryChanges(data)
+          );
 
           const timeEntry = await queryOnce((q) =>
             q
@@ -63,11 +101,15 @@ export function createClientTrackedTimeRepositoryLayer(
               .findOne()
           );
 
-          if (!timeEntry || timeEntry.workspaceId !== workspaceId) {
+          if (
+            !timeEntry ||
+            timeEntry.workspaceId !== workspaceId ||
+            Option.isNone(timeEntry.stoppedAt)
+          ) {
             throw new Error(`Time entry ${id} was not found after local write`);
           }
 
-          return toTrackedTimeRecord(timeEntry);
+          return timeEntryFromTrackedTime(toTrackedTime(timeEntry));
         },
         catch: toRepositoryError,
       }),
@@ -78,7 +120,7 @@ export function createClientTrackedTimeRepositoryLayer(
         },
         catch: toRepositoryError,
       }),
-    findById: ({ workspaceId, id }) =>
+    findTimeEntry: ({ workspaceId, id }) =>
       Effect.tryPromise({
         try: async () => {
           const timeEntry = await queryOnce((q) =>
@@ -88,85 +130,120 @@ export function createClientTrackedTimeRepositoryLayer(
               .findOne()
           );
 
-          if (!timeEntry || timeEntry.workspaceId !== workspaceId) {
-            return Option.none<TrackedTimeRecord>();
-          }
-
-          return Option.some(toTrackedTimeRecord(timeEntry));
-        },
-        catch: toRepositoryError,
-      }),
-    findTimerRecordByWorkspaceMember: ({ workspaceId, workspaceMemberId }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const timeEntry = await queryOnce((q) =>
-            q
-              .from({ timeEntry: queryableTimeEntriesCollection })
-              .where(({ timeEntry }) =>
-                and(
-                  eq(timeEntry.workspaceMemberId, workspaceMemberId),
-                  eq(timeEntry.stoppedAt, Option.none())
-                )
-              )
-              .findOne()
-          );
-
           if (
             !timeEntry ||
             timeEntry.workspaceId !== workspaceId ||
-            Option.isSome(timeEntry.stoppedAt)
+            Option.isNone(timeEntry.stoppedAt)
           ) {
-            return Option.none<TrackedTimeRecord>();
+            return Option.none();
           }
 
-          return Option.some(toTrackedTimeRecord(timeEntry));
+          return Option.some(
+            timeEntryFromTrackedTime(toTrackedTime(timeEntry))
+          );
         },
         catch: toRepositoryError,
       }),
-    updateTimerRecordByWorkspaceMember: ({
-      workspaceId,
-      workspaceMemberId,
-      update,
-    }) =>
+    findCurrentTimer: (params) =>
+      Effect.tryPromise({
+        try: async () =>
+          Option.map(
+            await findCurrentTrackedTime(params),
+            timerFromTrackedTime
+          ),
+        catch: toRepositoryError,
+      }),
+    insertCurrentTimer: (timer) =>
       Effect.tryPromise({
         try: async () => {
-          const timerRecord = await queryOnce((q) =>
+          const currentTimer = await findCurrentTrackedTime({
+            workspaceId: timer.workspaceId,
+            workspaceMemberId: timer.workspaceMemberId,
+          });
+
+          if (Option.isSome(currentTimer)) {
+            throw new CurrentTimerConflictError({
+              workspaceId: timer.workspaceId,
+              workspaceMemberId: timer.workspaceMemberId,
+            });
+          }
+
+          const trackedTime = trackedTimeFromTimer(timer);
+          timeEntriesCollection.insert([
+            toTrackedTimeCollectionInsert(trackedTime),
+          ]);
+
+          return timerFromTrackedTime(trackedTime);
+        },
+        catch: (cause) =>
+          cause instanceof CurrentTimerConflictError
+            ? cause
+            : toRepositoryError(cause),
+      }),
+    updateCurrentTimer: ({ workspaceId, workspaceMemberId, data }) =>
+      Effect.tryPromise({
+        try: async () => {
+          const currentTimer = await findCurrentTrackedTime({
+            workspaceId,
+            workspaceMemberId,
+          });
+
+          if (Option.isNone(currentTimer)) {
+            return Option.none();
+          }
+
+          updateCollectionItem<TrackedTimeRow, TrackedTimeCollectionInsert>(
+            timeEntriesCollection,
+            currentTimer.value.id,
+            trackedTimeUpdateFromTimerChanges(data)
+          );
+
+          const updatedTimer = await findCurrentTrackedTime({
+            workspaceId,
+            workspaceMemberId,
+          });
+
+          return Option.map(updatedTimer, timerFromTrackedTime);
+        },
+        catch: toRepositoryError,
+      }),
+    completeCurrentTimer: ({ workspaceId, workspaceMemberId, timeEntry }) =>
+      Effect.tryPromise({
+        try: async () => {
+          const currentTimer = await findCurrentTrackedTime({
+            workspaceId,
+            workspaceMemberId,
+          });
+
+          if (Option.isNone(currentTimer)) {
+            return Option.none();
+          }
+
+          updateCollectionItem<TrackedTimeRow, TrackedTimeCollectionInsert>(
+            timeEntriesCollection,
+            currentTimer.value.id,
+            trackedTimeUpdateFromTimeEntryChanges({
+              stoppedAt: timeEntry.stoppedAt,
+            })
+          );
+
+          const completedTimeEntry = await queryOnce((q) =>
             q
               .from({ timeEntry: queryableTimeEntriesCollection })
-              .where(({ timeEntry }) =>
-                and(
-                  eq(timeEntry.workspaceMemberId, workspaceMemberId),
-                  eq(timeEntry.stoppedAt, Option.none())
-                )
-              )
+              .where(({ timeEntry }) => eq(timeEntry.id, currentTimer.value.id))
               .findOne()
           );
 
           if (
-            !timerRecord ||
-            timerRecord.workspaceId !== workspaceId ||
-            Option.isSome(timerRecord.stoppedAt)
+            !completedTimeEntry ||
+            Option.isNone(completedTimeEntry.stoppedAt)
           ) {
-            return Option.none<TrackedTimeRecord>();
+            return Option.none();
           }
 
-          updateCollectionItem<
-            TrackedTimeRecordRow,
-            TrackedTimeRecordCollectionInsert
-          >(timeEntriesCollection, timerRecord.id, update);
-
-          const updatedTimeEntry = await queryOnce((q) =>
-            q
-              .from({ timeEntry: queryableTimeEntriesCollection })
-              .where(({ timeEntry }) => eq(timeEntry.id, timerRecord.id))
-              .findOne()
+          return Option.some(
+            timeEntryFromTrackedTime(toTrackedTime(completedTimeEntry))
           );
-
-          if (!updatedTimeEntry) {
-            return Option.none<TrackedTimeRecord>();
-          }
-
-          return Option.some(toTrackedTimeRecord(updatedTimeEntry));
         },
         catch: toRepositoryError,
       }),

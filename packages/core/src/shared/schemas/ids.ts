@@ -46,10 +46,18 @@ export const TaskId = Schema.String.check(Schema.isUUID(7)).pipe(
   Schema.brand("TaskId")
 );
 
+export type TimerId = typeof TimerId.Type;
+export const TimerId = Schema.String.check(Schema.isUUID(7)).pipe(
+  Schema.brand("TimerId")
+);
+
 export type TimeEntryId = typeof TimeEntryId.Type;
 export const TimeEntryId = Schema.String.check(Schema.isUUID(7)).pipe(
   Schema.brand("TimeEntryId")
 );
+
+export type TrackedTimeId = typeof TrackedTimeId.Type;
+export const TrackedTimeId = Schema.Union([TimerId, TimeEntryId]);
 
 export type WorkspaceId = typeof WorkspaceId.Type;
 export const WorkspaceId = Schema.String.check(Schema.isUUID(7)).pipe(

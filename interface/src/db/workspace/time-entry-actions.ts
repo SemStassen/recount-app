@@ -1,12 +1,8 @@
-import {
-  Timer,
-  TimeEntry,
-  TimeModule,
-} from "@recount/core/modules/time";
+import { Timer, TimeEntry, TimeModule } from "@recount/core/modules/time";
 import { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { UserId, WorkspaceId } from "@recount/core/shared/schemas";
-import { TimeEntryId } from "@recount/core/shared/schemas";
+import { TimerId, TimeEntryId } from "@recount/core/shared/schemas";
 import { generateUUID } from "@recount/core/shared/utils";
 import { DateTime, Effect, Option } from "effect";
 
@@ -152,12 +148,9 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
     });
   };
 
-  const startTimer = (
-    payload: typeof Timer.jsonCreate.Type
-  ) => {
-    const id = Option.getOrElse(payload.id, () =>
-      TimeEntryId.make(generateUUID())
-    );
+  const startTimer = (payload: typeof Timer.jsonCreate.Type) => {
+    const id = Option.getOrElse(payload.id, () => TimerId.make(generateUUID()));
+    const startedAt = params.workspaceRuntime.runSync(DateTime.now);
     const data = {
       ...payload,
       id: Option.some(id),
@@ -178,6 +171,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
               data,
+              startedAt,
             });
           })
         );
@@ -194,6 +188,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
                 projectId: data.projectId,
                 taskId: data.taskId ?? Option.none(),
                 notes: data.notes ?? Option.none(),
+                startedAt,
               },
               {
                 headers: {
@@ -210,9 +205,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
     });
   };
 
-  const updateTimer = (
-    data: typeof Timer.jsonUpdate.Type
-  ) =>
+  const updateTimer = (data: typeof Timer.jsonUpdate.Type) =>
     runSyncedWorkspaceAction<Timer, Timer>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
@@ -250,8 +243,10 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
       }),
     });
 
-  const stopTimer = () =>
-    runSyncedWorkspaceAction<TimeEntryResult, TimeEntryResult>({
+  const stopTimer = () => {
+    const stoppedAt = params.workspaceRuntime.runSync(DateTime.now);
+
+    return runSyncedWorkspaceAction<TimeEntryResult, TimeEntryResult>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
           userId: params.userId,
@@ -265,6 +260,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
             return yield* timeModule.stopTimer({
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
+              stoppedAt,
             });
           })
         );
@@ -274,7 +270,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("Timer.Stop", undefined, {
+            return yield* client("Timer.Stop", { stoppedAt }, {
               headers: {
                 [WORKSPACE_ID_HEADER]: workspaceIdHeader,
               },
@@ -286,6 +282,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
         getIds: (remoteResult) => [remoteResult.id],
       }),
     });
+  };
 
   const updateTimeEntry = (
     id: TimeEntry["id"],

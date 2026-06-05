@@ -4,16 +4,14 @@ import { RecordModel } from "#internal/effect/index";
 import {
   ProjectId,
   TaskId,
-  TimeEntryId,
+  TrackedTimeId,
   WorkspaceId,
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
-export class TrackedTimeRecord extends RecordModel.Class<TrackedTimeRecord>(
-  "TrackedTimeRecord"
-)(
+export class TrackedTime extends RecordModel.Class<TrackedTime>("TrackedTime")(
   {
-    id: RecordModel.Immutable(TimeEntryId),
+    id: RecordModel.Immutable(TrackedTimeId),
     workspaceId: RecordModel.Immutable(WorkspaceId),
     workspaceMemberId: RecordModel.Immutable(WorkspaceMemberId),
     projectId: RecordModel.Mutable(ProjectId),
@@ -23,11 +21,11 @@ export class TrackedTimeRecord extends RecordModel.Class<TrackedTimeRecord>(
     notes: RecordModel.MutableNullable(Schema.Json),
   },
   {
-    identifier: "TrackedTimeRecord",
-    title: "Tracked Time Record",
-    description: "The persistence record for tracked time",
+    identifier: "TrackedTime",
+    title: "Tracked Time",
+    description: "Tracked time in either running or completed state",
   }
 ) {}
 
-export const isTimerRecord = (record: TrackedTimeRecord) =>
-  Option.isNone(record.stoppedAt);
+export const isRunningTrackedTime = (trackedTime: TrackedTime) =>
+  Option.isNone(trackedTime.stoppedAt);

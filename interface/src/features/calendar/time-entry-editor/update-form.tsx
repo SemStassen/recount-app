@@ -1,6 +1,6 @@
 import { useAtomSet } from "@effect/atom-react";
 import { TimeEntry } from "@recount/core/modules/time";
-import type { TimeEntryId } from "@recount/core/shared/schemas";
+import { TimeEntryId } from "@recount/core/shared/schemas";
 import { Form } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
@@ -52,7 +52,7 @@ export function UpdateTimeEntryForm({
   }
 
   const completedTimeEntry = TimeEntry.make({
-    id: timeEntry.id,
+    id: TimeEntryId.make(timeEntry.id),
     workspaceId: timeEntry.workspaceId,
     workspaceMemberId: timeEntry.workspaceMemberId,
     projectId: timeEntry.projectId,

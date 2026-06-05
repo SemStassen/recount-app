@@ -25,20 +25,28 @@ An optional project-scoped subdivision of work that time can be tracked against.
 _Avoid_: Todo, issue
 
 **Tracked Time**:
-A work interval recorded by a workspace member, either active as a timer or completed as a time entry.
+A work interval recorded by a workspace member, with one lifecycle identity that is either active as a timer or completed as a time entry.
 _Avoid_: Time record, time log, timesheet row
 
 **Time Entry**:
-A completed interval of work tracked by a workspace member against a project.
+Completed tracked time recorded by a workspace member against a project.
 _Avoid_: Timer, running time entry, timesheet row, log
 
 **Timer**:
-Active tracking for a workspace member's current work interval, backed by a time entry record that has not stopped.
+Active tracked time for a workspace member's current work interval.
 _Avoid_: Running Time Entry, Time Entry
+
+**Current Timer**:
+The active timer role for a workspace member in a workspace, if one exists.
+_Avoid_: Running Time Entry, Current Time Entry
 
 **Duration**:
 The elapsed length of a time entry.
 _Avoid_: Hours, billable time
+
+**Tracked Time Target**:
+The project and optional task that tracked time is recorded against.
+_Avoid_: Work item, target entity
 
 **Archived**:
 A lifecycle state that removes a project or task from active use until it is restored, without deleting historical time entries.
@@ -97,21 +105,32 @@ _Avoid_: Full replacement, overwrite, merge
 - A **Workspace** contains its own projects, tasks, timers, time entries, workspace members, invitations, and integration connections
 - A **Project** belongs to exactly one **Workspace**
 - A **Time Entry** is recorded against exactly one **Project**
+- **Tracked Time** is recorded against exactly one **Tracked Time Target**
 - A **Task** belongs to exactly one **Project**
 - A **Task** belongs to the same **Workspace** as its **Project**
 - **Tracked Time** is either a **Timer** or a **Time Entry**
 - A **Time Entry** may be recorded against one **Task**
 - A **Time Entry** with a **Task** is recorded against that task's **Project**
+- **Tracked Time** with a **Task** is recorded against that task's **Project**
+- A **Tracked Time Target** has exactly one **Project** and may have one **Task**
+- Updating **Tracked Time** validates the effective **Tracked Time Target** after applying the **Partial Update**
+- Changing the **Task** of **Tracked Time** does not implicitly change its **Project**
 - A **Time Entry** belongs to exactly one **Workspace Member**
-- A **Time Entry** stops after it starts
+- A **Time Entry** stops at or after it starts
 - A **Time Entry** has one **Duration**
 - A **Timer** does not have a final **Duration**
+- A **Timer** start time does not change after the timer starts
 - A **Workspace Member** can have at most one **Timer** in a **Workspace**
+- A **Current Timer** is the active **Timer** role for one **Workspace Member** in one **Workspace**
 - Starting a **Timer** fails if the **Workspace Member** already has one in the workspace
-- Stopping a **Timer** creates a **Time Entry**
+- Stopping a **Timer** completes the **Tracked Time** as a **Time Entry**
+- A **Time Entry** cannot become a **Timer** again
+- A **Time Entry** start time can be corrected after completion
 - **Time Entries** for the same **Workspace Member** may overlap
 - Overlapping **Time Entries** count as separate tracked durations, not unique elapsed clock time
 - An **Archived** project or task can still be referenced by historical **Time Entries**
+- An **Archived** project or task cannot be chosen when starting or updating a **Timer**, creating a **Time Entry**, or correcting a **Time Entry**
+- A **Timer** can stop after its project or task becomes **Archived**
 - A **Removed Workspace Member** can still be referenced by historical **Time Entries**
 - A **Workspace Invitation** belongs to exactly one **Workspace**
 - A **Workspace Invitation** can result in one **Workspace Member**

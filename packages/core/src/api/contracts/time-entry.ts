@@ -5,13 +5,18 @@ import { Timer, TimeEntry } from "#modules/time/index";
 export const CreateTimeEntryCommand = TimeEntry.jsonCreate;
 export const CreateTimeEntryResult = TimeEntry.json;
 
-export const StartTimerCommand = Timer.jsonCreate;
+export const StartTimerCommand = Schema.Struct({
+  ...Timer.jsonCreate.fields,
+  startedAt: Schema.optionalKey(Schema.DateTimeUtcFromDate),
+});
 export const StartTimerResult = Timer.json;
 
 export const UpdateTimerCommand = Timer.jsonUpdate;
 export const UpdateTimerResult = Timer.json;
 
-export const StopTimerCommand = Schema.Void;
+export const StopTimerCommand = Schema.Struct({
+  stoppedAt: Schema.optionalKey(Schema.DateTimeUtcFromDate),
+});
 export const StopTimerResult = TimeEntry.json;
 
 export const UpdateTimeEntryCommand = Schema.Struct({

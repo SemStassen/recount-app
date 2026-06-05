@@ -17,8 +17,8 @@ import type {
   ProjectRow,
   TaskCollectionInsert,
   TaskRow,
-  TrackedTimeRecordCollectionInsert,
-  TrackedTimeRecordRow,
+  TrackedTimeCollectionInsert,
+  TrackedTimeRow,
 } from "./workspace-collection-codecs";
 
 type WorkspaceProjectCollection = ClientRepositoryCollection<
@@ -31,9 +31,9 @@ type WorkspaceTaskCollection = ClientRepositoryCollection<
   TaskCollectionInsert
 >;
 
-type WorkspaceTrackedTimeRecordCollection = ClientRepositoryCollection<
-  TrackedTimeRecordRow,
-  TrackedTimeRecordCollectionInsert
+type WorkspaceTrackedTimeCollection = ClientRepositoryCollection<
+  TrackedTimeRow,
+  TrackedTimeCollectionInsert
 >;
 
 export type WorkspaceRuntime = ManagedRuntime.ManagedRuntime<
@@ -44,7 +44,7 @@ export type WorkspaceRuntime = ManagedRuntime.ManagedRuntime<
 export function createWorkspaceRuntime(params: {
   readonly allProjectsCollection: WorkspaceProjectCollection;
   readonly allTasksCollection: WorkspaceTaskCollection;
-  readonly timeEntriesCollection: WorkspaceTrackedTimeRecordCollection;
+  readonly timeEntriesCollection: WorkspaceTrackedTimeCollection;
 }): WorkspaceRuntime {
   const projectRepositoryLayer = createClientProjectRepositoryLayer(
     params.allProjectsCollection

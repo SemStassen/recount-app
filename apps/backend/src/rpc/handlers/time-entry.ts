@@ -66,8 +66,8 @@ export const TimeEntryRpcGroupLayer = TimeEntryRpcGroup.toLayer(
       })
     ),
     "Timer.Stop": Effect.fn("rpc.timer.stop")(
-      function* () {
-        const timeEntry = yield* stopTimerFlow();
+      function* (payload) {
+        const timeEntry = yield* stopTimerFlow(payload);
 
         return timeEntry;
       },

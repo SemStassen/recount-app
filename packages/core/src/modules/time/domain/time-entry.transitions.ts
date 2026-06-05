@@ -1,6 +1,6 @@
 import { DateTime, Option, Result } from "effect";
 
-import { TimeEntryId } from "#shared/schemas/index";
+import { TimerId, TimeEntryId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
 import { Timer, TimeEntry } from "./time-entry.entity";
@@ -41,28 +41,6 @@ export const createTimeEntry = (params: {
     return createdTimeEntry;
   });
 
-export const startTimer = (params: {
-  workspaceId: Timer["workspaceId"];
-  workspaceMemberId: Timer["workspaceMemberId"];
-  data: typeof Timer.jsonCreate.Type;
-  now: DateTime.Utc;
-}): Result.Result<Timer, never> =>
-  Result.succeed(
-    (() => {
-      const { id, ...data } = params.data;
-
-      return Timer.make({
-        taskId: Option.none(),
-        notes: Option.none(),
-        ...data,
-        id: Option.getOrElse(id, () => TimeEntryId.make(generateUUID())),
-        workspaceId: params.workspaceId,
-        workspaceMemberId: params.workspaceMemberId,
-        startedAt: params.now,
-      });
-    })()
-  );
-
 export const updateTimeEntry = (params: {
   timeEntry: TimeEntry;
   data: typeof TimeEntry.jsonUpdate.Type;
@@ -86,6 +64,28 @@ export const updateTimeEntry = (params: {
       changes: params.data,
     };
   });
+
+export const startTimer = (params: {
+  workspaceId: Timer["workspaceId"];
+  workspaceMemberId: Timer["workspaceMemberId"];
+  data: typeof Timer.jsonCreate.Type;
+  now: DateTime.Utc;
+}): Result.Result<Timer, never> =>
+  Result.succeed(
+    (() => {
+      const { id, ...data } = params.data;
+
+      return Timer.make({
+        id: Option.getOrElse(id, () => TimerId.make(generateUUID())),
+        taskId: Option.none(),
+        notes: Option.none(),
+        workspaceId: params.workspaceId,
+        workspaceMemberId: params.workspaceMemberId,
+        startedAt: params.now,
+        ...data,
+      });
+    })()
+  );
 
 export const updateTimer = (params: {
   timer: Timer;
@@ -115,6 +115,7 @@ export const stopTimer = (params: {
   Result.gen(function* () {
     const timeEntry = TimeEntry.make({
       ...params.timer,
+      id: TimeEntryId.make(params.timer.id),
       stoppedAt: params.now,
     });
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   ProjectId,
-  TimeEntryId,
+  TimerId,
   WorkspaceId,
   WorkspaceMemberId,
 } from "#shared/schemas/index";
@@ -20,7 +20,7 @@ import {
 const workspaceId = () => WorkspaceId.make(generateUUID());
 const workspaceMemberId = () => WorkspaceMemberId.make(generateUUID());
 const projectId = () => ProjectId.make(generateUUID());
-const timeEntryId = () => TimeEntryId.make(generateUUID());
+const timerId = () => TimerId.make(generateUUID());
 
 const startedAt = DateTime.makeUnsafe(new Date("2026-01-01T09:00:00.000Z"));
 const stoppedAt = DateTime.makeUnsafe(new Date("2026-01-01T10:00:00.000Z"));
@@ -28,7 +28,7 @@ const now = DateTime.makeUnsafe(new Date("2026-01-01T11:00:00.000Z"));
 
 const makeTimer = (overrides: Partial<Timer> = {}) =>
   Timer.make({
-    id: timeEntryId(),
+    id: timerId(),
     workspaceId: workspaceId(),
     workspaceMemberId: workspaceMemberId(),
     projectId: projectId(),

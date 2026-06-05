@@ -6,7 +6,6 @@ import { TimeEntryId } from "#shared/schemas/index";
 
 import type { Timer, TimeEntry } from "./domain/time-entry.entity";
 import type {
-  CannotUpdateTimerError,
   TimerNotFoundError,
   TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
@@ -36,13 +35,14 @@ interface TimeModuleShape {
     TimeEntry,
     | TimeEntryNotFoundError
     | TimeEntryStoppedAtBeforeStartedAtError
-    | CannotUpdateTimerError
     | RepositoryError
   >;
   readonly startTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];
-    data: typeof Timer.jsonCreate.Type;
+    data: typeof Timer.jsonCreate.Type & {
+      startedAt?: Timer["startedAt"];
+    };
   }) => Effect.Effect<Timer, TimerAlreadyRunningError | RepositoryError>;
   readonly updateTimer: (params: {
     workspaceId: Timer["workspaceId"];
@@ -52,6 +52,9 @@ interface TimeModuleShape {
   readonly stopTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];
+    data: {
+      stoppedAt?: TimeEntry["stoppedAt"];
+    };
   }) => Effect.Effect<
     TimeEntry,
     | TimerNotFoundError
