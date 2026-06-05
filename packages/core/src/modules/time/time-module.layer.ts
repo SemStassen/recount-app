@@ -1,16 +1,13 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
-import { Timer } from "./domain/time-entry.entity";
+import { Timer } from "./domain/tracked-time.entity";
 import {
   TimerNotFoundError,
   TimerAlreadyRunningError,
-} from "./domain/time-entry.errors";
-import * as timeEntryTransitions from "./domain/time-entry.transitions";
+} from "./domain/tracked-time.errors";
+import * as timeEntryTransitions from "./domain/tracked-time.transitions";
+import { TrackedTimeRepository } from "./persistence";
 import { TimeEntryNotFoundError, TimeModule } from "./time-module.service";
-import {
-  CurrentTimerConflictError,
-  TrackedTimeRepository,
-} from "./tracked-time-repository.service";
 
 export const TimeModuleLayer = Layer.effect(
   TimeModule,
@@ -28,7 +25,10 @@ export const TimeModuleLayer = Layer.effect(
         });
 
         if (Option.isSome(maybeCurrentTimer)) {
-          return yield* new TimerAlreadyRunningError();
+          return yield* new TimerAlreadyRunningError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
         }
       }
     );
@@ -65,6 +65,7 @@ export const TimeModuleLayer = Layer.effect(
                 onNone: () =>
                   Effect.fail(
                     new TimeEntryNotFoundError({
+                      workspaceId: params.workspaceId,
                       timeEntryId: params.id,
                     })
                   ),
@@ -103,15 +104,7 @@ export const TimeModuleLayer = Layer.effect(
           })
         );
 
-        return yield* trackedTimeRepo
-          .insertCurrentTimer(timer)
-          .pipe(
-            Effect.mapError((error) =>
-              error instanceof CurrentTimerConflictError
-                ? new TimerAlreadyRunningError()
-                : error
-            )
-          );
+        return yield* trackedTimeRepo.insertCurrentTimer(timer);
       }),
       updateTimer: Effect.fn("time.updateTimer")(function* (params) {
         const currentTimer = yield* trackedTimeRepo.findCurrentTimer({
@@ -120,7 +113,10 @@ export const TimeModuleLayer = Layer.effect(
         });
 
         if (Option.isNone(currentTimer)) {
-          return yield* new TimerNotFoundError();
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
         }
 
         const { changes } = yield* Effect.fromResult(
@@ -137,7 +133,10 @@ export const TimeModuleLayer = Layer.effect(
         });
 
         if (Option.isNone(persistedTimer)) {
-          return yield* new TimerNotFoundError();
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
         }
 
         return persistedTimer.value;
@@ -150,7 +149,10 @@ export const TimeModuleLayer = Layer.effect(
         });
 
         if (Option.isNone(currentTimer)) {
-          return yield* new TimerNotFoundError();
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
         }
 
         const { entity } = yield* Effect.fromResult(
@@ -167,7 +169,10 @@ export const TimeModuleLayer = Layer.effect(
         });
 
         if (Option.isNone(persistedTimeEntry)) {
-          return yield* new TimerNotFoundError();
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
         }
 
         return persistedTimeEntry.value;

@@ -9,13 +9,13 @@ import {
 } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
-import { Timer } from "./time-entry.entity";
+import { Timer } from "../domain/tracked-time.entity";
 import {
   createTimeEntry,
   startTimer,
   stopTimer,
   updateTimer,
-} from "./time-entry.transitions";
+} from "../domain/tracked-time.transitions";
 
 const workspaceId = () => WorkspaceId.make(generateUUID());
 const workspaceMemberId = () => WorkspaceMemberId.make(generateUUID());

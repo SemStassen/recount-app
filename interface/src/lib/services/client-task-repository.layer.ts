@@ -5,7 +5,7 @@ import { Effect, Layer, Option } from "effect";
 
 import {
   type TaskCollectionInsert,
-  type TaskRow,
+  type TaskCollectionRow,
   toTaskCollectionInsert,
   toTaskEntity,
 } from "~/db/workspace/workspace-collection-codecs";
@@ -16,7 +16,10 @@ import {
   updateCollectionItem,
 } from "./client-repository-collection";
 
-type TaskCollection = ClientRepositoryCollection<TaskRow, TaskCollectionInsert>;
+type TaskCollection = ClientRepositoryCollection<
+  TaskCollectionRow,
+  TaskCollectionInsert
+>;
 
 const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
 
@@ -24,7 +27,7 @@ export function createClientTaskRepositoryLayer(
   tasksCollection: TaskCollection
 ) {
   const queryableTasksCollection = toQueryableCollection<
-    TaskRow,
+    TaskCollectionRow,
     TaskCollectionInsert
   >(tasksCollection);
 
@@ -42,7 +45,7 @@ export function createClientTaskRepositoryLayer(
     update: ({ id, update }) =>
       Effect.tryPromise({
         try: async () => {
-          updateCollectionItem<TaskRow, TaskCollectionInsert>(
+          updateCollectionItem<TaskCollectionRow, TaskCollectionInsert>(
             tasksCollection,
             id,
             update

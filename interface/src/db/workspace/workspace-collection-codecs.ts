@@ -1,5 +1,5 @@
 import { Project, Task } from "@recount/core/modules/project";
-import { TrackedTime } from "@recount/core/modules/time";
+import { TrackedTimeRow } from "@recount/core/modules/time/persistence";
 import { DateTime, Option, Schema, Struct } from "effect";
 
 type StandardSchemaOutput<TSchema extends { readonly "~standard": object }> =
@@ -44,12 +44,16 @@ export const projectCollectionSchema = Schema.toStandardSchemaV1(
 export const taskCollectionSchema = Schema.toStandardSchemaV1(Task.json);
 
 export const trackedTimeCollectionSchema = Schema.toStandardSchemaV1(
-  TrackedTime.select
+  TrackedTimeRow.select
 );
 
-export type ProjectRow = StandardSchemaOutput<typeof projectCollectionSchema>;
-export type TaskRow = StandardSchemaOutput<typeof taskCollectionSchema>;
-export type TrackedTimeRow = StandardSchemaOutput<
+export type ProjectCollectionRow = StandardSchemaOutput<
+  typeof projectCollectionSchema
+>;
+export type TaskCollectionRow = StandardSchemaOutput<
+  typeof taskCollectionSchema
+>;
+export type TrackedTimeCollectionRow = StandardSchemaOutput<
   typeof trackedTimeCollectionSchema
 >;
 
@@ -78,7 +82,7 @@ export const decodeWorkspaceTaskRow = Schema.decodeUnknownSync(
 );
 
 export const decodeWorkspaceTrackedTimeRow = Schema.decodeUnknownSync(
-  TrackedTime.select
+  TrackedTimeRow.select
     .mapFields(
       Struct.evolve({
         startedAt: () => Schema.DateTimeUtcFromString,
@@ -88,7 +92,7 @@ export const decodeWorkspaceTrackedTimeRow = Schema.decodeUnknownSync(
     .mapFields(optionalFields)
 );
 
-export function toProjectEntity(project: ProjectRow): Project {
+export function toProjectEntity(project: ProjectCollectionRow): Project {
   return Project.make({
     id: project.id,
     workspaceId: project.workspaceId,
@@ -100,7 +104,7 @@ export function toProjectEntity(project: ProjectRow): Project {
   });
 }
 
-export function toTaskEntity(task: TaskRow): Task {
+export function toTaskEntity(task: TaskCollectionRow): Task {
   return Task.make({
     id: task.id,
     workspaceId: task.workspaceId,
@@ -110,8 +114,10 @@ export function toTaskEntity(task: TaskRow): Task {
   });
 }
 
-export function toTrackedTime(timeEntry: TrackedTimeRow): TrackedTime {
-  return TrackedTime.make({
+export function toTrackedTimeRow(
+  timeEntry: TrackedTimeCollectionRow
+): TrackedTimeRow {
+  return TrackedTimeRow.make({
     id: timeEntry.id,
     workspaceId: timeEntry.workspaceId,
     workspaceMemberId: timeEntry.workspaceMemberId,
@@ -139,7 +145,7 @@ const optionDateTimeToDate = (value: Option.Option<DateTime.Utc>) =>
   Option.map(value, DateTime.toDateUtc).pipe(Option.getOrNull);
 
 export function toTrackedTimeCollectionInsert(
-  timeEntry: TrackedTime
+  timeEntry: TrackedTimeRow
 ): TrackedTimeCollectionInsert {
   return {
     id: timeEntry.id,

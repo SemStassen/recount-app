@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Schema } from "effect";
 
 import { RecordModel } from "#internal/effect/index";
 import {
@@ -9,7 +9,9 @@ import {
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
-export class TrackedTime extends RecordModel.Class<TrackedTime>("TrackedTime")(
+export class TrackedTimeRow extends RecordModel.Class<TrackedTimeRow>(
+  "TrackedTimeRow"
+)(
   {
     id: RecordModel.Immutable(TrackedTimeId),
     workspaceId: RecordModel.Immutable(WorkspaceId),
@@ -21,11 +23,8 @@ export class TrackedTime extends RecordModel.Class<TrackedTime>("TrackedTime")(
     notes: RecordModel.MutableNullable(Schema.Json),
   },
   {
-    identifier: "TrackedTime",
-    title: "Tracked Time",
-    description: "Tracked time in either running or completed state",
+    identifier: "TrackedTimeRow",
+    title: "Tracked Time Row",
+    description: "Storage row for tracked time persistence",
   }
 ) {}
-
-export const isRunningTrackedTime = (trackedTime: TrackedTime) =>
-  Option.isNone(trackedTime.stoppedAt);

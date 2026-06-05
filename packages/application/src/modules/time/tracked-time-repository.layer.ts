@@ -1,16 +1,17 @@
 import {
-  CurrentTimerConflictError,
   Timer,
-  timerFromTrackedTime,
   TimeEntry,
-  timeEntryFromTrackedTime,
-  TrackedTime,
-  trackedTimeFromTimeEntry,
-  trackedTimeFromTimer,
-  TrackedTimeRepository,
-  trackedTimeUpdateFromTimeEntryChanges,
-  trackedTimeUpdateFromTimerChanges,
+  TimerAlreadyRunningError,
 } from "@recount/core/modules/time";
+import {
+  timerFromTrackedTimeRow,
+  timeEntryFromTrackedTimeRow,
+  TrackedTimeRepository,
+  TrackedTimeRow,
+  trackedTimeRowFromTimeEntry,
+  trackedTimeRowFromTimer,
+  trackedTimeUpdateFromTimeEntryChanges,
+} from "@recount/core/modules/time/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
@@ -32,8 +33,8 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
     const db = yield* Database;
 
     const insertManyTimeEntries = SqlSchema.findAll({
-      Request: Schema.Array(TrackedTime.insert),
-      Result: TrackedTime,
+      Request: Schema.Array(TrackedTimeRow.insert),
+      Result: TrackedTimeRow,
       execute: (data) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -46,11 +47,11 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
 
     const updateTimeEntry = SqlSchema.findOne({
       Request: Schema.Struct({
-        workspaceId: TrackedTime.fields.workspaceId,
-        id: TrackedTime.fields.id,
-        update: TrackedTime.update,
+        workspaceId: TrackedTimeRow.fields.workspaceId,
+        id: TrackedTimeRow.fields.id,
+        update: TrackedTimeRow.update,
       }),
-      Result: TrackedTime,
+      Result: TrackedTimeRow,
       execute: ({ workspaceId, id, update }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -69,8 +70,8 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
     });
 
     const insertCurrentTimer = SqlSchema.findOne({
-      Request: TrackedTime.insert,
-      Result: TrackedTime,
+      Request: TrackedTimeRow.insert,
+      Result: TrackedTimeRow,
       execute: (timerRecord) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -83,11 +84,11 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
 
     const updateCurrentTimer = SqlSchema.findOneOption({
       Request: Schema.Struct({
-        workspaceId: TrackedTime.fields.workspaceId,
-        workspaceMemberId: TrackedTime.fields.workspaceMemberId,
-        update: TrackedTime.update,
+        workspaceId: TrackedTimeRow.fields.workspaceId,
+        workspaceMemberId: TrackedTimeRow.fields.workspaceMemberId,
+        update: TrackedTimeRow.update,
       }),
-      Result: TrackedTime,
+      Result: TrackedTimeRow,
       execute: ({ workspaceId, workspaceMemberId, update }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -110,11 +111,11 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
 
     const completeCurrentTimer = SqlSchema.findOneOption({
       Request: Schema.Struct({
-        workspaceId: TrackedTime.fields.workspaceId,
-        workspaceMemberId: TrackedTime.fields.workspaceMemberId,
-        update: TrackedTime.update,
+        workspaceId: TrackedTimeRow.fields.workspaceId,
+        workspaceMemberId: TrackedTimeRow.fields.workspaceMemberId,
+        update: TrackedTimeRow.update,
       }),
-      Result: TrackedTime,
+      Result: TrackedTimeRow,
       execute: ({ workspaceId, workspaceMemberId, update }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -160,7 +161,7 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
         workspaceId: TimeEntry.fields.workspaceId,
         id: TimeEntry.fields.id,
       }),
-      Result: TrackedTime,
+      Result: TrackedTimeRow,
       execute: ({ workspaceId, id }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -182,7 +183,7 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
         workspaceId: Timer.fields.workspaceId,
         workspaceMemberId: Timer.fields.workspaceMemberId,
       }),
-      Result: TrackedTime,
+      Result: TrackedTimeRow,
       execute: ({ workspaceId, workspaceMemberId }) =>
         db.drizzle((drizzle) =>
           drizzle
@@ -204,9 +205,11 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
 
     return {
       insertTimeEntries: (timeEntries) =>
-        insertManyTimeEntries(timeEntries.map(trackedTimeFromTimeEntry)).pipe(
-          Effect.map((trackedTimes) =>
-            trackedTimes.map(timeEntryFromTrackedTime)
+        insertManyTimeEntries(
+          timeEntries.map(trackedTimeRowFromTimeEntry)
+        ).pipe(
+          Effect.map((trackedTimeRows) =>
+            trackedTimeRows.map(timeEntryFromTrackedTimeRow)
           ),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
@@ -216,7 +219,7 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
           workspaceId: params.workspaceId,
           update: trackedTimeUpdateFromTimeEntryChanges(params.data),
         }).pipe(
-          Effect.map(timeEntryFromTrackedTime),
+          Effect.map(timeEntryFromTrackedTimeRow),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       hardDeleteMany: (params) =>
@@ -225,20 +228,20 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
         ),
       findTimeEntry: (params) =>
         findTimeEntryById(params).pipe(
-          Effect.map(Option.map(timeEntryFromTrackedTime)),
+          Effect.map(Option.map(timeEntryFromTrackedTimeRow)),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       findCurrentTimer: (params) =>
         findCurrentTimer(params).pipe(
-          Effect.map(Option.map(timerFromTrackedTime)),
+          Effect.map(Option.map(timerFromTrackedTimeRow)),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       insertCurrentTimer: (timer) =>
-        insertCurrentTimer(trackedTimeFromTimer(timer)).pipe(
-          Effect.map(timerFromTrackedTime),
+        insertCurrentTimer(trackedTimeRowFromTimer(timer)).pipe(
+          Effect.map(timerFromTrackedTimeRow),
           Effect.mapError((e) =>
             isCurrentTimerConflict(e)
-              ? new CurrentTimerConflictError({
+              ? new TimerAlreadyRunningError({
                   workspaceId: timer.workspaceId,
                   workspaceMemberId: timer.workspaceMemberId,
                 })
@@ -249,9 +252,9 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
         updateCurrentTimer({
           workspaceId: params.workspaceId,
           workspaceMemberId: params.workspaceMemberId,
-          update: trackedTimeUpdateFromTimerChanges(params.data),
+          update: params.data,
         }).pipe(
-          Effect.map(Option.map(timerFromTrackedTime)),
+          Effect.map(Option.map(timerFromTrackedTimeRow)),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       completeCurrentTimer: (params) =>
@@ -262,7 +265,7 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
             stoppedAt: params.timeEntry.stoppedAt,
           }),
         }).pipe(
-          Effect.map(Option.map(timeEntryFromTrackedTime)),
+          Effect.map(Option.map(timeEntryFromTrackedTimeRow)),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
     };

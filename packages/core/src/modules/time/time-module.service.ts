@@ -2,18 +2,19 @@ import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
-import { TimeEntryId } from "#shared/schemas/index";
+import { TimeEntryId, WorkspaceId } from "#shared/schemas/index";
 
-import type { Timer, TimeEntry } from "./domain/time-entry.entity";
+import type { Timer, TimeEntry } from "./domain/tracked-time.entity";
 import type {
   TimerNotFoundError,
   TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
-} from "./domain/time-entry.errors";
+} from "./domain/tracked-time.errors";
 
 export class TimeEntryNotFoundError extends Schema.TaggedErrorClass<TimeEntryNotFoundError>()(
   "time/TimeEntryNotFoundError",
   {
+    workspaceId: WorkspaceId,
     timeEntryId: TimeEntryId,
   }
 ) {}

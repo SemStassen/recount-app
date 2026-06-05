@@ -14,25 +14,25 @@ import { createClientTrackedTimeRepositoryLayer } from "~/lib/services/client-tr
 
 import type {
   ProjectCollectionInsert,
-  ProjectRow,
+  ProjectCollectionRow,
   TaskCollectionInsert,
-  TaskRow,
+  TaskCollectionRow,
   TrackedTimeCollectionInsert,
-  TrackedTimeRow,
+  TrackedTimeCollectionRow,
 } from "./workspace-collection-codecs";
 
 type WorkspaceProjectCollection = ClientRepositoryCollection<
-  ProjectRow,
+  ProjectCollectionRow,
   ProjectCollectionInsert
 >;
 
 type WorkspaceTaskCollection = ClientRepositoryCollection<
-  TaskRow,
+  TaskCollectionRow,
   TaskCollectionInsert
 >;
 
 type WorkspaceTrackedTimeCollection = ClientRepositoryCollection<
-  TrackedTimeRow,
+  TrackedTimeCollectionRow,
   TrackedTimeCollectionInsert
 >;
 

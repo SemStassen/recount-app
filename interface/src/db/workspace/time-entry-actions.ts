@@ -170,8 +170,10 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
             return yield* timeModule.startTimer({
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
-              data,
-              startedAt,
+              data: {
+                ...data,
+                startedAt,
+              },
             });
           })
         );
@@ -260,7 +262,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
             return yield* timeModule.stopTimer({
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
-              stoppedAt,
+              data: { stoppedAt },
             });
           })
         );
@@ -270,11 +272,15 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("Timer.Stop", { stoppedAt }, {
-              headers: {
-                [WORKSPACE_ID_HEADER]: workspaceIdHeader,
-              },
-            });
+            return yield* client(
+              "Timer.Stop",
+              { stoppedAt },
+              {
+                headers: {
+                  [WORKSPACE_ID_HEADER]: workspaceIdHeader,
+                },
+              }
+            );
           })
         ),
       remoteSync: updatedRecords({

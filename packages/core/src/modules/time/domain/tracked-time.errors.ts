@@ -1,5 +1,7 @@
 import { Schema } from "effect";
 
+import { WorkspaceId, WorkspaceMemberId } from "#shared/schemas/index";
+
 export class TimeEntryStoppedAtBeforeStartedAtError extends Schema.TaggedErrorClass<TimeEntryStoppedAtBeforeStartedAtError>()(
   "time/TimeEntryStoppedAtBeforeStartedAtError",
   {}
@@ -7,15 +9,16 @@ export class TimeEntryStoppedAtBeforeStartedAtError extends Schema.TaggedErrorCl
 
 export class TimerAlreadyRunningError extends Schema.TaggedErrorClass<TimerAlreadyRunningError>()(
   "time/TimerAlreadyRunningError",
-  {}
+  {
+    workspaceId: WorkspaceId,
+    workspaceMemberId: WorkspaceMemberId,
+  }
 ) {}
 
 export class TimerNotFoundError extends Schema.TaggedErrorClass<TimerNotFoundError>()(
   "time/TimerNotFoundError",
-  {}
-) {}
-
-export class CannotUpdateTimerError extends Schema.TaggedErrorClass<CannotUpdateTimerError>()(
-  "time/CannotUpdateTimerError",
-  {}
+  {
+    workspaceId: WorkspaceId,
+    workspaceMemberId: WorkspaceMemberId,
+  }
 ) {}

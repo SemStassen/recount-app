@@ -1,18 +1,10 @@
-import { Context, Schema } from "effect";
+import { Context } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
-import { WorkspaceId, WorkspaceMemberId } from "#shared/schemas/index";
 
-import type { Timer, TimeEntry } from "./domain/time-entry.entity";
-
-export class CurrentTimerConflictError extends Schema.TaggedErrorClass<CurrentTimerConflictError>()(
-  "time/CurrentTimerConflictError",
-  {
-    workspaceId: WorkspaceId,
-    workspaceMemberId: WorkspaceMemberId,
-  }
-) {}
+import type { Timer, TimeEntry } from "../domain/tracked-time.entity";
+import type { TimerAlreadyRunningError } from "../domain/tracked-time.errors";
 
 export interface TrackedTimeRepositoryShape {
   readonly insertTimeEntries: (
@@ -37,7 +29,7 @@ export interface TrackedTimeRepositoryShape {
   }) => Effect.Effect<Option.Option<Timer>, RepositoryError>;
   readonly insertCurrentTimer: (
     timer: Timer
-  ) => Effect.Effect<Timer, CurrentTimerConflictError | RepositoryError>;
+  ) => Effect.Effect<Timer, TimerAlreadyRunningError | RepositoryError>;
   readonly updateCurrentTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];

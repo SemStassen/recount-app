@@ -5,7 +5,7 @@ import { Effect, Layer, Option } from "effect";
 
 import {
   type ProjectCollectionInsert,
-  type ProjectRow,
+  type ProjectCollectionRow,
   toProjectEntity,
 } from "~/db/workspace/workspace-collection-codecs";
 
@@ -16,7 +16,7 @@ import {
 } from "./client-repository-collection";
 
 type ProjectCollection = ClientRepositoryCollection<
-  ProjectRow,
+  ProjectCollectionRow,
   ProjectCollectionInsert
 >;
 
@@ -26,7 +26,7 @@ export function createClientProjectRepositoryLayer(
   projectsCollection: ProjectCollection
 ) {
   const queryableProjectsCollection = toQueryableCollection<
-    ProjectRow,
+    ProjectCollectionRow,
     ProjectCollectionInsert
   >(projectsCollection);
 
@@ -44,7 +44,7 @@ export function createClientProjectRepositoryLayer(
     update: ({ id, update }) =>
       Effect.tryPromise({
         try: async () => {
-          updateCollectionItem<ProjectRow, ProjectCollectionInsert>(
+          updateCollectionItem<ProjectCollectionRow, ProjectCollectionInsert>(
             projectsCollection,
             id,
             update

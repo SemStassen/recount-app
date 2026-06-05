@@ -3,8 +3,8 @@ import { DateTime, Option, Result } from "effect";
 import { TimerId, TimeEntryId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
-import { Timer, TimeEntry } from "./time-entry.entity";
-import { TimeEntryStoppedAtBeforeStartedAtError } from "./time-entry.errors";
+import { Timer, TimeEntry } from "./tracked-time.entity";
+import { TimeEntryStoppedAtBeforeStartedAtError } from "./tracked-time.errors";
 
 const ensureValidDateRange = (
   startedAt: DateTime.Utc,

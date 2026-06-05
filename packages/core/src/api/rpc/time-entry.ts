@@ -17,7 +17,6 @@ import {
   UpdateTimeEntryResult,
 } from "#api/contracts/index";
 import {
-  CannotUpdateTimerError,
   TimerNotFoundError,
   TimerAlreadyRunningError,
   TimeEntryNotFoundError,
@@ -46,7 +45,6 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     error: Schema.Union([
       AuthorizationError,
       TimeEntryNotFoundError,
-      CannotUpdateTimerError,
       TimeEntryStoppedAtBeforeStartedAtError,
       HttpApiError.InternalServerError,
     ]),
