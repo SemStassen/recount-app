@@ -1,10 +1,40 @@
 import { Schema } from "effect";
 
-import { WorkspaceId, WorkspaceMemberId } from "#shared/schemas/index";
+import {
+  ProjectId,
+  TaskId,
+  WorkspaceId,
+  WorkspaceMemberId,
+} from "#shared/schemas/index";
 
 export class TimeEntryStoppedAtBeforeStartedAtError extends Schema.TaggedErrorClass<TimeEntryStoppedAtBeforeStartedAtError>()(
   "time/TimeEntryStoppedAtBeforeStartedAtError",
   {}
+) {}
+
+export class TargetProjectNotFoundError extends Schema.TaggedErrorClass<TargetProjectNotFoundError>()(
+  "time/TargetProjectNotFoundError",
+  {
+    workspaceId: WorkspaceId,
+    projectId: ProjectId,
+  }
+) {}
+
+export class TargetTaskNotFoundError extends Schema.TaggedErrorClass<TargetTaskNotFoundError>()(
+  "time/TargetTaskNotFoundError",
+  {
+    workspaceId: WorkspaceId,
+    taskId: TaskId,
+  }
+) {}
+
+export class TargetTaskProjectMismatchError extends Schema.TaggedErrorClass<TargetTaskProjectMismatchError>()(
+  "time/TargetTaskProjectMismatchError",
+  {
+    workspaceId: WorkspaceId,
+    projectId: ProjectId,
+    taskId: TaskId,
+  }
 ) {}
 
 export class TimerAlreadyRunningError extends Schema.TaggedErrorClass<TimerAlreadyRunningError>()(

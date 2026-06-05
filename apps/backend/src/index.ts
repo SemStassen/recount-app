@@ -17,7 +17,10 @@ import {
   ProjectRepositoryLayer,
   TaskRepositoryLayer,
 } from "@recount/application/modules/project";
-import { TrackedTimeRepositoryLayer } from "@recount/application/modules/time";
+import {
+  TrackedTimeRepositoryLayer,
+  TrackedTimeTargetValidatorLayer,
+} from "@recount/application/modules/time";
 import { WorkspaceRepositoryLayer } from "@recount/application/modules/workspace";
 import { WorkspaceInvitationRepositoryLayer } from "@recount/application/modules/workspace-invitation";
 import { WorkspaceMemberRepositoryLayer } from "@recount/application/modules/workspace-member";
@@ -62,6 +65,7 @@ const PersistenceServicesLayer = Layer.mergeAll(
   SessionRepositoryLayer,
   TaskRepositoryLayer,
   TrackedTimeRepositoryLayer,
+  TrackedTimeTargetValidatorLayer,
   UserSettingsRepositoryLayer,
   UserRepositoryLayer,
   WorkspaceIntegrationConnectionRepositoryLayer,

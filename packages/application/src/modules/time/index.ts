@@ -5,3 +5,4 @@ export { stopTimerFlow } from "./flows/stop-timer.flow";
 export { updateTimerFlow } from "./flows/update-timer.flow";
 export { updateTimeEntryFlow } from "./flows/update-time-entry.flow";
 export { TrackedTimeRepositoryLayer } from "./tracked-time-repository.layer";
+export { TrackedTimeTargetValidatorLayer } from "./tracked-time-target-validator.layer";

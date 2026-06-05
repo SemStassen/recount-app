@@ -11,6 +11,7 @@ import { createClientProjectRepositoryLayer } from "~/lib/services/client-projec
 import type { ClientRepositoryCollection } from "~/lib/services/client-repository-collection";
 import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
 import { createClientTrackedTimeRepositoryLayer } from "~/lib/services/client-tracked-time-repository.layer";
+import { createClientTrackedTimeTargetValidatorLayer } from "~/lib/services/client-tracked-time-target-validator.layer";
 
 import type {
   ProjectCollectionInsert,
@@ -55,6 +56,11 @@ export function createWorkspaceRuntime(params: {
   const trackedTimeRepositoryLayer = createClientTrackedTimeRepositoryLayer(
     params.timeEntriesCollection
   );
+  const trackedTimeTargetValidatorLayer =
+    createClientTrackedTimeTargetValidatorLayer({
+      projectsCollection: params.allProjectsCollection,
+      tasksCollection: params.allTasksCollection,
+    });
 
   return ManagedRuntime.make(
     Layer.mergeAll(
@@ -63,7 +69,10 @@ export function createWorkspaceRuntime(params: {
         Layer.provide(projectRepositoryLayer),
         Layer.provide(taskRepositoryLayer)
       ),
-      TimeModuleLayer.pipe(Layer.provide(trackedTimeRepositoryLayer))
+      TimeModuleLayer.pipe(
+        Layer.provide(trackedTimeRepositoryLayer),
+        Layer.provide(trackedTimeTargetValidatorLayer)
+      )
     )
   );
 }

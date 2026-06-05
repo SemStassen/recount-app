@@ -7,12 +7,14 @@ import {
 } from "./domain/tracked-time.errors";
 import * as timeEntryTransitions from "./domain/tracked-time.transitions";
 import { TrackedTimeRepository } from "./persistence";
+import { TrackedTimeTargetValidator } from "./ports";
 import { TimeEntryNotFoundError, TimeModule } from "./time-module.service";
 
 export const TimeModuleLayer = Layer.effect(
   TimeModule,
   Effect.gen(function* () {
     const trackedTimeRepo = yield* TrackedTimeRepository;
+    const trackedTimeTargetValidator = yield* TrackedTimeTargetValidator;
 
     const ensureNoCurrentTimer = Effect.fn("time.ensureNoCurrentTimer")(
       function* (params: {
@@ -53,6 +55,14 @@ export const TimeModuleLayer = Layer.effect(
             )
           );
 
+          yield* Effect.forEach(timeEntries, (timeEntry) =>
+            trackedTimeTargetValidator.validate({
+              workspaceId: timeEntry.workspaceId,
+              projectId: timeEntry.projectId,
+              taskId: timeEntry.taskId,
+            })
+          );
+
           return yield* trackedTimeRepo.insertTimeEntries(timeEntries);
         }
       ),
@@ -74,12 +84,18 @@ export const TimeModuleLayer = Layer.effect(
             )
           );
 
-        const { changes } = yield* Effect.fromResult(
+        const { entity, changes } = yield* Effect.fromResult(
           timeEntryTransitions.updateTimeEntry({
             timeEntry,
             data: params.data,
           })
         );
+
+        yield* trackedTimeTargetValidator.validate({
+          workspaceId: entity.workspaceId,
+          projectId: entity.projectId,
+          taskId: entity.taskId,
+        });
 
         return yield* trackedTimeRepo.updateTimeEntry({
           id: timeEntry.id,
@@ -104,6 +120,12 @@ export const TimeModuleLayer = Layer.effect(
           })
         );
 
+        yield* trackedTimeTargetValidator.validate({
+          workspaceId: timer.workspaceId,
+          projectId: timer.projectId,
+          taskId: timer.taskId,
+        });
+
         return yield* trackedTimeRepo.insertCurrentTimer(timer);
       }),
       updateTimer: Effect.fn("time.updateTimer")(function* (params) {
@@ -119,12 +141,18 @@ export const TimeModuleLayer = Layer.effect(
           });
         }
 
-        const { changes } = yield* Effect.fromResult(
+        const { entity, changes } = yield* Effect.fromResult(
           timeEntryTransitions.updateTimer({
             timer: currentTimer.value,
             data: params.data,
           })
         );
+
+        yield* trackedTimeTargetValidator.validate({
+          workspaceId: entity.workspaceId,
+          projectId: entity.projectId,
+          taskId: entity.taskId,
+        });
 
         const persistedTimer = yield* trackedTimeRepo.updateCurrentTimer({
           workspaceId: params.workspaceId,

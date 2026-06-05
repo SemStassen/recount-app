@@ -21,6 +21,9 @@ import {
   TimerAlreadyRunningError,
   TimeEntryNotFoundError,
   TimeEntryStoppedAtBeforeStartedAtError,
+  TargetProjectNotFoundError,
+  TargetTaskNotFoundError,
+  TargetTaskProjectMismatchError,
 } from "#modules/time/index";
 import { AuthorizationError } from "#shared/authorization/index";
 
@@ -33,6 +36,9 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     error: Schema.Union([
       AuthorizationError,
       TimeEntryStoppedAtBeforeStartedAtError,
+      TargetProjectNotFoundError,
+      TargetTaskNotFoundError,
+      TargetTaskProjectMismatchError,
       HttpApiError.InternalServerError,
     ]),
   })
@@ -46,6 +52,9 @@ export const TimeEntryRpcGroup = RpcGroup.make(
       AuthorizationError,
       TimeEntryNotFoundError,
       TimeEntryStoppedAtBeforeStartedAtError,
+      TargetProjectNotFoundError,
+      TargetTaskNotFoundError,
+      TargetTaskProjectMismatchError,
       HttpApiError.InternalServerError,
     ]),
   })
@@ -70,6 +79,9 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     error: Schema.Union([
       AuthorizationError,
       TimerAlreadyRunningError,
+      TargetProjectNotFoundError,
+      TargetTaskNotFoundError,
+      TargetTaskProjectMismatchError,
       HttpApiError.InternalServerError,
     ]),
   })
@@ -82,6 +94,9 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     error: Schema.Union([
       AuthorizationError,
       TimerNotFoundError,
+      TargetProjectNotFoundError,
+      TargetTaskNotFoundError,
+      TargetTaskProjectMismatchError,
       HttpApiError.InternalServerError,
     ]),
   })

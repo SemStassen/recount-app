@@ -9,6 +9,9 @@ import type {
   TimerNotFoundError,
   TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
+  TargetProjectNotFoundError,
+  TargetTaskNotFoundError,
+  TargetTaskProjectMismatchError,
 } from "./domain/tracked-time.errors";
 
 export class TimeEntryNotFoundError extends Schema.TaggedErrorClass<TimeEntryNotFoundError>()(
@@ -26,7 +29,11 @@ interface TimeModuleShape {
     data: ReadonlyArray<typeof TimeEntry.jsonCreate.Type>;
   }) => Effect.Effect<
     ReadonlyArray<TimeEntry>,
-    TimeEntryStoppedAtBeforeStartedAtError | RepositoryError
+    | TimeEntryStoppedAtBeforeStartedAtError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
+    | RepositoryError
   >;
   readonly updateTimeEntry: (params: {
     workspaceId: TimeEntry["workspaceId"];
@@ -36,6 +43,9 @@ interface TimeModuleShape {
     TimeEntry,
     | TimeEntryNotFoundError
     | TimeEntryStoppedAtBeforeStartedAtError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
     | RepositoryError
   >;
   readonly startTimer: (params: {
@@ -44,12 +54,26 @@ interface TimeModuleShape {
     data: typeof Timer.jsonCreate.Type & {
       startedAt?: Timer["startedAt"];
     };
-  }) => Effect.Effect<Timer, TimerAlreadyRunningError | RepositoryError>;
+  }) => Effect.Effect<
+    Timer,
+    | TimerAlreadyRunningError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
+    | RepositoryError
+  >;
   readonly updateTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];
     data: typeof Timer.jsonUpdate.Type;
-  }) => Effect.Effect<Timer, TimerNotFoundError | RepositoryError>;
+  }) => Effect.Effect<
+    Timer,
+    | TimerNotFoundError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
+    | RepositoryError
+  >;
   readonly stopTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];
