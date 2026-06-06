@@ -7,9 +7,9 @@
 /**
  * @since 4.0.0
  */
-export * as PgClient from "./PgClient.ts"
+export * as PgClient from "./PgClient.ts";
 
 /**
  * @since 4.0.0
  */
-export * as PgMigrator from "./PgMigrator.ts"
+export * as PgMigrator from "./PgMigrator.ts";

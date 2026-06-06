@@ -1,5 +1,5 @@
-import { Array as RA, Schema } from "effect"
-import { Bench } from "tinybench"
+import { Array as RA, Schema } from "effect";
+import { Bench } from "tinybench";
 
 /*
 ┌─────────┬────────────────────┬──────────────────┬──────────────────┬────────────────────────┬────────────────────────┬─────────┐
@@ -12,38 +12,38 @@ import { Bench } from "tinybench"
 └─────────┴────────────────────┴──────────────────┴──────────────────┴────────────────────────┴────────────────────────┴─────────┘
 */
 
-const bench = new Bench({ time: 1000 })
+const bench = new Bench({ time: 1000 });
 
-const n = 100
+const n = 100;
 const f = (i: number) =>
   Schema.Struct({
     kind: Schema.Literal(i),
     a: Schema.String,
     b: Schema.Number,
-    c: Schema.Boolean
-  })
-const members = RA.makeBy(n, f)
+    c: Schema.Boolean,
+  });
+const members = RA.makeBy(n, f);
 
-const schema = Schema.Union(members)
+const schema = Schema.Union(members);
 
-const candidate = f(n - 1)
+const candidate = f(n - 1);
 
 const good = {
   kind: n - 1,
   a: "a",
   b: 1,
-  c: true
-}
+  c: true,
+};
 
 const bad = {
   kind: n - 1,
   a: "a",
   b: 1,
-  c: "c"
-}
+  c: "c",
+};
 
-const decodeUnknownExit = Schema.decodeUnknownExit(schema)
-const decodeUnknownExitCandidate = Schema.decodeUnknownExit(candidate)
+const decodeUnknownExit = Schema.decodeUnknownExit(schema);
+const decodeUnknownExitCandidate = Schema.decodeUnknownExit(candidate);
 
 // console.log(decodeUnknownExit(good))
 // console.log(decodeUnknownExit(bad))
@@ -51,19 +51,19 @@ const decodeUnknownExitCandidate = Schema.decodeUnknownExit(candidate)
 // console.log(decodeUnknownExitCandidate(bad))
 
 bench
-  .add("Schema (good)", function() {
-    decodeUnknownExit(good)
+  .add("Schema (good)", function () {
+    decodeUnknownExit(good);
   })
-  .add("Schema (bad)", function() {
-    decodeUnknownExit(bad)
+  .add("Schema (bad)", function () {
+    decodeUnknownExit(bad);
   })
-  .add("candidate (good)", function() {
-    decodeUnknownExitCandidate(good)
+  .add("candidate (good)", function () {
+    decodeUnknownExitCandidate(good);
   })
-  .add("candidate (bad)", function() {
-    decodeUnknownExitCandidate(bad)
-  })
+  .add("candidate (bad)", function () {
+    decodeUnknownExitCandidate(bad);
+  });
 
-await bench.run()
+await bench.run();
 
-console.table(bench.table())
+console.table(bench.table());

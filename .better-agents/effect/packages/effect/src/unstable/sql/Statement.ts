@@ -38,21 +38,21 @@
  *
  * @since 4.0.0
  */
-import { Clock } from "../../Clock.ts"
-import * as Context from "../../Context.ts"
-import * as Effect from "../../Effect.ts"
-import * as Effectable from "../../Effectable.ts"
-import type * as Fiber from "../../Fiber.ts"
-import { constUndefined } from "../../Function.ts"
-import * as internalEffect from "../../internal/effect.ts"
-import { hasProperty } from "../../Predicate.ts"
-import { TracerTimingEnabled } from "../../References.ts"
-import * as Stream from "../../Stream.ts"
-import type * as Tracer from "../../Tracer.ts"
-import type { Acquirer, Connection, Row } from "./SqlConnection.ts"
-import type { SqlError } from "./SqlError.ts"
+import { Clock } from "../../Clock.ts";
+import * as Context from "../../Context.ts";
+import * as Effect from "../../Effect.ts";
+import * as Effectable from "../../Effectable.ts";
+import type * as Fiber from "../../Fiber.ts";
+import { constUndefined } from "../../Function.ts";
+import * as internalEffect from "../../internal/effect.ts";
+import { hasProperty } from "../../Predicate.ts";
+import { TracerTimingEnabled } from "../../References.ts";
+import * as Stream from "../../Stream.ts";
+import type * as Tracer from "../../Tracer.ts";
+import type { Acquirer, Connection, Row } from "./SqlConnection.ts";
+import type { SqlError } from "./SqlError.ts";
 
-const FragmentTypeId = "~effect/sql/Fragment"
+const FragmentTypeId = "~effect/sql/Fragment";
 
 /**
  * Composable SQL fragment represented as low-level segments that can be
@@ -62,8 +62,8 @@ const FragmentTypeId = "~effect/sql/Fragment"
  * @since 4.0.0
  */
 export interface Fragment {
-  readonly [FragmentTypeId]: typeof FragmentTypeId
-  readonly segments: ReadonlyArray<Segment>
+  readonly [FragmentTypeId]: typeof FragmentTypeId;
+  readonly segments: ReadonlyArray<Segment>;
 }
 
 /**
@@ -72,12 +72,10 @@ export interface Fragment {
  * @category constructors
  * @since 4.0.0
  */
-export const fragment = (
-  segments: ReadonlyArray<Segment>
-): Fragment => ({
+export const fragment = (segments: ReadonlyArray<Segment>): Fragment => ({
   [FragmentTypeId]: FragmentTypeId,
-  segments
-})
+  segments,
+});
 
 /**
  * Supported SQL dialect identifiers used by statement compilers.
@@ -85,7 +83,7 @@ export const fragment = (
  * @category models
  * @since 4.0.0
  */
-export type Dialect = "sqlite" | "pg" | "mysql" | "mssql" | "clickhouse"
+export type Dialect = "sqlite" | "pg" | "mysql" | "mssql" | "clickhouse";
 
 /**
  * Executable SQL statement that is also a `Fragment` and `Effect`, with helpers
@@ -95,16 +93,19 @@ export type Dialect = "sqlite" | "pg" | "mysql" | "mssql" | "clickhouse"
  * @category models
  * @since 4.0.0
  */
-export interface Statement<A> extends Fragment, Effect.Effect<ReadonlyArray<A>, SqlError> {
-  readonly raw: Effect.Effect<unknown, SqlError>
-  readonly withoutTransform: Effect.Effect<ReadonlyArray<A>, SqlError>
-  readonly stream: Stream.Stream<A, SqlError>
-  readonly values: Effect.Effect<ReadonlyArray<ReadonlyArray<unknown>>, SqlError>
-  readonly unprepared: Effect.Effect<ReadonlyArray<A>, SqlError>
-  readonly compile: (withoutTransform?: boolean | undefined) => readonly [
-    sql: string,
-    params: ReadonlyArray<unknown>
-  ]
+export interface Statement<A>
+  extends Fragment, Effect.Effect<ReadonlyArray<A>, SqlError> {
+  readonly raw: Effect.Effect<unknown, SqlError>;
+  readonly withoutTransform: Effect.Effect<ReadonlyArray<A>, SqlError>;
+  readonly stream: Stream.Stream<A, SqlError>;
+  readonly values: Effect.Effect<
+    ReadonlyArray<ReadonlyArray<unknown>>,
+    SqlError
+  >;
+  readonly unprepared: Effect.Effect<ReadonlyArray<A>, SqlError>;
+  readonly compile: (
+    withoutTransform?: boolean | undefined
+  ) => readonly [sql: string, params: ReadonlyArray<unknown>];
 }
 
 /**
@@ -119,7 +120,7 @@ export type Transformer = (
   sql: Constructor,
   fiber: Fiber.Fiber<unknown, unknown>,
   span: Tracer.Span
-) => Effect.Effect<Statement<unknown>>
+) => Effect.Effect<Statement<unknown>>;
 
 /**
  * Context reference for an optional current SQL statement transformer applied
@@ -128,9 +129,12 @@ export type Transformer = (
  * @category transformer
  * @since 4.0.0
  */
-export const CurrentTransformer = Context.Reference<Transformer | undefined>("effect/sql/CurrentTransformer", {
-  defaultValue: constUndefined
-})
+export const CurrentTransformer = Context.Reference<Transformer | undefined>(
+  "effect/sql/CurrentTransformer",
+  {
+    defaultValue: constUndefined,
+  }
+);
 
 /**
  * Returns `true` when a value is a SQL `Fragment`.
@@ -138,7 +142,8 @@ export const CurrentTransformer = Context.Reference<Transformer | undefined>("ef
  * @category guards
  * @since 4.0.0
  */
-export const isFragment = (u: unknown): u is Fragment => hasProperty(u, FragmentTypeId)
+export const isFragment = (u: unknown): u is Fragment =>
+  hasProperty(u, FragmentTypeId);
 
 /**
  * Creates a type guard for custom SQL segments with the specified custom kind.
@@ -146,10 +151,10 @@ export const isFragment = (u: unknown): u is Fragment => hasProperty(u, Fragment
  * @category guards
  * @since 4.0.0
  */
-export const isCustom = <A extends Custom<any, any, any, any>>(
-  kind: A["kind"]
-) =>
-(u: unknown): u is A => hasProperty(u, "_tag") && u._tag === "Custom" && (u as any).kind === kind
+export const isCustom =
+  <A extends Custom<any, any, any, any>>(kind: A["kind"]) =>
+  (u: unknown): u is A =>
+    hasProperty(u, "_tag") && u._tag === "Custom" && (u as any).kind === kind;
 
 /**
  * Union of low-level segment types that make up a SQL `Fragment`.
@@ -165,7 +170,7 @@ export type Segment =
   | RecordInsertHelper
   | RecordUpdateHelper
   | RecordUpdateHelperSingle
-  | Custom<any, any, any, any>
+  | Custom<any, any, any, any>;
 
 /**
  * Raw SQL literal segment. The literal text is inserted directly into the
@@ -175,9 +180,9 @@ export type Segment =
  * @since 4.0.0
  */
 export interface Literal {
-  readonly _tag: "Literal"
-  readonly value: string
-  readonly params?: ReadonlyArray<unknown> | undefined
+  readonly _tag: "Literal";
+  readonly value: string;
+  readonly params?: ReadonlyArray<unknown> | undefined;
 }
 
 /**
@@ -187,11 +192,14 @@ export interface Literal {
  * @category constructors
  * @since 4.0.0
  */
-export const literal = (value: string, params?: ReadonlyArray<unknown> | undefined): Literal => ({
+export const literal = (
+  value: string,
+  params?: ReadonlyArray<unknown> | undefined
+): Literal => ({
   _tag: "Literal",
   value,
-  params
-})
+  params,
+});
 
 /**
  * SQL identifier segment whose value is escaped by the active dialect compiler.
@@ -200,8 +208,8 @@ export const literal = (value: string, params?: ReadonlyArray<unknown> | undefin
  * @since 4.0.0
  */
 export interface Identifier {
-  readonly _tag: "Identifier"
-  readonly value: string
+  readonly _tag: "Identifier";
+  readonly value: string;
 }
 
 /**
@@ -213,8 +221,8 @@ export interface Identifier {
  */
 export const identifier = (value: string): Identifier => ({
   _tag: "Identifier",
-  value
-})
+  value,
+});
 
 /**
  * Bound parameter segment whose value is emitted as a dialect-specific
@@ -224,8 +232,8 @@ export const identifier = (value: string): Identifier => ({
  * @since 4.0.0
  */
 export interface Parameter {
-  readonly _tag: "Parameter"
-  readonly value: unknown
+  readonly _tag: "Parameter";
+  readonly value: unknown;
 }
 
 /**
@@ -236,8 +244,8 @@ export interface Parameter {
  */
 export const parameter = (value: unknown): Parameter => ({
   _tag: "Parameter",
-  value
-})
+  value,
+});
 
 /**
  * Helper segment for compiling an array of values, commonly used to produce
@@ -247,8 +255,8 @@ export const parameter = (value: unknown): Parameter => ({
  * @since 4.0.0
  */
 export interface ArrayHelper {
-  readonly _tag: "ArrayHelper"
-  readonly value: ReadonlyArray<unknown | Fragment>
+  readonly _tag: "ArrayHelper";
+  readonly value: ReadonlyArray<unknown | Fragment>;
 }
 
 /**
@@ -257,10 +265,12 @@ export interface ArrayHelper {
  * @category constructors
  * @since 4.0.0
  */
-export const arrayHelper = (value: ReadonlyArray<unknown | Fragment>): ArrayHelper => ({
+export const arrayHelper = (
+  value: ReadonlyArray<unknown | Fragment>
+): ArrayHelper => ({
   _tag: "ArrayHelper",
-  value
-})
+  value,
+});
 
 /**
  * Helper segment for compiling one or more record objects into an INSERT
@@ -270,23 +280,25 @@ export const arrayHelper = (value: ReadonlyArray<unknown | Fragment>): ArrayHelp
  * @since 4.0.0
  */
 export interface RecordInsertHelper {
-  readonly _tag: "RecordInsertHelper"
-  readonly value: ReadonlyArray<Record<string, unknown>>
+  readonly _tag: "RecordInsertHelper";
+  readonly value: ReadonlyArray<Record<string, unknown>>;
   /** @internal */
-  readonly returningIdentifier: string | Fragment | undefined
-  readonly returning: (sql: string | Identifier | Fragment) => RecordInsertHelper
+  readonly returningIdentifier: string | Fragment | undefined;
+  readonly returning: (
+    sql: string | Identifier | Fragment
+  ) => RecordInsertHelper;
 }
 
 const RecordInsertHelperProto = {
   _tag: "RecordInsertHelper" as const,
   returning(this: RecordInsertHelper, sql: string | Identifier | Fragment) {
-    const self = Object.create(Object.getPrototypeOf(this))
+    const self = Object.create(Object.getPrototypeOf(this));
     Object.assign(self, this, {
-      returningIdentifier: sql
-    })
-    return self
-  }
-}
+      returningIdentifier: sql,
+    });
+    return self;
+  },
+};
 
 /**
  * Constructs a `RecordInsertHelper` from one or more row objects.
@@ -299,8 +311,8 @@ export const recordInsertHelper = (
 ): RecordInsertHelper =>
   Object.assign(Object.create(RecordInsertHelperProto), {
     value,
-    returningIdentifier: undefined
-  })
+    returningIdentifier: undefined,
+  });
 
 /**
  * Helper segment for compiling multi-row update values with a table alias and
@@ -310,18 +322,20 @@ export const recordInsertHelper = (
  * @since 4.0.0
  */
 export interface RecordUpdateHelper {
-  readonly _tag: "RecordUpdateHelper"
-  readonly value: ReadonlyArray<Record<string, unknown>>
-  readonly alias: string
+  readonly _tag: "RecordUpdateHelper";
+  readonly value: ReadonlyArray<Record<string, unknown>>;
+  readonly alias: string;
   /** @internal */
-  readonly returningIdentifier: string | Fragment | undefined
-  readonly returning: (sql: string | Identifier | Fragment) => RecordUpdateHelper
+  readonly returningIdentifier: string | Fragment | undefined;
+  readonly returning: (
+    sql: string | Identifier | Fragment
+  ) => RecordUpdateHelper;
 }
 
 const RecordUpdateHelperProto = {
   ...RecordInsertHelperProto,
-  _tag: "RecordUpdateHelper" as const
-}
+  _tag: "RecordUpdateHelper" as const,
+};
 
 /**
  * Constructs a `RecordUpdateHelper` for multi-row update compilation using the
@@ -337,8 +351,8 @@ export const recordUpdateHelper = (
   Object.assign(Object.create(RecordUpdateHelperProto), {
     value,
     alias,
-    returningIdentifier: undefined
-  })
+    returningIdentifier: undefined,
+  });
 
 /**
  * Helper segment for compiling a single record into update assignments,
@@ -348,18 +362,20 @@ export const recordUpdateHelper = (
  * @since 4.0.0
  */
 export interface RecordUpdateHelperSingle {
-  readonly _tag: "RecordUpdateHelperSingle"
-  readonly value: Record<string, unknown>
-  readonly omit: ReadonlyArray<string>
+  readonly _tag: "RecordUpdateHelperSingle";
+  readonly value: Record<string, unknown>;
+  readonly omit: ReadonlyArray<string>;
   /** @internal */
-  readonly returningIdentifier: string | Fragment | undefined
-  readonly returning: (sql: string | Identifier | Fragment) => RecordUpdateHelperSingle
+  readonly returningIdentifier: string | Fragment | undefined;
+  readonly returning: (
+    sql: string | Identifier | Fragment
+  ) => RecordUpdateHelperSingle;
 }
 
 const RecordUpdateHelperSingleProto = {
   ...RecordInsertHelperProto,
-  _tag: "RecordUpdateHelperSingle" as const
-}
+  _tag: "RecordUpdateHelperSingle" as const,
+};
 
 /**
  * Constructs a `RecordUpdateHelperSingle` from a record and a list of columns
@@ -375,8 +391,8 @@ export const recordUpdateHelperSingle = (
   Object.assign(Object.create(RecordUpdateHelperSingleProto), {
     value,
     omit,
-    returningIdentifier: undefined
-  })
+    returningIdentifier: undefined,
+  });
 
 /**
  * Custom SQL segment identified by `kind` and interpreted by the compiler's
@@ -389,13 +405,13 @@ export interface Custom<
   T extends string = string,
   A = void,
   B = void,
-  C = void
+  C = void,
 > {
-  readonly _tag: "Custom"
-  readonly kind: T
-  readonly paramA: A
-  readonly paramB: B
-  readonly paramC: C
+  readonly _tag: "Custom";
+  readonly kind: T;
+  readonly paramA: A;
+  readonly paramB: B;
+  readonly paramC: C;
 }
 
 /**
@@ -405,14 +421,10 @@ export interface Custom<
  * @category constructors
  * @since 4.0.0
  */
-export const custom = <C extends Custom<any, any, any, any>>(
-  kind: C["kind"]
-) =>
-(
-  paramA: C["paramA"],
-  paramB: C["paramB"],
-  paramC: C["paramC"]
-): C => ({ _tag: "Custom", kind, paramA, paramB, paramC } as C)
+export const custom =
+  <C extends Custom<any, any, any, any>>(kind: C["kind"]) =>
+  (paramA: C["paramA"], paramB: C["paramB"], paramC: C["paramC"]): C =>
+    ({ _tag: "Custom", kind, paramA, paramB, paramC }) as C;
 
 /**
  * Names the primitive value categories recognized by SQL statement helpers and
@@ -429,7 +441,7 @@ export type PrimitiveKind =
   | "Date"
   | "null"
   | "Int8Array"
-  | "Uint8Array"
+  | "Uint8Array";
 
 /**
  * Union of helper segment types accepted by the SQL statement constructor.
@@ -443,7 +455,7 @@ export type Helper =
   | RecordUpdateHelper
   | RecordUpdateHelperSingle
   | Identifier
-  | Custom
+  | Custom;
 
 /**
  * SQL tagged-template constructor and helper API for building parameterized
@@ -458,9 +470,9 @@ export interface Constructor {
   <A extends object = Row>(
     strings: TemplateStringsArray,
     ...args: Array<any>
-  ): Statement<A>
+  ): Statement<A>;
 
-  (value: string): Identifier
+  (value: string): Identifier;
 
   /**
    * Create unsafe SQL query
@@ -468,27 +480,25 @@ export interface Constructor {
   readonly unsafe: <A extends object>(
     sql: string,
     params?: ReadonlyArray<unknown> | undefined
-  ) => Statement<A>
+  ) => Statement<A>;
 
-  readonly literal: (sql: string) => Fragment
+  readonly literal: (sql: string) => Fragment;
 
   readonly in: {
-    (value: ReadonlyArray<unknown>): ArrayHelper
-    (column: string, value: ReadonlyArray<unknown>): Fragment
-  }
+    (value: ReadonlyArray<unknown>): ArrayHelper;
+    (column: string, value: ReadonlyArray<unknown>): Fragment;
+  };
 
   readonly insert: {
-    (
-      value: ReadonlyArray<Record<string, unknown>>
-    ): RecordInsertHelper
-    (value: Record<string, unknown>): RecordInsertHelper
-  }
+    (value: ReadonlyArray<Record<string, unknown>>): RecordInsertHelper;
+    (value: Record<string, unknown>): RecordInsertHelper;
+  };
 
   /** Update a single row */
   readonly update: <A extends Record<string, unknown>>(
     value: A,
     omit?: ReadonlyArray<keyof A>
-  ) => RecordUpdateHelperSingle
+  ) => RecordUpdateHelperSingle;
 
   /**
    * Update multiple rows.
@@ -500,17 +510,17 @@ export interface Constructor {
   readonly updateValues: (
     value: ReadonlyArray<Record<string, unknown>>,
     alias: string
-  ) => RecordUpdateHelper
+  ) => RecordUpdateHelper;
 
   /**
    * Create an `AND` chain for a where clause
    */
-  readonly and: (clauses: ReadonlyArray<string | Fragment>) => Fragment
+  readonly and: (clauses: ReadonlyArray<string | Fragment>) => Fragment;
 
   /**
    * Create an `OR` chain for a where clause
    */
-  readonly or: (clauses: ReadonlyArray<string | Fragment>) => Fragment
+  readonly or: (clauses: ReadonlyArray<string | Fragment>) => Fragment;
 
   /**
    * Create comma seperated values, with an optional prefix.
@@ -520,32 +530,39 @@ export interface Constructor {
    * Use when `ORDER BY` and `GROUP BY` clauses.
    */
   readonly csv: {
-    (values: ReadonlyArray<string | Fragment>): Fragment
-    (prefix: string, values: ReadonlyArray<string | Fragment>): Fragment
-  }
+    (values: ReadonlyArray<string | Fragment>): Fragment;
+    (prefix: string, values: ReadonlyArray<string | Fragment>): Fragment;
+  };
 
   readonly join: (
     literal: string,
     addParens?: boolean,
     fallback?: string
-  ) => (clauses: ReadonlyArray<string | Fragment>) => Fragment
+  ) => (clauses: ReadonlyArray<string | Fragment>) => Fragment;
 
   readonly onDialect: <A, B, C, D, E>(options: {
-    readonly sqlite: () => A
-    readonly pg: () => B
-    readonly mysql: () => C
-    readonly mssql: () => D
-    readonly clickhouse: () => E
-  }) => A | B | C | D | E
+    readonly sqlite: () => A;
+    readonly pg: () => B;
+    readonly mysql: () => C;
+    readonly mssql: () => D;
+    readonly clickhouse: () => E;
+  }) => A | B | C | D | E;
 
-  readonly onDialectOrElse: <A, B = never, C = never, D = never, E = never, F = never>(options: {
-    readonly orElse: () => A
-    readonly sqlite?: () => B
-    readonly pg?: () => C
-    readonly mysql?: () => D
-    readonly mssql?: () => E
-    readonly clickhouse?: () => F
-  }) => A | B | C | D | E | F
+  readonly onDialectOrElse: <
+    A,
+    B = never,
+    C = never,
+    D = never,
+    E = never,
+    F = never,
+  >(options: {
+    readonly orElse: () => A;
+    readonly sqlite?: () => B;
+    readonly pg?: () => C;
+    readonly mysql?: () => D;
+    readonly mssql?: () => E;
+    readonly clickhouse?: () => F;
+  }) => A | B | C | D | E | F;
 }
 
 /**
@@ -559,16 +576,21 @@ export const make = (
   acquirer: Acquirer,
   compiler: Compiler,
   spanAttributes: ReadonlyArray<readonly [string, unknown]>,
-  transformRows: (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>) | undefined
+  transformRows:
+    | (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>)
+    | undefined
 ): Constructor => {
-  const cache = transformRows === undefined ? constructorCache.noTransforms : constructorCache.transforms
+  const cache =
+    transformRows === undefined
+      ? constructorCache.noTransforms
+      : constructorCache.transforms;
   if (cache.has(acquirer)) {
-    return cache.get(acquirer)!
+    return cache.get(acquirer)!;
   }
   const self = Object.assign(
     function sql(strings: unknown, ...args: Array<any>): any {
       if (typeof strings === "string") {
-        return identifier(strings)
+        return identifier(strings);
       } else if (Array.isArray(strings) && "raw" in strings) {
         return statement(
           acquirer,
@@ -577,10 +599,10 @@ export const make = (
           args,
           spanAttributes,
           transformRows
-        )
+        );
       }
 
-      throw "absurd"
+      throw "absurd";
     },
     {
       unsafe<A extends object = Row>(
@@ -593,45 +615,45 @@ export const make = (
           compiler,
           spanAttributes,
           transformRows
-        )
+        );
       },
       literal(sql: string) {
-        return fragment([literal(sql)])
+        return fragment([literal(sql)]);
       },
       in: in_,
       insert(value: any) {
-        return recordInsertHelper(
-          Array.isArray(value) ? value : [value]
-        )
+        return recordInsertHelper(Array.isArray(value) ? value : [value]);
       },
       update(value: any, omit: any) {
-        return recordUpdateHelperSingle(value, omit ?? [])
+        return recordUpdateHelperSingle(value, omit ?? []);
       },
       updateValues(value: any, alias: any) {
-        return recordUpdateHelper(value, alias)
+        return recordUpdateHelper(value, alias);
       },
       and,
       or,
       csv,
       join,
       onDialect(options: Record<Dialect, any>) {
-        return options[compiler.dialect]()
+        return options[compiler.dialect]();
       },
       onDialectOrElse(options: any) {
-        return options[compiler.dialect] !== undefined ? options[compiler.dialect]() : options.orElse()
-      }
+        return options[compiler.dialect] !== undefined
+          ? options[compiler.dialect]()
+          : options.orElse();
+      },
     }
-  )
+  );
 
-  cache.set(acquirer, self)
+  cache.set(acquirer, self);
 
-  return self
-}
+  return self;
+};
 
 const constructorCache = {
   transforms: new WeakMap<Acquirer, Constructor>(),
-  noTransforms: new WeakMap<Acquirer, Constructor>()
-}
+  noTransforms: new WeakMap<Acquirer, Constructor>(),
+};
 
 /**
  * Builds a `Statement` from template strings and arguments, preserving
@@ -647,28 +669,37 @@ export const statement = <A = Row>(
   strings: TemplateStringsArray,
   args: Array<any>,
   spanAttributes: ReadonlyArray<readonly [string, unknown]>,
-  transformRows: (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>) | undefined
+  transformRows:
+    | (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>)
+    | undefined
 ): Statement<A> => {
-  const segments: Array<Segment> = strings[0].length > 0 ? [literal(strings[0])] : []
+  const segments: Array<Segment> =
+    strings[0].length > 0 ? [literal(strings[0])] : [];
 
   for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
+    const arg = args[i];
 
     if (isFragment(arg)) {
-      segments.push(...arg.segments)
+      segments.push(...arg.segments);
     } else if (isSegment(arg)) {
-      segments.push(arg)
+      segments.push(arg);
     } else {
-      segments.push(parameter(arg))
+      segments.push(parameter(arg));
     }
 
     if (strings[i + 1].length > 0) {
-      segments.push(literal(strings[i + 1]))
+      segments.push(literal(strings[i + 1]));
     }
   }
 
-  return makeUnsafe(segments, acquirer, compiler, spanAttributes, transformRows)
-}
+  return makeUnsafe(
+    segments,
+    acquirer,
+    compiler,
+    spanAttributes,
+    transformRows
+  );
+};
 
 /**
  * Creates a helper that joins SQL clauses with a literal separator, optionally
@@ -679,35 +710,35 @@ export const statement = <A = Row>(
  * @since 4.0.0
  */
 export function join(lit: string, addParens = true, fallback = "") {
-  const literalStatement = literal(lit)
-  const fallbackFragment = fragment([literal(fallback)])
+  const literalStatement = literal(lit);
+  const fallbackFragment = fragment([literal(fallback)]);
 
   return (clauses: ReadonlyArray<string | Fragment>): Fragment => {
     if (clauses.length === 0) {
-      return fallbackFragment
+      return fallbackFragment;
     } else if (clauses.length === 1) {
-      return fragment(convertLiteralOrFragment(clauses[0]))
+      return fragment(convertLiteralOrFragment(clauses[0]));
     }
 
-    const segments: Array<Segment> = []
+    const segments: Array<Segment> = [];
 
     if (addParens) {
-      segments.push(literal("("))
+      segments.push(literal("("));
     }
 
-    segments.push.apply(segments, convertLiteralOrFragment(clauses[0]))
+    segments.push.apply(segments, convertLiteralOrFragment(clauses[0]));
 
     for (let i = 1; i < clauses.length; i++) {
-      segments.push(literalStatement)
-      segments.push.apply(segments, convertLiteralOrFragment(clauses[i]))
+      segments.push(literalStatement);
+      segments.push.apply(segments, convertLiteralOrFragment(clauses[i]));
     }
 
     if (addParens) {
-      segments.push(literal(")"))
+      segments.push(literal(")"));
     }
 
-    return fragment(segments)
-  }
+    return fragment(segments);
+  };
 }
 
 /**
@@ -717,7 +748,8 @@ export function join(lit: string, addParens = true, fallback = "") {
  * @category constructors
  * @since 4.0.0
  */
-export const and: (clauses: ReadonlyArray<string | Fragment>) => Fragment = join(" AND ", true, "1=1")
+export const and: (clauses: ReadonlyArray<string | Fragment>) => Fragment =
+  join(" AND ", true, "1=1");
 
 /**
  * Combines clauses with `OR`, parenthesizing multiple clauses and returning
@@ -726,7 +758,11 @@ export const and: (clauses: ReadonlyArray<string | Fragment>) => Fragment = join
  * @category constructors
  * @since 4.0.0
  */
-export const or: (clauses: ReadonlyArray<string | Fragment>) => Fragment = join(" OR ", true, "1=1")
+export const or: (clauses: ReadonlyArray<string | Fragment>) => Fragment = join(
+  " OR ",
+  true,
+  "1=1"
+);
 
 /**
  * Creates a comma-separated SQL fragment from values, optionally adding a
@@ -736,29 +772,26 @@ export const or: (clauses: ReadonlyArray<string | Fragment>) => Fragment = join(
  * @since 4.0.0
  */
 export const csv: {
-  (values: ReadonlyArray<string | Fragment>): Fragment
-  (prefix: string, values: ReadonlyArray<string | Fragment>): Fragment
-} = function(
+  (values: ReadonlyArray<string | Fragment>): Fragment;
+  (prefix: string, values: ReadonlyArray<string | Fragment>): Fragment;
+} = function (
   ...args:
     | [values: ReadonlyArray<string | Fragment>]
     | [prefix: string, values: ReadonlyArray<string | Fragment>]
 ) {
   if (args[args.length - 1].length === 0) {
-    return emptyFragment
+    return emptyFragment;
   }
 
   if (args.length === 1) {
-    return csvRaw(args[0])
+    return csvRaw(args[0]);
   }
 
-  return fragment([
-    literal(`${args[0]} `),
-    ...csvRaw(args[1]).segments
-  ])
-}
+  return fragment([literal(`${args[0]} `), ...csvRaw(args[1]).segments]);
+};
 
-const csvRaw = join(",", false)
-const emptyFragment = fragment([literal("")])
+const csvRaw = join(",", false);
+const emptyFragment = fragment([literal("")]);
 
 /**
  * Dialect-specific compiler that converts a SQL `Fragment` into SQL text and
@@ -768,12 +801,12 @@ const emptyFragment = fragment([literal("")])
  * @since 4.0.0
  */
 export interface Compiler {
-  readonly dialect: Dialect
+  readonly dialect: Dialect;
   readonly compile: (
     statement: Fragment,
     withoutTransform: boolean
-  ) => readonly [sql: string, params: ReadonlyArray<unknown>]
-  readonly withoutTransform: this
+  ) => readonly [sql: string, params: ReadonlyArray<unknown>];
+  readonly withoutTransform: this;
 }
 
 /**
@@ -784,33 +817,39 @@ export interface Compiler {
  * @since 4.0.0
  */
 export type CompilerOptions<C extends Custom<any, any, any, any> = any> = {
-  readonly dialect: Dialect
-  readonly placeholder: (index: number, value: unknown) => string
-  readonly onIdentifier: (value: string, withoutTransform: boolean) => string
+  readonly dialect: Dialect;
+  readonly placeholder: (index: number, value: unknown) => string;
+  readonly onIdentifier: (value: string, withoutTransform: boolean) => string;
   readonly onRecordUpdate: (
     placeholders: string,
     alias: string,
     columns: string,
     values: ReadonlyArray<ReadonlyArray<unknown>>,
-    returning: readonly [sql: string, params: ReadonlyArray<unknown>] | undefined
-  ) => readonly [sql: string, params: ReadonlyArray<unknown>]
+    returning:
+      | readonly [sql: string, params: ReadonlyArray<unknown>]
+      | undefined
+  ) => readonly [sql: string, params: ReadonlyArray<unknown>];
   readonly onCustom: (
     type: C,
     placeholder: (u: unknown) => string,
     withoutTransform: boolean
-  ) => readonly [sql: string, params: ReadonlyArray<unknown>]
+  ) => readonly [sql: string, params: ReadonlyArray<unknown>];
   readonly onInsert?: (
     columns: ReadonlyArray<string>,
     placeholders: string,
     values: ReadonlyArray<ReadonlyArray<unknown>>,
-    returning: readonly [sql: string, params: ReadonlyArray<unknown>] | undefined
-  ) => readonly [sql: string, binds: ReadonlyArray<unknown>]
+    returning:
+      | readonly [sql: string, params: ReadonlyArray<unknown>]
+      | undefined
+  ) => readonly [sql: string, binds: ReadonlyArray<unknown>];
   readonly onRecordUpdateSingle?: (
     columns: ReadonlyArray<string>,
     values: ReadonlyArray<unknown>,
-    returning: readonly [sql: string, params: ReadonlyArray<unknown>] | undefined
-  ) => readonly [sql: string, params: ReadonlyArray<unknown>]
-}
+    returning:
+      | readonly [sql: string, params: ReadonlyArray<unknown>]
+      | undefined
+  ) => readonly [sql: string, params: ReadonlyArray<unknown>];
+};
 
 /**
  * Creates a dialect-specific SQL `Compiler` from rendering callbacks.
@@ -821,25 +860,29 @@ export type CompilerOptions<C extends Custom<any, any, any, any> = any> = {
 export const makeCompiler = <C extends Custom<any, any, any, any> = any>(
   options: CompilerOptions<C>
 ): Compiler => {
-  const self = Object.create(CompilerProto)
-  self.options = options
-  self.dialect = options.dialect
-  self.disableTransforms = false
-  return self
-}
+  const self = Object.create(CompilerProto);
+  self.options = options;
+  self.dialect = options.dialect;
+  self.disableTransforms = false;
+  return self;
+};
 
 interface CompilerImpl extends Compiler {
-  readonly options: CompilerOptions
-  readonly disableTransforms: boolean
+  readonly options: CompilerOptions;
+  readonly disableTransforms: boolean;
   compile(
     statement: Fragment,
     withoutTransform?: boolean,
     placeholderOverride?: (u: unknown) => string
-  ): readonly [sql: string, binds: ReadonlyArray<unknown>]
+  ): readonly [sql: string, binds: ReadonlyArray<unknown>];
 }
 
-const statementCacheSymbol = Symbol.for("effect/unstable/sql/Statement/statementCache")
-const statementCacheNoTransformSymbol = Symbol.for("effect/unstable/sql/Statement/statementCacheNoTransform")
+const statementCacheSymbol = Symbol.for(
+  "effect/unstable/sql/Statement/statementCache"
+);
+const statementCacheNoTransformSymbol = Symbol.for(
+  "effect/unstable/sql/Statement/statementCacheNoTransform"
+);
 
 const CompilerProto = {
   compile(
@@ -848,70 +891,83 @@ const CompilerProto = {
     withoutTransform = false,
     placeholderOverride?: (u: unknown) => string
   ): readonly [sql: string, binds: ReadonlyArray<unknown>] {
-    const opts = this.options
-    withoutTransform = withoutTransform || this.disableTransforms
-    const cacheSymbol = withoutTransform ? statementCacheNoTransformSymbol : statementCacheSymbol
+    const opts = this.options;
+    withoutTransform = withoutTransform || this.disableTransforms;
+    const cacheSymbol = withoutTransform
+      ? statementCacheNoTransformSymbol
+      : statementCacheSymbol;
     if (cacheSymbol in statement) {
-      return (statement as any)[cacheSymbol]
+      return (statement as any)[cacheSymbol];
     }
 
-    const segments = statement.segments
-    const len = segments.length
+    const segments = statement.segments;
+    const len = segments.length;
 
-    let sql = ""
-    const binds: Array<unknown> = []
-    let placeholderCount = 0
-    const placeholder = placeholderOverride ?? ((u: unknown) => opts.placeholder(++placeholderCount, u))
-    const placeholderNoIncrement = (u: unknown) => opts.placeholder(placeholderCount, u)
-    const placeholders = makePlaceholdersArray(placeholder)
+    let sql = "";
+    const binds: Array<unknown> = [];
+    let placeholderCount = 0;
+    const placeholder =
+      placeholderOverride ??
+      ((u: unknown) => opts.placeholder(++placeholderCount, u));
+    const placeholderNoIncrement = (u: unknown) =>
+      opts.placeholder(placeholderCount, u);
+    const placeholders = makePlaceholdersArray(placeholder);
 
     for (let i = 0; i < len; i++) {
-      const segment = segments[i]
+      const segment = segments[i];
 
       switch (segment._tag) {
         case "Literal": {
-          sql += segment.value
+          sql += segment.value;
           if (segment.params) {
-            binds.push.apply(binds, segment.params as any)
+            binds.push.apply(binds, segment.params as any);
           }
-          break
+          break;
         }
 
         case "Identifier": {
-          sql += opts.onIdentifier(segment.value, withoutTransform)
-          break
+          sql += opts.onIdentifier(segment.value, withoutTransform);
+          break;
         }
 
         case "Parameter": {
-          sql += placeholder(segment.value)
-          binds.push(segment.value)
-          break
+          sql += placeholder(segment.value);
+          binds.push(segment.value);
+          break;
         }
 
         case "ArrayHelper": {
-          sql += `(${placeholders(segment.value)})`
-          binds.push.apply(binds, segment.value as any)
-          break
+          sql += `(${placeholders(segment.value)})`;
+          binds.push.apply(binds, segment.value as any);
+          break;
         }
 
         case "RecordInsertHelper": {
-          const keys = Object.keys(segment.value[0])
+          const keys = Object.keys(segment.value[0]);
 
           if (opts.onInsert) {
-            const values: Array<ReadonlyArray<unknown>> = new Array(segment.value.length)
-            let placeholders = ""
+            const values: Array<ReadonlyArray<unknown>> = new Array(
+              segment.value.length
+            );
+            let placeholders = "";
             for (let i = 0; i < segment.value.length; i++) {
-              const row: Array<unknown> = new Array(keys.length)
-              values[i] = row
-              placeholders += i === 0 ? "(" : ",("
+              const row: Array<unknown> = new Array(keys.length);
+              values[i] = row;
+              placeholders += i === 0 ? "(" : ",(";
               for (let j = 0; j < keys.length; j++) {
-                const key = keys[j]
-                const value = segment.value[i][key]
-                const primitive = extractPrimitive(value, opts.onCustom, placeholderNoIncrement, withoutTransform)
-                row[j] = primitive
-                placeholders += j === 0 ? placeholder(value) : `,${placeholder(value)}`
+                const key = keys[j];
+                const value = segment.value[i][key];
+                const primitive = extractPrimitive(
+                  value,
+                  opts.onCustom,
+                  placeholderNoIncrement,
+                  withoutTransform
+                );
+                row[j] = primitive;
+                placeholders +=
+                  j === 0 ? placeholder(value) : `,${placeholder(value)}`;
               }
-              placeholders += ")"
+              placeholders += ")";
             }
             const [s, b] = opts.onInsert(
               keys.map((_) => opts.onIdentifier(_, withoutTransform)),
@@ -920,47 +976,59 @@ const CompilerProto = {
               typeof segment.returningIdentifier === "string"
                 ? [segment.returningIdentifier, []]
                 : segment.returningIdentifier
-                ? this.compile(segment.returningIdentifier, withoutTransform, placeholder)
-                : undefined
-            )
-            sql += s
-            binds.push.apply(binds, b as any)
+                  ? this.compile(
+                      segment.returningIdentifier,
+                      withoutTransform,
+                      placeholder
+                    )
+                  : undefined
+            );
+            sql += s;
+            binds.push.apply(binds, b as any);
           } else {
-            let placeholders = ""
+            let placeholders = "";
             for (let i = 0; i < segment.value.length; i++) {
-              placeholders += i === 0 ? "(" : ",("
+              placeholders += i === 0 ? "(" : ",(";
               for (let j = 0; j < keys.length; j++) {
-                const value = segment.value[i][keys[j]]
-                const primitive = extractPrimitive(value, opts.onCustom, placeholderNoIncrement, withoutTransform)
-                binds.push(primitive)
-                placeholders += j === 0 ? placeholder(value) : `,${placeholder(value)}`
+                const value = segment.value[i][keys[j]];
+                const primitive = extractPrimitive(
+                  value,
+                  opts.onCustom,
+                  placeholderNoIncrement,
+                  withoutTransform
+                );
+                binds.push(primitive);
+                placeholders +=
+                  j === 0 ? placeholder(value) : `,${placeholder(value)}`;
               }
-              placeholders += ")"
+              placeholders += ")";
             }
-            sql += `${
-              generateColumns(
-                keys,
-                opts.onIdentifier,
-                withoutTransform
-              )
-            } VALUES ${placeholders}`
+            sql += `${generateColumns(
+              keys,
+              opts.onIdentifier,
+              withoutTransform
+            )} VALUES ${placeholders}`;
 
             if (typeof segment.returningIdentifier === "string") {
-              sql += ` RETURNING ${segment.returningIdentifier}`
+              sql += ` RETURNING ${segment.returningIdentifier}`;
             } else if (segment.returningIdentifier) {
-              sql += " RETURNING "
-              const [s, b] = this.compile(segment.returningIdentifier, withoutTransform, placeholder)
-              sql += s
-              binds.push.apply(binds, b as any)
+              sql += " RETURNING ";
+              const [s, b] = this.compile(
+                segment.returningIdentifier,
+                withoutTransform,
+                placeholder
+              );
+              sql += s;
+              binds.push.apply(binds, b as any);
             }
           }
-          break
+          break;
         }
 
         case "RecordUpdateHelperSingle": {
-          let keys = Object.keys(segment.value)
+          let keys = Object.keys(segment.value);
           if (segment.omit.length > 0) {
-            keys = keys.filter((key) => !segment.omit.includes(key))
+            keys = keys.filter((key) => !segment.omit.includes(key));
           }
           if (opts.onRecordUpdateSingle) {
             const [s, b] = opts.onRecordUpdateSingle(
@@ -976,18 +1044,22 @@ const CompilerProto = {
               typeof segment.returningIdentifier === "string"
                 ? [segment.returningIdentifier, []]
                 : segment.returningIdentifier
-                ? this.compile(segment.returningIdentifier, withoutTransform, placeholder)
-                : undefined
-            )
-            sql += s
-            binds.push.apply(binds, b as any)
+                  ? this.compile(
+                      segment.returningIdentifier,
+                      withoutTransform,
+                      placeholder
+                    )
+                  : undefined
+            );
+            sql += s;
+            binds.push.apply(binds, b as any);
           } else {
             for (let i = 0, len = keys.length; i < len; i++) {
-              const column = opts.onIdentifier(keys[i], withoutTransform)
+              const column = opts.onIdentifier(keys[i], withoutTransform);
               if (i === 0) {
-                sql += `${column} = ${placeholder(segment.value[keys[i]])}`
+                sql += `${column} = ${placeholder(segment.value[keys[i]])}`;
               } else {
-                sql += `, ${column} = ${placeholder(segment.value[keys[i]])}`
+                sql += `, ${column} = ${placeholder(segment.value[keys[i]])}`;
               }
               binds.push(
                 extractPrimitive(
@@ -996,39 +1068,51 @@ const CompilerProto = {
                   placeholderNoIncrement,
                   withoutTransform
                 )
-              )
+              );
             }
             if (typeof segment.returningIdentifier === "string") {
               if (this.dialect === "mssql") {
-                sql += ` OUTPUT ${segment.returningIdentifier === "*" ? "INSERTED.*" : segment.returningIdentifier}`
+                sql += ` OUTPUT ${segment.returningIdentifier === "*" ? "INSERTED.*" : segment.returningIdentifier}`;
               } else {
-                sql += ` RETURNING ${segment.returningIdentifier}`
+                sql += ` RETURNING ${segment.returningIdentifier}`;
               }
             } else if (segment.returningIdentifier) {
-              sql += this.dialect === "mssql" ? " OUTPUT " : " RETURNING "
-              const [s, b] = this.compile(segment.returningIdentifier, withoutTransform, placeholder)
-              sql += s
-              binds.push.apply(binds, b as any)
+              sql += this.dialect === "mssql" ? " OUTPUT " : " RETURNING ";
+              const [s, b] = this.compile(
+                segment.returningIdentifier,
+                withoutTransform,
+                placeholder
+              );
+              sql += s;
+              binds.push.apply(binds, b as any);
             }
           }
-          break
+          break;
         }
 
         case "RecordUpdateHelper": {
-          const keys = Object.keys(segment.value[0])
-          const values: Array<ReadonlyArray<unknown>> = new Array(segment.value.length)
-          let placeholders = ""
+          const keys = Object.keys(segment.value[0]);
+          const values: Array<ReadonlyArray<unknown>> = new Array(
+            segment.value.length
+          );
+          let placeholders = "";
           for (let i = 0; i < segment.value.length; i++) {
-            const row: Array<unknown> = new Array(keys.length)
-            values[i] = row
-            placeholders += i === 0 ? "(" : ",("
+            const row: Array<unknown> = new Array(keys.length);
+            values[i] = row;
+            placeholders += i === 0 ? "(" : ",(";
             for (let j = 0; j < keys.length; j++) {
-              const key = keys[j]
-              const value = segment.value[i][key]
-              row[j] = extractPrimitive(value, opts.onCustom, placeholderNoIncrement, withoutTransform)
-              placeholders += j === 0 ? placeholder(value) : `,${placeholder(value)}`
+              const key = keys[j];
+              const value = segment.value[i][key];
+              row[j] = extractPrimitive(
+                value,
+                opts.onCustom,
+                placeholderNoIncrement,
+                withoutTransform
+              );
+              placeholders +=
+                j === 0 ? placeholder(value) : `,${placeholder(value)}`;
             }
-            placeholders += ")"
+            placeholders += ")";
           }
           const [s, b] = opts.onRecordUpdate(
             placeholders,
@@ -1038,38 +1122,42 @@ const CompilerProto = {
             typeof segment.returningIdentifier === "string"
               ? [segment.returningIdentifier, []]
               : segment.returningIdentifier
-              ? this.compile(segment.returningIdentifier, withoutTransform, placeholder)
-              : undefined
-          )
-          sql += s
-          binds.push.apply(binds, b as any)
-          break
+                ? this.compile(
+                    segment.returningIdentifier,
+                    withoutTransform,
+                    placeholder
+                  )
+                : undefined
+          );
+          sql += s;
+          binds.push.apply(binds, b as any);
+          break;
         }
 
         case "Custom": {
-          const [s, b] = opts.onCustom(segment, placeholder, withoutTransform)
-          sql += s
-          binds.push.apply(binds, b as any)
-          break
+          const [s, b] = opts.onCustom(segment, placeholder, withoutTransform);
+          sql += s;
+          binds.push.apply(binds, b as any);
+          break;
         }
       }
     }
 
-    const result = [sql, binds] as const
+    const result = [sql, binds] as const;
     if (placeholderOverride !== undefined) {
-      return result
+      return result;
     }
-    return (statement as any)[cacheSymbol] = result
+    return ((statement as any)[cacheSymbol] = result);
   },
 
   get withoutTransform() {
-    const self = Object.create(CompilerProto)
+    const self = Object.create(CompilerProto);
     Object.assign(self, this, {
-      disableTransforms: true
-    })
-    return self
-  }
-}
+      disableTransforms: true,
+    });
+    return self;
+  },
+};
 
 /**
  * Creates a SQLite compiler that uses `?` placeholders and quoted identifiers,
@@ -1078,24 +1166,28 @@ const CompilerProto = {
  * @category compiler
  * @since 4.0.0
  */
-export const makeCompilerSqlite = (transform?: ((_: string) => string) | undefined): Compiler =>
+export const makeCompilerSqlite = (
+  transform?: ((_: string) => string) | undefined
+): Compiler =>
   makeCompiler({
     dialect: "sqlite",
     placeholder(_) {
-      return "?"
+      return "?";
     },
-    onIdentifier: transform ?
-      function(value, withoutTransform) {
-        return withoutTransform ? escapeSqlite(value) : escapeSqlite(transform(value))
-      } :
-      escapeSqlite,
+    onIdentifier: transform
+      ? function (value, withoutTransform) {
+          return withoutTransform
+            ? escapeSqlite(value)
+            : escapeSqlite(transform(value));
+        }
+      : escapeSqlite,
     onRecordUpdate() {
-      return ["", []]
+      return ["", []];
     },
     onCustom() {
-      return ["", []]
-    }
-  })
+      return ["", []];
+    },
+  });
 
 /**
  * Creates an identifier escaping function that wraps names in the given
@@ -1106,12 +1198,12 @@ export const makeCompilerSqlite = (transform?: ((_: string) => string) | undefin
  * @since 4.0.0
  */
 export function defaultEscape(c: string) {
-  const re = new RegExp(c, "g")
-  const double = c + c
-  const dot = c + "." + c
-  return function(str: string): string {
-    return c + str.replace(re, double).replace(/\./g, dot) + c
-  }
+  const re = new RegExp(c, "g");
+  const double = c + c;
+  const dot = c + "." + c;
+  return function (str: string): string {
+    return c + str.replace(re, double).replace(/\./g, dot) + c;
+  };
 }
 
 /**
@@ -1124,29 +1216,29 @@ export function defaultEscape(c: string) {
 export const primitiveKind = (value: unknown): PrimitiveKind => {
   switch (typeof value) {
     case "string":
-      return "string"
+      return "string";
     case "number":
-      return "number"
+      return "number";
     case "boolean":
-      return "boolean"
+      return "boolean";
     case "bigint":
-      return "bigint"
+      return "bigint";
     case "undefined":
-      return "null"
+      return "null";
   }
 
   if (value === null) {
-    return "null"
+    return "null";
   } else if (value instanceof Date) {
-    return "Date"
+    return "Date";
   } else if (value instanceof Uint8Array) {
-    return "Uint8Array"
+    return "Uint8Array";
   } else if (value instanceof Int8Array) {
-    return "Int8Array"
+    return "Int8Array";
   }
 
-  return "string"
-}
+  return "string";
+};
 
 /**
  * Builds value, object, and row-array transformers that rename object keys with
@@ -1162,81 +1254,83 @@ export const defaultTransforms = (
   const transformValue = (value: any) => {
     if (Array.isArray(value)) {
       if (value.length === 0 || value[0].constructor !== Object) {
-        return value
+        return value;
       }
-      return array(value)
+      return array(value);
     } else if (value?.constructor === Object) {
-      return transformObject(value)
+      return transformObject(value);
     }
-    return value
-  }
+    return value;
+  };
 
   const transformObject = (obj: Record<string, any>): any => {
-    const newObj: Record<string, any> = {}
+    const newObj: Record<string, any> = {};
     for (const key in obj) {
-      newObj[transformer(key)] = transformValue(obj[key])
+      newObj[transformer(key)] = transformValue(obj[key]);
     }
-    return newObj
-  }
+    return newObj;
+  };
 
   const transformArrayNested = <A extends object>(
     rows: ReadonlyArray<A>
   ): ReadonlyArray<A> => {
-    const newRows: Array<A> = new Array(rows.length)
+    const newRows: Array<A> = new Array(rows.length);
     for (let i = 0, len = rows.length; i < len; i++) {
-      const row = rows[i]
+      const row = rows[i];
       if (Array.isArray(row)) {
-        newRows[i] = transformArrayNested(row) as any
+        newRows[i] = transformArrayNested(row) as any;
       } else {
-        const obj: any = {}
+        const obj: any = {};
         for (const key in row) {
-          obj[transformer(key)] = transformValue(row[key])
+          obj[transformer(key)] = transformValue(row[key]);
         }
-        newRows[i] = obj
+        newRows[i] = obj;
       }
     }
-    return newRows
-  }
+    return newRows;
+  };
 
   const transformArray = <A extends object>(
     rows: ReadonlyArray<A>
   ): ReadonlyArray<A> => {
-    const newRows: Array<A> = new Array(rows.length)
+    const newRows: Array<A> = new Array(rows.length);
     for (let i = 0, len = rows.length; i < len; i++) {
-      const row = rows[i]
+      const row = rows[i];
       if (Array.isArray(row)) {
-        newRows[i] = transformArray(row) as any
+        newRows[i] = transformArray(row) as any;
       } else {
-        const obj: any = {}
+        const obj: any = {};
         for (const key in row) {
-          obj[transformer(key)] = row[key]
+          obj[transformer(key)] = row[key];
         }
-        newRows[i] = obj
+        newRows[i] = obj;
       }
     }
-    return newRows
-  }
+    return newRows;
+  };
 
-  const array = nested ? transformArrayNested : transformArray
+  const array = nested ? transformArrayNested : transformArray;
 
   return {
     value: transformValue,
     object: transformObject,
-    array
-  } as const
-}
+    array,
+  } as const;
+};
 
 // internal
 
-const ATTR_DB_OPERATION_NAME = "db.operation.name"
-const ATTR_DB_QUERY_TEXT = "db.query.text"
+const ATTR_DB_OPERATION_NAME = "db.operation.name";
+const ATTR_DB_QUERY_TEXT = "db.query.text";
 
 interface StatementImpl<A> extends Statement<A> {
-  readonly segments: ReadonlyArray<Segment>
-  readonly acquirer: Acquirer
-  readonly compiler: Compiler
-  readonly spanAttributes: ReadonlyArray<readonly [string, unknown]>
-  readonly transformRows: (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>) | undefined
+  readonly segments: ReadonlyArray<Segment>;
+  readonly acquirer: Acquirer;
+  readonly compiler: Compiler;
+  readonly spanAttributes: ReadonlyArray<readonly [string, unknown]>;
+  readonly transformRows:
+    | (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>)
+    | undefined;
 
   withConnection<XA, E>(
     operation: string,
@@ -1246,7 +1340,7 @@ interface StatementImpl<A> extends Statement<A> {
       params: ReadonlyArray<unknown>
     ) => Effect.Effect<XA, E>,
     withoutTransform?: boolean | undefined
-  ): Effect.Effect<XA, E | SqlError>
+  ): Effect.Effect<XA, E | SqlError>;
   withConnectionSpan<XA, E>(
     operation: string,
     f: (
@@ -1256,7 +1350,7 @@ interface StatementImpl<A> extends Statement<A> {
     ) => Effect.Effect<XA, E>,
     withoutTransform: boolean,
     span: Tracer.Span
-  ): Effect.Effect<XA, E | SqlError>
+  ): Effect.Effect<XA, E | SqlError>;
 }
 
 const makeUnsafe = <A = Row>(
@@ -1264,16 +1358,18 @@ const makeUnsafe = <A = Row>(
   acquirer: Acquirer,
   compiler: Compiler,
   spanAttributes: ReadonlyArray<readonly [string, unknown]>,
-  transformRows: (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>) | undefined
+  transformRows:
+    | (<A extends object>(row: ReadonlyArray<A>) => ReadonlyArray<A>)
+    | undefined
 ): StatementImpl<A> => {
-  const self = Object.create(StatementProto)
-  self.segments = segments
-  self.acquirer = acquirer
-  self.compiler = compiler
-  self.spanAttributes = spanAttributes
-  self.transformRows = transformRows
-  return self
-}
+  const self = Object.create(StatementProto);
+  self.segments = segments;
+  self.acquirer = acquirer;
+  self.compiler = compiler;
+  self.spanAttributes = spanAttributes;
+  self.transformRows = transformRows;
+  return self;
+};
 
 // TODO: figure out why these diagnostics are emitted
 const StatementProto: Omit<
@@ -1283,19 +1379,22 @@ const StatementProto: Omit<
   ...Effectable.Prototype<StatementImpl<any>>({
     label: "Statement",
     evaluate(fiber) {
-      const span = internalEffect.makeSpanUnsafe(fiber, "sql.execute", { kind: "client" })
-      const clock = fiber.getRef(Clock)
-      const timingEnabled = fiber.getRef(TracerTimingEnabled)
+      const span = internalEffect.makeSpanUnsafe(fiber, "sql.execute", {
+        kind: "client",
+      });
+      const clock = fiber.getRef(Clock);
+      const timingEnabled = fiber.getRef(TracerTimingEnabled);
       return Effect.onExit(
         this.withConnectionSpan(
           "execute",
-          (connection, sql, params) => connection.execute(sql, params, this.transformRows),
+          (connection, sql, params) =>
+            connection.execute(sql, params, this.transformRows),
           false,
           span
         ),
         (exit) => internalEffect.endSpan(span, exit, clock, timingEnabled)
-      )
-    }
+      );
+    },
   }),
   [FragmentTypeId]: FragmentTypeId,
   withConnection<XA, E>(
@@ -1308,17 +1407,9 @@ const StatementProto: Omit<
     ) => Effect.Effect<XA, E>,
     withoutTransform = false
   ): Effect.Effect<XA, E | SqlError> {
-    return Effect.useSpan(
-      "sql.execute",
-      { kind: "client" },
-      (span) =>
-        this.withConnectionSpan(
-          operation,
-          f,
-          withoutTransform,
-          span
-        )
-    )
+    return Effect.useSpan("sql.execute", { kind: "client" }, (span) =>
+      this.withConnectionSpan(operation, f, withoutTransform, span)
+    );
   },
   withConnectionSpan<XA, E>(
     this: StatementImpl<any>,
@@ -1332,14 +1423,16 @@ const StatementProto: Omit<
     span: Tracer.Span
   ): Effect.Effect<XA, E | SqlError> {
     return withStatement(this, span, (statement) => {
-      const [sql, params] = statement.compile(withoutTransform)
+      const [sql, params] = statement.compile(withoutTransform);
       for (const [key, value] of this.spanAttributes) {
-        span.attribute(key, value)
+        span.attribute(key, value);
       }
-      span.attribute(ATTR_DB_OPERATION_NAME, operation)
-      span.attribute(ATTR_DB_QUERY_TEXT, sql)
-      return Effect.scoped(Effect.flatMap(this.acquirer, (_) => f(_, sql, params)))
-    })
+      span.attribute(ATTR_DB_OPERATION_NAME, operation);
+      span.attribute(ATTR_DB_QUERY_TEXT, sql);
+      return Effect.scoped(
+        Effect.flatMap(this.acquirer, (_) => f(_, sql, params))
+      );
+    });
   },
 
   get withoutTransform(): Effect.Effect<ReadonlyArray<any>, SqlError> {
@@ -1347,7 +1440,7 @@ const StatementProto: Omit<
       "executeWithoutTransform",
       (connection, sql, params) => connection.execute(sql, params, undefined),
       true
-    )
+    );
   },
 
   get raw(): Effect.Effect<unknown, SqlError> {
@@ -1355,57 +1448,56 @@ const StatementProto: Omit<
       "executeRaw",
       (connection, sql, params) => connection.executeRaw(sql, params),
       true
-    )
+    );
   },
 
   get stream(): Stream.Stream<any, SqlError> {
-    const self = this as StatementImpl<any>
-    return Stream.unwrap(Effect.flatMap(
-      Effect.makeSpanScoped("sql.execute", { kind: "client" }),
-      (span) =>
-        withStatement(self, span, (statement) => {
-          const [sql, params] = statement.compile()
-          for (const [key, value] of self.spanAttributes) {
-            span.attribute(key, value)
-          }
-          span.attribute(ATTR_DB_OPERATION_NAME, "executeStream")
-          span.attribute(ATTR_DB_QUERY_TEXT, sql)
-          return Effect.map(self.acquirer, (_) => _.executeStream(sql, params, self.transformRows))
-        })
-    ))
+    const self = this as StatementImpl<any>;
+    return Stream.unwrap(
+      Effect.flatMap(
+        Effect.makeSpanScoped("sql.execute", { kind: "client" }),
+        (span) =>
+          withStatement(self, span, (statement) => {
+            const [sql, params] = statement.compile();
+            for (const [key, value] of self.spanAttributes) {
+              span.attribute(key, value);
+            }
+            span.attribute(ATTR_DB_OPERATION_NAME, "executeStream");
+            span.attribute(ATTR_DB_QUERY_TEXT, sql);
+            return Effect.map(self.acquirer, (_) =>
+              _.executeStream(sql, params, self.transformRows)
+            );
+          })
+      )
+    );
   },
 
-  get values(): Effect.Effect<
-    ReadonlyArray<ReadonlyArray<unknown>>,
-    SqlError
-  > {
-    return this.withConnection("executeValues", (connection, sql, params) => connection.executeValues(sql, params))
+  get values(): Effect.Effect<ReadonlyArray<ReadonlyArray<unknown>>, SqlError> {
+    return this.withConnection("executeValues", (connection, sql, params) =>
+      connection.executeValues(sql, params)
+    );
   },
 
   get unprepared(): Effect.Effect<ReadonlyArray<any>, SqlError> {
-    const self = this as StatementImpl<any>
-    return self.withConnection(
-      "executeUnprepared",
-      (connection, sql, params) => connection.executeUnprepared(sql, params, self.transformRows)
-    )
+    const self = this as StatementImpl<any>;
+    return self.withConnection("executeUnprepared", (connection, sql, params) =>
+      connection.executeUnprepared(sql, params, self.transformRows)
+    );
   },
 
-  compile(
-    this: StatementImpl<any>,
-    withoutTransform?: boolean | undefined
-  ) {
-    return this.compiler.compile(this, withoutTransform ?? false)
+  compile(this: StatementImpl<any>, withoutTransform?: boolean | undefined) {
+    return this.compiler.compile(this, withoutTransform ?? false);
   },
   toJSON(this: StatementImpl<any>) {
-    const [sql, params] = this.compile()
+    const [sql, params] = this.compile();
     return {
       _id: "Statement",
       segments: this.segments,
       sql,
-      params
-    }
-  }
-}
+      params,
+    };
+  },
+};
 
 const withStatement = <A, X, E, R>(
   self: StatementImpl<A>,
@@ -1413,24 +1505,29 @@ const withStatement = <A, X, E, R>(
   f: (statement: StatementImpl<A>) => Effect.Effect<X, E, R>
 ) =>
   Effect.withFiber<X, E, R>((fiber) => {
-    const transform = fiber.getRef(CurrentTransformer)
+    const transform = fiber.getRef(CurrentTransformer);
     if (transform === undefined) {
-      return f(self)
+      return f(self);
     }
     return Effect.flatMap(
       transform(
         self,
-        make(self.acquirer, self.compiler, self.spanAttributes, self.transformRows),
+        make(
+          self.acquirer,
+          self.compiler,
+          self.spanAttributes,
+          self.transformRows
+        ),
         fiber,
         span
       ) as Effect.Effect<StatementImpl<A>>,
       f
-    )
-  })
+    );
+  });
 
 const isSegment = (u: unknown): u is Segment => {
   if (!hasProperty(u, "_tag")) {
-    return false
+    return false;
   }
   switch (u._tag) {
     case "Literal":
@@ -1441,31 +1538,33 @@ const isSegment = (u: unknown): u is Segment => {
     case "RecordUpdateHelperSingle":
     case "Identifier":
     case "Custom":
-      return true
+      return true;
     default:
-      return false
+      return false;
   }
-}
+};
 
 function convertLiteralOrFragment(clause: string | Fragment): Array<Segment> {
   if (typeof clause === "string") {
-    return [literal(clause)]
+    return [literal(clause)];
   }
-  return clause.segments as Array<Segment>
+  return clause.segments as Array<Segment>;
 }
 
-const makePlaceholdersArray = (evaluate: (u: unknown) => string) => (values: ReadonlyArray<unknown>): string => {
-  if (values.length === 0) {
-    return ""
-  }
+const makePlaceholdersArray =
+  (evaluate: (u: unknown) => string) =>
+  (values: ReadonlyArray<unknown>): string => {
+    if (values.length === 0) {
+      return "";
+    }
 
-  let result = evaluate(values[0])
-  for (let i = 1; i < values.length; i++) {
-    result += `,${evaluate(values[i])}`
-  }
+    let result = evaluate(values[0]);
+    for (let i = 1; i < values.length; i++) {
+      result += `,${evaluate(values[i])}`;
+    }
 
-  return result
-}
+    return result;
+  };
 
 const generateColumns = (
   keys: ReadonlyArray<string>,
@@ -1473,15 +1572,15 @@ const generateColumns = (
   withoutTransform: boolean
 ) => {
   if (keys.length === 0) {
-    return "()"
+    return "()";
   }
 
-  let str = `(${escape(keys[0], withoutTransform)}`
+  let str = `(${escape(keys[0], withoutTransform)}`;
   for (let i = 1; i < keys.length; i++) {
-    str += `,${escape(keys[i], withoutTransform)}`
+    str += `,${escape(keys[i], withoutTransform)}`;
   }
-  return str + ")"
-}
+  return str + ")";
+};
 
 const extractPrimitive = (
   value: unknown,
@@ -1494,35 +1593,33 @@ const extractPrimitive = (
   withoutTransform: boolean
 ): unknown => {
   if (value === undefined) {
-    return null
+    return null;
   } else if (isFragment(value)) {
-    const head = value.segments[0]
+    const head = value.segments[0];
     if (head._tag === "Custom") {
-      const compiled = onCustom(head, placeholder, withoutTransform)
-      return compiled[1][0] ?? null
+      const compiled = onCustom(head, placeholder, withoutTransform);
+      return compiled[1][0] ?? null;
     } else if (head._tag === "Parameter") {
-      return head.value
+      return head.value;
     }
-    return null
+    return null;
   }
-  return value
-}
+  return value;
+};
 
-const escapeSqlite = defaultEscape("\"")
+const escapeSqlite = defaultEscape('"');
 
-function in_(values: ReadonlyArray<unknown>): ArrayHelper
-function in_(column: string, values: ReadonlyArray<unknown>): Fragment
+function in_(values: ReadonlyArray<unknown>): ArrayHelper;
+function in_(column: string, values: ReadonlyArray<unknown>): Fragment;
 function in_(): Fragment | ArrayHelper {
   if (arguments.length === 1) {
-    return arrayHelper(arguments[0])
+    return arrayHelper(arguments[0]);
   }
-  const column = arguments[0]
-  const values = arguments[1]
-  return values.length === 0 ? neverFragment : fragment([
-    identifier(column),
-    literal(" IN "),
-    arrayHelper(values)
-  ])
+  const column = arguments[0];
+  const values = arguments[1];
+  return values.length === 0
+    ? neverFragment
+    : fragment([identifier(column), literal(" IN "), arrayHelper(values)]);
 }
 
-const neverFragment = fragment([literal("1=0")])
+const neverFragment = fragment([literal("1=0")]);

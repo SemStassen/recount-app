@@ -1,17 +1,18 @@
-import * as Duration from "effect/Duration"
-import * as Effect from "effect/Effect"
-import { dual } from "effect/Function"
-import * as Number from "effect/Number"
-import * as Option from "effect/Option"
-import * as Predicate from "effect/Predicate"
-import * as Redactable from "effect/Redactable"
-import * as Schema from "effect/Schema"
-import * as AiError from "effect/unstable/ai/AiError"
-import type * as Response from "effect/unstable/ai/Response"
-import type * as HttpClientError from "effect/unstable/http/HttpClientError"
-import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest"
-import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse"
-import type { OpenAiErrorMetadata } from "../OpenAiError.ts"
+import * as Duration from "effect/Duration";
+import * as Effect from "effect/Effect";
+import { dual } from "effect/Function";
+import * as Number from "effect/Number";
+import * as Option from "effect/Option";
+import * as Predicate from "effect/Predicate";
+import * as Redactable from "effect/Redactable";
+import * as Schema from "effect/Schema";
+import * as AiError from "effect/unstable/ai/AiError";
+import type * as Response from "effect/unstable/ai/Response";
+import type * as HttpClientError from "effect/unstable/http/HttpClientError";
+import type * as HttpClientRequest from "effect/unstable/http/HttpClientRequest";
+import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
+
+import type { OpenAiErrorMetadata } from "../OpenAiError.ts";
 
 // =============================================================================
 // OpenAI Error Body Schema
@@ -23,9 +24,9 @@ export const OpenAiErrorBody = Schema.Struct({
     message: Schema.String,
     type: Schema.optional(Schema.NullOr(Schema.String)),
     param: Schema.optional(Schema.NullOr(Schema.String)),
-    code: Schema.optional(Schema.NullOr(Schema.String))
-  })
-})
+    code: Schema.optional(Schema.NullOr(Schema.String)),
+  }),
+});
 
 // =============================================================================
 // Error Mappers
@@ -39,102 +40,120 @@ export const mapSchemaError = dual<
   AiError.make({
     module: "OpenAiClient",
     method,
-    reason: AiError.InvalidOutputError.fromSchemaError(error)
-  }))
+    reason: AiError.InvalidOutputError.fromSchemaError(error),
+  })
+);
 
 /** @internal */
 export const mapHttpClientError = dual<
-  (method: string) => (error: HttpClientError.HttpClientError) => Effect.Effect<never, AiError.AiError>,
-  (error: HttpClientError.HttpClientError, method: string) => Effect.Effect<never, AiError.AiError>
+  (
+    method: string
+  ) => (
+    error: HttpClientError.HttpClientError
+  ) => Effect.Effect<never, AiError.AiError>,
+  (
+    error: HttpClientError.HttpClientError,
+    method: string
+  ) => Effect.Effect<never, AiError.AiError>
 >(2, (error, method) => {
-  const reason = error.reason
+  const reason = error.reason;
   switch (reason._tag) {
     case "TransportError": {
-      return Effect.fail(AiError.make({
-        module: "OpenAiClient",
-        method,
-        reason: new AiError.NetworkError({
-          reason: "TransportError",
-          description: reason.description,
-          request: buildHttpRequestDetails(reason.request)
+      return Effect.fail(
+        AiError.make({
+          module: "OpenAiClient",
+          method,
+          reason: new AiError.NetworkError({
+            reason: "TransportError",
+            description: reason.description,
+            request: buildHttpRequestDetails(reason.request),
+          }),
         })
-      }))
+      );
     }
     case "EncodeError": {
-      return Effect.fail(AiError.make({
-        module: "OpenAiClient",
-        method,
-        reason: new AiError.NetworkError({
-          reason: "EncodeError",
-          description: reason.description,
-          request: buildHttpRequestDetails(reason.request)
+      return Effect.fail(
+        AiError.make({
+          module: "OpenAiClient",
+          method,
+          reason: new AiError.NetworkError({
+            reason: "EncodeError",
+            description: reason.description,
+            request: buildHttpRequestDetails(reason.request),
+          }),
         })
-      }))
+      );
     }
     case "InvalidUrlError": {
-      return Effect.fail(AiError.make({
-        module: "OpenAiClient",
-        method,
-        reason: new AiError.NetworkError({
-          reason: "InvalidUrlError",
-          description: reason.description,
-          request: buildHttpRequestDetails(reason.request)
+      return Effect.fail(
+        AiError.make({
+          module: "OpenAiClient",
+          method,
+          reason: new AiError.NetworkError({
+            reason: "InvalidUrlError",
+            description: reason.description,
+            request: buildHttpRequestDetails(reason.request),
+          }),
         })
-      }))
+      );
     }
     case "StatusCodeError": {
-      return mapStatusCodeError(reason, method)
+      return mapStatusCodeError(reason, method);
     }
     case "DecodeError": {
-      return Effect.fail(AiError.make({
-        module: "OpenAiClient",
-        method,
-        reason: new AiError.InvalidOutputError({
-          description: reason.description ?? "Failed to decode response"
+      return Effect.fail(
+        AiError.make({
+          module: "OpenAiClient",
+          method,
+          reason: new AiError.InvalidOutputError({
+            description: reason.description ?? "Failed to decode response",
+          }),
         })
-      }))
+      );
     }
     case "EmptyBodyError": {
-      return Effect.fail(AiError.make({
-        module: "OpenAiClient",
-        method,
-        reason: new AiError.InvalidOutputError({
-          description: reason.description ?? "Response body was empty"
+      return Effect.fail(
+        AiError.make({
+          module: "OpenAiClient",
+          method,
+          reason: new AiError.InvalidOutputError({
+            description: reason.description ?? "Response body was empty",
+          }),
         })
-      }))
+      );
     }
   }
-})
+});
 
 /** @internal */
-const mapStatusCodeError = Effect.fnUntraced(function*(
+const mapStatusCodeError = Effect.fnUntraced(function* (
   error: HttpClientError.StatusCodeError,
   method: string
 ) {
-  const { request, response, description } = error
-  const status = response.status
-  const headers = response.headers as Record<string, string>
-  const requestId = headers["x-request-id"]
+  const { request, response, description } = error;
+  const status = response.status;
+  const headers = response.headers as Record<string, string>;
+  const requestId = headers["x-request-id"];
 
   // Try to get the actual response body. The description from filterStatusOk
   // is often just "non 2xx status code", so try reading from response.text
-  let body: string | undefined = description
+  let body: string | undefined = description;
   if (!description || !description.startsWith("{")) {
-    const responseBody = yield* Effect.option(response.text)
+    const responseBody = yield* Effect.option(response.text);
     if (Option.isSome(responseBody) && responseBody.value) {
-      body = responseBody.value
+      body = responseBody.value;
     }
   }
 
   // Try to parse the body as JSON to extract error details
-  let json: unknown = undefined
+  let json: unknown = undefined;
   // @effect-diagnostics effect/tryCatchInEffectGen:off
   try {
-    json = Predicate.isNotUndefined(body) ? JSON.parse(body) : undefined
+    json = Predicate.isNotUndefined(body) ? JSON.parse(body) : undefined;
   } catch {
-    json = undefined
+    json = undefined;
   }
-  const decoded = Schema.decodeUnknownOption(OpenAiErrorBody)(json)
+  const decoded = Schema.decodeUnknownOption(OpenAiErrorBody)(json);
 
   const reason = mapStatusCodeToReason({
     status,
@@ -142,14 +161,18 @@ const mapStatusCodeError = Effect.fnUntraced(function*(
     message: Option.isSome(decoded) ? decoded.value.error.message : undefined,
     http: buildHttpContext({ request, response, body }),
     metadata: {
-      errorCode: Option.isSome(decoded) ? decoded.value.error.code ?? null : null,
-      errorType: Option.isSome(decoded) ? decoded.value.error.type ?? null : null,
-      requestId: requestId ?? null
-    }
-  })
+      errorCode: Option.isSome(decoded)
+        ? (decoded.value.error.code ?? null)
+        : null,
+      errorType: Option.isSome(decoded)
+        ? (decoded.value.error.type ?? null)
+        : null,
+      requestId: requestId ?? null,
+    },
+  });
 
-  return yield* AiError.make({ module: "OpenAiClient", method, reason })
-})
+  return yield* AiError.make({ module: "OpenAiClient", method, reason });
+});
 
 // =============================================================================
 // Rate Limits
@@ -157,26 +180,26 @@ const mapStatusCodeError = Effect.fnUntraced(function*(
 
 /** @internal */
 export const parseRateLimitHeaders = (headers: Record<string, string>) => {
-  const retryAfterRaw = headers["retry-after"]
-  let retryAfter: Duration.Duration | undefined
+  const retryAfterRaw = headers["retry-after"];
+  let retryAfter: Duration.Duration | undefined;
   if (Predicate.isNotUndefined(retryAfterRaw)) {
-    const parsed = Number.parse(retryAfterRaw)
+    const parsed = Number.parse(retryAfterRaw);
     if (Option.isSome(parsed)) {
-      retryAfter = Duration.seconds(parsed.value)
+      retryAfter = Duration.seconds(parsed.value);
     }
   }
-  const remainingRaw = headers["x-ratelimit-remaining-requests"]
+  const remainingRaw = headers["x-ratelimit-remaining-requests"];
   const remaining = Predicate.isNotUndefined(remainingRaw)
     ? Option.getOrNull(Number.parse(remainingRaw))
-    : null
+    : null;
   return {
     retryAfter,
     limit: headers["x-ratelimit-limit-requests"] ?? null,
     remaining,
     resetRequests: headers["x-ratelimit-reset-requests"] ?? null,
-    resetTokens: headers["x-ratelimit-reset-tokens"] ?? null
-  }
-}
+    resetTokens: headers["x-ratelimit-reset-tokens"] ?? null,
+  };
+};
 
 // =============================================================================
 // HTTP Context
@@ -190,81 +213,91 @@ export const buildHttpRequestDetails = (
   url: request.url,
   urlParams: Array.from(request.urlParams),
   hash: Option.getOrUndefined(request.hash),
-  headers: Redactable.redact(request.headers) as Record<string, string>
-})
+  headers: Redactable.redact(request.headers) as Record<string, string>,
+});
 
 /** @internal */
 export const buildHttpContext = (params: {
-  readonly request: HttpClientRequest.HttpClientRequest
-  readonly response?: HttpClientResponse.HttpClientResponse
-  readonly body?: string | undefined
+  readonly request: HttpClientRequest.HttpClientRequest;
+  readonly response?: HttpClientResponse.HttpClientResponse;
+  readonly body?: string | undefined;
 }): typeof AiError.HttpContext.Type => ({
   request: buildHttpRequestDetails(params.request),
   response: Predicate.isNotUndefined(params.response)
     ? {
-      status: params.response.status,
-      headers: Redactable.redact(params.response.headers) as Record<string, string>
-    }
+        status: params.response.status,
+        headers: Redactable.redact(params.response.headers) as Record<
+          string,
+          string
+        >,
+      }
     : undefined,
-  body: params.body
-})
+  body: params.body,
+});
 
 // =============================================================================
 // HTTP Status Code
 // =============================================================================
 
 const buildInvalidRequestDescription = (params: {
-  readonly status: number
-  readonly message: string | undefined
-  readonly method: string
-  readonly url: string
-  readonly errorCode: string | null
-  readonly errorType: string | null
-  readonly requestId: string | null
-  readonly body: string | undefined
+  readonly status: number;
+  readonly message: string | undefined;
+  readonly method: string;
+  readonly url: string;
+  readonly errorCode: string | null;
+  readonly errorType: string | null;
+  readonly requestId: string | null;
+  readonly body: string | undefined;
 }): string => {
-  const parts: Array<string> = []
+  const parts: Array<string> = [];
 
   // Primary message or status description
   if (params.message) {
-    parts.push(params.message)
+    parts.push(params.message);
   } else {
-    parts.push(`HTTP ${params.status}`)
+    parts.push(`HTTP ${params.status}`);
   }
 
   // Request context
-  parts.push(`(${params.method} ${params.url})`)
+  parts.push(`(${params.method} ${params.url})`);
 
   // Error code/type if available
   if (params.errorCode) {
-    parts.push(`[code: ${params.errorCode}]`)
+    parts.push(`[code: ${params.errorCode}]`);
   } else if (params.errorType) {
-    parts.push(`[type: ${params.errorType}]`)
+    parts.push(`[type: ${params.errorType}]`);
   }
 
   // Request ID for debugging
   if (params.requestId) {
-    parts.push(`[requestId: ${params.requestId}]`)
+    parts.push(`[requestId: ${params.requestId}]`);
   }
 
   // If no message and we have body, show truncated body
   if (!params.message && params.body) {
-    const truncated = params.body.length > 200
-      ? params.body.slice(0, 200) + "..."
-      : params.body
-    parts.push(`Response: ${truncated}`)
+    const truncated =
+      params.body.length > 200
+        ? params.body.slice(0, 200) + "..."
+        : params.body;
+    parts.push(`Response: ${truncated}`);
   }
 
-  return parts.join(" ")
-}
+  return parts.join(" ");
+};
 
 /** @internal */
-export const mapStatusCodeToReason = ({ status, headers, message, metadata, http }: {
-  readonly status: number
-  readonly headers: Record<string, string>
-  readonly message: string | undefined
-  readonly metadata: OpenAiErrorMetadata
-  readonly http: typeof AiError.HttpContext.Type
+export const mapStatusCodeToReason = ({
+  status,
+  headers,
+  message,
+  metadata,
+  http,
+}: {
+  readonly status: number;
+  readonly headers: Record<string, string>;
+  readonly message: string | undefined;
+  readonly metadata: OpenAiErrorMetadata;
+  readonly http: typeof AiError.HttpContext.Type;
 }): AiError.AiErrorReason => {
   const invalidRequestDescription = buildInvalidRequestDescription({
     status,
@@ -274,41 +307,41 @@ export const mapStatusCodeToReason = ({ status, headers, message, metadata, http
     errorCode: metadata.errorCode,
     errorType: metadata.errorType,
     requestId: metadata.requestId,
-    body: http.body
-  })
+    body: http.body,
+  });
 
   switch (status) {
     case 400:
       return new AiError.InvalidRequestError({
         description: invalidRequestDescription,
         metadata: { openai: metadata },
-        http
-      })
+        http,
+      });
     case 401:
       return new AiError.AuthenticationError({
         kind: "InvalidKey",
         metadata,
-        http
-      })
+        http,
+      });
     case 403:
       return new AiError.AuthenticationError({
         kind: "InsufficientPermissions",
         metadata,
-        http
-      })
+        http,
+      });
     case 404:
       return new AiError.InvalidRequestError({
         description: invalidRequestDescription,
         metadata: { openai: metadata },
-        http
-      })
+        http,
+      });
     case 409:
     case 422:
       return new AiError.InvalidRequestError({
         description: invalidRequestDescription,
         metadata: { openai: metadata },
-        http
-      })
+        http,
+      });
     case 429: {
       // Best-effort detection: OpenAI returns insufficient_quota for billing/quota issues
       if (
@@ -317,33 +350,34 @@ export const mapStatusCodeToReason = ({ status, headers, message, metadata, http
       ) {
         return new AiError.QuotaExhaustedError({
           metadata: { openai: metadata },
-          http
-        })
+          http,
+        });
       }
-      const { retryAfter, ...rateLimitMetadata } = parseRateLimitHeaders(headers)
+      const { retryAfter, ...rateLimitMetadata } =
+        parseRateLimitHeaders(headers);
       return new AiError.RateLimitError({
         retryAfter,
         metadata: {
           openai: {
             ...metadata,
-            ...rateLimitMetadata
-          }
+            ...rateLimitMetadata,
+          },
         },
-        http
-      })
+        http,
+      });
     }
     default:
       if (status >= 500) {
         return new AiError.InternalProviderError({
           description: message ?? "Server error",
           metadata,
-          http
-        })
+          http,
+        });
       }
       return new AiError.UnknownError({
         description: message,
         metadata,
-        http
-      })
+        http,
+      });
   }
-}
+};

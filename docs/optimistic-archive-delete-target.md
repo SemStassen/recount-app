@@ -92,7 +92,11 @@ File: `interface/src/db/workspace/project-actions.ts`
 Add imports:
 
 ```ts
-import { deletedRecords, insertedRecords, updatedRecords } from "./electric-reconciliation";
+import {
+  deletedRecords,
+  insertedRecords,
+  updatedRecords,
+} from "./electric-reconciliation";
 ```
 
 Only import `deletedRecords` if a Project or Task hard delete action is added later. For archive/unarchive, `updatedRecords` is enough.

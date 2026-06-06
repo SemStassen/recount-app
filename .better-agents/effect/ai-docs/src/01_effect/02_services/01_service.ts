@@ -6,13 +6,16 @@
  */
 
 // file: src/db/Database.ts
-import { Context, Effect, Layer, Schema } from "effect"
+import { Context, Effect, Layer, Schema } from "effect";
 
 // Pass in the service class name as the first type parameter, and the service
 // interface as the second type parameter.
-export class Database extends Context.Service<Database, {
-  query(sql: string): Effect.Effect<Array<unknown>, DatabaseError>
-}>()(
+export class Database extends Context.Service<
+  Database,
+  {
+    query(sql: string): Effect.Effect<Array<unknown>, DatabaseError>;
+  }
+>()(
   // The string identifier for the service, which should include the package
   // name and the subdirectory path to the service file.
   "myapp/db/Database"
@@ -21,25 +24,31 @@ export class Database extends Context.Service<Database, {
   // implementation of the service.
   static readonly layer = Layer.effect(
     Database,
-    Effect.gen(function*() {
+    Effect.gen(function* () {
       // Define the service methods using Effect.fn
-      const query = Effect.fn("Database.query")(function*(sql: string) {
-        yield* Effect.log("Executing SQL query:", sql)
-        return [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }]
-      })
+      const query = Effect.fn("Database.query")(function* (sql: string) {
+        yield* Effect.log("Executing SQL query:", sql);
+        return [
+          { id: 1, name: "Alice" },
+          { id: 2, name: "Bob" },
+        ];
+      });
 
       // Return an instance of the service using Database.of, passing in an
       // object that implements the service interface.
       return Database.of({
-        query
-      })
+        query,
+      });
     })
-  )
+  );
 }
 
-export class DatabaseError extends Schema.TaggedErrorClass<DatabaseError>()("DatabaseError", {
-  cause: Schema.Defect
-}) {}
+export class DatabaseError extends Schema.TaggedErrorClass<DatabaseError>()(
+  "DatabaseError",
+  {
+    cause: Schema.Defect,
+  }
+) {}
 
 // If you ever need to access the service type, use `Database["Service"]`
-export type DatabaseService = Database["Service"]
+export type DatabaseService = Database["Service"];

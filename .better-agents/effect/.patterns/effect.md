@@ -6,55 +6,55 @@
 
 ```typescript
 // ❌ WRONG - This will cause runtime errors
-Effect.gen(function*() {
+Effect.gen(function* () {
   try {
-    const result = yield* someEffect
-    return result
+    const result = yield* someEffect;
+    return result;
   } catch (error) {
     // This will never be reached and breaks Effect semantics
-    console.error(error)
+    console.error(error);
   }
-})
+});
 
 // ✅ CORRECT - Use Effect's built-in error handling
-Effect.gen(function*() {
-  const result = yield* Effect.result(someEffect)
+Effect.gen(function* () {
+  const result = yield* Effect.result(someEffect);
   if (result._tag === "Failure") {
     // Handle error case properly
-    console.error("Effect failed:", result.cause)
-    return yield* Effect.fail("Handled error")
+    console.error("Effect failed:", result.cause);
+    return yield* Effect.fail("Handled error");
   }
-  return result.value
-})
+  return result.value;
+});
 ```
 
-## return yield* Pattern for Errors
+## return yield\* Pattern for Errors
 
 **CRITICAL**: Always use `return yield*` when yielding terminal effects.
 
 ```typescript
 // ✅ CORRECT - Makes termination explicit
-Effect.gen(function*() {
+Effect.gen(function* () {
   if (invalidCondition) {
-    return yield* Effect.fail("Validation failed")
+    return yield* Effect.fail("Validation failed");
   }
 
   if (shouldInterrupt) {
-    return yield* Effect.interrupt
+    return yield* Effect.interrupt;
   }
 
   // Continue with normal flow
-  const result = yield* someOtherEffect
-  return result
-})
+  const result = yield* someOtherEffect;
+  return result;
+});
 
 // ❌ WRONG - Missing return keyword leads to unreachable code
-Effect.gen(function*() {
+Effect.gen(function* () {
   if (invalidCondition) {
-    yield* Effect.fail("Validation failed") // Missing return!
+    yield* Effect.fail("Validation failed"); // Missing return!
     // Unreachable code after error!
   }
-})
+});
 ```
 
 ## `Effect.gen` and `Effect.fnUntraced`
@@ -64,14 +64,14 @@ Prefer `Effect.fnUntraced` over functions that only return `Effect.gen`.
 ```typescript
 // ❌ AVOID - Function only wraps Effect.gen
 const fn = (param: string) =>
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     // ...
-  })
+  });
 
 // ✅ PREFER - Reusable untraced Effect function
-const fn = Effect.fnUntraced(function*(param: string) {
+const fn = Effect.fnUntraced(function* (param: string) {
   // ...
-})
+});
 ```
 
 ## When to Use What
@@ -94,9 +94,12 @@ const fn = Effect.fnUntraced(function*(param: string) {
 Prefer the class syntax when working with `Context.Service`.
 
 ```typescript
-import { Context } from "effect"
+import { Context } from "effect";
 
-class MyService extends Context.Service<MyService, {
-  readonly doSomething: (input: string) => number
-}>()("MyService") {}
+class MyService extends Context.Service<
+  MyService,
+  {
+    readonly doSomething: (input: string) => number;
+  }
+>()("MyService") {}
 ```

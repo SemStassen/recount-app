@@ -36,17 +36,22 @@
  *
  * @since 4.0.0
  */
-import * as Effect from "effect/Effect"
-import * as Predicate from "effect/Predicate"
-import * as Schema from "effect/Schema"
+import * as Effect from "effect/Effect";
+import * as Predicate from "effect/Predicate";
+import * as Schema from "effect/Schema";
 
-const UnknownRecord = Schema.Record(Schema.String, Schema.Unknown)
+const UnknownRecord = Schema.Record(Schema.String, Schema.Unknown);
 
-const JsonObject = Schema.Record(Schema.String, Schema.Unknown)
+const JsonObject = Schema.Record(Schema.String, Schema.Unknown);
 
-const MessageRole = Schema.Literals(["system", "developer", "user", "assistant"])
+const MessageRole = Schema.Literals([
+  "system",
+  "developer",
+  "user",
+  "assistant",
+]);
 
-const ImageDetail = Schema.Literals(["low", "high", "auto"])
+const ImageDetail = Schema.Literals(["low", "high", "auto"]);
 
 /**
  * Schema for optional `include` values supported by the local handwritten
@@ -67,8 +72,8 @@ export const IncludeEnum = Schema.Literals([
   "reasoning.encrypted_content",
   "message.output_text.logprobs",
   "code_interpreter_call.outputs",
-  "web_search_call.action.sources"
-])
+  "web_search_call.action.sources",
+]);
 
 /**
  * Type of optional `include` values accepted by OpenAI Responses requests.
@@ -76,7 +81,7 @@ export const IncludeEnum = Schema.Literals([
  * @category models
  * @since 4.0.0
  */
-export type IncludeEnum = typeof IncludeEnum.Type
+export type IncludeEnum = typeof IncludeEnum.Type;
 
 /**
  * Schema for lifecycle statuses shared by messages, reasoning items, and tool calls.
@@ -89,7 +94,11 @@ export type IncludeEnum = typeof IncludeEnum.Type
  * @category schemas
  * @since 4.0.0
  */
-export const MessageStatus = Schema.Literals(["in_progress", "completed", "incomplete"])
+export const MessageStatus = Schema.Literals([
+  "in_progress",
+  "completed",
+  "incomplete",
+]);
 
 /**
  * Lifecycle status shared by messages, reasoning items, and tool calls.
@@ -101,27 +110,27 @@ export const MessageStatus = Schema.Literals(["in_progress", "completed", "incom
  * @category models
  * @since 4.0.0
  */
-export type MessageStatus = typeof MessageStatus.Type
+export type MessageStatus = typeof MessageStatus.Type;
 
 const InputTextContent = Schema.Struct({
   type: Schema.Literal("input_text"),
-  text: Schema.String
-})
+  text: Schema.String,
+});
 
 const InputImageContent = Schema.Struct({
   type: Schema.Literal("input_image"),
   image_url: Schema.optionalKey(Schema.NullOr(Schema.String)),
   file_id: Schema.optionalKey(Schema.NullOr(Schema.String)),
-  detail: Schema.optionalKey(Schema.NullOr(ImageDetail))
-})
+  detail: Schema.optionalKey(Schema.NullOr(ImageDetail)),
+});
 
 const InputFileContent = Schema.Struct({
   type: Schema.Literal("input_file"),
   file_id: Schema.optionalKey(Schema.NullOr(Schema.String)),
   filename: Schema.optionalKey(Schema.String),
   file_url: Schema.optionalKey(Schema.String),
-  file_data: Schema.optionalKey(Schema.String)
-})
+  file_data: Schema.optionalKey(Schema.String),
+});
 
 /**
  * Schema for content blocks accepted in OpenAI Responses input messages.
@@ -138,8 +147,8 @@ const InputFileContent = Schema.Struct({
 export const InputContent = Schema.Union([
   InputTextContent,
   InputImageContent,
-  InputFileContent
-])
+  InputFileContent,
+]);
 
 /**
  * Content block accepted in OpenAI Responses input messages.
@@ -151,7 +160,7 @@ export const InputContent = Schema.Union([
  * @category models
  * @since 4.0.0
  */
-export type InputContent = typeof InputContent.Type
+export type InputContent = typeof InputContent.Type;
 
 /**
  * Schema for a text block containing a model-provided reasoning summary.
@@ -168,8 +177,8 @@ export type InputContent = typeof InputContent.Type
  */
 export const SummaryTextContent = Schema.Struct({
   type: Schema.Literal("summary_text"),
-  text: Schema.String
-})
+  text: Schema.String,
+});
 
 /**
  * Text content block used for model-provided reasoning summaries.
@@ -177,43 +186,43 @@ export const SummaryTextContent = Schema.Struct({
  * @category models
  * @since 4.0.0
  */
-export type SummaryTextContent = typeof SummaryTextContent.Type
+export type SummaryTextContent = typeof SummaryTextContent.Type;
 
 const ReasoningTextContent = Schema.Struct({
   type: Schema.Literal("reasoning_text"),
-  text: Schema.String
-})
+  text: Schema.String,
+});
 
 const RefusalContent = Schema.Struct({
   type: Schema.Literal("refusal"),
-  refusal: Schema.String
-})
+  refusal: Schema.String,
+});
 
 const TextContent = Schema.Struct({
   type: Schema.Literal("text"),
-  text: Schema.String
-})
+  text: Schema.String,
+});
 
 const ComputerScreenshotContent = Schema.Struct({
   type: Schema.Literal("computer_screenshot"),
   image_url: Schema.NullOr(Schema.String),
-  file_id: Schema.NullOr(Schema.String)
-})
+  file_id: Schema.NullOr(Schema.String),
+});
 
 const FileCitationAnnotation = Schema.Struct({
   type: Schema.Literal("file_citation"),
   file_id: Schema.String,
   index: Schema.Number,
-  filename: Schema.String
-})
+  filename: Schema.String,
+});
 
 const UrlCitationAnnotation = Schema.Struct({
   type: Schema.Literal("url_citation"),
   url: Schema.String,
   start_index: Schema.Number,
   end_index: Schema.Number,
-  title: Schema.String
-})
+  title: Schema.String,
+});
 
 const ContainerFileCitationAnnotation = Schema.Struct({
   type: Schema.Literal("container_file_citation"),
@@ -221,14 +230,14 @@ const ContainerFileCitationAnnotation = Schema.Struct({
   file_id: Schema.String,
   start_index: Schema.Number,
   end_index: Schema.Number,
-  filename: Schema.String
-})
+  filename: Schema.String,
+});
 
 const FilePathAnnotation = Schema.Struct({
   type: Schema.Literal("file_path"),
   file_id: Schema.String,
-  index: Schema.Number
-})
+  index: Schema.Number,
+});
 
 /**
  * Schema for citation and file-path annotations attached to output text content.
@@ -245,8 +254,8 @@ export const Annotation = Schema.Union([
   FileCitationAnnotation,
   UrlCitationAnnotation,
   ContainerFileCitationAnnotation,
-  FilePathAnnotation
-])
+  FilePathAnnotation,
+]);
 
 /**
  * Citation or file-path annotation attached to output text content.
@@ -259,14 +268,14 @@ export const Annotation = Schema.Union([
  * @category models
  * @since 4.0.0
  */
-export type Annotation = typeof Annotation.Type
+export type Annotation = typeof Annotation.Type;
 
 const OutputTextContent = Schema.Struct({
   type: Schema.Literal("output_text"),
   text: Schema.String,
   annotations: Schema.Array(Annotation),
-  logprobs: Schema.optionalKey(Schema.Array(Schema.Unknown))
-})
+  logprobs: Schema.optionalKey(Schema.Array(Schema.Unknown)),
+});
 
 const OutputMessageContent = Schema.Union([
   InputTextContent,
@@ -277,16 +286,16 @@ const OutputMessageContent = Schema.Union([
   RefusalContent,
   InputImageContent,
   ComputerScreenshotContent,
-  InputFileContent
-])
+  InputFileContent,
+]);
 
 const OutputMessage = Schema.Struct({
   id: Schema.String,
   type: Schema.Literal("message"),
   role: Schema.Literal("assistant"),
   content: Schema.Array(OutputMessageContent),
-  status: MessageStatus
-})
+  status: MessageStatus,
+});
 
 /**
  * Schema for a reasoning output item containing encrypted content, summaries, and optional reasoning text.
@@ -318,8 +327,8 @@ export const ReasoningItem = Schema.Struct({
   encrypted_content: Schema.optionalKey(Schema.NullOr(Schema.String)),
   summary: Schema.Array(SummaryTextContent),
   content: Schema.optionalKey(Schema.Array(ReasoningTextContent)),
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 /**
  * Reasoning output item containing encrypted content, summaries, and optional reasoning text.
@@ -342,7 +351,7 @@ export const ReasoningItem = Schema.Struct({
  * @category models
  * @since 4.0.0
  */
-export type ReasoningItem = typeof ReasoningItem.Type
+export type ReasoningItem = typeof ReasoningItem.Type;
 
 const FunctionCall = Schema.Struct({
   id: Schema.optionalKey(Schema.String),
@@ -350,80 +359,74 @@ const FunctionCall = Schema.Struct({
   call_id: Schema.String,
   name: Schema.String,
   arguments: Schema.String,
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const FunctionCallOutput = Schema.Struct({
   id: Schema.optionalKey(Schema.NullOr(Schema.String)),
   type: Schema.Literal("function_call_output"),
   call_id: Schema.String,
-  output: Schema.Union([
-    Schema.String,
-    Schema.Array(InputContent)
-  ]),
-  status: Schema.optionalKey(Schema.NullOr(MessageStatus))
-})
+  output: Schema.Union([Schema.String, Schema.Array(InputContent)]),
+  status: Schema.optionalKey(Schema.NullOr(MessageStatus)),
+});
 
 const ItemReference = Schema.Struct({
   type: Schema.Literal("item_reference"),
-  id: Schema.String
-})
+  id: Schema.String,
+});
 
 const LocalShellCall = Schema.Struct({
   id: Schema.optionalKey(Schema.String),
   type: Schema.Literal("local_shell_call"),
   call_id: Schema.String,
   action: Schema.Unknown,
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const LocalShellCallOutput = Schema.Struct({
   id: Schema.optionalKey(Schema.String),
   type: Schema.Literal("local_shell_call_output"),
   call_id: Schema.String,
   output: Schema.Unknown,
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const ShellCall = Schema.Struct({
   id: Schema.optionalKey(Schema.String),
   type: Schema.Literal("shell_call"),
   call_id: Schema.String,
   action: Schema.Unknown,
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const ShellCallOutput = Schema.Struct({
   id: Schema.optionalKey(Schema.String),
   type: Schema.Literal("shell_call_output"),
   call_id: Schema.String,
   output: Schema.Unknown,
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const ApplyPatchCallOutput = Schema.Struct({
   id: Schema.optionalKey(Schema.String),
   type: Schema.Literal("apply_patch_call_output"),
   call_id: Schema.String,
   status: Schema.optionalKey(MessageStatus),
-  output: Schema.optionalKey(Schema.Unknown)
-})
+  output: Schema.optionalKey(Schema.Unknown),
+});
 
 const McpApprovalResponse = Schema.Struct({
   type: Schema.Literal("mcp_approval_response"),
   approval_request_id: Schema.String,
-  approve: Schema.Boolean
-})
+  approve: Schema.Boolean,
+});
 
 const RequestMessageItem = Schema.Struct({
   type: Schema.optionalKey(Schema.Literal("message")),
   role: MessageRole,
   status: Schema.optionalKey(MessageStatus),
-  content: Schema.Union([
-    Schema.String,
-    Schema.Array(InputContent)
-  ])
-})
+  content: Schema.Union([Schema.String, Schema.Array(InputContent)]),
+});
 
 /**
  * Schema for item shapes accepted by an OpenAI Responses request `input` field.
@@ -456,8 +459,8 @@ export const InputItem = Schema.Union([
   ShellCall,
   ShellCallOutput,
   ApplyPatchCallOutput,
-  McpApprovalResponse
-])
+  McpApprovalResponse,
+]);
 
 /**
  * Item shape accepted by an OpenAI Responses request `input` field.
@@ -475,22 +478,22 @@ export const InputItem = Schema.Union([
  * @category models
  * @since 4.0.0
  */
-export type InputItem = typeof InputItem.Type
+export type InputItem = typeof InputItem.Type;
 
 const FunctionTool = Schema.Struct({
   type: Schema.Literal("function"),
   name: Schema.String,
   description: Schema.optionalKey(Schema.NullOr(Schema.String)),
   parameters: Schema.optionalKey(Schema.NullOr(JsonObject)),
-  strict: Schema.optionalKey(Schema.NullOr(Schema.Boolean))
-})
+  strict: Schema.optionalKey(Schema.NullOr(Schema.Boolean)),
+});
 
 const CustomTool = Schema.Struct({
   type: Schema.Literal("custom"),
   name: Schema.String,
   description: Schema.optionalKey(Schema.String),
-  format: Schema.optionalKey(Schema.Unknown)
-})
+  format: Schema.optionalKey(Schema.Unknown),
+});
 
 const ProviderDefinedTool = Schema.StructWithRest(
   Schema.Struct({
@@ -503,11 +506,11 @@ const ProviderDefinedTool = Schema.StructWithRest(
       "mcp",
       "shell",
       "web_search",
-      "web_search_preview"
-    ])
+      "web_search_preview",
+    ]),
   }),
   [UnknownRecord]
-)
+);
 
 /**
  * Schema for tool definitions that can be supplied to an OpenAI Responses request.
@@ -539,8 +542,8 @@ const ProviderDefinedTool = Schema.StructWithRest(
 export const Tool = Schema.Union([
   FunctionTool,
   CustomTool,
-  ProviderDefinedTool
-])
+  ProviderDefinedTool,
+]);
 
 /**
  * Tool definition that can be supplied to an OpenAI Responses request.
@@ -548,7 +551,7 @@ export const Tool = Schema.Union([
  * @category models
  * @since 4.0.0
  */
-export type Tool = typeof Tool.Type
+export type Tool = typeof Tool.Type;
 
 /**
  * Schema for selecting whether and which tools the model may call in a Responses request.
@@ -574,15 +577,15 @@ export const ToolChoice = Schema.Union([
   Schema.Struct({
     type: Schema.Literal("allowed_tools"),
     mode: Schema.Literals(["auto", "required"]),
-    tools: Schema.Array(JsonObject)
+    tools: Schema.Array(JsonObject),
   }),
   Schema.Struct({
     type: Schema.Literal("function"),
-    name: Schema.String
+    name: Schema.String,
   }),
   Schema.Struct({
     type: Schema.Literal("custom"),
-    name: Schema.String
+    name: Schema.String,
   }),
   Schema.StructWithRest(
     Schema.Struct({
@@ -595,12 +598,12 @@ export const ToolChoice = Schema.Union([
         "mcp",
         "shell",
         "web_search",
-        "web_search_preview"
-      ])
+        "web_search_preview",
+      ]),
     }),
     [UnknownRecord]
-  )
-])
+  ),
+]);
 
 /**
  * Tool selection mode or named tool choice for a Responses request.
@@ -613,7 +616,7 @@ export const ToolChoice = Schema.Union([
  * @category models
  * @since 4.0.0
  */
-export type ToolChoice = typeof ToolChoice.Type
+export type ToolChoice = typeof ToolChoice.Type;
 
 /**
  * Schema for text output format configuration, including plain text, JSON object, and JSON Schema responses.
@@ -644,10 +647,10 @@ export const TextResponseFormatConfiguration = Schema.Union([
     description: Schema.optionalKey(Schema.String),
     name: Schema.String,
     schema: JsonObject,
-    strict: Schema.optionalKey(Schema.NullOr(Schema.Boolean))
+    strict: Schema.optionalKey(Schema.NullOr(Schema.Boolean)),
   }),
-  Schema.Struct({ type: Schema.Literal("json_object") })
-])
+  Schema.Struct({ type: Schema.Literal("json_object") }),
+]);
 
 /**
  * Text output format configuration for plain text, JSON object, or JSON Schema responses.
@@ -655,7 +658,8 @@ export const TextResponseFormatConfiguration = Schema.Union([
  * @category models
  * @since 4.0.0
  */
-export type TextResponseFormatConfiguration = typeof TextResponseFormatConfiguration.Type
+export type TextResponseFormatConfiguration =
+  typeof TextResponseFormatConfiguration.Type;
 
 /**
  * Schema for request options used to create an OpenAI Responses API response.
@@ -691,29 +695,34 @@ export const CreateResponse = Schema.Struct({
   service_tier: Schema.optional(Schema.String),
   previous_response_id: Schema.optional(Schema.String),
   model: Schema.optional(Schema.String),
-  reasoning: Schema.optional(Schema.Struct({
-    effort: Schema.optional(Schema.Literals(["none", "minimal", "low", "medium", "high", "xhigh"])),
+  reasoning: Schema.optional(
+    Schema.Struct({
+      effort: Schema.optional(
+        Schema.Literals(["none", "minimal", "low", "medium", "high", "xhigh"])
+      ),
 
-    summary: Schema.optional(Schema.Literals(["auto", "concise", "detailed"])),
-    generate_summary: Schema.optional(Schema.Literals(["auto", "concise", "detailed"]))
-  })),
+      summary: Schema.optional(
+        Schema.Literals(["auto", "concise", "detailed"])
+      ),
+      generate_summary: Schema.optional(
+        Schema.Literals(["auto", "concise", "detailed"])
+      ),
+    })
+  ),
   background: Schema.optional(Schema.Boolean),
   max_output_tokens: Schema.optional(Schema.Number),
   max_tool_calls: Schema.optional(Schema.Number),
   text: Schema.optional(
     Schema.Struct({
       format: Schema.optional(TextResponseFormatConfiguration),
-      verbosity: Schema.optional(Schema.Literals(["low", "medium", "high"]))
+      verbosity: Schema.optional(Schema.Literals(["low", "medium", "high"])),
     })
   ),
   tools: Schema.optional(Schema.Array(Tool)),
   tool_choice: Schema.optional(ToolChoice),
   truncation: Schema.optional(Schema.Literals(["auto", "disabled"])),
   input: Schema.optional(
-    Schema.Union([
-      Schema.String,
-      Schema.Array(InputItem)
-    ])
+    Schema.Union([Schema.String, Schema.Array(InputItem)])
   ),
   include: Schema.optional(Schema.Array(IncludeEnum)),
   store: Schema.optional(Schema.Boolean),
@@ -721,8 +730,8 @@ export const CreateResponse = Schema.Struct({
   stream: Schema.optional(Schema.Boolean),
   conversation: Schema.optional(Schema.String),
   modalities: Schema.optional(Schema.Array(Schema.Literals(["text", "audio"]))),
-  seed: Schema.optional(Schema.Number)
-})
+  seed: Schema.optional(Schema.Number),
+});
 
 /**
  * Request options used to create an OpenAI Responses API response.
@@ -730,7 +739,7 @@ export const CreateResponse = Schema.Struct({
  * @category options
  * @since 4.0.0
  */
-export type CreateResponse = typeof CreateResponse.Type
+export type CreateResponse = typeof CreateResponse.Type;
 
 /**
  * Schema for token accounting reported on OpenAI Responses API response objects.
@@ -750,10 +759,10 @@ export const ResponseUsage = Schema.StructWithRest(
     output_tokens: Schema.Number,
     total_tokens: Schema.Number,
     input_tokens_details: Schema.optionalKey(Schema.Unknown),
-    output_tokens_details: Schema.optionalKey(Schema.Unknown)
+    output_tokens_details: Schema.optionalKey(Schema.Unknown),
   }),
   [UnknownRecord]
-)
+);
 
 /**
  * Token accounting reported on OpenAI Responses API response objects.
@@ -766,21 +775,21 @@ export const ResponseUsage = Schema.StructWithRest(
  * @category models
  * @since 4.0.0
  */
-export type ResponseUsage = typeof ResponseUsage.Type
+export type ResponseUsage = typeof ResponseUsage.Type;
 
 const ApplyPatchOperation = Schema.Struct({
   type: Schema.String,
   path: Schema.String,
-  diff: Schema.optionalKey(Schema.String)
-})
+  diff: Schema.optionalKey(Schema.String),
+});
 
 const ApplyPatchCall = Schema.Struct({
   id: Schema.String,
   type: Schema.Literal("apply_patch_call"),
   call_id: Schema.String,
   operation: ApplyPatchOperation,
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const CodeInterpreterCall = Schema.Struct({
   id: Schema.String,
@@ -788,29 +797,29 @@ const CodeInterpreterCall = Schema.Struct({
   code: Schema.optionalKey(Schema.String),
   container_id: Schema.String,
   outputs: Schema.optionalKey(Schema.Array(Schema.Unknown)),
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const ComputerCall = Schema.Struct({
   id: Schema.String,
   type: Schema.Literal("computer_call"),
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const FileSearchCall = Schema.Struct({
   id: Schema.String,
   type: Schema.Literal("file_search_call"),
   status: Schema.optionalKey(Schema.String),
   queries: Schema.optionalKey(Schema.Array(Schema.String)),
-  results: Schema.optionalKey(Schema.NullOr(Schema.Unknown))
-})
+  results: Schema.optionalKey(Schema.NullOr(Schema.Unknown)),
+});
 
 const ImageGenerationCall = Schema.Struct({
   id: Schema.String,
   type: Schema.Literal("image_generation_call"),
   result: Schema.optionalKey(Schema.String),
-  status: Schema.optionalKey(MessageStatus)
-})
+  status: Schema.optionalKey(MessageStatus),
+});
 
 const McpCall = Schema.Struct({
   id: Schema.String,
@@ -820,28 +829,28 @@ const McpCall = Schema.Struct({
   arguments: Schema.Unknown,
   output: Schema.optionalKey(Schema.Unknown),
   error: Schema.optionalKey(Schema.Unknown),
-  server_label: Schema.optionalKey(Schema.NullOr(Schema.String))
-})
+  server_label: Schema.optionalKey(Schema.NullOr(Schema.String)),
+});
 
 const McpListTools = Schema.Struct({
   id: Schema.String,
-  type: Schema.Literal("mcp_list_tools")
-})
+  type: Schema.Literal("mcp_list_tools"),
+});
 
 const McpApprovalRequest = Schema.Struct({
   id: Schema.String,
   type: Schema.Literal("mcp_approval_request"),
   approval_request_id: Schema.optionalKey(Schema.String),
   name: Schema.String,
-  arguments: Schema.Unknown
-})
+  arguments: Schema.Unknown,
+});
 
 const WebSearchCall = Schema.Struct({
   id: Schema.String,
   type: Schema.Literal("web_search_call"),
   action: Schema.optionalKey(Schema.Unknown),
-  status: Schema.optionalKey(Schema.String)
-})
+  status: Schema.optionalKey(Schema.String),
+});
 
 const OutputItem = Schema.Union([
   ApplyPatchCall,
@@ -857,8 +866,8 @@ const OutputItem = Schema.Union([
   OutputMessage,
   ReasoningItem,
   ShellCall,
-  WebSearchCall
-])
+  WebSearchCall,
+]);
 
 /**
  * Schema for an OpenAI Responses API response object.
@@ -891,12 +900,14 @@ export const Response = Schema.Struct({
   incomplete_details: Schema.optionalKey(
     Schema.NullOr(
       Schema.Struct({
-        reason: Schema.optionalKey(Schema.Literals(["max_output_tokens", "content_filter"]))
+        reason: Schema.optionalKey(
+          Schema.Literals(["max_output_tokens", "content_filter"])
+        ),
       })
     )
   ),
-  service_tier: Schema.optionalKey(Schema.String)
-})
+  service_tier: Schema.optionalKey(Schema.String),
+});
 
 /**
  * OpenAI Responses API response object.
@@ -913,45 +924,45 @@ export const Response = Schema.Struct({
  * @category models
  * @since 4.0.0
  */
-export type Response = typeof Response.Type
+export type Response = typeof Response.Type;
 
 const ResponseCreatedEvent = Schema.Struct({
   type: Schema.Literal("response.created"),
   response: Response,
-  sequence_number: Schema.Number
-})
+  sequence_number: Schema.Number,
+});
 
 const ResponseCompletedEvent = Schema.Struct({
   type: Schema.Literal("response.completed"),
   response: Response,
-  sequence_number: Schema.Number
-})
+  sequence_number: Schema.Number,
+});
 
 const ResponseIncompleteEvent = Schema.Struct({
   type: Schema.Literal("response.incomplete"),
   response: Response,
-  sequence_number: Schema.Number
-})
+  sequence_number: Schema.Number,
+});
 
 const ResponseFailedEvent = Schema.Struct({
   type: Schema.Literal("response.failed"),
   response: Response,
-  sequence_number: Schema.Number
-})
+  sequence_number: Schema.Number,
+});
 
 const ResponseOutputItemAddedEvent = Schema.Struct({
   type: Schema.Literal("response.output_item.added"),
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  item: OutputItem
-})
+  item: OutputItem,
+});
 
 const ResponseOutputItemDoneEvent = Schema.Struct({
   type: Schema.Literal("response.output_item.done"),
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  item: OutputItem
-})
+  item: OutputItem,
+});
 
 const ResponseOutputTextDeltaEvent = Schema.Struct({
   type: Schema.Literal("response.output_text.delta"),
@@ -960,8 +971,8 @@ const ResponseOutputTextDeltaEvent = Schema.Struct({
   content_index: Schema.Number,
   delta: Schema.String,
   sequence_number: Schema.Number,
-  logprobs: Schema.optionalKey(Schema.Array(Schema.Unknown))
-})
+  logprobs: Schema.optionalKey(Schema.Array(Schema.Unknown)),
+});
 
 const ResponseOutputTextAnnotationAddedEvent = Schema.Struct({
   type: Schema.Literal("response.output_text.annotation.added"),
@@ -970,8 +981,8 @@ const ResponseOutputTextAnnotationAddedEvent = Schema.Struct({
   content_index: Schema.Number,
   annotation_index: Schema.Number,
   sequence_number: Schema.Number,
-  annotation: Annotation
-})
+  annotation: Annotation,
+});
 
 const ResponseReasoningSummaryPartAddedEvent = Schema.Struct({
   type: Schema.Literal("response.reasoning_summary_part.added"),
@@ -979,8 +990,8 @@ const ResponseReasoningSummaryPartAddedEvent = Schema.Struct({
   output_index: Schema.Number,
   summary_index: Schema.Number,
   sequence_number: Schema.Number,
-  part: SummaryTextContent
-})
+  part: SummaryTextContent,
+});
 
 const ResponseReasoningSummaryPartDoneEvent = Schema.Struct({
   type: Schema.Literal("response.reasoning_summary_part.done"),
@@ -988,8 +999,8 @@ const ResponseReasoningSummaryPartDoneEvent = Schema.Struct({
   output_index: Schema.Number,
   summary_index: Schema.Number,
   sequence_number: Schema.Number,
-  part: SummaryTextContent
-})
+  part: SummaryTextContent,
+});
 
 const ResponseReasoningSummaryTextDeltaEvent = Schema.Struct({
   type: Schema.Literal("response.reasoning_summary_text.delta"),
@@ -997,64 +1008,64 @@ const ResponseReasoningSummaryTextDeltaEvent = Schema.Struct({
   output_index: Schema.Number,
   summary_index: Schema.Number,
   delta: Schema.String,
-  sequence_number: Schema.Number
-})
+  sequence_number: Schema.Number,
+});
 
 const ResponseFunctionCallArgumentsDeltaEvent = Schema.Struct({
   type: Schema.Literal("response.function_call_arguments.delta"),
   item_id: Schema.String,
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  delta: Schema.String
-})
+  delta: Schema.String,
+});
 
 const ResponseFunctionCallArgumentsDoneEvent = Schema.Struct({
   type: Schema.Literal("response.function_call_arguments.done"),
   item_id: Schema.String,
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  arguments: Schema.String
-})
+  arguments: Schema.String,
+});
 
 const ResponseCodeInterpreterCallCodeDeltaEvent = Schema.Struct({
   type: Schema.Literal("response.code_interpreter_call_code.delta"),
   item_id: Schema.String,
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  delta: Schema.String
-})
+  delta: Schema.String,
+});
 
 const ResponseCodeInterpreterCallCodeDoneEvent = Schema.Struct({
   type: Schema.Literal("response.code_interpreter_call_code.done"),
   item_id: Schema.String,
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  code: Schema.String
-})
+  code: Schema.String,
+});
 
 const ResponseApplyPatchCallOperationDiffDeltaEvent = Schema.Struct({
   type: Schema.Literal("response.apply_patch_call_operation_diff.delta"),
   item_id: Schema.String,
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  delta: Schema.String
-})
+  delta: Schema.String,
+});
 
 const ResponseApplyPatchCallOperationDiffDoneEvent = Schema.Struct({
   type: Schema.Literal("response.apply_patch_call_operation_diff.done"),
   item_id: Schema.String,
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  delta: Schema.optionalKey(Schema.String)
-})
+  delta: Schema.optionalKey(Schema.String),
+});
 
 const ResponseImageGenerationCallPartialImageEvent = Schema.Struct({
   type: Schema.Literal("response.image_generation_call.partial_image"),
   item_id: Schema.String,
   output_index: Schema.Number,
   sequence_number: Schema.Number,
-  partial_image_b64: Schema.String
-})
+  partial_image_b64: Schema.String,
+});
 
 const ResponseErrorEvent = Schema.Struct({
   type: Schema.Literal("error"),
@@ -1062,8 +1073,8 @@ const ResponseErrorEvent = Schema.Struct({
   message: Schema.String,
   param: Schema.NullOr(Schema.String),
   sequence_number: Schema.Number,
-  status: Schema.optionalKey(Schema.Number)
-})
+  status: Schema.optionalKey(Schema.Number),
+});
 
 const knownResponseStreamEventTypes = new Set([
   "response.created",
@@ -1084,8 +1095,8 @@ const knownResponseStreamEventTypes = new Set([
   "response.apply_patch_call_operation_diff.delta",
   "response.apply_patch_call_operation_diff.done",
   "response.image_generation_call.partial_image",
-  "error"
-])
+  "error",
+]);
 
 /**
  * Fallback event shape for future or provider-specific response stream events.
@@ -1094,9 +1105,9 @@ const knownResponseStreamEventTypes = new Set([
  * @since 4.0.0
  */
 export type UnknownResponseStreamEvent = {
-  readonly type: string
-  readonly [key: string]: unknown
-}
+  readonly type: string;
+  readonly [key: string]: unknown;
+};
 
 const UnknownResponseStreamEvent = Schema.declare<UnknownResponseStreamEvent>(
   (value): value is UnknownResponseStreamEvent =>
@@ -1105,9 +1116,9 @@ const UnknownResponseStreamEvent = Schema.declare<UnknownResponseStreamEvent>(
     !knownResponseStreamEventTypes.has(value.type),
   {
     identifier: "UnknownResponseStreamEvent",
-    description: "Fallback for unknown future stream events"
+    description: "Fallback for unknown future stream events",
   }
-)
+);
 
 /**
  * Schema for server-sent event shapes emitted by OpenAI Responses API streams.
@@ -1153,8 +1164,8 @@ export const ResponseStreamEvent = Schema.Union([
   ResponseApplyPatchCallOperationDiffDoneEvent,
   ResponseImageGenerationCallPartialImageEvent,
   ResponseErrorEvent,
-  UnknownResponseStreamEvent
-])
+  UnknownResponseStreamEvent,
+]);
 
 /**
  * Server-sent event shape emitted by OpenAI Responses API streams.
@@ -1171,7 +1182,7 @@ export const ResponseStreamEvent = Schema.Union([
  * @category models
  * @since 4.0.0
  */
-export type ResponseStreamEvent = typeof ResponseStreamEvent.Type
+export type ResponseStreamEvent = typeof ResponseStreamEvent.Type;
 
 /**
  * Schema for one embedding item returned by the OpenAI embeddings API.
@@ -1195,13 +1206,10 @@ export type ResponseStreamEvent = typeof ResponseStreamEvent.Type
  * @since 4.0.0
  */
 export const Embedding = Schema.Struct({
-  embedding: Schema.Union([
-    Schema.Array(Schema.Number),
-    Schema.String
-  ]),
+  embedding: Schema.Union([Schema.Array(Schema.Number), Schema.String]),
   index: Schema.Number,
-  object: Schema.optionalKey(Schema.String)
-})
+  object: Schema.optionalKey(Schema.String),
+});
 
 /**
  * One embedding item returned by the OpenAI embeddings API.
@@ -1214,7 +1222,7 @@ export const Embedding = Schema.Struct({
  * @category models
  * @since 4.0.0
  */
-export type Embedding = typeof Embedding.Type
+export type Embedding = typeof Embedding.Type;
 
 /**
  * Schema for the request payload sent to the OpenAI embeddings endpoint.
@@ -1244,13 +1252,13 @@ export const CreateEmbeddingRequest = Schema.Struct({
     Schema.String,
     Schema.Array(Schema.String),
     Schema.Array(Schema.Number),
-    Schema.Array(Schema.Array(Schema.Number))
+    Schema.Array(Schema.Array(Schema.Number)),
   ]),
   model: Schema.String,
   encoding_format: Schema.optionalKey(Schema.Literals(["float", "base64"])),
   dimensions: Schema.optionalKey(Schema.Number),
-  user: Schema.optionalKey(Schema.String)
-})
+  user: Schema.optionalKey(Schema.String),
+});
 
 /**
  * Request payload sent to the OpenAI embeddings endpoint.
@@ -1258,7 +1266,7 @@ export const CreateEmbeddingRequest = Schema.Struct({
  * @category models
  * @since 4.0.0
  */
-export type CreateEmbeddingRequest = typeof CreateEmbeddingRequest.Type
+export type CreateEmbeddingRequest = typeof CreateEmbeddingRequest.Type;
 
 /**
  * Schema for a successful response payload returned by the OpenAI embeddings endpoint.
@@ -1293,10 +1301,10 @@ export const CreateEmbeddingResponse = Schema.Struct({
   usage: Schema.optionalKey(
     Schema.Struct({
       prompt_tokens: Schema.Number,
-      total_tokens: Schema.Number
+      total_tokens: Schema.Number,
     })
-  )
-})
+  ),
+});
 
 /**
  * Successful response payload returned by the OpenAI embeddings endpoint.
@@ -1313,4 +1321,4 @@ export const CreateEmbeddingResponse = Schema.Struct({
  * @category models
  * @since 4.0.0
  */
-export type CreateEmbeddingResponse = typeof CreateEmbeddingResponse.Type
+export type CreateEmbeddingResponse = typeof CreateEmbeddingResponse.Type;

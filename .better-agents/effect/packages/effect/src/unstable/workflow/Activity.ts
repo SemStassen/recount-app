@@ -21,22 +21,22 @@
  *
  * @since 4.0.0
  */
-import type { NonEmptyReadonlyArray } from "../../Array.ts"
-import * as Cause from "../../Cause.ts"
-import * as Context from "../../Context.ts"
-import * as Effect from "../../Effect.ts"
-import * as Effectable from "../../Effectable.ts"
-import { dual } from "../../Function.ts"
-import * as Schedule from "../../Schedule.ts"
-import * as Schema from "../../Schema.ts"
-import type { Scope } from "../../Scope.ts"
-import type * as Types from "../../Types.ts"
-import * as DurableDeferred from "./DurableDeferred.ts"
-import { makeHashDigest } from "./internal/crypto.ts"
-import * as Workflow from "./Workflow.ts"
-import type { WorkflowEngine, WorkflowInstance } from "./WorkflowEngine.ts"
+import type { NonEmptyReadonlyArray } from "../../Array.ts";
+import * as Cause from "../../Cause.ts";
+import * as Context from "../../Context.ts";
+import * as Effect from "../../Effect.ts";
+import * as Effectable from "../../Effectable.ts";
+import { dual } from "../../Function.ts";
+import * as Schedule from "../../Schedule.ts";
+import * as Schema from "../../Schema.ts";
+import type { Scope } from "../../Scope.ts";
+import type * as Types from "../../Types.ts";
+import * as DurableDeferred from "./DurableDeferred.ts";
+import { makeHashDigest } from "./internal/crypto.ts";
+import * as Workflow from "./Workflow.ts";
+import type { WorkflowEngine, WorkflowInstance } from "./WorkflowEngine.ts";
 
-const TypeId = "~effect/workflow/Activity"
+const TypeId = "~effect/workflow/Activity";
 
 /**
  * Durable workflow activity that behaves as an `Effect` and records its name,
@@ -49,27 +49,26 @@ const TypeId = "~effect/workflow/Activity"
 export interface Activity<
   Success extends Schema.Top = Schema.Void,
   Error extends Schema.Top = Schema.Never,
-  R = never
-> extends
-  Effect.Effect<
-    Success["Type"],
-    Error["Type"],
-    Success["DecodingServices"] | Error["DecodingServices"] | R | WorkflowEngine | WorkflowInstance
-  >
-{
-  readonly [TypeId]: typeof TypeId
-  readonly name: string
-  readonly successSchema: Success
-  readonly errorSchema: Error
-  readonly exitSchema: Schema.Exit<Success, Error, Schema.Defect>
-  readonly annotations: Context.Context<never>
-  annotate<I, S>(
-    key: Context.Key<I, S>,
-    value: S
-  ): Activity<Success, Error, R>
+  R = never,
+> extends Effect.Effect<
+  Success["Type"],
+  Error["Type"],
+  | Success["DecodingServices"]
+  | Error["DecodingServices"]
+  | R
+  | WorkflowEngine
+  | WorkflowInstance
+> {
+  readonly [TypeId]: typeof TypeId;
+  readonly name: string;
+  readonly successSchema: Success;
+  readonly errorSchema: Error;
+  readonly exitSchema: Schema.Exit<Success, Error, Schema.Defect>;
+  readonly annotations: Context.Context<never>;
+  annotate<I, S>(key: Context.Key<I, S>, value: S): Activity<Success, Error, R>;
   annotateMerge<I>(
     annotations: Context.Context<I>
-  ): Activity<Success, Error, R>
+  ): Activity<Success, Error, R>;
   readonly execute: Effect.Effect<
     Success["Type"],
     Error["Type"],
@@ -81,7 +80,7 @@ export interface Activity<
     | Scope
     | WorkflowEngine
     | WorkflowInstance
-  >
+  >;
   readonly executeEncoded: Effect.Effect<
     unknown,
     unknown,
@@ -93,7 +92,7 @@ export interface Activity<
     | Scope
     | WorkflowEngine
     | WorkflowInstance
-  >
+  >;
 }
 
 /**
@@ -104,10 +103,10 @@ export interface Activity<
  * @since 4.0.0
  */
 export interface Any {
-  readonly [TypeId]: typeof TypeId
-  readonly name: string
-  readonly executeEncoded: Effect.Effect<any, any, any>
-  readonly annotations: Context.Context<never>
+  readonly [TypeId]: typeof TypeId;
+  readonly name: string;
+  readonly executeEncoded: Effect.Effect<any, any, any>;
+  readonly annotations: Context.Context<never>;
 }
 
 /**
@@ -118,11 +117,11 @@ export interface Any {
  * @since 4.0.0
  */
 export interface AnyWithProps {
-  readonly [TypeId]: typeof TypeId
-  readonly name: string
-  readonly successSchema: Schema.Top
-  readonly errorSchema: Schema.Top
-  readonly executeEncoded: Effect.Effect<any, any, any>
+  readonly [TypeId]: typeof TypeId;
+  readonly name: string;
+  readonly successSchema: Schema.Top;
+  readonly errorSchema: Schema.Top;
+  readonly executeEncoded: Effect.Effect<any, any, any>;
 }
 
 /**
@@ -135,31 +134,41 @@ export interface AnyWithProps {
 export const make = <
   R,
   Success extends Schema.Top = Schema.Void,
-  Error extends Schema.Top = Schema.Never
+  Error extends Schema.Top = Schema.Never,
 >(options: {
-  readonly name: string
-  readonly success?: Success | undefined
-  readonly error?: Error | undefined
-  readonly execute: Effect.Effect<Success["Type"], Error["Type"], R>
-  readonly interruptRetryPolicy?: Schedule.Schedule<any, Cause.Cause<unknown>> | undefined
-  readonly annotations?: Context.Context<never> | undefined
-}): Activity<Success, Error, Exclude<R, WorkflowInstance | WorkflowEngine | Scope>> => {
-  const successSchema = options.success ?? (Schema.Void as any as Success)
-  const errorSchema = options.error ?? (Schema.Never as any as Error)
-  const successSchemaJson = Schema.toCodecJson(successSchema)
-  const errorSchemaJson = Schema.toCodecJson(errorSchema)
+  readonly name: string;
+  readonly success?: Success | undefined;
+  readonly error?: Error | undefined;
+  readonly execute: Effect.Effect<Success["Type"], Error["Type"], R>;
+  readonly interruptRetryPolicy?:
+    | Schedule.Schedule<any, Cause.Cause<unknown>>
+    | undefined;
+  readonly annotations?: Context.Context<never> | undefined;
+}): Activity<
+  Success,
+  Error,
+  Exclude<R, WorkflowInstance | WorkflowEngine | Scope>
+> => {
+  const successSchema = options.success ?? (Schema.Void as any as Success);
+  const errorSchema = options.error ?? (Schema.Never as any as Error);
+  const successSchemaJson = Schema.toCodecJson(successSchema);
+  const errorSchemaJson = Schema.toCodecJson(errorSchema);
   // oxlint-disable-next-line prefer-const
-  let execute!: Effect.Effect<Success["Type"], Error["Type"], any>
+  let execute!: Effect.Effect<Success["Type"], Error["Type"], any>;
   const executeWithoutInterrupt = retryOnInterrupt(
     options.name,
     options.interruptRetryPolicy
-  )(options.execute)
-  const self: Activity<Success, Error, Exclude<R, WorkflowInstance | WorkflowEngine>> = {
+  )(options.execute);
+  const self: Activity<
+    Success,
+    Error,
+    Exclude<R, WorkflowInstance | WorkflowEngine>
+  > = {
     ...Effectable.Prototype<Activity<Success, Error, R>>({
       label: "Activity",
       evaluate(_) {
-        return execute
-      }
+        return execute;
+      },
     }),
     [TypeId]: TypeId,
     name: options.name,
@@ -170,45 +179,53 @@ export const make = <
     annotate(tag: Context.Key<any, any>, value: any) {
       return make({
         ...options,
-        annotations: Context.add(self.annotations, tag, value)
-      })
+        annotations: Context.add(self.annotations, tag, value),
+      });
     },
     annotateMerge(context: Context.Context<any>) {
       return make({
         ...options,
-        annotations: Context.merge(self.annotations, context)
-      })
+        annotations: Context.merge(self.annotations, context),
+      });
     },
     execute: executeWithoutInterrupt,
     executeEncoded: Effect.matchEffect(executeWithoutInterrupt, {
-      onFailure: (error) => Effect.flatMap(Effect.orDie(Schema.encodeEffect(errorSchemaJson)(error)), Effect.fail),
-      onSuccess: (value) => Effect.orDie(Schema.encodeEffect(successSchemaJson)(value))
-    })
-  } as any
-  execute = makeExecute(self)
-  return self
-}
+      onFailure: (error) =>
+        Effect.flatMap(
+          Effect.orDie(Schema.encodeEffect(errorSchemaJson)(error)),
+          Effect.fail
+        ),
+      onSuccess: (value) =>
+        Effect.orDie(Schema.encodeEffect(successSchemaJson)(value)),
+    }),
+  } as any;
+  execute = makeExecute(self);
+  return self;
+};
 
 const interruptRetryPolicy = Schedule.exponential(4.0, 1.5).pipe(
   Schedule.either(Schedule.spaced("10 seconds")),
   Schedule.either(Schedule.recurs(10)),
   Schedule.satisfiesInputType<Cause.Cause<unknown>>(),
   Schedule.while((meta) => Effect.succeed(Cause.hasInterrupts(meta.input)))
-)
+);
 
-const retryOnInterrupt = (
-  name: string,
-  policy: Schedule.Schedule<any, Cause.Cause<unknown>> = interruptRetryPolicy
-) =>
-<A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
-  effect.pipe(
-    Effect.sandbox,
-    Effect.retry(policy),
-    Effect.catch((cause) => {
-      if (!Cause.hasInterrupts(cause)) return Effect.failCause(cause)
-      return Effect.die(`Activity "${name}" interrupted and retry attempts exhausted`)
-    })
-  )
+const retryOnInterrupt =
+  (
+    name: string,
+    policy: Schedule.Schedule<any, Cause.Cause<unknown>> = interruptRetryPolicy
+  ) =>
+  <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
+    effect.pipe(
+      Effect.sandbox,
+      Effect.retry(policy),
+      Effect.catch((cause) => {
+        if (!Cause.hasInterrupts(cause)) return Effect.failCause(cause);
+        return Effect.die(
+          `Activity "${name}" interrupted and retry attempts exhausted`
+        );
+      })
+    );
 
 /**
  * Retries an effect with `Effect.retry` while updating `CurrentAttempt` for
@@ -218,21 +235,35 @@ const retryOnInterrupt = (
  * @since 4.0.0
  */
 export const retry: {
-  <E, O extends Types.NoExcessProperties<Omit<Effect.Retry.Options<E>, "schedule">, O>>(
+  <
+    E,
+    O extends Types.NoExcessProperties<
+      Omit<Effect.Retry.Options<E>, "schedule">,
+      O
+    >,
+  >(
     options: O
-  ): <A, R>(self: Effect.Effect<A, E, R>) => Effect.Retry.Return<R, E, A, O>
-  <A, E, R, O extends Types.NoExcessProperties<Omit<Effect.Retry.Options<E>, "schedule">, O>>(
+  ): <A, R>(self: Effect.Effect<A, E, R>) => Effect.Retry.Return<R, E, A, O>;
+  <
+    A,
+    E,
+    R,
+    O extends Types.NoExcessProperties<
+      Omit<Effect.Retry.Options<E>, "schedule">,
+      O
+    >,
+  >(
     self: Effect.Effect<A, E, R>,
     options: O
-  ): Effect.Retry.Return<R, E, A, O>
-} = dual(
-  2,
-  (effect: Effect.Effect<any, any, any>, options: {}) =>
-    Effect.suspend(() => {
-      let attempt = 1
-      return Effect.suspend(() => Effect.provideService(effect, CurrentAttempt, attempt++)).pipe(Effect.retry(options))
-    })
-)
+  ): Effect.Retry.Return<R, E, A, O>;
+} = dual(2, (effect: Effect.Effect<any, any, any>, options: {}) =>
+  Effect.suspend(() => {
+    let attempt = 1;
+    return Effect.suspend(() =>
+      Effect.provideService(effect, CurrentAttempt, attempt++)
+    ).pipe(Effect.retry(options));
+  })
+);
 
 /**
  * Context reference containing the current activity retry attempt, defaulting
@@ -244,7 +275,7 @@ export const retry: {
 export const CurrentAttempt = Context.Reference<number>(
   "effect/workflow/Activity/CurrentAttempt",
   { defaultValue: () => 1 }
-)
+);
 
 /**
  * Computes a deterministic activity idempotency key from the current workflow
@@ -255,21 +286,28 @@ export const CurrentAttempt = Context.Reference<number>(
  */
 export const idempotencyKey: (
   name: string,
-  options?: {
-    readonly includeAttempt?: boolean | undefined
-  } | undefined
-) => Effect.Effect<string, never, WorkflowInstance> = Effect.fnUntraced(function*(name: string, options?: {
-  readonly includeAttempt?: boolean | undefined
-}) {
-  const instance = yield* InstanceTag
-  let key = `${instance.executionId}`
-  if (options?.includeAttempt) {
-    const attempt = yield* CurrentAttempt
-    key += `-${attempt}`
+  options?:
+    | {
+        readonly includeAttempt?: boolean | undefined;
+      }
+    | undefined
+) => Effect.Effect<string, never, WorkflowInstance> = Effect.fnUntraced(
+  function* (
+    name: string,
+    options?: {
+      readonly includeAttempt?: boolean | undefined;
+    }
+  ) {
+    const instance = yield* InstanceTag;
+    let key = `${instance.executionId}`;
+    if (options?.includeAttempt) {
+      const attempt = yield* CurrentAttempt;
+      key += `-${attempt}`;
+    }
+    key += `-${name}`;
+    return yield* makeHashDigest(key);
   }
-  key += `-${name}`
-  return yield* makeHashDigest(key)
-})
+);
 
 /**
  * Runs a non-empty collection of activities as a durable race and returns the
@@ -282,11 +320,15 @@ export const raceAll = <const Activities extends NonEmptyReadonlyArray<Any>>(
   name: string,
   activities: Activities
 ): Effect.Effect<
-  Activities[number] extends Activity<infer _A, infer _E, infer _R> ? _A["Type"] : never,
-  Activities[number] extends Activity<infer _A, infer _E, infer _R> ? _E["Type"] : never,
+  Activities[number] extends Activity<infer _A, infer _E, infer _R>
+    ? _A["Type"]
+    : never,
+  Activities[number] extends Activity<infer _A, infer _E, infer _R>
+    ? _E["Type"]
+    : never,
   | (Activities[number] extends Activity<infer Success, infer Error, infer R>
-    ? Success["DecodingServices"] | Error["DecodingServices"] | R
-    : never)
+      ? Success["DecodingServices"] | Error["DecodingServices"] | R
+      : never)
   | WorkflowEngine
   | WorkflowInstance
 > =>
@@ -298,8 +340,8 @@ export const raceAll = <const Activities extends NonEmptyReadonlyArray<Any>>(
     error: Schema.Union(
       activities.map((activity) => (activity as any).errorSchema)
     ),
-    effects: activities.map((activity) => (activity as any)) as any
-  }) as any
+    effects: activities.map((activity) => activity as any) as any,
+  }) as any;
 
 // -----------------------------------------------------------------------------
 // internal
@@ -307,29 +349,35 @@ export const raceAll = <const Activities extends NonEmptyReadonlyArray<Any>>(
 
 const EngineTag = Context.Service<WorkflowEngine, WorkflowEngine["Service"]>(
   "effect/workflow/WorkflowEngine" satisfies typeof WorkflowEngine.key
-)
-const InstanceTag = Context.Service<WorkflowInstance, WorkflowInstance["Service"]>(
+);
+const InstanceTag = Context.Service<
+  WorkflowInstance,
+  WorkflowInstance["Service"]
+>(
   "effect/workflow/WorkflowEngine/WorkflowInstance" satisfies typeof WorkflowInstance.key
-)
+);
 
-const makeExecute = Effect.fnUntraced(function*<
-  R,
-  Success extends Schema.Top = typeof Schema.Void,
-  Error extends Schema.Top = typeof Schema.Never
->(activity: Activity<Success, Error, R>) {
-  const engine = yield* EngineTag
-  const instance = yield* InstanceTag
-  const attempt = yield* CurrentAttempt
-  yield* Effect.annotateCurrentSpan({ executionId: instance.executionId })
-  const result = yield* Workflow.wrapActivityResult(
-    engine.activityExecute(activity, attempt),
-    (_) => _._tag === "Suspended"
-  )
-  if (result._tag === "Suspended") {
-    return yield* Workflow.suspend(instance)
-  }
-  return yield* result.exit
-}, (effect, activity) =>
-  Effect.withSpan(effect, activity.name, {
-    captureStackTrace: false
-  }))
+const makeExecute = Effect.fnUntraced(
+  function* <
+    R,
+    Success extends Schema.Top = typeof Schema.Void,
+    Error extends Schema.Top = typeof Schema.Never,
+  >(activity: Activity<Success, Error, R>) {
+    const engine = yield* EngineTag;
+    const instance = yield* InstanceTag;
+    const attempt = yield* CurrentAttempt;
+    yield* Effect.annotateCurrentSpan({ executionId: instance.executionId });
+    const result = yield* Workflow.wrapActivityResult(
+      engine.activityExecute(activity, attempt),
+      (_) => _._tag === "Suspended"
+    );
+    if (result._tag === "Suspended") {
+      return yield* Workflow.suspend(instance);
+    }
+    return yield* result.exit;
+  },
+  (effect, activity) =>
+    Effect.withSpan(effect, activity.name, {
+      captureStackTrace: false,
+    })
+);

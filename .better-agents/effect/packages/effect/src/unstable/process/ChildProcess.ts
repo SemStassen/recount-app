@@ -41,19 +41,22 @@
  *
  * @since 4.0.0
  */
-import * as Context from "../../Context.ts"
-import type * as Duration from "../../Duration.ts"
-import type * as Effect from "../../Effect.ts"
-import * as Effectable from "../../Effectable.ts"
-import { dual } from "../../Function.ts"
-import type * as PlatformError from "../../PlatformError.ts"
-import * as Predicate from "../../Predicate.ts"
-import type * as Scope from "../../Scope.ts"
-import type * as Sink from "../../Sink.ts"
-import type * as Stream from "../../Stream.ts"
-import { type ChildProcessHandle, ChildProcessSpawner } from "./ChildProcessSpawner.ts"
+import * as Context from "../../Context.ts";
+import type * as Duration from "../../Duration.ts";
+import type * as Effect from "../../Effect.ts";
+import * as Effectable from "../../Effectable.ts";
+import { dual } from "../../Function.ts";
+import type * as PlatformError from "../../PlatformError.ts";
+import * as Predicate from "../../Predicate.ts";
+import type * as Scope from "../../Scope.ts";
+import type * as Sink from "../../Sink.ts";
+import type * as Stream from "../../Stream.ts";
+import {
+  type ChildProcessHandle,
+  ChildProcessSpawner,
+} from "./ChildProcessSpawner.ts";
 
-const TypeId = "~effect/unstable/process/ChildProcess"
+const TypeId = "~effect/unstable/process/ChildProcess";
 
 /**
  * A command that can be built using `make`, combined using `pipeTo`, and executed using `exec` or `spawn`.
@@ -61,9 +64,7 @@ const TypeId = "~effect/unstable/process/ChildProcess"
  * @category models
  * @since 4.0.0
  */
-export type Command =
-  | StandardCommand
-  | PipedCommand
+export type Command = StandardCommand | PipedCommand;
 
 /**
  * A standard command with pre-parsed command and arguments.
@@ -71,17 +72,15 @@ export type Command =
  * @category models
  * @since 4.0.0
  */
-export interface StandardCommand extends
-  Effect.Effect<
-    ChildProcessHandle,
-    PlatformError.PlatformError,
-    ChildProcessSpawner | Scope.Scope
-  >
-{
-  readonly _tag: "StandardCommand"
-  readonly command: string
-  readonly args: ReadonlyArray<string>
-  readonly options: CommandOptions
+export interface StandardCommand extends Effect.Effect<
+  ChildProcessHandle,
+  PlatformError.PlatformError,
+  ChildProcessSpawner | Scope.Scope
+> {
+  readonly _tag: "StandardCommand";
+  readonly command: string;
+  readonly args: ReadonlyArray<string>;
+  readonly options: CommandOptions;
 }
 
 /**
@@ -91,17 +90,15 @@ export interface StandardCommand extends
  * @category models
  * @since 4.0.0
  */
-export interface PipedCommand extends
-  Effect.Effect<
-    ChildProcessHandle,
-    PlatformError.PlatformError,
-    ChildProcessSpawner | Scope.Scope
-  >
-{
-  readonly _tag: "PipedCommand"
-  readonly left: Command
-  readonly right: Command
-  readonly options: PipeOptions
+export interface PipedCommand extends Effect.Effect<
+  ChildProcessHandle,
+  PlatformError.PlatformError,
+  ChildProcessSpawner | Scope.Scope
+> {
+  readonly _tag: "PipedCommand";
+  readonly left: Command;
+  readonly right: Command;
+  readonly options: PipeOptions;
 }
 
 /**
@@ -117,7 +114,7 @@ export interface PipedCommand extends
  * @category models
  * @since 4.0.0
  */
-export type PipeFromOption = "stdout" | "stderr" | "all" | `fd${number}`
+export type PipeFromOption = "stdout" | "stderr" | "all" | `fd${number}`;
 
 /**
  * Specifies which input to pipe to on the destination subprocess.
@@ -130,7 +127,7 @@ export type PipeFromOption = "stdout" | "stderr" | "all" | `fd${number}`
  * @category models
  * @since 4.0.0
  */
-export type PipeToOption = "stdin" | `fd${number}`
+export type PipeToOption = "stdin" | `fd${number}`;
 
 /**
  * Options for controlling how commands are piped together.
@@ -160,7 +157,7 @@ export interface PipeOptions {
    * - `"all"`: Pipe both stdout and stderr interleaved
    * - `"fd3"`, `"fd4"`, etc.: Pipe from a custom file descriptor
    */
-  readonly from?: PipeFromOption | undefined
+  readonly from?: PipeFromOption | undefined;
 
   /**
    * Which input to pipe to on the destination subprocess.
@@ -170,7 +167,7 @@ export interface PipeOptions {
    * - `"stdin"` (default): Pipe to stdin of the destination
    * - `"fd3"`, `"fd4"`, etc.: Pipe to a custom file descriptor
    */
-  readonly to?: PipeToOption | undefined
+  readonly to?: PipeToOption | undefined;
 }
 
 /**
@@ -184,7 +181,7 @@ export type CommandInput =
   | "inherit"
   | "ignore"
   | "overlapped"
-  | Stream.Stream<Uint8Array, PlatformError.PlatformError>
+  | Stream.Stream<Uint8Array, PlatformError.PlatformError>;
 
 /**
  * Output type for child process stdout/stderr.
@@ -197,7 +194,7 @@ export type CommandOutput =
   | "inherit"
   | "ignore"
   | "overlapped"
-  | Sink.Sink<Uint8Array, Uint8Array, never, PlatformError.PlatformError>
+  | Sink.Sink<Uint8Array, Uint8Array, never, PlatformError.PlatformError>;
 
 /**
  * A signal that can be sent to a child process.
@@ -242,7 +239,7 @@ export type Signal =
   | "SIGXFSZ"
   | "SIGBREAK"
   | "SIGLOST"
-  | "SIGINFO"
+  | "SIGINFO";
 
 /**
  * The encoding format to use for binary data.
@@ -262,7 +259,7 @@ export type Encoding =
   | "base64url"
   | "latin1"
   | "binary"
-  | "hex"
+  | "hex";
 
 /**
  * Options that can be used to control how a child process is terminated.
@@ -274,14 +271,14 @@ export interface KillOptions {
   /**
    * The default signal used to terminate the child process. Defaults to `"SIGTERM"`.
    */
-  readonly killSignal?: Signal | undefined
+  readonly killSignal?: Signal | undefined;
   /**
    * The duration of time to wait after the child process has been terminated
    * before forcefully killing the child process by sending it the `"SIGKILL"`
    * signal. Defaults to `undefined`, which means that no timeout will be
    * enforced by default.
    */
-  readonly forceKillAfter?: Duration.Input | undefined
+  readonly forceKillAfter?: Duration.Input | undefined;
 }
 
 /**
@@ -304,16 +301,16 @@ export interface StdinConfig {
    *
    * Defaults to "pipe".
    */
-  readonly stream: CommandInput
+  readonly stream: CommandInput;
   /**
    * Whether or not the child process `stdin` should be closed after the input
    * stream is finished. Defaults to `true`.
    */
-  readonly endOnDone?: boolean | undefined
+  readonly endOnDone?: boolean | undefined;
   /**
    * The buffer encoding to use to decode string chunks. Defaults to `utf-8`.
    */
-  readonly encoding?: Encoding | undefined
+  readonly encoding?: Encoding | undefined;
 }
 
 /**
@@ -336,7 +333,7 @@ export interface StdoutConfig {
    *
    * Defaults to "pipe".
    */
-  readonly stream?: CommandOutput | undefined
+  readonly stream?: CommandOutput | undefined;
 }
 
 /**
@@ -359,7 +356,7 @@ export interface StderrConfig {
    *
    * Defaults to "pipe".
    */
-  readonly stream?: CommandOutput | undefined
+  readonly stream?: CommandOutput | undefined;
 }
 
 /**
@@ -370,31 +367,35 @@ export interface StderrConfig {
  */
 export type AdditionalFdConfig =
   | {
-    /**
-     * The direction of data flow for this file descriptor.
-     * - "input": Data flows from parent to child (writable by parent)
-     * - "output": Data flows from child to parent (readable by parent)
-     */
-    readonly type: "input"
-    /**
-     * For input file descriptors, an optional stream to pipe into the file
-     * descriptor..
-     */
-    readonly stream?: Stream.Stream<Uint8Array, PlatformError.PlatformError> | undefined
-  }
+      /**
+       * The direction of data flow for this file descriptor.
+       * - "input": Data flows from parent to child (writable by parent)
+       * - "output": Data flows from child to parent (readable by parent)
+       */
+      readonly type: "input";
+      /**
+       * For input file descriptors, an optional stream to pipe into the file
+       * descriptor..
+       */
+      readonly stream?:
+        | Stream.Stream<Uint8Array, PlatformError.PlatformError>
+        | undefined;
+    }
   | {
-    /**
-     * The direction of data flow for this file descriptor.
-     * - "input": Data flows from parent to child (writable by parent)
-     * - "output": Data flows from child to parent (readable by parent)
-     */
-    readonly type: "output"
-    /**
-     * For output file descriptors, an optional sink which receives data from
-     * the file descriptor.
-     */
-    readonly sink?: Sink.Sink<Uint8Array, Uint8Array, never, PlatformError.PlatformError> | undefined
-  }
+      /**
+       * The direction of data flow for this file descriptor.
+       * - "input": Data flows from parent to child (writable by parent)
+       * - "output": Data flows from child to parent (readable by parent)
+       */
+      readonly type: "output";
+      /**
+       * For output file descriptors, an optional sink which receives data from
+       * the file descriptor.
+       */
+      readonly sink?:
+        | Sink.Sink<Uint8Array, Uint8Array, never, PlatformError.PlatformError>
+        | undefined;
+    };
 
 /**
  * Options for command execution.
@@ -406,7 +407,7 @@ export interface CommandOptions extends KillOptions {
   /**
    * The current working directory of the child process.
    */
-  readonly cwd?: string | undefined
+  readonly cwd?: string | undefined;
   /**
    * The environment of the child process.
    *
@@ -416,7 +417,7 @@ export interface CommandOptions extends KillOptions {
    * the value of `globalThis.process.env`, prioritizing the values in `env`
    * when conflicts exist.
    */
-  readonly env?: Record<string, string | undefined> | undefined
+  readonly env?: Record<string, string | undefined> | undefined;
   /**
    * If set to `true`, the child process uses both the values in `env` as well
    * as the values in `globalThis.process.env`, prioritizing the values in `env`
@@ -426,7 +427,7 @@ export interface CommandOptions extends KillOptions {
    *
    * If set to `false`, only the value of `env` is used.
    */
-  readonly extendEnv?: boolean | undefined
+  readonly extendEnv?: boolean | undefined;
   /**
    * If set to `true`, runs the command inside of a shell, defaulting to `/bin/sh`
    * on UNIX systems and `cmd.exe` on Windows.
@@ -440,7 +441,7 @@ export interface CommandOptions extends KillOptions {
    *
    * It is generally disadvised to use this option.
    */
-  readonly shell?: boolean | string | undefined
+  readonly shell?: boolean | string | undefined;
   /**
    * If set to `true`, the child process will run independently of the parent
    * process.
@@ -455,19 +456,19 @@ export interface CommandOptions extends KillOptions {
    *
    * Defaults to `true` on non-Windows platforms and `false` on Windows platforms.
    */
-  readonly detached?: boolean | undefined
+  readonly detached?: boolean | undefined;
   /**
    * Configuration options for the standard input stream for the child process.
    */
-  readonly stdin?: CommandInput | StdinConfig | undefined
+  readonly stdin?: CommandInput | StdinConfig | undefined;
   /**
    * Configuration options for the standard output stream for the child process.
    */
-  readonly stdout?: CommandOutput | StdoutConfig | undefined
+  readonly stdout?: CommandOutput | StdoutConfig | undefined;
   /**
    * Configuration options for the standard error stream for the child process.
    */
-  readonly stderr?: CommandOutput | StderrConfig | undefined
+  readonly stderr?: CommandOutput | StderrConfig | undefined;
   /**
    * Additional file descriptors to expose to the child process beyond `stdin` /
    * `stdout` / `stderr`.
@@ -500,7 +501,9 @@ export interface CommandOptions extends KillOptions {
    * })
    * ```
    */
-  readonly additionalFds?: Record<`fd${number}`, AdditionalFdConfig> | undefined
+  readonly additionalFds?:
+    | Record<`fd${number}`, AdditionalFdConfig>
+    | undefined;
 }
 
 /**
@@ -509,7 +512,7 @@ export interface CommandOptions extends KillOptions {
  * @category models
  * @since 4.0.0
  */
-export type TemplateExpressionItem = string | number | boolean
+export type TemplateExpressionItem = string | number | boolean;
 
 /**
  * Template expression type for interpolated values.
@@ -517,7 +520,9 @@ export type TemplateExpressionItem = string | number | boolean
  * @category models
  * @since 4.0.0
  */
-export type TemplateExpression = TemplateExpressionItem | ReadonlyArray<TemplateExpressionItem>
+export type TemplateExpression =
+  | TemplateExpressionItem
+  | ReadonlyArray<TemplateExpressionItem>;
 
 // =============================================================================
 // Constructors
@@ -527,11 +532,11 @@ const Proto = {
   ...Effectable.Prototype<Command>({
     label: "Command",
     evaluate(fiber) {
-      return Context.getUnsafe(fiber.context, ChildProcessSpawner).spawn(this)
-    }
+      return Context.getUnsafe(fiber.context, ChildProcessSpawner).spawn(this);
+    },
   }),
-  [TypeId]: TypeId
-}
+  [TypeId]: TypeId,
+};
 
 /**
  * Checks whether a value is a `Command`.
@@ -539,7 +544,8 @@ const Proto = {
  * @category guards
  * @since 4.0.0
  */
-export const isCommand = (u: unknown): u is Command => Predicate.hasProperty(u, TypeId)
+export const isCommand = (u: unknown): u is Command =>
+  Predicate.hasProperty(u, TypeId);
 
 /**
  * Checks whether a command is a `StandardCommand`.
@@ -547,7 +553,9 @@ export const isCommand = (u: unknown): u is Command => Predicate.hasProperty(u, 
  * @category guards
  * @since 4.0.0
  */
-export const isStandardCommand = (command: Command): command is StandardCommand => command._tag === "StandardCommand"
+export const isStandardCommand = (
+  command: Command
+): command is StandardCommand => command._tag === "StandardCommand";
 
 /**
  * Checks whether a command is a `PipedCommand`.
@@ -555,7 +563,8 @@ export const isStandardCommand = (command: Command): command is StandardCommand 
  * @category guards
  * @since 4.0.0
  */
-export const isPipedCommand = (command: Command): command is PipedCommand => command._tag === "PipedCommand"
+export const isPipedCommand = (command: Command): command is PipedCommand =>
+  command._tag === "PipedCommand";
 
 const makeStandardCommand = (
   command: string,
@@ -566,8 +575,8 @@ const makeStandardCommand = (
     _tag: "StandardCommand",
     command,
     args,
-    options
-  })
+    options,
+  });
 
 const makePipedCommand = (
   left: Command,
@@ -578,8 +587,8 @@ const makePipedCommand = (
     _tag: "PipedCommand",
     left,
     right,
-    options
-  })
+    options,
+  });
 
 /**
  * Create a command from a template literal, options + template, or array form.
@@ -613,59 +622,63 @@ const makePipedCommand = (
  * @since 4.0.0
  */
 export const make: {
-  (
-    command: string,
-    options?: CommandOptions
-  ): StandardCommand
+  (command: string, options?: CommandOptions): StandardCommand;
   (
     command: string,
     args: ReadonlyArray<string>,
     options?: CommandOptions
-  ): StandardCommand
+  ): StandardCommand;
   (
     options: CommandOptions
   ): (
     templates: TemplateStringsArray,
     ...expressions: ReadonlyArray<TemplateExpression>
-  ) => StandardCommand
+  ) => StandardCommand;
   (
     templates: TemplateStringsArray,
     ...expressions: ReadonlyArray<TemplateExpression>
-  ): StandardCommand
+  ): StandardCommand;
 } = function make(...args: Array<unknown>): any {
   // Template literal form: make`command`
   if (isTemplateString(args[0])) {
-    const [templates, ...expressions] = args as [TemplateStringsArray, ...ReadonlyArray<TemplateExpression>]
-    const tokens = parseTemplates(templates, expressions)
-    return makeStandardCommand(tokens[0] ?? "", tokens.slice(1), {})
+    const [templates, ...expressions] = args as [
+      TemplateStringsArray,
+      ...ReadonlyArray<TemplateExpression>,
+    ];
+    const tokens = parseTemplates(templates, expressions);
+    return makeStandardCommand(tokens[0] ?? "", tokens.slice(1), {});
   }
 
   // Options form: make({ cwd: "/tmp" })`command`
-  if (typeof args[0] === "object" && !Array.isArray(args[0]) && !isTemplateString(args[0])) {
-    const options = args[0] as CommandOptions
-    return function(
+  if (
+    typeof args[0] === "object" &&
+    !Array.isArray(args[0]) &&
+    !isTemplateString(args[0])
+  ) {
+    const options = args[0] as CommandOptions;
+    return function (
       templates: TemplateStringsArray,
       ...expressions: ReadonlyArray<TemplateExpression>
     ): StandardCommand {
-      const tokens = parseTemplates(templates, expressions)
-      return makeStandardCommand(tokens[0] ?? "", tokens.slice(1), options)
-    }
+      const tokens = parseTemplates(templates, expressions);
+      return makeStandardCommand(tokens[0] ?? "", tokens.slice(1), options);
+    };
   }
 
   // Standard form without arguments: make("command", options?)
   if (typeof args[0] === "string" && !Array.isArray(args[1])) {
-    const [command, options = {}] = args as [string, CommandOptions?]
-    return makeStandardCommand(command, [], options)
+    const [command, options = {}] = args as [string, CommandOptions?];
+    return makeStandardCommand(command, [], options);
   }
 
   // Standard form with arguments: make("command", ["arg1", "arg2"], options?)
   const [command, cmdArgs = [], options = {}] = args as [
     string,
     ReadonlyArray<string>?,
-    CommandOptions?
-  ]
-  return makeStandardCommand(command, cmdArgs, options)
-}
+    CommandOptions?,
+  ];
+  return makeStandardCommand(command, cmdArgs, options);
+};
 
 /**
  * Pipes the output of one command to the input of another.
@@ -700,12 +713,13 @@ export const make: {
  * @since 4.0.0
  */
 export const pipeTo: {
-  (that: Command, options?: PipeOptions): (self: Command) => PipedCommand
-  (self: Command, that: Command, options?: PipeOptions): PipedCommand
+  (that: Command, options?: PipeOptions): (self: Command) => PipedCommand;
+  (self: Command, that: Command, options?: PipeOptions): PipedCommand;
 } = dual(
   (args) => isCommand(args[0]) && isCommand(args[1]),
-  (self: Command, that: Command, options?: PipeOptions) => makePipedCommand(self, that, options ?? {})
-)
+  (self: Command, that: Command, options?: PipeOptions) =>
+    makePipedCommand(self, that, options ?? {})
+);
 
 /**
  * Prepends another command to a command.
@@ -732,33 +746,39 @@ export const pipeTo: {
  * @since 4.0.0
  */
 export const prefix: {
-  (command: string, args?: ReadonlyArray<string>): (self: Command) => Command
-  (templates: TemplateStringsArray, ...expressions: ReadonlyArray<TemplateExpression>): (self: Command) => Command
-  (self: Command, command: string, args?: ReadonlyArray<string>): Command
+  (command: string, args?: ReadonlyArray<string>): (self: Command) => Command;
+  (
+    templates: TemplateStringsArray,
+    ...expressions: ReadonlyArray<TemplateExpression>
+  ): (self: Command) => Command;
+  (self: Command, command: string, args?: ReadonlyArray<string>): Command;
 } = function prefix(...args: Array<unknown>): any {
   if (isCommand(args[0]) && args.length > 1) {
-    const [self, ...rest] = args as [Command, ...Array<unknown>]
-    const prefixSpec = parsePrefixArgs(rest)
-    return applyPrefix(self, prefixSpec)
+    const [self, ...rest] = args as [Command, ...Array<unknown>];
+    const prefixSpec = parsePrefixArgs(rest);
+    return applyPrefix(self, prefixSpec);
   }
-  const prefixSpec = parsePrefixArgs(args)
-  return (self: Command): Command => applyPrefix(self, prefixSpec)
-}
+  const prefixSpec = parsePrefixArgs(args);
+  return (self: Command): Command => applyPrefix(self, prefixSpec);
+};
 
 type PrefixSpec = {
-  readonly command: string
-  readonly args: ReadonlyArray<string>
-}
+  readonly command: string;
+  readonly args: ReadonlyArray<string>;
+};
 
 const parsePrefixArgs = (args: ReadonlyArray<unknown>): PrefixSpec => {
   if (isTemplateString(args[0])) {
-    const [templates, ...expressions] = args as [TemplateStringsArray, ...ReadonlyArray<TemplateExpression>]
-    const tokens = parseTemplates(templates, expressions)
-    return { command: tokens[0] ?? "", args: tokens.slice(1) }
+    const [templates, ...expressions] = args as [
+      TemplateStringsArray,
+      ...ReadonlyArray<TemplateExpression>,
+    ];
+    const tokens = parseTemplates(templates, expressions);
+    return { command: tokens[0] ?? "", args: tokens.slice(1) };
   }
-  const [command, cmdArgs = []] = args as [string, ReadonlyArray<string>?]
-  return { command, args: cmdArgs }
-}
+  const [command, cmdArgs = []] = args as [string, ReadonlyArray<string>?];
+  return { command, args: cmdArgs };
+};
 
 const applyPrefix = (self: Command, prefixSpec: PrefixSpec): Command => {
   switch (self._tag) {
@@ -767,13 +787,17 @@ const applyPrefix = (self: Command, prefixSpec: PrefixSpec): Command => {
         prefixSpec.command,
         [...prefixSpec.args, self.command, ...self.args],
         self.options
-      )
+      );
     }
     case "PipedCommand": {
-      return makePipedCommand(applyPrefix(self.left, prefixSpec), self.right, self.options)
+      return makePipedCommand(
+        applyPrefix(self.left, prefixSpec),
+        self.right,
+        self.options
+      );
     }
   }
-}
+};
 
 /**
  * Sets the current working directory for a command.
@@ -796,21 +820,25 @@ const applyPrefix = (self: Command, prefixSpec: PrefixSpec): Command => {
  * @since 4.0.0
  */
 export const setCwd: {
-  (cwd: string): (self: Command) => Command
-  (self: Command, cwd: string): Command
-} = dual(
-  2,
-  (self: Command, cwd: string): Command => {
-    switch (self._tag) {
-      case "StandardCommand": {
-        return makeStandardCommand(self.command, self.args, { ...self.options, cwd })
-      }
-      case "PipedCommand": {
-        return makePipedCommand(setCwd(self.left, cwd), setCwd(self.right, cwd), self.options)
-      }
+  (cwd: string): (self: Command) => Command;
+  (self: Command, cwd: string): Command;
+} = dual(2, (self: Command, cwd: string): Command => {
+  switch (self._tag) {
+    case "StandardCommand": {
+      return makeStandardCommand(self.command, self.args, {
+        ...self.options,
+        cwd,
+      });
+    }
+    case "PipedCommand": {
+      return makePipedCommand(
+        setCwd(self.left, cwd),
+        setCwd(self.right, cwd),
+        self.options
+      );
     }
   }
-)
+});
 
 /**
  * Adds environment variables to a command, merging them with any existing
@@ -834,27 +862,30 @@ export const setCwd: {
  * @since 4.0.0
  */
 export const setEnv: {
-  (env: Record<string, string>): (self: Command) => Command
-  (self: Command, env: Record<string, string>): Command
-} = dual(
-  2,
-  (self: Command, env: Record<string, string>): Command => {
-    switch (self._tag) {
-      case "StandardCommand": {
-        const nextEnv = self.options.env === undefined
-          ? env
-          : { ...self.options.env, ...env }
-        return makeStandardCommand(self.command, self.args, { ...self.options, env: nextEnv })
-      }
-      case "PipedCommand": {
-        return makePipedCommand(setEnv(self.left, env), setEnv(self.right, env), self.options)
-      }
+  (env: Record<string, string>): (self: Command) => Command;
+  (self: Command, env: Record<string, string>): Command;
+} = dual(2, (self: Command, env: Record<string, string>): Command => {
+  switch (self._tag) {
+    case "StandardCommand": {
+      const nextEnv =
+        self.options.env === undefined ? env : { ...self.options.env, ...env };
+      return makeStandardCommand(self.command, self.args, {
+        ...self.options,
+        env: nextEnv,
+      });
+    }
+    case "PipedCommand": {
+      return makePipedCommand(
+        setEnv(self.left, env),
+        setEnv(self.right, env),
+        self.options
+      );
     }
   }
-)
+});
 
 const isTemplateString = (u: unknown): u is TemplateStringsArray =>
-  Array.isArray(u) && "raw" in u && Array.isArray(u.raw)
+  Array.isArray(u) && "raw" in u && Array.isArray(u.raw);
 
 // =============================================================================
 // Utilities
@@ -868,11 +899,11 @@ const isTemplateString = (u: unknown): u is TemplateStringsArray =>
  * @since 4.0.0
  */
 export const parseFdName = (name: string): number | undefined => {
-  const match = /^fd(\d+)$/.exec(name)
-  if (match === null) return undefined
-  const fd = parseInt(match[1], 10)
-  return fd >= 3 ? fd : undefined
-}
+  const match = /^fd(\d+)$/.exec(name);
+  if (match === null) return undefined;
+  const fd = parseInt(match[1], 10);
+  return fd >= 3 ? fd : undefined;
+};
 
 /**
  * Create an fd name from its numeric index.
@@ -880,7 +911,7 @@ export const parseFdName = (name: string): number | undefined => {
  * @category converting
  * @since 4.0.0
  */
-export const fdName = (fd: number): string => `fd${fd}`
+export const fdName = (fd: number): string => `fd${fd}`;
 
 // =============================================================================
 // Template Parsing
@@ -890,12 +921,12 @@ const parseTemplates = (
   templates: TemplateStringsArray,
   expressions: ReadonlyArray<TemplateExpression>
 ): ReadonlyArray<string> => {
-  let tokens: ReadonlyArray<string> = []
+  let tokens: ReadonlyArray<string> = [];
   for (const [index, template] of templates.entries()) {
-    tokens = parseTemplate(templates, expressions, tokens, template, index)
+    tokens = parseTemplate(templates, expressions, tokens, template, index);
   }
-  return tokens
-}
+  return tokens;
+};
 
 const parseTemplate = (
   templates: TemplateStringsArray,
@@ -904,47 +935,50 @@ const parseTemplate = (
   template: string,
   index: number
 ): ReadonlyArray<string> => {
-  const rawTemplate = templates.raw[index]
+  const rawTemplate = templates.raw[index];
 
   if (rawTemplate === undefined) {
-    throw new Error(`Invalid backslash sequence: ${templates.raw[index]}`)
+    throw new Error(`Invalid backslash sequence: ${templates.raw[index]}`);
   }
 
-  const { hasLeadingWhitespace, hasTrailingWhitespace, tokens } = splitByWhitespaces(template, rawTemplate)
-  const nextTokens = concatTokens(prevTokens, tokens, hasLeadingWhitespace)
+  const { hasLeadingWhitespace, hasTrailingWhitespace, tokens } =
+    splitByWhitespaces(template, rawTemplate);
+  const nextTokens = concatTokens(prevTokens, tokens, hasLeadingWhitespace);
 
   if (index === expressions.length) {
-    return nextTokens
+    return nextTokens;
   }
 
-  const expression = expressions[index]
+  const expression = expressions[index];
   const expressionTokens = Array.isArray(expression)
-    ? expression.map((expression: TemplateExpressionItem) => parseExpression(expression))
-    : [parseExpression(expression as TemplateExpressionItem)]
+    ? expression.map((expression: TemplateExpressionItem) =>
+        parseExpression(expression)
+      )
+    : [parseExpression(expression as TemplateExpressionItem)];
 
-  return concatTokens(nextTokens, expressionTokens, hasTrailingWhitespace)
-}
+  return concatTokens(nextTokens, expressionTokens, hasTrailingWhitespace);
+};
 
 /**
  * Convert valid expressions defined in a template string command (i.e. using
  * `${expression}` into strings.
  */
 const parseExpression = (expression: TemplateExpression): string => {
-  const type = typeof expression
+  const type = typeof expression;
   if (type === "string") {
-    return expression as string // Return strings directly
+    return expression as string; // Return strings directly
   }
-  return String(expression) // Convert numbers to strings
-}
+  return String(expression); // Convert numbers to strings
+};
 
-const DELIMITERS = new Set([" ", "\t", "\r", "\n"])
+const DELIMITERS = new Set([" ", "\t", "\r", "\n"]);
 
 /**
  * Number of characters in backslash escape sequences: \0 \xXX or \uXXXX
  * \cX is allowed in RegExps but not in strings
  * Octal sequences are not allowed in strict mode
  */
-const ESCAPE_LENGTH: Record<string, number> = { x: 3, u: 5 }
+const ESCAPE_LENGTH: Record<string, number> = { x: 3, u: 5 };
 
 /**
  * Splits a template string by whitespace while also properly handling escape
@@ -972,83 +1006,89 @@ const ESCAPE_LENGTH: Record<string, number> = { x: 3, u: 5 }
  * 1. `template`     - The processed string (escape sequences are evaluated).
  * 2. `template.raw` - The raw string (escape sequences are literal).
  */
-const splitByWhitespaces = (template: string, rawTemplate: string): {
-  readonly tokens: ReadonlyArray<string>
-  readonly hasLeadingWhitespace: boolean
-  readonly hasTrailingWhitespace: boolean
+const splitByWhitespaces = (
+  template: string,
+  rawTemplate: string
+): {
+  readonly tokens: ReadonlyArray<string>;
+  readonly hasLeadingWhitespace: boolean;
+  readonly hasTrailingWhitespace: boolean;
 } => {
   if (rawTemplate.length === 0) {
     return {
       tokens: [],
       hasLeadingWhitespace: false,
-      hasTrailingWhitespace: false
-    }
+      hasTrailingWhitespace: false,
+    };
   }
 
-  const hasLeadingWhitespace = DELIMITERS.has(rawTemplate[0])
-  const tokens: Array<string> = []
+  const hasLeadingWhitespace = DELIMITERS.has(rawTemplate[0]);
+  const tokens: Array<string> = [];
 
   // Given that escape sequences will have different lengths in the template
   // versus the raw template, we must maintain two indices:
   // - One for the index into the template string
   // - One for the index into the raw template string
   // We also maintain the current cursor position for where we are in the template
-  let templateCursor = 0
+  let templateCursor = 0;
   for (
     let templateIndex = 0, rawIndex = 0;
     templateIndex < template.length;
     templateIndex += 1, rawIndex += 1
   ) {
     // Use the raw template character to check for actual whitespace
-    const rawCharacter = rawTemplate[rawIndex]
+    const rawCharacter = rawTemplate[rawIndex];
 
     if (DELIMITERS.has(rawCharacter)) {
       // Whitespace found, extract token from template if necessary
       if (templateCursor !== templateIndex) {
-        tokens.push(template.slice(templateCursor, templateIndex))
+        tokens.push(template.slice(templateCursor, templateIndex));
       }
       // Advance the template start index to the current position
-      templateCursor = templateIndex + 1
+      templateCursor = templateIndex + 1;
     } else if (rawCharacter === "\\") {
       // Escape sequence detected, check the next raw character
-      const nextRawCharacter = rawTemplate[rawIndex + 1]
+      const nextRawCharacter = rawTemplate[rawIndex + 1];
 
       if (nextRawCharacter === "\n") {
         // Handle `\` character followed by a newline (i.e. a line continuation) by:
         // - Reversing the template index (backslash-newline is erased in template)
         // - Advancing the raw template index past the line continuation
-        templateIndex -= 1
-        rawIndex += 1
-      } else if (nextRawCharacter === "u" && rawTemplate[rawIndex + 2] === "{") {
+        templateIndex -= 1;
+        rawIndex += 1;
+      } else if (
+        nextRawCharacter === "u" &&
+        rawTemplate[rawIndex + 2] === "{"
+      ) {
         // Handle variable-length unicode escape sequences (i.e. `\u{1F600}`) by:
         // - Advancing the raw template index past the unicode escape sequence
-        rawIndex = rawTemplate.indexOf("}", rawIndex + 3)
+        rawIndex = rawTemplate.indexOf("}", rawIndex + 3);
       } else {
         // Advance raw template index past fixed-length escape sequences:
         // - \n    → 2 chars (backslash + n)
         // - \t    → 2 chars (backslash + t)
         // - \xHH  → 4 chars (backslash + x + H + H)
         // - \uHHHH → 6 chars (backslash + u + H + H + H + H)
-        rawIndex += ESCAPE_LENGTH[nextRawCharacter] ?? 1
+        rawIndex += ESCAPE_LENGTH[nextRawCharacter] ?? 1;
       }
     }
   }
 
   // Trailing whitespace only exists if the template cursor is equivalent to the
   // length of the template
-  const hasTrailingWhitespace = templateCursor === template.length
+  const hasTrailingWhitespace = templateCursor === template.length;
 
   // If we did not end with trailing whitespace, ensure the final token is added
   if (!hasTrailingWhitespace) {
-    tokens.push(template.slice(templateCursor))
+    tokens.push(template.slice(templateCursor));
   }
 
   return {
     tokens,
     hasLeadingWhitespace,
-    hasTrailingWhitespace
-  }
-}
+    hasTrailingWhitespace,
+  };
+};
 
 /**
  * Concatenates two separate sets of string tokens together.
@@ -1062,7 +1102,11 @@ const concatTokens = (
   isSeparated: boolean
 ): ReadonlyArray<string> =>
   isSeparated || prevTokens.length === 0 || nextTokens.length === 0
-    // Keep the previous and next tokens separate from one another
-    ? [...prevTokens, ...nextTokens]
-    // Join the last token from the previous set and the first token from the next set
-    : [...prevTokens.slice(0, -1), `${prevTokens.at(-1)}${nextTokens.at(0)}`, ...nextTokens.slice(1)]
+    ? // Keep the previous and next tokens separate from one another
+      [...prevTokens, ...nextTokens]
+    : // Join the last token from the previous set and the first token from the next set
+      [
+        ...prevTokens.slice(0, -1),
+        `${prevTokens.at(-1)}${nextTokens.at(0)}`,
+        ...nextTokens.slice(1),
+      ];

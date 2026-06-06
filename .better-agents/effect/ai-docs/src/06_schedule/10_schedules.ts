@@ -3,32 +3,35 @@
  *
  * Build schedules, compose them, and use them with `Effect.retry` and `Effect.repeat`.
  */
-import { Duration, Effect, Random, Schedule, Schema } from "effect"
+import { Duration, Effect, Random, Schedule, Schema } from "effect";
 
-export class HttpError extends Schema.TaggedErrorClass<HttpError>()("HttpError", {
-  message: Schema.String,
-  status: Schema.Number,
-  retryable: Schema.Boolean
-}) {}
+export class HttpError extends Schema.TaggedErrorClass<HttpError>()(
+  "HttpError",
+  {
+    message: Schema.String,
+    status: Schema.Number,
+    retryable: Schema.Boolean,
+  }
+) {}
 
 // Start with a few schedule constructors.
-export const maxRetries = Schedule.recurs(5)
-export const spacedPolling = Schedule.spaced("30 seconds")
-export const exponentialBackoff = Schedule.exponential("200 millis")
+export const maxRetries = Schedule.recurs(5);
+export const spacedPolling = Schedule.spaced("30 seconds");
+export const exponentialBackoff = Schedule.exponential("200 millis");
 
 // `Schedule.both` continues only while both schedules continue.
 // It is useful for combining a delay pattern with a hard attempt cap.
 export const retryBackoffWithLimit = Schedule.both(
   Schedule.exponential("250 millis"),
   Schedule.recurs(6)
-)
+);
 
 // `Schedule.either` continues while either schedule continues.
 // It is useful for fallback behavior (e.g. stop only when both are exhausted).
 export const keepTryingUntilBothStop = Schedule.either(
   Schedule.spaced("2 seconds"),
   Schedule.recurs(3)
-)
+);
 
 // Use `Schedule.while` to continue only for retryable failures.
 // This lets non-retryable errors fail fast, even if attempts remain.
@@ -37,15 +40,19 @@ export const retryableOnly = Schedule.exponential("200 millis").pipe(
   // receive.
   Schedule.setInputType<HttpError>(),
   Schedule.while(({ input }) => input.retryable)
-)
+);
 
 // `tapInput` and `tapOutput` are useful for performing side effects like
 // logging or metrics.
 export const instrumentedRetrySchedule = retryableOnly.pipe(
   Schedule.setInputType<HttpError>(),
-  Schedule.tapInput((error) => Effect.logDebug(`Retrying after ${error.status}: ${error.message}`)),
-  Schedule.tapOutput((delay) => Effect.logDebug(`Next retry in ${Duration.toMillis(delay)}ms`))
-)
+  Schedule.tapInput((error) =>
+    Effect.logDebug(`Retrying after ${error.status}: ${error.message}`)
+  ),
+  Schedule.tapOutput((delay) =>
+    Effect.logDebug(`Next retry in ${Duration.toMillis(delay)}ms`)
+  )
+);
 
 // Production pattern: capped exponential backoff with jitter and max attempts.
 // Delays start at 250ms, grow exponentially with jitter, and are capped at 10s.
@@ -55,31 +62,27 @@ export const productionRetrySchedule = Schedule.exponential("250 millis").pipe(
   Schedule.jittered,
   Schedule.setInputType<HttpError>(),
   Schedule.while(({ input }) => input.retryable)
-)
+);
 
-export const fetchUserProfile = Effect.fn("fetchUserProfile")(
-  function*(userId: string) {
-    const random = yield* Random.next
-    const status = random > 0.7
-      ? 200
-      : random > 0.3
-      ? 503
-      : 401
+export const fetchUserProfile = Effect.fn("fetchUserProfile")(function* (
+  userId: string
+) {
+  const random = yield* Random.next;
+  const status = random > 0.7 ? 200 : random > 0.3 ? 503 : 401;
 
-    if (status !== 200) {
-      return yield* new HttpError({
-        message: `Request for ${userId} failed`,
-        status,
-        retryable: status >= 500
-      })
-    }
-
-    return {
-      id: userId,
-      name: "Ada Lovelace"
-    } as const
+  if (status !== 200) {
+    return yield* new HttpError({
+      message: `Request for ${userId} failed`,
+      status,
+      retryable: status >= 500,
+    });
   }
-)
+
+  return {
+    id: userId,
+    name: "Ada Lovelace",
+  } as const;
+});
 
 // Use the schedule with `Effect.retry` to retry failures.
 export const loadUserWithRetry = fetchUserProfile("user-123").pipe(
@@ -87,7 +90,7 @@ export const loadUserWithRetry = fetchUserProfile("user-123").pipe(
   // If the effect still fails after exhausting the schedule, turn the error
   // into a fatal one.
   Effect.orDie
-)
+);
 
 export const loadUserWithInferredInput = fetchUserProfile("user-123").pipe(
   // You can also pass a schedule builder function that assists with inferring
@@ -99,4 +102,4 @@ export const loadUserWithInferredInput = fetchUserProfile("user-123").pipe(
     )
   ),
   Effect.orDie
-)
+);

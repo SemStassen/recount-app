@@ -35,26 +35,26 @@
  *
  * @since 4.0.0
  */
-import * as Sqlite from "@op-engineering/op-sqlite"
-import * as Config from "effect/Config"
-import * as Context from "effect/Context"
-import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
-import { constFalse, identity } from "effect/Function"
-import * as Layer from "effect/Layer"
-import * as Scope from "effect/Scope"
-import * as Semaphore from "effect/Semaphore"
-import * as Stream from "effect/Stream"
-import * as Reactivity from "effect/unstable/reactivity/Reactivity"
-import * as Client from "effect/unstable/sql/SqlClient"
-import type { Connection } from "effect/unstable/sql/SqlConnection"
-import { classifySqliteError, SqlError } from "effect/unstable/sql/SqlError"
-import * as Statement from "effect/unstable/sql/Statement"
+import * as Sqlite from "@op-engineering/op-sqlite";
+import * as Config from "effect/Config";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Fiber from "effect/Fiber";
+import { constFalse, identity } from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Semaphore from "effect/Semaphore";
+import * as Stream from "effect/Stream";
+import * as Reactivity from "effect/unstable/reactivity/Reactivity";
+import * as Client from "effect/unstable/sql/SqlClient";
+import type { Connection } from "effect/unstable/sql/SqlConnection";
+import { classifySqliteError, SqlError } from "effect/unstable/sql/SqlError";
+import * as Statement from "effect/unstable/sql/Statement";
 
-const ATTR_DB_SYSTEM_NAME = "db.system.name"
+const ATTR_DB_SYSTEM_NAME = "db.system.name";
 
 const classifyError = (cause: unknown, message: string, operation: string) =>
-  classifySqliteError(cause, { message, operation })
+  classifySqliteError(cause, { message, operation });
 
 /**
  * Runtime identifier attached to SQLite React Native client values.
@@ -62,7 +62,7 @@ const classifyError = (cause: unknown, message: string, operation: string) =>
  * @category type IDs
  * @since 4.0.0
  */
-export const TypeId: TypeId = "~@effect/sql-sqlite-react-native/SqliteClient"
+export const TypeId: TypeId = "~@effect/sql-sqlite-react-native/SqliteClient";
 
 /**
  * Type-level identifier for SQLite React Native client values.
@@ -70,7 +70,7 @@ export const TypeId: TypeId = "~@effect/sql-sqlite-react-native/SqliteClient"
  * @category type IDs
  * @since 4.0.0
  */
-export type TypeId = "~@effect/sql-sqlite-react-native/SqliteClient"
+export type TypeId = "~@effect/sql-sqlite-react-native/SqliteClient";
 
 /**
  * React Native SQLite client service interface, extending `SqlClient` with its configuration and marking `updateValues` as unsupported for SQLite.
@@ -79,11 +79,11 @@ export type TypeId = "~@effect/sql-sqlite-react-native/SqliteClient"
  * @since 4.0.0
  */
 export interface SqliteClient extends Client.SqlClient {
-  readonly [TypeId]: TypeId
-  readonly config: SqliteClientConfig
+  readonly [TypeId]: TypeId;
+  readonly config: SqliteClientConfig;
 
   /** Not supported in sqlite */
-  readonly updateValues: never
+  readonly updateValues: never;
 }
 
 /**
@@ -92,7 +92,9 @@ export interface SqliteClient extends Client.SqlClient {
  * @category services
  * @since 4.0.0
  */
-export const SqliteClient = Context.Service<SqliteClient>("@effect/sql-sqlite-react-native/SqliteClient")
+export const SqliteClient = Context.Service<SqliteClient>(
+  "@effect/sql-sqlite-react-native/SqliteClient"
+);
 
 /**
  * Configuration for a React Native SQLite client, including the database filename, optional location and encryption key, span attributes, and query/result name transforms.
@@ -101,12 +103,12 @@ export const SqliteClient = Context.Service<SqliteClient>("@effect/sql-sqlite-re
  * @since 4.0.0
  */
 export interface SqliteClientConfig {
-  readonly filename: string
-  readonly location?: string | undefined
-  readonly encryptionKey?: string | undefined
-  readonly spanAttributes?: Record<string, unknown> | undefined
-  readonly transformResultNames?: ((str: string) => string) | undefined
-  readonly transformQueryNames?: ((str: string) => string) | undefined
+  readonly filename: string;
+  readonly location?: string | undefined;
+  readonly encryptionKey?: string | undefined;
+  readonly spanAttributes?: Record<string, unknown> | undefined;
+  readonly transformResultNames?: ((str: string) => string) | undefined;
+  readonly transformQueryNames?: ((str: string) => string) | undefined;
 }
 
 /**
@@ -123,7 +125,7 @@ export interface SqliteClientConfig {
 export const AsyncQuery = Context.Reference<boolean>(
   "@effect/sql-sqlite-react-native/Client/asyncQuery",
   { defaultValue: constFalse }
-)
+);
 
 /**
  * Runs an effect with `AsyncQuery` enabled, causing React Native SQLite queries in that effect to use the asynchronous driver API.
@@ -132,7 +134,7 @@ export const AsyncQuery = Context.Reference<boolean>(
  * @since 4.0.0
  */
 export const withAsyncQuery = <R, E, A>(effect: Effect.Effect<A, E, R>) =>
-  Effect.provideService(effect, AsyncQuery, true)
+  Effect.provideService(effect, AsyncQuery, true);
 
 interface SqliteConnection extends Connection {}
 
@@ -145,25 +147,25 @@ interface SqliteConnection extends Connection {}
 export const make = (
   options: SqliteClientConfig
 ): Effect.Effect<SqliteClient, never, Scope.Scope | Reactivity.Reactivity> =>
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     const clientOptions: Parameters<typeof Sqlite.open>[0] = {
-      name: options.filename
-    }
+      name: options.filename,
+    };
     if (options.location) {
-      clientOptions.location = options.location
+      clientOptions.location = options.location;
     }
     if (options.encryptionKey) {
-      clientOptions.encryptionKey = options.encryptionKey
+      clientOptions.encryptionKey = options.encryptionKey;
     }
 
-    const compiler = Statement.makeCompilerSqlite(options.transformQueryNames)
-    const transformRows = options.transformResultNames ?
-      Statement.defaultTransforms(options.transformResultNames).array :
-      undefined
+    const compiler = Statement.makeCompilerSqlite(options.transformQueryNames);
+    const transformRows = options.transformResultNames
+      ? Statement.defaultTransforms(options.transformResultNames).array
+      : undefined;
 
-    const makeConnection = Effect.gen(function*() {
-      const db = Sqlite.open(clientOptions) as DB
-      yield* Effect.addFinalizer(() => Effect.sync(() => db.close()))
+    const makeConnection = Effect.gen(function* () {
+      const db = Sqlite.open(clientOptions) as DB;
+      yield* Effect.addFinalizer(() => Effect.sync(() => db.close()));
 
       const run = (
         sql: string,
@@ -176,56 +178,68 @@ export const make = (
               Effect.tryPromise({
                 try: () => db.execute(sql, params as Array<any>),
                 catch: (cause) =>
-                  new SqlError({ reason: classifyError(cause, "Failed to execute statement (async)", "execute") })
+                  new SqlError({
+                    reason: classifyError(
+                      cause,
+                      "Failed to execute statement (async)",
+                      "execute"
+                    ),
+                  }),
               }),
-              (result) => values ? result.rawRows ?? [] : result.rows
-            )
+              (result) => (values ? (result.rawRows ?? []) : result.rows)
+            );
           }
           return Effect.try({
             try: () => {
-              const result = db.executeSync(sql, params as Array<any>)
-              return values ? result.rawRows ?? [] : result.rows
+              const result = db.executeSync(sql, params as Array<any>);
+              return values ? (result.rawRows ?? []) : result.rows;
             },
-            catch: (cause) => new SqlError({ reason: classifyError(cause, "Failed to execute statement", "execute") })
-          })
-        })
+            catch: (cause) =>
+              new SqlError({
+                reason: classifyError(
+                  cause,
+                  "Failed to execute statement",
+                  "execute"
+                ),
+              }),
+          });
+        });
 
       return identity<SqliteConnection>({
         execute(sql, params, transformRows) {
           return transformRows
             ? Effect.map(run(sql, params), transformRows)
-            : run(sql, params)
+            : run(sql, params);
         },
         executeRaw(sql, params) {
-          return run(sql, params)
+          return run(sql, params);
         },
         executeValues(sql, params) {
-          return run(sql, params, true)
+          return run(sql, params, true);
         },
         executeUnprepared(sql, params, transformRows) {
-          return this.execute(sql, params, transformRows)
+          return this.execute(sql, params, transformRows);
         },
         executeStream() {
-          return Stream.die("executeStream not implemented")
-        }
-      })
-    })
+          return Stream.die("executeStream not implemented");
+        },
+      });
+    });
 
-    const semaphore = yield* Semaphore.make(1)
-    const connection = yield* makeConnection
+    const semaphore = yield* Semaphore.make(1);
+    const connection = yield* makeConnection;
 
-    const acquirer = semaphore.withPermits(1)(Effect.succeed(connection))
+    const acquirer = semaphore.withPermits(1)(Effect.succeed(connection));
     const transactionAcquirer = Effect.uninterruptibleMask((restore) => {
-      const fiber = Fiber.getCurrent()!
-      const scope = Context.getUnsafe(fiber.context, Scope.Scope)
+      const fiber = Fiber.getCurrent()!;
+      const scope = Context.getUnsafe(fiber.context, Scope.Scope);
       return Effect.as(
-        Effect.tap(
-          restore(semaphore.take(1)),
-          () => Scope.addFinalizer(scope, semaphore.release(1))
+        Effect.tap(restore(semaphore.take(1)), () =>
+          Scope.addFinalizer(scope, semaphore.release(1))
         ),
         connection
-      )
-    })
+      );
+    });
 
     return Object.assign(
       (yield* Client.make({
@@ -233,17 +247,19 @@ export const make = (
         compiler,
         transactionAcquirer,
         spanAttributes: [
-          ...(options.spanAttributes ? Object.entries(options.spanAttributes) : []),
-          [ATTR_DB_SYSTEM_NAME, "sqlite"]
+          ...(options.spanAttributes
+            ? Object.entries(options.spanAttributes)
+            : []),
+          [ATTR_DB_SYSTEM_NAME, "sqlite"],
         ],
-        transformRows
+        transformRows,
       })) as SqliteClient,
       {
         [TypeId]: TypeId,
-        config: options
+        config: options,
       }
-    )
-  })
+    );
+  });
 
 /**
  * Builds a layer from an Effect `Config` value, providing both the React Native `SqliteClient` service and the generic `SqlClient` service.
@@ -263,7 +279,7 @@ export const layerConfig = (
         )
       )
     )
-  ).pipe(Layer.provide(Reactivity.layer))
+  ).pipe(Layer.provide(Reactivity.layer));
 
 /**
  * Builds a layer from a React Native SQLite client configuration, providing both `SqliteClient` and the generic `SqlClient` service.
@@ -278,18 +294,19 @@ export const layer = (
     Effect.map(make(config), (client) =>
       Context.make(SqliteClient, client).pipe(
         Context.add(Client.SqlClient, client)
-      ))
-  ).pipe(Layer.provide(Reactivity.layer))
+      )
+    )
+  ).pipe(Layer.provide(Reactivity.layer));
 
 interface DB {
-  close: () => void
-  delete: (location?: string) => void
+  close: () => void;
+  delete: (location?: string) => void;
   attach: (params: {
-    secondaryDbFileName: string
-    alias: string
-    location?: string
-  }) => void
-  detach: (alias: string) => void
+    secondaryDbFileName: string;
+    alias: string;
+    location?: string;
+  }) => void;
+  detach: (alias: string) => void;
   /**
    * Sync version of the execute function
    * It will block the JS thread and therefore your UI and should be used with caution
@@ -305,7 +322,7 @@ interface DB {
    * If you are writing to the database YOU SHOULD BE USING TRANSACTIONS!
    * Transactions protect you from partial writes and ensure that your data is always in a consistent state
    */
-  executeSync: (query: string, params?: Array<any>) => QueryResult
+  executeSync: (query: string, params?: Array<any>) => QueryResult;
   /**
    * Basic query execution function, it is async don't forget to await it
    *
@@ -322,37 +339,37 @@ interface DB {
    *
    * If you need a large amount of queries ran as fast as possible you should be using `executeBatch`, `executeRaw`, `loadFile` or `executeWithHostObjects`
    */
-  execute: (query: string, params?: Array<any>) => Promise<QueryResult>
+  execute: (query: string, params?: Array<any>) => Promise<QueryResult>;
   /**
    * Loads a runtime loadable sqlite extension. Libsql and iOS embedded version do not support loading extensions
    */
-  loadExtension: (path: string, entryPoint?: string) => void
+  loadExtension: (path: string, entryPoint?: string) => void;
   /**
    * Same as `execute` except the results are not returned in objects but rather in arrays with just the values and not the keys
    * It will be faster since a lot of repeated work is skipped and only the values you care about are returned
    */
-  executeRaw: (query: string, params?: Array<any>) => Promise<Array<any>>
+  executeRaw: (query: string, params?: Array<any>) => Promise<Array<any>>;
   /**
    * Same as `executeRaw` but it will block the JS thread and therefore your UI and should be used with caution
    * It will return an array of arrays with just the values and not the keys
    */
-  executeRawSync: (query: string, params?: Array<any>) => Array<any>
+  executeRawSync: (query: string, params?: Array<any>) => Array<any>;
   /**
    * Get's the absolute path to the db file. Useful for debugging on local builds and for attaching the DB from users devices
    */
-  getDbPath: (location?: string) => string
+  getDbPath: (location?: string) => string;
   /**
    * Reactive execution of queries when data is written to the database. Check the docs for how to use them.
    */
   reactiveExecute: (params: {
-    query: string
-    arguments: Array<any>
+    query: string;
+    arguments: Array<any>;
     fireOn: Array<{
-      table: string
-      ids?: Array<number>
-    }>
-    callback: (response: any) => void
-  }) => () => void
+      table: string;
+      ids?: Array<number>;
+    }>;
+    callback: (response: any) => void;
+  }) => () => void;
   /** This function is only available for libsql.
    * Allows to trigger a sync the database with it's remote replica
    * In order for this function to work you need to use openSync or openRemote functions
@@ -360,19 +377,19 @@ interface DB {
    *
    * The database is hosted in turso
    */
-  sync: () => void
+  sync: () => void;
 }
 
 interface QueryResult {
-  insertId?: number
-  rowsAffected: number
-  res?: Array<any>
-  rows: Array<Record<string, any>>
+  insertId?: number;
+  rowsAffected: number;
+  res?: Array<any>;
+  rows: Array<Record<string, any>>;
   // An array of intermediate results, just values without column names
-  rawRows?: Array<Array<any>>
-  columnNames?: Array<string>
+  rawRows?: Array<Array<any>>;
+  columnNames?: Array<string>;
   /**
    * Query metadata, available only for select query results
    */
-  metadata?: Array<any>
+  metadata?: Array<any>;
 }

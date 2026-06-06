@@ -26,7 +26,7 @@
  *
  * @since 4.0.0
  */
-import * as Schema from "../../Schema.ts"
+import * as Schema from "../../Schema.ts";
 
 /**
  * Schema for branded integer machine identifiers used by the cluster.
@@ -37,9 +37,9 @@ import * as Schema from "../../Schema.ts"
 export const MachineId = Schema.Int.pipe(
   Schema.brand("~effect/cluster/MachineId"),
   Schema.annotate({
-    toFormatter: () => (machineId: string) => `MachineId(${machineId})`
+    toFormatter: () => (machineId: string) => `MachineId(${machineId})`,
   })
-)
+);
 
 /**
  * Branded integer type representing a cluster machine ID.
@@ -47,7 +47,7 @@ export const MachineId = Schema.Int.pipe(
  * @category models
  * @since 4.0.0
  */
-export type MachineId = typeof MachineId.Type
+export type MachineId = typeof MachineId.Type;
 
 /**
  * Brands a number as a `MachineId`.
@@ -71,4 +71,4 @@ export type MachineId = typeof MachineId.Type
  * @category constructors
  * @since 4.0.0
  */
-export const make = (id: number): MachineId => id as MachineId
+export const make = (id: number): MachineId => id as MachineId;

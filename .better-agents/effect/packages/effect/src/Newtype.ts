@@ -63,14 +63,14 @@
  *
  * @since 4.0.0
  */
-import type * as Combiner from "./Combiner.ts"
-import type * as Equivalence from "./Equivalence.ts"
-import { cast } from "./Function.ts"
-import * as Optic from "./Optic.ts"
-import type * as Order from "./Order.ts"
-import type * as Reducer from "./Reducer.ts"
+import type * as Combiner from "./Combiner.ts";
+import type * as Equivalence from "./Equivalence.ts";
+import { cast } from "./Function.ts";
+import * as Optic from "./Optic.ts";
+import type * as Order from "./Order.ts";
+import type * as Reducer from "./Reducer.ts";
 
-const TypeId = "~effect/Newtype"
+const TypeId = "~effect/Newtype";
 
 /**
  * A tagged interface that wraps a carrier type under a unique key, preventing
@@ -107,9 +107,9 @@ const TypeId = "~effect/Newtype"
  */
 export interface Newtype<in out Key extends string, out Carrier> {
   readonly [TypeId]: {
-    readonly key: Key
-    readonly carrier: Carrier
-  }
+    readonly key: Key;
+    readonly carrier: Carrier;
+  };
 }
 
 /**
@@ -137,7 +137,7 @@ export declare namespace Newtype {
    * @category utility types
    * @since 4.0.0
    */
-  export type Any = Newtype<any, unknown>
+  export type Any = Newtype<any, unknown>;
 
   /**
    * Extracts the key literal type from a newtype.
@@ -149,7 +149,8 @@ export declare namespace Newtype {
    * @category utility types
    * @since 4.0.0
    */
-  export type Key<N extends Any> = N extends Newtype<infer Key, unknown> ? Key : never
+  export type Key<N extends Any> =
+    N extends Newtype<infer Key, unknown> ? Key : never;
 
   /**
    * Extracts the carrier (underlying) type from a newtype.
@@ -161,7 +162,8 @@ export declare namespace Newtype {
    * @category utility types
    * @since 4.0.0
    */
-  export type Carrier<N extends Any> = N extends Newtype<infer _Key, infer Carrier> ? Carrier : never
+  export type Carrier<N extends Any> =
+    N extends Newtype<infer _Key, infer Carrier> ? Carrier : never;
 }
 
 /**
@@ -194,7 +196,8 @@ export declare namespace Newtype {
  * @category getters
  * @since 4.0.0
  */
-export const value: <N extends Newtype.Any>(newtype: N) => Newtype.Carrier<N> = cast
+export const value: <N extends Newtype.Any>(newtype: N) => Newtype.Carrier<N> =
+  cast;
 
 /**
  * Creates an `Optic.Iso` for a newtype, providing both wrapping (`set`) and
@@ -227,8 +230,11 @@ export const value: <N extends Newtype.Any>(newtype: N) => Newtype.Carrier<N> = 
  * @category constructors
  * @since 4.0.0
  */
-export function makeIso<N extends Newtype.Any>(): Optic.Iso<N, Newtype.Carrier<N>> {
-  return Optic.makeIso(value, cast)
+export function makeIso<N extends Newtype.Any>(): Optic.Iso<
+  N,
+  Newtype.Carrier<N>
+> {
+  return Optic.makeIso(value, cast);
 }
 
 /**
@@ -266,7 +272,7 @@ export function makeIso<N extends Newtype.Any>(): Optic.Iso<N, Newtype.Carrier<N
  */
 export const makeEquivalence: <N extends Newtype.Any>(
   equivalence: Equivalence.Equivalence<Newtype.Carrier<N>>
-) => Equivalence.Equivalence<N> = cast
+) => Equivalence.Equivalence<N> = cast;
 
 /**
  * Lifts an `Order` for the carrier type into an `Order` for the newtype.
@@ -298,7 +304,9 @@ export const makeEquivalence: <N extends Newtype.Any>(
  * @category constructors
  * @since 4.0.0
  */
-export const makeOrder: <N extends Newtype.Any>(order: Order.Order<Newtype.Carrier<N>>) => Order.Order<N> = cast
+export const makeOrder: <N extends Newtype.Any>(
+  order: Order.Order<Newtype.Carrier<N>>
+) => Order.Order<N> = cast;
 
 /**
  * Lifts a `Combiner` for the carrier type into a `Combiner` for the newtype.
@@ -334,7 +342,7 @@ export const makeOrder: <N extends Newtype.Any>(order: Order.Order<Newtype.Carri
  */
 export const makeCombiner: <N extends Newtype.Any>(
   combiner: Combiner.Combiner<Newtype.Carrier<N>>
-) => Combiner.Combiner<N> = cast
+) => Combiner.Combiner<N> = cast;
 
 /**
  * Lifts a `Reducer` for the carrier type into a `Reducer` for the newtype.
@@ -368,5 +376,6 @@ export const makeCombiner: <N extends Newtype.Any>(
  * @category constructors
  * @since 4.0.0
  */
-export const makeReducer: <N extends Newtype.Any>(reducer: Reducer.Reducer<Newtype.Carrier<N>>) => Reducer.Reducer<N> =
-  cast
+export const makeReducer: <N extends Newtype.Any>(
+  reducer: Reducer.Reducer<Newtype.Carrier<N>>
+) => Reducer.Reducer<N> = cast;

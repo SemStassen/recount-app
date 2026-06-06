@@ -38,22 +38,22 @@
  *
  * @since 2.0.0
  */
-import * as Cause from "./Cause.ts"
-import type { Context } from "./Context.ts"
-import * as Deferred from "./Deferred.ts"
-import * as Effect from "./Effect.ts"
-import * as Exit from "./Exit.ts"
-import * as Fiber from "./Fiber.ts"
-import * as Filter from "./Filter.ts"
-import { constVoid, dual } from "./Function.ts"
-import type * as Inspectable from "./Inspectable.ts"
-import { PipeInspectableProto } from "./internal/core.ts"
-import * as Iterable from "./Iterable.ts"
-import type { Pipeable } from "./Pipeable.ts"
-import * as Predicate from "./Predicate.ts"
-import type * as Scope from "./Scope.ts"
+import * as Cause from "./Cause.ts";
+import type { Context } from "./Context.ts";
+import * as Deferred from "./Deferred.ts";
+import * as Effect from "./Effect.ts";
+import * as Exit from "./Exit.ts";
+import * as Fiber from "./Fiber.ts";
+import * as Filter from "./Filter.ts";
+import { constVoid, dual } from "./Function.ts";
+import type * as Inspectable from "./Inspectable.ts";
+import { PipeInspectableProto } from "./internal/core.ts";
+import * as Iterable from "./Iterable.ts";
+import type { Pipeable } from "./Pipeable.ts";
+import * as Predicate from "./Predicate.ts";
+import type * as Scope from "./Scope.ts";
 
-const TypeId = "~effect/FiberSet"
+const TypeId = "~effect/FiberSet";
 
 /**
  * A FiberSet is a collection of fibers that can be managed together.
@@ -80,16 +80,17 @@ const TypeId = "~effect/FiberSet"
  * @since 2.0.0
  */
 export interface FiberSet<out A = unknown, out E = unknown>
-  extends Pipeable, Inspectable.Inspectable, Iterable<Fiber.Fiber<A, E>>
-{
-  readonly [TypeId]: typeof TypeId
-  readonly deferred: Deferred.Deferred<void, unknown>
-  state: {
-    readonly _tag: "Open"
-    readonly backing: Set<Fiber.Fiber<A, E>>
-  } | {
-    readonly _tag: "Closed"
-  }
+  extends Pipeable, Inspectable.Inspectable, Iterable<Fiber.Fiber<A, E>> {
+  readonly [TypeId]: typeof TypeId;
+  readonly deferred: Deferred.Deferred<void, unknown>;
+  state:
+    | {
+        readonly _tag: "Open";
+        readonly backing: Set<Fiber.Fiber<A, E>>;
+      }
+    | {
+        readonly _tag: "Closed";
+      };
 }
 
 /**
@@ -111,34 +112,35 @@ export interface FiberSet<out A = unknown, out E = unknown>
  * @category refinements
  * @since 2.0.0
  */
-export const isFiberSet = (u: unknown): u is FiberSet<unknown, unknown> => Predicate.hasProperty(u, TypeId)
+export const isFiberSet = (u: unknown): u is FiberSet<unknown, unknown> =>
+  Predicate.hasProperty(u, TypeId);
 
 const Proto = {
   [TypeId]: TypeId,
   [Symbol.iterator](this: FiberSet<unknown, unknown>) {
     if (this.state._tag === "Closed") {
-      return Iterable.empty()
+      return Iterable.empty();
     }
-    return this.state.backing[Symbol.iterator]()
+    return this.state.backing[Symbol.iterator]();
   },
   ...PipeInspectableProto,
   toJSON(this: FiberSet<unknown, unknown>) {
     return {
       _id: "FiberMap",
-      state: this.state
-    }
-  }
-}
+      state: this.state,
+    };
+  },
+};
 
 const makeUnsafe = <A, E>(
   backing: Set<Fiber.Fiber<A, E>>,
   deferred: Deferred.Deferred<void, unknown>
 ): FiberSet<A, E> => {
-  const self = Object.create(Proto)
-  self.state = { _tag: "Open", backing }
-  self.deferred = deferred
-  return self
-}
+  const self = Object.create(Proto);
+  self.state = { _tag: "Open", backing };
+  self.deferred = deferred;
+  return self;
+};
 
 /**
  * Creates a scoped `FiberSet` for storing fibers.
@@ -171,20 +173,22 @@ const makeUnsafe = <A, E>(
  * @category constructors
  * @since 2.0.0
  */
-export const make = <A = unknown, E = unknown>(): Effect.Effect<FiberSet<A, E>, never, Scope.Scope> =>
+export const make = <A = unknown, E = unknown>(): Effect.Effect<
+  FiberSet<A, E>,
+  never,
+  Scope.Scope
+> =>
   Effect.acquireRelease(
     Effect.sync(() => makeUnsafe(new Set(), Deferred.makeUnsafe())),
     (set) =>
       Effect.suspend(() => {
-        const state = set.state
-        if (state._tag === "Closed") return Effect.void
-        set.state = { _tag: "Closed" }
-        const fibers = state.backing
-        return Fiber.interruptAll(fibers).pipe(
-          Deferred.into(set.deferred)
-        )
+        const state = set.state;
+        if (state._tag === "Closed") return Effect.void;
+        set.state = { _tag: "Closed" };
+        const fibers = state.backing;
+        return Fiber.interruptAll(fibers).pipe(Deferred.into(set.deferred));
       })
-  )
+  );
 
 /**
  * Creates a scoped run function that forks effects into a new `FiberSet`.
@@ -216,18 +220,22 @@ export const make = <A = unknown, E = unknown>(): Effect.Effect<FiberSet<A, E>, 
  * @category constructors
  * @since 2.0.0
  */
-export const makeRuntime = <R = never, A = unknown, E = unknown>(): Effect.Effect<
-  (<XE extends E, XA extends A>(
+export const makeRuntime = <
+  R = never,
+  A = unknown,
+  E = unknown,
+>(): Effect.Effect<
+  <XE extends E, XA extends A>(
     effect: Effect.Effect<XA, XE, R>,
-    options?: (Effect.RunOptions & { readonly propagateInterruption?: boolean | undefined }) | undefined
-  ) => Fiber.Fiber<XA, XE>),
+    options?:
+      | (Effect.RunOptions & {
+          readonly propagateInterruption?: boolean | undefined;
+        })
+      | undefined
+  ) => Fiber.Fiber<XA, XE>,
   never,
   Scope.Scope | R
-> =>
-  Effect.flatMap(
-    make<A, E>(),
-    (self) => runtime(self)<R>()
-  )
+> => Effect.flatMap(make<A, E>(), (self) => runtime(self)<R>());
 
 /**
  * Creates a scoped run function that forks effects into a new `FiberSet` and
@@ -266,24 +274,27 @@ export const makeRuntime = <R = never, A = unknown, E = unknown>(): Effect.Effec
  * @category constructors
  * @since 3.13.0
  */
-export const makeRuntimePromise = <R = never, A = unknown, E = unknown>(): Effect.Effect<
-  (<XE extends E, XA extends A>(
+export const makeRuntimePromise = <
+  R = never,
+  A = unknown,
+  E = unknown,
+>(): Effect.Effect<
+  <XE extends E, XA extends A>(
     effect: Effect.Effect<XA, XE, R>,
-    options?: (Effect.RunOptions & { readonly propagateInterruption?: boolean | undefined }) | undefined
-  ) => Promise<XA>),
+    options?:
+      | (Effect.RunOptions & {
+          readonly propagateInterruption?: boolean | undefined;
+        })
+      | undefined
+  ) => Promise<XA>,
   never,
   R | Scope.Scope
-> =>
-  Effect.flatMap(
-    make<A, E>(),
-    (self) => runtimePromise(self)<R>()
-  )
+> => Effect.flatMap(make<A, E>(), (self) => runtimePromise(self)<R>());
 
-const internalFiberId = -1
-const isInternalInterruption = Filter.toPredicate(Filter.compose(
-  Cause.filterInterruptors,
-  Filter.has(internalFiberId)
-))
+const internalFiberId = -1;
+const isInternalInterruption = Filter.toPredicate(
+  Filter.compose(Cause.filterInterruptors, Filter.has(internalFiberId))
+);
 
 /**
  * Adds an existing fiber to the `FiberSet` using a synchronous, unsafe
@@ -323,48 +334,55 @@ const isInternalInterruption = Filter.toPredicate(Filter.compose(
 export const addUnsafe: {
   <A, E, XE extends E, XA extends A>(
     fiber: Fiber.Fiber<XA, XE>,
-    options?: {
-      readonly propagateInterruption?: boolean | undefined
-    } | undefined
-  ): (self: FiberSet<A, E>) => void
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+        }
+      | undefined
+  ): (self: FiberSet<A, E>) => void;
   <A, E, XE extends E, XA extends A>(
     self: FiberSet<A, E>,
     fiber: Fiber.Fiber<XA, XE>,
-    options?: {
-      readonly propagateInterruption?: boolean | undefined
-    } | undefined
-  ): void
-} = dual((args) => isFiberSet(args[0]), <A, E, XE extends E, XA extends A>(
-  self: FiberSet<A, E>,
-  fiber: Fiber.Fiber<XA, XE>,
-  options?: {
-    readonly propagateInterruption?: boolean | undefined
-  } | undefined
-): void => {
-  if (self.state._tag === "Closed") {
-    fiber.interruptUnsafe(internalFiberId)
-    return
-  } else if (self.state.backing.has(fiber)) {
-    return
-  }
-  self.state.backing.add(fiber)
-  fiber.addObserver((exit) => {
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+        }
+      | undefined
+  ): void;
+} = dual(
+  (args) => isFiberSet(args[0]),
+  <A, E, XE extends E, XA extends A>(
+    self: FiberSet<A, E>,
+    fiber: Fiber.Fiber<XA, XE>,
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+        }
+      | undefined
+  ): void => {
     if (self.state._tag === "Closed") {
-      return
+      fiber.interruptUnsafe(internalFiberId);
+      return;
+    } else if (self.state.backing.has(fiber)) {
+      return;
     }
-    self.state.backing.delete(fiber)
-    if (
-      Exit.isFailure(exit) &&
-      (
-        options?.propagateInterruption === true ?
-          !isInternalInterruption(exit.cause) :
-          !Cause.hasInterruptsOnly(exit.cause)
-      )
-    ) {
-      Deferred.doneUnsafe(self.deferred, exit as any)
-    }
-  })
-})
+    self.state.backing.add(fiber);
+    fiber.addObserver((exit) => {
+      if (self.state._tag === "Closed") {
+        return;
+      }
+      self.state.backing.delete(fiber);
+      if (
+        Exit.isFailure(exit) &&
+        (options?.propagateInterruption === true
+          ? !isInternalInterruption(exit.cause)
+          : !Cause.hasInterruptsOnly(exit.cause))
+      ) {
+        Deferred.doneUnsafe(self.deferred, exit as any);
+      }
+    });
+  }
+);
 
 /**
  * Adds a fiber to the FiberSet. When the fiber completes, it will be removed.
@@ -392,27 +410,33 @@ export const addUnsafe: {
 export const add: {
   <A, E, XE extends E, XA extends A>(
     fiber: Fiber.Fiber<XA, XE>,
-    options?: {
-      readonly propagateInterruption?: boolean | undefined
-    } | undefined
-  ): (self: FiberSet<A, E>) => Effect.Effect<void>
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+        }
+      | undefined
+  ): (self: FiberSet<A, E>) => Effect.Effect<void>;
   <A, E, XE extends E, XA extends A>(
     self: FiberSet<A, E>,
     fiber: Fiber.Fiber<XA, XE>,
-    options?: {
-      readonly propagateInterruption?: boolean | undefined
-    } | undefined
-  ): Effect.Effect<void>
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+        }
+      | undefined
+  ): Effect.Effect<void>;
 } = dual(
   (args) => isFiberSet(args[0]),
   <A, E, XE extends E, XA extends A>(
     self: FiberSet<A, E>,
     fiber: Fiber.Fiber<XA, XE>,
-    options?: {
-      readonly propagateInterruption?: boolean | undefined
-    } | undefined
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+        }
+      | undefined
   ): Effect.Effect<void> => Effect.sync(() => addUnsafe(self, fiber, options))
-)
+);
 
 /**
  * Interrupts all fibers in the `FiberSet` and clears the set.
@@ -444,20 +468,20 @@ export const add: {
 export const clear = <A, E>(self: FiberSet<A, E>): Effect.Effect<void> =>
   Effect.suspend(() => {
     if (self.state._tag === "Closed") {
-      return Effect.void
+      return Effect.void;
     }
-    return Fiber.interruptAllAs(self.state.backing, internalFiberId)
-  })
+    return Fiber.interruptAllAs(self.state.backing, internalFiberId);
+  });
 
-const constInterruptedFiber = (function() {
-  let fiber: Fiber.Fiber<never, never> | undefined = undefined
+const constInterruptedFiber = (function () {
+  let fiber: Fiber.Fiber<never, never> | undefined = undefined;
   return () => {
     if (fiber === undefined) {
-      fiber = Effect.runFork(Effect.interrupt)
+      fiber = Effect.runFork(Effect.interrupt);
     }
-    return fiber
-  }
-})()
+    return fiber;
+  };
+})();
 
 /**
  * Forks an Effect and add the forked fiber to the FiberSet.
@@ -489,45 +513,50 @@ const constInterruptedFiber = (function() {
 export const run: {
   <A, E>(
     self: FiberSet<A, E>,
-    options?: {
-      readonly propagateInterruption?: boolean | undefined
-      readonly startImmediately?: boolean | undefined
-    } | undefined
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+          readonly startImmediately?: boolean | undefined;
+        }
+      | undefined
   ): <R, XE extends E, XA extends A>(
     effect: Effect.Effect<XA, XE, R>
-  ) => Effect.Effect<Fiber.Fiber<XA, XE>, never, R>
+  ) => Effect.Effect<Fiber.Fiber<XA, XE>, never, R>;
   <A, E, R, XE extends E, XA extends A>(
     self: FiberSet<A, E>,
     effect: Effect.Effect<XA, XE, R>,
-    options?: {
-      readonly propagateInterruption?: boolean | undefined
-      readonly startImmediately?: boolean | undefined
-    } | undefined
-  ): Effect.Effect<Fiber.Fiber<XA, XE>, never, R>
-} = function() {
-  const self = arguments[0] as FiberSet<any, any>
+    options?:
+      | {
+          readonly propagateInterruption?: boolean | undefined;
+          readonly startImmediately?: boolean | undefined;
+        }
+      | undefined
+  ): Effect.Effect<Fiber.Fiber<XA, XE>, never, R>;
+} = function () {
+  const self = arguments[0] as FiberSet<any, any>;
   if (!Effect.isEffect(arguments[1])) {
-    const options = arguments[1]
-    return (effect: Effect.Effect<any, any, any>) => runImpl(self, effect, options)
+    const options = arguments[1];
+    return (effect: Effect.Effect<any, any, any>) =>
+      runImpl(self, effect, options);
   }
-  return runImpl(self, arguments[1], arguments[2]) as any
-}
+  return runImpl(self, arguments[1], arguments[2]) as any;
+};
 
 const runImpl = <A, E, R, XE extends E, XA extends A>(
   self: FiberSet<A, E>,
   effect: Effect.Effect<XA, XE, R>,
   options?: {
-    readonly propagateInterruption?: boolean | undefined
+    readonly propagateInterruption?: boolean | undefined;
   }
 ): Effect.Effect<Fiber.Fiber<XA, XE>, never, R> =>
   Effect.withFiber((parent) => {
     if (self.state._tag === "Closed") {
-      return Effect.sync(constInterruptedFiber)
+      return Effect.sync(constInterruptedFiber);
     }
-    const fiber = Effect.runForkWith(parent.context as Context<R>)(effect)
-    addUnsafe(self, fiber, options)
-    return Effect.succeed(fiber)
-  })
+    const fiber = Effect.runForkWith(parent.context as Context<R>)(effect);
+    addUnsafe(self, fiber, options);
+    return Effect.succeed(fiber);
+  });
 
 /**
  * Captures a `Runtime` and uses it to fork effects into the `FiberSet`.
@@ -564,31 +593,34 @@ export const runtime: <A, E>(
   <XE extends E, XA extends A>(
     effect: Effect.Effect<XA, XE, R>,
     options?:
-      | Effect.RunOptions & { readonly propagateInterruption?: boolean | undefined }
+      | (Effect.RunOptions & {
+          readonly propagateInterruption?: boolean | undefined;
+        })
       | undefined
   ) => Fiber.Fiber<XA, XE>,
   never,
   R
-> = <A, E>(self: FiberSet<A, E>) => <R>() =>
-  Effect.map(
-    Effect.context<R>(),
-    (services) => {
-      const runFork = Effect.runForkWith(services)
+> =
+  <A, E>(self: FiberSet<A, E>) =>
+  <R>() =>
+    Effect.map(Effect.context<R>(), (services) => {
+      const runFork = Effect.runForkWith(services);
       return <XE extends E, XA extends A>(
         effect: Effect.Effect<XA, XE, R>,
         options?:
-          | Effect.RunOptions & { readonly propagateInterruption?: boolean | undefined }
+          | (Effect.RunOptions & {
+              readonly propagateInterruption?: boolean | undefined;
+            })
           | undefined
       ) => {
         if (self.state._tag === "Closed") {
-          return constInterruptedFiber()
+          return constInterruptedFiber();
         }
-        const fiber = runFork(effect, options)
-        addUnsafe(self, fiber)
-        return fiber
-      }
-    }
-  )
+        const fiber = runFork(effect, options);
+        addUnsafe(self, fiber);
+        return fiber;
+      };
+    });
 
 /**
  * Captures a `Runtime` and returns a Promise-based runner that forks effects
@@ -628,36 +660,43 @@ export const runtime: <A, E>(
  * @category combinators
  * @since 3.13.0
  */
-export const runtimePromise = <A, E>(self: FiberSet<A, E>): <R = never>() => Effect.Effect<
-  <XE extends E, XA extends A>(
-    effect: Effect.Effect<XA, XE, R>,
-    options?:
-      | Effect.RunOptions & { readonly propagateInterruption?: boolean | undefined }
-      | undefined
-  ) => Promise<XA>,
-  never,
-  R
-> =>
-<R>() =>
-  Effect.map(
-    runtime(self)<R>(),
-    (runFork) =>
+export const runtimePromise =
+  <A, E>(
+    self: FiberSet<A, E>
+  ): (<R = never>() => Effect.Effect<
     <XE extends E, XA extends A>(
       effect: Effect.Effect<XA, XE, R>,
       options?:
-        | Effect.RunOptions & { readonly propagateInterruption?: boolean | undefined }
+        | (Effect.RunOptions & {
+            readonly propagateInterruption?: boolean | undefined;
+          })
         | undefined
-    ): Promise<XA> =>
-      new Promise((resolve, reject) =>
-        runFork(effect, options).addObserver((exit) => {
-          if (Exit.isSuccess(exit)) {
-            resolve(exit.value)
-          } else {
-            reject(Cause.squash(exit.cause))
-          }
-        })
-      )
-  )
+    ) => Promise<XA>,
+    never,
+    R
+  >) =>
+  <R>() =>
+    Effect.map(
+      runtime(self)<R>(),
+      (runFork) =>
+        <XE extends E, XA extends A>(
+          effect: Effect.Effect<XA, XE, R>,
+          options?:
+            | (Effect.RunOptions & {
+                readonly propagateInterruption?: boolean | undefined;
+              })
+            | undefined
+        ): Promise<XA> =>
+          new Promise((resolve, reject) =>
+            runFork(effect, options).addObserver((exit) => {
+              if (Exit.isSuccess(exit)) {
+                resolve(exit.value);
+              } else {
+                reject(Cause.squash(exit.cause));
+              }
+            })
+          )
+    );
 
 /**
  * Gets the number of fibers currently in the FiberSet.
@@ -684,7 +723,9 @@ export const runtimePromise = <A, E>(self: FiberSet<A, E>): <R = never>() => Eff
  * @since 2.0.0
  */
 export const size = <A, E>(self: FiberSet<A, E>): Effect.Effect<number> =>
-  Effect.sync(() => self.state._tag === "Closed" ? 0 : self.state.backing.size)
+  Effect.sync(() =>
+    self.state._tag === "Closed" ? 0 : self.state.backing.size
+  );
 
 /**
  * Joins all fibers in the FiberSet. If any fiber in the set terminates with a failure,
@@ -708,7 +749,7 @@ export const size = <A, E>(self: FiberSet<A, E>): Effect.Effect<number> =>
  * @since 2.0.0
  */
 export const join = <A, E>(self: FiberSet<A, E>): Effect.Effect<void, E> =>
-  Deferred.await(self.deferred as Deferred.Deferred<void, E>)
+  Deferred.await(self.deferred as Deferred.Deferred<void, E>);
 
 /**
  * Waits until the fiber set is empty.
@@ -739,5 +780,5 @@ export const awaitEmpty = <A, E>(self: FiberSet<A, E>): Effect.Effect<void> =>
   Effect.whileLoop({
     while: () => self.state._tag === "Open" && self.state.backing.size > 0,
     body: () => Fiber.await(Iterable.headUnsafe(self)),
-    step: constVoid
-  })
+    step: constVoid,
+  });

@@ -24,26 +24,31 @@
  * - Only the first Value token can open a subcommand
  * - Errors accumulate rather than throwing exceptions
  */
-import * as Effect from "../../../Effect.ts"
-import * as Option from "../../../Option.ts"
-import * as CliError from "../CliError.ts"
-import type { Command, ParsedTokens } from "../Command.ts"
-import * as Param from "../Param.ts"
-import * as Primitive from "../Primitive.ts"
-import { suggest } from "./auto-suggest.ts"
-import { toImpl } from "./command.ts"
-import type { LexResult, Token } from "./lexer.ts"
+import * as Effect from "../../../Effect.ts";
+import * as Option from "../../../Option.ts";
+import * as CliError from "../CliError.ts";
+import type { Command, ParsedTokens } from "../Command.ts";
+import * as Param from "../Param.ts";
+import * as Primitive from "../Primitive.ts";
+import { suggest } from "./auto-suggest.ts";
+import { toImpl } from "./command.ts";
+import type { LexResult, Token } from "./lexer.ts";
 
 /* ========================================================================== */
 /* Public API                                                                 */
 /* ========================================================================== */
 
 /** @internal */
-export const getCommandPath = (parsedInput: ParsedTokens): ReadonlyArray<string> =>
+export const getCommandPath = (
+  parsedInput: ParsedTokens
+): ReadonlyArray<string> =>
   Option.match(parsedInput.subcommand, {
     onNone: () => [],
-    onSome: (subcommand) => [subcommand.name, ...getCommandPath(subcommand.parsedInput)]
-  })
+    onSome: (subcommand) => [
+      subcommand.name,
+      ...getCommandPath(subcommand.parsedInput),
+    ],
+  });
 
 /** @internal */
 export const parseArgs = (
@@ -51,66 +56,74 @@ export const parseArgs = (
   command: Command.Any,
   commandPath: ReadonlyArray<string> = []
 ): Effect.Effect<ParsedTokens, never, Param.Environment> =>
-  Effect.gen(function*() {
-    const { tokens, trailingOperands: afterEndOfOptions } = lexResult
-    const newCommandPath = [...commandPath, command.name]
+  Effect.gen(function* () {
+    const { tokens, trailingOperands: afterEndOfOptions } = lexResult;
+    const newCommandPath = [...commandPath, command.name];
 
-    const commandImpl = toImpl(command)
-    const singles = commandImpl.config.flags.flatMap(Param.extractSingleParams)
-    const flagParams = singles.filter(Param.isFlagParam)
-    const flagRegistry = createFlagRegistry(flagParams)
+    const commandImpl = toImpl(command);
+    const singles = commandImpl.config.flags.flatMap(Param.extractSingleParams);
+    const flagParams = singles.filter(Param.isFlagParam);
+    const flagRegistry = createFlagRegistry(flagParams);
 
-    const inheritedSingles = commandImpl.contextConfig.flags.flatMap(Param.extractSingleParams)
-    const inheritedFlagParams = inheritedSingles.filter(Param.isFlagParam)
-    const inheritedFlagRegistry = createFlagRegistry(inheritedFlagParams)
-    const inheritedNames = new Set(inheritedFlagParams.map((param) => param.name))
+    const inheritedSingles = commandImpl.contextConfig.flags.flatMap(
+      Param.extractSingleParams
+    );
+    const inheritedFlagParams = inheritedSingles.filter(Param.isFlagParam);
+    const inheritedFlagRegistry = createFlagRegistry(inheritedFlagParams);
+    const inheritedNames = new Set(
+      inheritedFlagParams.map((param) => param.name)
+    );
 
     const context: CommandContext = {
       command,
       commandPath: newCommandPath,
       flagRegistry,
       inheritedFlagRegistry,
-      localFlagNames: flagParams.filter((param) => !inheritedNames.has(param.name)).map((param) => param.name)
-    }
+      localFlagNames: flagParams
+        .filter((param) => !inheritedNames.has(param.name))
+        .map((param) => param.name),
+    };
 
-    const result = scanCommandLevel(tokens, context)
+    const result = scanCommandLevel(tokens, context);
 
     if (result._tag === "Leaf") {
       return {
         flags: result.flags,
         arguments: [...result.arguments, ...afterEndOfOptions],
         subcommand: Option.none(),
-        ...(result.errors.length > 0 && { errors: result.errors })
-      }
+        ...(result.errors.length > 0 && { errors: result.errors }),
+      };
     }
 
-    const subLex: LexResult = { tokens: result.childTokens, trailingOperands: [] }
-    const subParsed = yield* parseArgs(
-      subLex,
-      result.sub,
-      newCommandPath
-    )
+    const subLex: LexResult = {
+      tokens: result.childTokens,
+      trailingOperands: [],
+    };
+    const subParsed = yield* parseArgs(subLex, result.sub, newCommandPath);
 
-    const allErrors = [...result.errors, ...(subParsed.errors ?? [])]
+    const allErrors = [...result.errors, ...(subParsed.errors ?? [])];
     return {
       flags: result.flags,
       arguments: afterEndOfOptions,
-      subcommand: Option.some({ name: result.sub.name, parsedInput: subParsed }),
-      ...(allErrors.length > 0 && { errors: allErrors })
-    }
-  })
+      subcommand: Option.some({
+        name: result.sub.name,
+        parsedInput: subParsed,
+      }),
+      ...(allErrors.length > 0 && { errors: allErrors }),
+    };
+  });
 
 /* ========================================================================== */
 /* Types                                                                      */
 /* ========================================================================== */
 
-type FlagParam = Param.Single<typeof Param.flagKind, unknown>
+type FlagParam = Param.Single<typeof Param.flagKind, unknown>;
 
 /**
  * Mutable map of flag names to their collected string values.
  * Used internally during parsing; converted to readonly at boundaries.
  */
-type FlagMap = Record<string, Array<string>>
+type FlagMap = Record<string, Array<string>>;
 
 /**
  * Registry of known flags for a command level.
@@ -118,10 +131,10 @@ type FlagMap = Record<string, Array<string>>
  */
 type FlagRegistry = {
   /** All flag params declared at this command level */
-  readonly params: ReadonlyArray<FlagParam>
+  readonly params: ReadonlyArray<FlagParam>;
   /** Maps canonical names and aliases → flag param */
-  readonly index: Map<string, FlagParam>
-}
+  readonly index: Map<string, FlagParam>;
+};
 
 /**
  * Mutable accumulator for collecting flag values during parsing.
@@ -129,23 +142,23 @@ type FlagRegistry = {
  */
 type FlagAccumulator = {
   /** Record a value for a flag. No-op if raw is undefined (for boolean flags). */
-  readonly add: (name: string, raw: string | undefined) => void
+  readonly add: (name: string, raw: string | undefined) => void;
   /** Merge values from another flag map into this accumulator */
-  readonly merge: (from: FlagMap) => void
+  readonly merge: (from: FlagMap) => void;
   /** Return immutable snapshot of accumulated values */
-  readonly snapshot: () => Readonly<FlagMap>
-}
+  readonly snapshot: () => Readonly<FlagMap>;
+};
 
 /**
  * Context for parsing a command level.
  */
 type CommandContext = {
-  readonly command: Command.Any
-  readonly commandPath: ReadonlyArray<string>
-  readonly flagRegistry: FlagRegistry
-  readonly inheritedFlagRegistry: FlagRegistry
-  readonly localFlagNames: ReadonlyArray<string>
-}
+  readonly command: Command.Any;
+  readonly commandPath: ReadonlyArray<string>;
+  readonly flagRegistry: FlagRegistry;
+  readonly inheritedFlagRegistry: FlagRegistry;
+  readonly localFlagNames: ReadonlyArray<string>;
+};
 
 /**
  * Parsing mode during command-level scanning.
@@ -153,47 +166,47 @@ type CommandContext = {
  */
 type ParseMode =
   | { readonly _tag: "AwaitingFirstValue" }
-  | { readonly _tag: "CollectingArguments" }
+  | { readonly _tag: "CollectingArguments" };
 
 /**
  * Mutable state accumulated during command-level parsing.
  */
 type ParseState = {
-  readonly flags: FlagAccumulator
-  readonly arguments: Array<string>
-  readonly errors: Array<CliError.NonShowHelpErrors>
-  mode: ParseMode
-}
+  readonly flags: FlagAccumulator;
+  readonly arguments: Array<string>;
+  readonly errors: Array<CliError.NonShowHelpErrors>;
+  mode: ParseMode;
+};
 
 /**
  * Result when first value token is processed.
  */
 type FirstValueResult =
   | { readonly _tag: "Subcommand"; readonly result: SubcommandResult }
-  | { readonly _tag: "Argument" }
+  | { readonly _tag: "Argument" };
 
 /**
  * Terminal result: command level has no subcommand.
  */
 type LeafResult = {
-  readonly _tag: "Leaf"
-  readonly flags: Readonly<FlagMap>
-  readonly arguments: ReadonlyArray<string>
-  readonly errors: ReadonlyArray<CliError.NonShowHelpErrors>
-}
+  readonly _tag: "Leaf";
+  readonly flags: Readonly<FlagMap>;
+  readonly arguments: ReadonlyArray<string>;
+  readonly errors: ReadonlyArray<CliError.NonShowHelpErrors>;
+};
 
 /**
  * Continuation result: subcommand detected, child parsing needed.
  */
 type SubcommandResult = {
-  readonly _tag: "Sub"
-  readonly flags: Readonly<FlagMap>
-  readonly sub: Command<string, unknown, unknown, unknown, unknown>
-  readonly childTokens: ReadonlyArray<Token>
-  readonly errors: ReadonlyArray<CliError.NonShowHelpErrors>
-}
+  readonly _tag: "Sub";
+  readonly flags: Readonly<FlagMap>;
+  readonly sub: Command<string, unknown, unknown, unknown, unknown>;
+  readonly childTokens: ReadonlyArray<Token>;
+  readonly errors: ReadonlyArray<CliError.NonShowHelpErrors>;
+};
 
-type LevelResult = LeafResult | SubcommandResult
+type LevelResult = LeafResult | SubcommandResult;
 
 /* ========================================================================== */
 /* Token Cursor                                                               */
@@ -205,21 +218,21 @@ type LevelResult = LeafResult | SubcommandResult
  */
 interface TokenCursor {
   /** View next token without consuming */
-  readonly peek: () => Token | undefined
+  readonly peek: () => Token | undefined;
   /** Consume and return next token */
-  readonly take: () => Token | undefined
+  readonly take: () => Token | undefined;
   /** Get all remaining tokens (does not consume) */
-  readonly rest: () => ReadonlyArray<Token>
+  readonly rest: () => ReadonlyArray<Token>;
 }
 
 const makeCursor = (tokens: ReadonlyArray<Token>): TokenCursor => {
-  let i = 0
+  let i = 0;
   return {
     peek: () => tokens[i],
     take: () => tokens[i++],
-    rest: () => tokens.slice(i)
-  }
-}
+    rest: () => tokens.slice(i),
+  };
+};
 
 /* ========================================================================== */
 /* Flag Registry                                                              */
@@ -229,52 +242,62 @@ const makeCursor = (tokens: ReadonlyArray<Token>): TokenCursor => {
  * Creates a registry for O(1) flag lookup by name or alias.
  * @internal
  */
-export const createFlagRegistry = (params: ReadonlyArray<FlagParam>): FlagRegistry => {
-  const index = new Map<string, FlagParam>()
+export const createFlagRegistry = (
+  params: ReadonlyArray<FlagParam>
+): FlagRegistry => {
+  const index = new Map<string, FlagParam>();
 
   for (const param of params) {
     if (index.has(param.name)) {
-      throw new Error(`Duplicate flag name "${param.name}" in command definition`)
+      throw new Error(
+        `Duplicate flag name "${param.name}" in command definition`
+      );
     }
-    index.set(param.name, param)
+    index.set(param.name, param);
 
     for (const alias of param.aliases) {
       if (index.has(alias)) {
         throw new Error(
           `Duplicate flag/alias "${alias}" in command definition (conflicts with "${index.get(alias)!.name}")`
-        )
+        );
       }
-      index.set(alias, param)
+      index.set(alias, param);
     }
   }
 
-  return { params, index }
-}
+  return { params, index };
+};
 
 const buildSubcommandIndex = (
   subcommands: Command.Any["subcommands"]
 ): Map<string, Command<string, unknown, unknown, unknown, unknown>> => {
-  const index = new Map<string, Command<string, unknown, unknown, unknown, unknown>>()
-  const setKey = (key: string, command: Command<string, unknown, unknown, unknown, unknown>) => {
-    const existing = index.get(key)
+  const index = new Map<
+    string,
+    Command<string, unknown, unknown, unknown, unknown>
+  >();
+  const setKey = (
+    key: string,
+    command: Command<string, unknown, unknown, unknown, unknown>
+  ) => {
+    const existing = index.get(key);
     if (existing && existing !== command) {
       throw new Error(
         `Duplicate subcommand name/alias "${key}" in command definition (conflicts with "${existing.name}")`
-      )
+      );
     }
-    index.set(key, command)
-  }
+    index.set(key, command);
+  };
 
   for (const group of subcommands) {
     for (const subcommand of group.commands) {
-      setKey(subcommand.name, subcommand)
+      setKey(subcommand.name, subcommand);
       if (subcommand.alias && subcommand.alias !== subcommand.name) {
-        setKey(subcommand.alias, subcommand)
+        setKey(subcommand.alias, subcommand);
       }
     }
   }
-  return index
-}
+  return index;
+};
 
 /* ========================================================================== */
 /* Flag Accumulator                                                           */
@@ -284,100 +307,108 @@ const buildSubcommandIndex = (
  * @internal
  */
 export const createEmptyFlagMap = (params: ReadonlyArray<FlagParam>): FlagMap =>
-  Object.fromEntries(params.map((p) => [p.name, []]))
+  Object.fromEntries(params.map((p) => [p.name, []]));
 
 /**
  * Creates a mutable accumulator for collecting flag values.
  * Pre-initializes empty arrays for all known flags.
  */
-const createFlagAccumulator = (params: ReadonlyArray<FlagParam>): FlagAccumulator => {
-  const map = createEmptyFlagMap(params)
+const createFlagAccumulator = (
+  params: ReadonlyArray<FlagParam>
+): FlagAccumulator => {
+  const map = createEmptyFlagMap(params);
 
   return {
     add: (name, raw) => {
-      if (raw !== undefined) map[name].push(raw)
+      if (raw !== undefined) map[name].push(raw);
     },
     merge: (from) => {
       for (const key in from) {
-        const values = from[key]
+        const values = from[key];
         if (values?.length) {
           for (let i = 0; i < values.length; i++) {
-            map[key].push(values[i])
+            map[key].push(values[i]);
           }
         }
       }
     },
-    snapshot: () => map
-  }
-}
+    snapshot: () => map,
+  };
+};
 
 /* ========================================================================== */
 /* Token Classification                                                       */
 /* ========================================================================== */
 
-type FlagToken = Extract<Token, { _tag: "LongOption" | "ShortOption" }>
+type FlagToken = Extract<Token, { _tag: "LongOption" | "ShortOption" }>;
 type ResolvedFlag = {
-  readonly param: FlagParam
-  readonly negated: boolean
-}
+  readonly param: FlagParam;
+  readonly negated: boolean;
+};
 type ConsumedFlagValue =
   | {
-    readonly _tag: "Value"
-    readonly value: string | undefined
-  }
+      readonly _tag: "Value";
+      readonly value: string | undefined;
+    }
   | {
-    readonly _tag: "Error"
-    readonly error: CliError.InvalidValue
-  }
+      readonly _tag: "Error";
+      readonly error: CliError.InvalidValue;
+    };
 type ConsumedFlagValueWithTokens =
   | {
-    readonly _tag: "Value"
-    readonly value: string | undefined
-    readonly tokens: ReadonlyArray<Token>
-  }
+      readonly _tag: "Value";
+      readonly value: string | undefined;
+      readonly tokens: ReadonlyArray<Token>;
+    }
   | {
-    readonly _tag: "Error"
-    readonly error: CliError.InvalidValue
-    readonly tokens: ReadonlyArray<Token>
-  }
+      readonly _tag: "Error";
+      readonly error: CliError.InvalidValue;
+      readonly tokens: ReadonlyArray<Token>;
+    };
 
-const isFlagToken = (t: Token): t is FlagToken => t._tag === "LongOption" || t._tag === "ShortOption"
+const isFlagToken = (t: Token): t is FlagToken =>
+  t._tag === "LongOption" || t._tag === "ShortOption";
 
-const getFlagName = (t: FlagToken): string => t._tag === "LongOption" ? t.name : t.flag
+const getFlagName = (t: FlagToken): string =>
+  t._tag === "LongOption" ? t.name : t.flag;
 
 const resolveFlag = (
   token: FlagToken,
   registry: FlagRegistry
 ): ResolvedFlag | undefined => {
-  const tokenName = getFlagName(token)
-  const direct = registry.index.get(tokenName)
+  const tokenName = getFlagName(token);
+  const direct = registry.index.get(tokenName);
   if (direct && direct.name === tokenName) {
     return {
       param: direct,
-      negated: false
-    }
+      negated: false,
+    };
   }
 
   if (token._tag === "LongOption" && token.name.startsWith("no-")) {
-    const canonicalName = token.name.slice(3)
-    const param = registry.index.get(canonicalName)
-    if (param && param.name === canonicalName && Primitive.isBoolean(param.primitiveType)) {
+    const canonicalName = token.name.slice(3);
+    const param = registry.index.get(canonicalName);
+    if (
+      param &&
+      param.name === canonicalName &&
+      Primitive.isBoolean(param.primitiveType)
+    ) {
       return {
         param,
-        negated: true
-      }
+        negated: true,
+      };
     }
   }
 
   if (direct) {
     return {
       param: direct,
-      negated: false
-    }
+      negated: false,
+    };
   }
 
-  return undefined
-}
+  return undefined;
+};
 
 const invalidNegatedFlagValue = (
   token: FlagToken,
@@ -388,17 +419,18 @@ const invalidNegatedFlagValue = (
     option: spec.name,
     value,
     expected: `omit the value and use ${token.raw} by itself to set --${spec.name} to false`,
-    kind: "flag"
-  })
+    kind: "flag",
+  });
 
 /**
  * Checks whether a token is a boolean literal value.
  * Recognizes: true/false, yes/no, on/off, 1/0
  */
 const asBooleanLiteral = (token: Token | undefined): string | undefined =>
-  token?._tag === "Value" && (Primitive.isTrueValue(token.value) || Primitive.isFalseValue(token.value))
+  token?._tag === "Value" &&
+  (Primitive.isTrueValue(token.value) || Primitive.isFalseValue(token.value))
     ? token.value
-    : undefined
+    : undefined;
 
 /* ========================================================================== */
 /* Flag Value Consumption                                                     */
@@ -418,20 +450,20 @@ const consumeFlagValue = (
   spec: FlagParam,
   negated = false
 ): ConsumedFlagValue => {
-  const consumed = consumeFlagValueWithTokens(cursor, token, spec, negated)
+  const consumed = consumeFlagValueWithTokens(cursor, token, spec, negated);
   switch (consumed._tag) {
     case "Value":
       return {
         _tag: "Value",
-        value: consumed.value
-      }
+        value: consumed.value,
+      };
     case "Error":
       return {
         _tag: "Error",
-        error: consumed.error
-      }
+        error: consumed.error,
+      };
   }
-}
+};
 
 const consumeFlagValueWithTokens = (
   cursor: TokenCursor,
@@ -445,63 +477,63 @@ const consumeFlagValueWithTokens = (
       return {
         _tag: "Error",
         error: invalidNegatedFlagValue(token, spec, token.value),
-        tokens: []
-      }
+        tokens: [],
+      };
     }
 
-    const literal = asBooleanLiteral(cursor.peek())
+    const literal = asBooleanLiteral(cursor.peek());
     if (literal !== undefined) {
-      const literalToken = cursor.take()
+      const literalToken = cursor.take();
       return {
         _tag: "Error",
         error: invalidNegatedFlagValue(token, spec, literal),
-        tokens: literalToken === undefined ? [] : [literalToken]
-      }
+        tokens: literalToken === undefined ? [] : [literalToken],
+      };
     }
 
     return {
       _tag: "Value",
       value: "false",
-      tokens: []
-    }
+      tokens: [],
+    };
   }
 
   if (token.value !== undefined) {
     return {
       _tag: "Value",
       value: token.value,
-      tokens: []
-    }
+      tokens: [],
+    };
   }
 
   // Boolean flags: check for explicit literal or default to "true"
   if (Primitive.isBoolean(spec.primitiveType)) {
-    const literal = asBooleanLiteral(cursor.peek())
-    const literalToken = literal !== undefined ? cursor.take() : undefined
+    const literal = asBooleanLiteral(cursor.peek());
+    const literalToken = literal !== undefined ? cursor.take() : undefined;
     return {
       _tag: "Value",
       value: literal ?? "true",
-      tokens: literalToken === undefined ? [] : [literalToken]
-    }
+      tokens: literalToken === undefined ? [] : [literalToken],
+    };
   }
 
   // Non-boolean: try to consume next Value token
-  const next = cursor.peek()
+  const next = cursor.peek();
   if (next?._tag === "Value") {
-    const valueToken = cursor.take()
+    const valueToken = cursor.take();
     return {
       _tag: "Value",
       value: next.value,
-      tokens: valueToken === undefined ? [] : [valueToken]
-    }
+      tokens: valueToken === undefined ? [] : [valueToken],
+    };
   }
 
   return {
     _tag: "Value",
     value: undefined,
-    tokens: []
-  }
-}
+    tokens: [],
+  };
+};
 
 /**
  * Consumes known flags from a token stream.
@@ -512,61 +544,74 @@ const consumeFlagValueWithTokens = (
 export const consumeKnownFlags = (
   tokens: ReadonlyArray<Token>,
   registry: FlagRegistry
-): { flagMap: FlagMap; remainder: ReadonlyArray<Token>; errors: ReadonlyArray<CliError.InvalidValue> } => {
-  const flagMap = createEmptyFlagMap(registry.params)
-  const remainder: Array<Token> = []
-  const errors: Array<CliError.InvalidValue> = []
-  const cursor = makeCursor(tokens)
+): {
+  flagMap: FlagMap;
+  remainder: ReadonlyArray<Token>;
+  errors: ReadonlyArray<CliError.InvalidValue>;
+} => {
+  const flagMap = createEmptyFlagMap(registry.params);
+  const remainder: Array<Token> = [];
+  const errors: Array<CliError.InvalidValue> = [];
+  const cursor = makeCursor(tokens);
 
   for (let t = cursor.take(); t; t = cursor.take()) {
     if (!isFlagToken(t)) {
-      remainder.push(t)
-      continue
+      remainder.push(t);
+      continue;
     }
 
-    const resolved = resolveFlag(t, registry)
+    const resolved = resolveFlag(t, registry);
     if (!resolved) {
-      remainder.push(t)
-      continue
+      remainder.push(t);
+      continue;
     }
 
-    const consumed = consumeFlagValue(cursor, t, resolved.param, resolved.negated)
+    const consumed = consumeFlagValue(
+      cursor,
+      t,
+      resolved.param,
+      resolved.negated
+    );
     if (consumed._tag === "Error") {
-      errors.push(consumed.error)
-      continue
+      errors.push(consumed.error);
+      continue;
     }
     if (consumed.value !== undefined) {
-      flagMap[resolved.param.name].push(consumed.value)
+      flagMap[resolved.param.name].push(consumed.value);
     }
   }
 
-  return { flagMap, remainder, errors }
-}
+  return { flagMap, remainder, errors };
+};
 
 const extractFlagParams = (command: Command.Any): ReadonlyArray<FlagParam> => {
-  const commandImpl = toImpl(command)
-  const singles = commandImpl.config.flags.flatMap(Param.extractSingleParams)
-  return singles.filter(Param.isFlagParam)
-}
+  const commandImpl = toImpl(command);
+  const singles = commandImpl.config.flags.flatMap(Param.extractSingleParams);
+  return singles.filter(Param.isFlagParam);
+};
 
-const extractContextFlagParams = (command: Command.Any): ReadonlyArray<FlagParam> => {
-  const commandImpl = toImpl(command)
-  const singles = commandImpl.contextConfig.flags.flatMap(Param.extractSingleParams)
-  return singles.filter(Param.isFlagParam)
-}
+const extractContextFlagParams = (
+  command: Command.Any
+): ReadonlyArray<FlagParam> => {
+  const commandImpl = toImpl(command);
+  const singles = commandImpl.contextConfig.flags.flatMap(
+    Param.extractSingleParams
+  );
+  return singles.filter(Param.isFlagParam);
+};
 
 const resolveFromRegistries = (
   token: FlagToken,
   registries: ReadonlyArray<FlagRegistry>
 ): ResolvedFlag | undefined => {
   for (const registry of registries) {
-    const resolved = resolveFlag(token, registry)
+    const resolved = resolveFlag(token, registry);
     if (resolved !== undefined) {
-      return resolved
+      return resolved;
     }
   }
-  return undefined
-}
+  return undefined;
+};
 
 const preserveFlag = (
   remainder: Array<Token>,
@@ -574,10 +619,15 @@ const preserveFlag = (
   token: FlagToken,
   resolved: ResolvedFlag
 ): void => {
-  remainder.push(token)
-  const consumed = consumeFlagValueWithTokens(cursor, token, resolved.param, resolved.negated)
-  remainder.push(...consumed.tokens)
-}
+  remainder.push(token);
+  const consumed = consumeFlagValueWithTokens(
+    cursor,
+    token,
+    resolved.param,
+    resolved.negated
+  );
+  remainder.push(...consumed.tokens);
+};
 
 const localFlagWouldPrecedeSubcommand = (
   token: FlagToken,
@@ -586,23 +636,23 @@ const localFlagWouldPrecedeSubcommand = (
   subIndex: Map<string, Command<string, unknown, unknown, unknown, unknown>>,
   registries: ReadonlyArray<FlagRegistry>
 ): boolean => {
-  const cursor = makeCursor(remainingTokens)
-  consumeFlagValueWithTokens(cursor, token, resolved.param, resolved.negated)
+  const cursor = makeCursor(remainingTokens);
+  consumeFlagValueWithTokens(cursor, token, resolved.param, resolved.negated);
   for (let token = cursor.take(); token; token = cursor.take()) {
     if (isFlagToken(token)) {
-      const known = resolveFromRegistries(token, registries)
+      const known = resolveFromRegistries(token, registries);
       if (known !== undefined) {
-        consumeFlagValueWithTokens(cursor, token, known.param, known.negated)
+        consumeFlagValueWithTokens(cursor, token, known.param, known.negated);
       }
-      continue
+      continue;
     }
 
     if (token._tag === "Value") {
-      return subIndex.has(token.value)
+      return subIndex.has(token.value);
     }
   }
-  return false
-}
+  return false;
+};
 
 /**
  * Consumes global flags while walking the command tree.
@@ -617,86 +667,105 @@ export const consumeGlobalFlags = (
   tokens: ReadonlyArray<Token>,
   command: Command.Any,
   registry: FlagRegistry
-): { flagMap: FlagMap; remainder: ReadonlyArray<Token>; errors: ReadonlyArray<CliError.InvalidValue> } => {
-  const flagMap = createEmptyFlagMap(registry.params)
-  const errors: Array<CliError.InvalidValue> = []
+): {
+  flagMap: FlagMap;
+  remainder: ReadonlyArray<Token>;
+  errors: ReadonlyArray<CliError.InvalidValue>;
+} => {
+  const flagMap = createEmptyFlagMap(registry.params);
+  const errors: Array<CliError.InvalidValue> = [];
 
   const consumeLevel = (
     tokens: ReadonlyArray<Token>,
     command: Command.Any,
     ignoredRegistries: ReadonlyArray<FlagRegistry>
   ): ReadonlyArray<Token> => {
-    const localRegistry = createFlagRegistry(extractFlagParams(command))
-    const inheritedRegistry = createFlagRegistry(extractContextFlagParams(command))
-    const subIndex = buildSubcommandIndex(command.subcommands)
-    const cursor = makeCursor(tokens)
-    const remainder: Array<Token> = []
-    let awaitingFirstValue = true
+    const localRegistry = createFlagRegistry(extractFlagParams(command));
+    const inheritedRegistry = createFlagRegistry(
+      extractContextFlagParams(command)
+    );
+    const subIndex = buildSubcommandIndex(command.subcommands);
+    const cursor = makeCursor(tokens);
+    const remainder: Array<Token> = [];
+    let awaitingFirstValue = true;
 
     for (let token = cursor.take(); token; token = cursor.take()) {
       if (isFlagToken(token)) {
-        const ignored = resolveFromRegistries(token, ignoredRegistries)
+        const ignored = resolveFromRegistries(token, ignoredRegistries);
         if (ignored !== undefined) {
-          preserveFlag(remainder, cursor, token, ignored)
-          continue
+          preserveFlag(remainder, cursor, token, ignored);
+          continue;
         }
 
-        const inherited = resolveFlag(token, inheritedRegistry)
+        const inherited = resolveFlag(token, inheritedRegistry);
         if (inherited !== undefined) {
-          preserveFlag(remainder, cursor, token, inherited)
-          continue
+          preserveFlag(remainder, cursor, token, inherited);
+          continue;
         }
 
-        const local = resolveFlag(token, localRegistry)
-        const global = resolveFlag(token, registry)
+        const local = resolveFlag(token, localRegistry);
+        const global = resolveFlag(token, registry);
         if (local !== undefined) {
           if (
-            global === undefined || !awaitingFirstValue ||
-            !localFlagWouldPrecedeSubcommand(token, cursor.rest(), local, subIndex, [
-              localRegistry,
-              inheritedRegistry,
-              registry
-            ])
+            global === undefined ||
+            !awaitingFirstValue ||
+            !localFlagWouldPrecedeSubcommand(
+              token,
+              cursor.rest(),
+              local,
+              subIndex,
+              [localRegistry, inheritedRegistry, registry]
+            )
           ) {
-            preserveFlag(remainder, cursor, token, local)
-            continue
+            preserveFlag(remainder, cursor, token, local);
+            continue;
           }
         }
 
         if (global !== undefined) {
-          const consumed = consumeFlagValueWithTokens(cursor, token, global.param, global.negated)
+          const consumed = consumeFlagValueWithTokens(
+            cursor,
+            token,
+            global.param,
+            global.negated
+          );
           if (consumed._tag === "Error") {
-            errors.push(consumed.error)
-            continue
+            errors.push(consumed.error);
+            continue;
           }
           if (consumed.value !== undefined) {
-            flagMap[global.param.name].push(consumed.value)
+            flagMap[global.param.name].push(consumed.value);
           }
-          continue
+          continue;
         }
 
-        remainder.push(token)
-        continue
+        remainder.push(token);
+        continue;
       }
 
       if (token._tag === "Value" && awaitingFirstValue) {
-        const sub = subIndex.get(token.value)
+        const sub = subIndex.get(token.value);
         if (sub !== undefined) {
-          remainder.push(token)
-          remainder.push(...consumeLevel(cursor.rest(), sub, [...ignoredRegistries, inheritedRegistry]))
-          return remainder
+          remainder.push(token);
+          remainder.push(
+            ...consumeLevel(cursor.rest(), sub, [
+              ...ignoredRegistries,
+              inheritedRegistry,
+            ])
+          );
+          return remainder;
         }
-        awaitingFirstValue = false
+        awaitingFirstValue = false;
       }
 
-      remainder.push(token)
+      remainder.push(token);
     }
 
-    return remainder
-  }
+    return remainder;
+  };
 
-  return { flagMap, remainder: consumeLevel(tokens, command, []), errors }
-}
+  return { flagMap, remainder: consumeLevel(tokens, command, []), errors };
+};
 
 /* ========================================================================== */
 /* Error Creation                                                             */
@@ -707,31 +776,33 @@ const createUnrecognizedFlagError = (
   params: ReadonlyArray<FlagParam>,
   commandPath: ReadonlyArray<string>
 ): CliError.UnrecognizedOption => {
-  const printable = token._tag === "LongOption" ? `--${token.name}` : `-${token.flag}`
-  const validNames: Array<string> = []
+  const printable =
+    token._tag === "LongOption" ? `--${token.name}` : `-${token.flag}`;
+  const validNames: Array<string> = [];
 
   for (const p of params) {
     // Exclude hidden flags so a near-miss typo cannot reveal a flag name
     // that was intentionally kept out of --help.
-    if (p.hidden) continue
-    validNames.push(p.name)
+    if (p.hidden) continue;
+    validNames.push(p.name);
     if (Primitive.isBoolean(p.primitiveType)) {
-      validNames.push(`no-${p.name}`)
+      validNames.push(`no-${p.name}`);
     }
     for (const alias of p.aliases) {
-      validNames.push(alias)
+      validNames.push(alias);
     }
   }
 
-  const suggestions = suggest(getFlagName(token), validNames)
-    .map((n) => (n.length === 1 ? `-${n}` : `--${n}`))
+  const suggestions = suggest(getFlagName(token), validNames).map((n) =>
+    n.length === 1 ? `-${n}` : `--${n}`
+  );
 
   return new CliError.UnrecognizedOption({
     option: printable,
     suggestions,
-    command: commandPath
-  })
-}
+    command: commandPath,
+  });
+};
 
 /* ========================================================================== */
 /* Parse State                                                                */
@@ -741,15 +812,15 @@ const createParseState = (registry: FlagRegistry): ParseState => ({
   flags: createFlagAccumulator(registry.params),
   arguments: [],
   errors: [],
-  mode: { _tag: "AwaitingFirstValue" }
-})
+  mode: { _tag: "AwaitingFirstValue" },
+});
 
 const toLeafResult = (state: ParseState): LeafResult => ({
   _tag: "Leaf",
   flags: state.flags.snapshot(),
   arguments: state.arguments,
-  errors: state.errors
-})
+  errors: state.errors,
+});
 
 /* ========================================================================== */
 /* First Value Resolution                                                     */
@@ -772,32 +843,33 @@ const resolveFirstValue = (
   context: CommandContext,
   state: ParseState
 ): FirstValueResult => {
-  const { command, commandPath, inheritedFlagRegistry, localFlagNames } = context
-  const subIndex = buildSubcommandIndex(command.subcommands)
-  const sub = subIndex.get(value)
+  const { command, commandPath, inheritedFlagRegistry, localFlagNames } =
+    context;
+  const subIndex = buildSubcommandIndex(command.subcommands);
+  const sub = subIndex.get(value);
 
   if (sub) {
-    const selectedPath = [...commandPath, sub.name]
+    const selectedPath = [...commandPath, sub.name];
 
     // Local flags are not inherited by subcommands.
-    const parentFlags = state.flags.snapshot()
+    const parentFlags = state.flags.snapshot();
     for (const localFlagName of localFlagNames) {
-      const values = parentFlags[localFlagName]
+      const values = parentFlags[localFlagName];
       if (values !== undefined && values.length > 0) {
         state.errors.push(
           new CliError.UnrecognizedOption({
             option: `--${localFlagName}`,
             suggestions: [],
-            command: selectedPath
+            command: selectedPath,
           })
-        )
+        );
       }
     }
 
     // npm-style: inherited parent flags can appear after subcommand name
-    const tail = consumeKnownFlags(cursor.rest(), inheritedFlagRegistry)
-    state.flags.merge(tail.flagMap)
-    state.errors.push(...tail.errors)
+    const tail = consumeKnownFlags(cursor.rest(), inheritedFlagRegistry);
+    state.flags.merge(tail.flagMap);
+    state.errors.push(...tail.errors);
 
     return {
       _tag: "Subcommand",
@@ -806,33 +878,33 @@ const resolveFirstValue = (
         flags: state.flags.snapshot(),
         sub,
         childTokens: tail.remainder,
-        errors: state.errors
-      }
-    }
+        errors: state.errors,
+      },
+    };
   }
 
   // Not a subcommand. Check if this looks like a typo.
-  const expectsArgs = toImpl(command).config.arguments.length > 0
+  const expectsArgs = toImpl(command).config.arguments.length > 0;
   if (!expectsArgs && subIndex.size > 0) {
     // Exclude hidden subcommands so a typo cannot reveal a subcommand name
     // that was intentionally kept out of --help. Hidden commands still
     // resolve via subIndex when invoked by exact name.
-    const visibleKeys: Array<string> = []
+    const visibleKeys: Array<string> = [];
     for (const [key, sub] of subIndex) {
-      if (!sub.hidden) visibleKeys.push(key)
+      if (!sub.hidden) visibleKeys.push(key);
     }
-    const suggestions = suggest(value, visibleKeys)
+    const suggestions = suggest(value, visibleKeys);
     state.errors.push(
       new CliError.UnknownSubcommand({
         subcommand: value,
         parent: commandPath,
-        suggestions
+        suggestions,
       })
-    )
+    );
   }
 
-  return { _tag: "Argument" }
-}
+  return { _tag: "Argument" };
+};
 
 /* ========================================================================== */
 /* Token Processing                                                           */
@@ -848,22 +920,29 @@ const processFlag = (
   context: CommandContext,
   state: ParseState
 ): void => {
-  const { commandPath, flagRegistry } = context
-  const resolved = resolveFlag(token, flagRegistry)
+  const { commandPath, flagRegistry } = context;
+  const resolved = resolveFlag(token, flagRegistry);
 
   if (!resolved) {
-    state.errors.push(createUnrecognizedFlagError(token, flagRegistry.params, commandPath))
-    return
+    state.errors.push(
+      createUnrecognizedFlagError(token, flagRegistry.params, commandPath)
+    );
+    return;
   }
 
-  const consumed = consumeFlagValue(cursor, token, resolved.param, resolved.negated)
+  const consumed = consumeFlagValue(
+    cursor,
+    token,
+    resolved.param,
+    resolved.negated
+  );
   if (consumed._tag === "Error") {
-    state.errors.push(consumed.error)
-    return
+    state.errors.push(consumed.error);
+    return;
   }
 
-  state.flags.add(resolved.param.name, consumed.value)
-}
+  state.flags.add(resolved.param.name, consumed.value);
+};
 
 /**
  * Processes a value token based on current parsing mode.
@@ -883,18 +962,18 @@ const processValue = (
   state: ParseState
 ): SubcommandResult | undefined => {
   if (state.mode._tag === "AwaitingFirstValue") {
-    const result = resolveFirstValue(value, cursor, context, state)
+    const result = resolveFirstValue(value, cursor, context, state);
 
     if (result._tag === "Subcommand") {
-      return result.result
+      return result.result;
     }
 
-    state.mode = { _tag: "CollectingArguments" }
+    state.mode = { _tag: "CollectingArguments" };
   }
 
-  state.arguments.push(value)
-  return undefined
-}
+  state.arguments.push(value);
+  return undefined;
+};
 
 /* ========================================================================== */
 /* Command Level Scanning                                                     */
@@ -913,20 +992,20 @@ const scanCommandLevel = (
   tokens: ReadonlyArray<Token>,
   context: CommandContext
 ): LevelResult => {
-  const cursor = makeCursor(tokens)
-  const state = createParseState(context.flagRegistry)
+  const cursor = makeCursor(tokens);
+  const state = createParseState(context.flagRegistry);
 
   for (let token = cursor.take(); token; token = cursor.take()) {
     if (isFlagToken(token)) {
-      processFlag(token, cursor, context, state)
-      continue
+      processFlag(token, cursor, context, state);
+      continue;
     }
 
     if (token._tag === "Value") {
-      const subResult = processValue(token.value, cursor, context, state)
-      if (subResult) return subResult
+      const subResult = processValue(token.value, cursor, context, state);
+      if (subResult) return subResult;
     }
   }
 
-  return toLeafResult(state)
-}
+  return toLeafResult(state);
+};

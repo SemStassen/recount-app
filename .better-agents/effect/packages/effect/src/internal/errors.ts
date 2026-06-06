@@ -1,9 +1,12 @@
-import { formatPath } from "../Formatter.ts"
+import { formatPath } from "../Formatter.ts";
 
 /** @internal */
-export function errorWithPath(message: string, path: ReadonlyArray<PropertyKey>) {
+export function errorWithPath(
+  message: string,
+  path: ReadonlyArray<PropertyKey>
+) {
   if (path.length > 0) {
-    message += `\n  at ${formatPath(path)}`
+    message += `\n  at ${formatPath(path)}`;
   }
-  return new Error(message)
+  return new Error(message);
 }

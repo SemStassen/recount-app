@@ -1,3 +1,6 @@
+import * as NodePath from "node:path";
+import * as NodeUrl from "node:url";
+
 /**
  * Node-backed provider for Effect's `Path` service.
  *
@@ -24,12 +27,10 @@
  *
  * @since 4.0.0
  */
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import { Path, TypeId } from "effect/Path"
-import { BadArgument } from "effect/PlatformError"
-import * as NodePath from "node:path"
-import * as NodeUrl from "node:url"
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import { Path, TypeId } from "effect/Path";
+import { BadArgument } from "effect/PlatformError";
 
 const fromFileUrl = (url: URL): Effect.Effect<string, BadArgument> =>
   Effect.try({
@@ -38,9 +39,9 @@ const fromFileUrl = (url: URL): Effect.Effect<string, BadArgument> =>
       new BadArgument({
         module: "Path",
         method: "fromFileUrl",
-        cause
-      })
-  })
+        cause,
+      }),
+  });
 
 const toFileUrl = (path: string): Effect.Effect<URL, BadArgument> =>
   Effect.try({
@@ -49,9 +50,9 @@ const toFileUrl = (path: string): Effect.Effect<URL, BadArgument> =>
       new BadArgument({
         module: "Path",
         method: "toFileUrl",
-        cause
-      })
-  })
+        cause,
+      }),
+  });
 
 /**
  * Provides the `Path` service using Node's POSIX path implementation plus
@@ -64,8 +65,8 @@ export const layerPosix: Layer.Layer<Path> = Layer.succeed(Path)({
   [TypeId]: TypeId,
   ...NodePath.posix,
   fromFileUrl,
-  toFileUrl
-})
+  toFileUrl,
+});
 
 /**
  * Provides the `Path` service using Node's Windows path implementation plus
@@ -78,8 +79,8 @@ export const layerWin32: Layer.Layer<Path> = Layer.succeed(Path)({
   [TypeId]: TypeId,
   ...NodePath.win32,
   fromFileUrl,
-  toFileUrl
-})
+  toFileUrl,
+});
 
 /**
  * Provides the default `Path` service using the host platform's Node path
@@ -92,5 +93,5 @@ export const layer: Layer.Layer<Path> = Layer.succeed(Path)({
   [TypeId]: TypeId,
   ...NodePath,
   fromFileUrl,
-  toFileUrl
-})
+  toFileUrl,
+});

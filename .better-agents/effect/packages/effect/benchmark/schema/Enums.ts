@@ -1,5 +1,5 @@
-import { Schema } from "effect"
-import { Bench } from "tinybench"
+import { Schema } from "effect";
+import { Bench } from "tinybench";
 
 /*
 ┌─────────┬───────────┬──────────────────┬──────────────────┬────────────────────────┬────────────────────────┬──────────┐
@@ -10,31 +10,31 @@ import { Bench } from "tinybench"
 └─────────┴───────────┴──────────────────┴──────────────────┴────────────────────────┴────────────────────────┴──────────┘
 */
 
-const bench = new Bench()
+const bench = new Bench();
 
 enum Enum {
   A = "a",
-  B = "b"
+  B = "b",
 }
 
-const schema = Schema.Enum(Enum)
+const schema = Schema.Enum(Enum);
 
-const good = "b"
-const bad = "c"
+const good = "b";
+const bad = "c";
 
-const decodeUnknownExit = Schema.decodeUnknownExit(schema)
+const decodeUnknownExit = Schema.decodeUnknownExit(schema);
 
 // console.log(decodeUnknownExit(valid))
 // console.log(decodeUnknownExit(invalid))
 
 bench
-  .add("good", function() {
-    decodeUnknownExit(good)
+  .add("good", function () {
+    decodeUnknownExit(good);
   })
-  .add("bad", function() {
-    decodeUnknownExit(bad)
-  })
+  .add("bad", function () {
+    decodeUnknownExit(bad);
+  });
 
-await bench.run()
+await bench.run();
 
-console.table(bench.table())
+console.table(bench.table());

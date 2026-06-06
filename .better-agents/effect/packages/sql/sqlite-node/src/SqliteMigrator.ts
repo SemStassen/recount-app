@@ -34,16 +34,16 @@
  *
  * @since 4.0.0
  */
-import type * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Migrator from "effect/unstable/sql/Migrator"
-import type * as Client from "effect/unstable/sql/SqlClient"
-import type { SqlError } from "effect/unstable/sql/SqlError"
+import type * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import * as Migrator from "effect/unstable/sql/Migrator";
+import type * as Client from "effect/unstable/sql/SqlClient";
+import type { SqlError } from "effect/unstable/sql/SqlError";
 
 /**
  * @since 4.0.0
  */
-export * from "effect/unstable/sql/Migrator"
+export * from "effect/unstable/sql/Migrator";
 
 /**
  * Runs SQL migrations for a SQLite database using the shared `Migrator` implementation and the current `SqlClient`.
@@ -99,7 +99,7 @@ export const run: <R2 = never>(
   //
   //   return dumpFile(path)
   // }
-})
+});
 
 /**
  * Creates a layer that runs the configured SQLite migrations during layer construction and provides no services.
@@ -113,4 +113,4 @@ export const layer = <R>(
   never,
   Migrator.MigrationError | SqlError,
   Client.SqlClient | R
-> => Layer.effectDiscard(run(options))
+> => Layer.effectDiscard(run(options));

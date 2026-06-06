@@ -22,29 +22,29 @@
  *
  * @since 4.0.0
  */
-import * as Arr from "../../Array.ts"
-import * as Cause from "../../Cause.ts"
-import * as Context from "../../Context.ts"
-import * as Data from "../../Data.ts"
-import * as Effect from "../../Effect.ts"
-import * as Exit from "../../Exit.ts"
-import * as Fiber from "../../Fiber.ts"
-import * as Filter from "../../Filter.ts"
-import { constFalse, constTrue, dual, identity } from "../../Function.ts"
-import * as Layer from "../../Layer.ts"
-import * as Option from "../../Option.ts"
-import * as Predicate from "../../Predicate.ts"
-import type * as Schedule from "../../Schedule.ts"
-import * as Schema from "../../Schema.ts"
-import * as SchemaIssue from "../../SchemaIssue.ts"
-import * as SchemaParser from "../../SchemaParser.ts"
-import * as Tranformation from "../../SchemaTransformation.ts"
-import * as Scope from "../../Scope.ts"
-import type { ExitEncoded } from "../rpc/RpcMessage.ts"
-import { makeHashDigest } from "./internal/crypto.ts"
-import type { WorkflowEngine, WorkflowInstance } from "./WorkflowEngine.ts"
+import * as Arr from "../../Array.ts";
+import * as Cause from "../../Cause.ts";
+import * as Context from "../../Context.ts";
+import * as Data from "../../Data.ts";
+import * as Effect from "../../Effect.ts";
+import * as Exit from "../../Exit.ts";
+import * as Fiber from "../../Fiber.ts";
+import * as Filter from "../../Filter.ts";
+import { constFalse, constTrue, dual, identity } from "../../Function.ts";
+import * as Layer from "../../Layer.ts";
+import * as Option from "../../Option.ts";
+import * as Predicate from "../../Predicate.ts";
+import type * as Schedule from "../../Schedule.ts";
+import * as Schema from "../../Schema.ts";
+import * as SchemaIssue from "../../SchemaIssue.ts";
+import * as SchemaParser from "../../SchemaParser.ts";
+import * as Tranformation from "../../SchemaTransformation.ts";
+import * as Scope from "../../Scope.ts";
+import type { ExitEncoded } from "../rpc/RpcMessage.ts";
+import { makeHashDigest } from "./internal/crypto.ts";
+import type { WorkflowEngine, WorkflowInstance } from "./WorkflowEngine.ts";
 
-const TypeId = "~effect/workflow/Workflow"
+const TypeId = "~effect/workflow/Workflow";
 
 /**
  * Durable workflow definition with typed payload, success, and error schemas
@@ -58,14 +58,14 @@ export interface Workflow<
   Name extends string,
   Payload extends AnyStructSchema,
   Success extends Schema.Top,
-  Error extends Schema.Top
+  Error extends Schema.Top,
 > {
-  readonly [TypeId]: typeof TypeId
-  readonly name: Name
-  readonly payloadSchema: Payload
-  readonly successSchema: Success
-  readonly errorSchema: Error
-  readonly annotations: Context.Context<never>
+  readonly [TypeId]: typeof TypeId;
+  readonly name: Name;
+  readonly payloadSchema: Payload;
+  readonly successSchema: Success;
+  readonly errorSchema: Error;
+  readonly annotations: Context.Context<never>;
 
   /**
    * Add an annotation to the workflow.
@@ -73,14 +73,14 @@ export interface Workflow<
   annotate<I, S>(
     key: Context.Key<I, S>,
     value: S
-  ): Workflow<Name, Payload, Success, Error>
+  ): Workflow<Name, Payload, Success, Error>;
 
   /**
    * Merge multiple annotations into the workflow.
    */
   annotateMerge<I>(
     annotations: Context.Context<I>
-  ): Workflow<Name, Payload, Success, Error>
+  ): Workflow<Name, Payload, Success, Error>;
 
   /**
    * Execute the workflow with the given payload.
@@ -88,7 +88,7 @@ export interface Workflow<
   readonly execute: <const Discard extends boolean = false>(
     payload: Payload["~type.make.in"],
     options?: {
-      readonly discard?: Discard
+      readonly discard?: Discard;
     }
   ) => Effect.Effect<
     Discard extends true ? string : Success["Type"],
@@ -97,7 +97,7 @@ export interface Workflow<
     | Payload["EncodingServices"]
     | Success["DecodingServices"]
     | Error["DecodingServices"]
-  >
+  >;
 
   /**
    * Execute the workflow with the given payload.
@@ -108,21 +108,21 @@ export interface Workflow<
     Option.Option<Result<Success["Type"], Error["Type"]>>,
     never,
     WorkflowEngine | Success["DecodingServices"] | Error["DecodingServices"]
-  >
+  >;
 
   /**
    * Interrupt a workflow execution for the given execution ID.
    */
   readonly interrupt: (
     executionId: string
-  ) => Effect.Effect<void, never, WorkflowEngine>
+  ) => Effect.Effect<void, never, WorkflowEngine>;
 
   /**
    * Manually resume a workflow execution for the given execution ID.
    */
   readonly resume: (
     executionId: string
-  ) => Effect.Effect<void, never, WorkflowEngine>
+  ) => Effect.Effect<void, never, WorkflowEngine>;
 
   /**
    * Create a layer that registers the workflow and provides an effect to
@@ -138,23 +138,23 @@ export interface Workflow<
     never,
     | WorkflowEngine
     | Exclude<
-      R,
-      WorkflowEngine | WorkflowInstance | Execution<Name> | Scope.Scope
-    >
+        R,
+        WorkflowEngine | WorkflowInstance | Execution<Name> | Scope.Scope
+      >
     | Payload["DecodingServices"]
     | Payload["EncodingServices"]
     | Success["DecodingServices"]
     | Success["EncodingServices"]
     | Error["DecodingServices"]
     | Error["EncodingServices"]
-  >
+  >;
 
   /**
    * For the given payload, compute the deterministic execution ID.
    */
   readonly executionId: (
     payload: Payload["~type.make.in"]
-  ) => Effect.Effect<string>
+  ) => Effect.Effect<string>;
 
   /**
    * Add compensation logic to an effect inside a Workflow.
@@ -179,7 +179,7 @@ export interface Workflow<
       A,
       E,
       R | R2 | WorkflowInstance | Execution<Name> | Scope.Scope
-    >
+    >;
     <A, E, R, R2>(
       effect: Effect.Effect<A, E, R>,
       compensation: (
@@ -190,8 +190,8 @@ export interface Workflow<
       A,
       E,
       R | R2 | WorkflowInstance | Execution<Name> | Scope.Scope
-    >
-  }
+    >;
+  };
 }
 
 /**
@@ -201,7 +201,7 @@ export interface Workflow<
  * @since 4.0.0
  */
 export interface AnyStructSchema extends Schema.Top {
-  readonly fields: Schema.Struct.Fields
+  readonly fields: Schema.Struct.Fields;
 }
 
 /**
@@ -212,8 +212,8 @@ export interface AnyStructSchema extends Schema.Top {
  * @since 4.0.0
  */
 export interface Execution<Name extends string> {
-  readonly _: unique symbol
-  readonly name: Name
+  readonly _: unique symbol;
+  readonly name: Name;
 }
 
 /**
@@ -224,13 +224,13 @@ export interface Execution<Name extends string> {
  * @since 4.0.0
  */
 export interface Any {
-  readonly [TypeId]: typeof TypeId
-  readonly name: string
-  readonly executionId: (payload: any) => Effect.Effect<string>
-  readonly payloadSchema: AnyStructSchema
-  readonly successSchema: Schema.Top
-  readonly errorSchema: Schema.Top
-  readonly annotations: Context.Context<never>
+  readonly [TypeId]: typeof TypeId;
+  readonly name: string;
+  readonly executionId: (payload: any) => Effect.Effect<string>;
+  readonly payloadSchema: AnyStructSchema;
+  readonly successSchema: Schema.Top;
+  readonly errorSchema: Schema.Top;
+  readonly annotations: Context.Context<never>;
 }
 
 /**
@@ -241,16 +241,16 @@ export interface Any {
  * @since 4.0.0
  */
 export interface AnyWithProps extends Any {
-  readonly payloadSchema: AnyStructSchema
-  readonly successSchema: Schema.Top
-  readonly errorSchema: Schema.Top
+  readonly payloadSchema: AnyStructSchema;
+  readonly successSchema: Schema.Top;
+  readonly errorSchema: Schema.Top;
   readonly execute: (
     payload: any,
     options?: { readonly discard?: boolean }
-  ) => Effect.Effect<any, any, any>
+  ) => Effect.Effect<any, any, any>;
   readonly resume: (
     executionId: string
-  ) => Effect.Effect<void, never, WorkflowEngine>
+  ) => Effect.Effect<void, never, WorkflowEngine>;
 }
 
 /**
@@ -259,13 +259,10 @@ export interface AnyWithProps extends Any {
  * @category models
  * @since 4.0.0
  */
-export type PayloadSchema<W> = W extends Workflow<
-  infer _Name,
-  infer _Payload,
-  infer _Success,
-  infer _Error
-> ? _Payload
-  : never
+export type PayloadSchema<W> =
+  W extends Workflow<infer _Name, infer _Payload, infer _Success, infer _Error>
+    ? _Payload
+    : never;
 
 /**
  * Computes the schema services required by clients that execute or poll
@@ -274,16 +271,18 @@ export type PayloadSchema<W> = W extends Workflow<
  * @category models
  * @since 4.0.0
  */
-export type RequirementsClient<Workflows extends Any> = Workflows extends Workflow<
-  infer _Name,
-  infer _Payload,
-  infer _Success,
-  infer _Error
-> ?
-    | _Payload["EncodingServices"]
-    | _Success["DecodingServices"]
-    | _Error["DecodingServices"]
-  : never
+export type RequirementsClient<Workflows extends Any> =
+  Workflows extends Workflow<
+    infer _Name,
+    infer _Payload,
+    infer _Success,
+    infer _Error
+  >
+    ?
+        | _Payload["EncodingServices"]
+        | _Success["DecodingServices"]
+        | _Error["DecodingServices"]
+    : never;
 
 /**
  * Computes the schema services required by handlers that decode workflow
@@ -292,30 +291,32 @@ export type RequirementsClient<Workflows extends Any> = Workflows extends Workfl
  * @category models
  * @since 4.0.0
  */
-export type RequirementsHandler<Workflows extends Any> = Workflows extends Workflow<
-  infer _Name,
-  infer _Payload,
-  infer _Success,
-  infer _Error
-> ?
-    | _Payload["DecodingServices"]
-    | _Payload["EncodingServices"]
-    | _Success["DecodingServices"]
-    | _Success["EncodingServices"]
-    | _Error["DecodingServices"]
-    | _Error["EncodingServices"]
-  : never
+export type RequirementsHandler<Workflows extends Any> =
+  Workflows extends Workflow<
+    infer _Name,
+    infer _Payload,
+    infer _Success,
+    infer _Error
+  >
+    ?
+        | _Payload["DecodingServices"]
+        | _Payload["EncodingServices"]
+        | _Success["DecodingServices"]
+        | _Success["EncodingServices"]
+        | _Error["DecodingServices"]
+        | _Error["EncodingServices"]
+    : never;
 
 const EngineTag = Context.Service<WorkflowEngine, WorkflowEngine["Service"]>(
   "effect/workflow/WorkflowEngine" satisfies typeof WorkflowEngine.key
-)
+);
 
 const InstanceTag = Context.Service<
   WorkflowInstance,
   WorkflowInstance["Service"]
 >(
   "effect/workflow/WorkflowEngine/WorkflowInstance" satisfies typeof WorkflowInstance.key
-)
+);
 
 /**
  * Creates a durable workflow definition with schemas, annotations, and
@@ -329,25 +330,27 @@ export const make = <
   const Name extends string,
   Payload extends Schema.Struct.Fields | AnyStructSchema,
   Success extends Schema.Top = Schema.Void,
-  Error extends Schema.Top = Schema.Never
+  Error extends Schema.Top = Schema.Never,
 >(options: {
-  readonly name: Name
-  readonly payload: Payload
+  readonly name: Name;
+  readonly payload: Payload;
   readonly idempotencyKey: (
-    payload: Payload extends Schema.Struct.Fields ? Schema.Struct.Type<Payload>
+    payload: Payload extends Schema.Struct.Fields
+      ? Schema.Struct.Type<Payload>
       : Payload["Type"]
-  ) => string
-  readonly success?: Success
-  readonly error?: Error
-  readonly suspendedRetrySchedule?: Schedule.Schedule<any, unknown> | undefined
-  readonly annotations?: Context.Context<never>
+  ) => string;
+  readonly success?: Success;
+  readonly error?: Error;
+  readonly suspendedRetrySchedule?: Schedule.Schedule<any, unknown> | undefined;
+  readonly annotations?: Context.Context<never>;
 }): Workflow<
   Name,
   Payload extends Schema.Struct.Fields ? Schema.Struct<Payload> : Payload,
   Success,
   Error
 > => {
-  const makeExecutionId = (payload: any) => makeHashDigest(`${options.name}-${options.idempotencyKey(payload)}`)
+  const makeExecutionId = (payload: any) =>
+    makeHashDigest(`${options.name}-${options.idempotencyKey(payload)}`);
   const self: Workflow<Name, any, Success, Error> = {
     [TypeId]: TypeId,
     name: options.name,
@@ -360,30 +363,30 @@ export const make = <
     annotate(tag, value) {
       return make({
         ...options,
-        annotations: Context.add(self.annotations, tag, value)
-      })
+        annotations: Context.add(self.annotations, tag, value),
+      });
     },
     annotateMerge(context) {
       return make({
         ...options,
-        annotations: Context.merge(self.annotations, context)
-      })
+        annotations: Context.merge(self.annotations, context),
+      });
     },
     execute: Effect.fnUntraced(
-      function*<const Discard extends boolean = false>(
+      function* <const Discard extends boolean = false>(
         fields: any,
         opts?: { readonly discard?: Discard } | undefined
       ) {
-        const payload = self.payloadSchema.make(fields)
-        const engine = yield* EngineTag
-        const executionId = yield* makeExecutionId(payload)
-        yield* Effect.annotateCurrentSpan({ executionId })
+        const payload = self.payloadSchema.make(fields);
+        const engine = yield* EngineTag;
+        const executionId = yield* makeExecutionId(payload);
+        yield* Effect.annotateCurrentSpan({ executionId });
         return yield* engine.execute(self, {
           executionId,
           payload,
           discard: opts?.discard,
-          suspendedRetrySchedule: options.suspendedRetrySchedule
-        })
+          suspendedRetrySchedule: options.suspendedRetrySchedule,
+        });
       },
       Effect.withSpan(
         `${options.name}.execute`,
@@ -392,43 +395,43 @@ export const make = <
       )
     ) as any,
     poll: Effect.fnUntraced(
-      function*(executionId: string) {
-        const engine = yield* EngineTag
-        return yield* engine.poll(self, executionId)
+      function* (executionId: string) {
+        const engine = yield* EngineTag;
+        return yield* engine.poll(self, executionId);
       },
       (effect, executionId) =>
         Effect.withSpan(effect, `${options.name}.poll`, {
           captureStackTrace: false,
-          attributes: { executionId }
+          attributes: { executionId },
         })
     ),
     interrupt: Effect.fnUntraced(
-      function*(executionId: string) {
-        const engine = yield* EngineTag
-        yield* engine.interrupt(self, executionId)
+      function* (executionId: string) {
+        const engine = yield* EngineTag;
+        yield* engine.interrupt(self, executionId);
       },
       (effect, executionId) =>
         Effect.withSpan(effect, `${options.name}.interrupt`, {
           captureStackTrace: false,
-          attributes: { executionId }
+          attributes: { executionId },
         })
     ),
     resume: Effect.fnUntraced(
-      function*(executionId: string) {
-        const engine = yield* EngineTag
-        yield* engine.resume(self, executionId)
+      function* (executionId: string) {
+        const engine = yield* EngineTag;
+        yield* engine.resume(self, executionId);
       },
       (effect, executionId) =>
         Effect.withSpan(effect, `${options.name}.resume`, {
           captureStackTrace: false,
-          attributes: { executionId }
+          attributes: { executionId },
         })
     ),
     toLayer: (execute) =>
       Layer.effectDiscard(
-        Effect.gen(function*() {
-          const engine = yield* EngineTag
-          return yield* engine.register(self, execute)
+        Effect.gen(function* () {
+          const engine = yield* EngineTag;
+          return yield* engine.register(self, execute);
         })
       ),
     executionId: (payload) =>
@@ -436,13 +439,13 @@ export const make = <
         Effect.orDie(self.payloadSchema.makeEffect(payload)),
         makeExecutionId
       ),
-    withCompensation
-  }
+    withCompensation,
+  };
 
-  return self
-}
+  return self;
+};
 
-const ResultTypeId = "~effect/workflow/Workflow/Result"
+const ResultTypeId = "~effect/workflow/Workflow/Result";
 
 /**
  * Returns `true` when a value is a workflow `Result`.
@@ -452,7 +455,7 @@ const ResultTypeId = "~effect/workflow/Workflow/Result"
  */
 export const isResult = <A = unknown, E = unknown>(
   u: unknown
-): u is Result<A, E> => Predicate.hasProperty(u, ResultTypeId)
+): u is Result<A, E> => Predicate.hasProperty(u, ResultTypeId);
 
 /**
  * Result of a workflow execution, either a completed exit or a suspended
@@ -461,7 +464,7 @@ export const isResult = <A = unknown, E = unknown>(
  * @category results
  * @since 4.0.0
  */
-export type Result<A, E> = Complete<A, E> | Suspended
+export type Result<A, E> = Complete<A, E> | Suspended;
 
 /**
  * Encoded representation of a workflow `Result`.
@@ -471,7 +474,7 @@ export type Result<A, E> = Complete<A, E> | Suspended
  */
 export type ResultEncoded<A, E> =
   | CompleteEncoded<A, E>
-  | typeof Suspended.Encoded
+  | typeof Suspended.Encoded;
 
 /**
  * Encoded representation of a completed workflow result containing an encoded
@@ -481,8 +484,8 @@ export type ResultEncoded<A, E> =
  * @since 4.0.0
  */
 export interface CompleteEncoded<A, E> {
-  readonly _tag: "Complete"
-  readonly exit: ExitEncoded<A, E>
+  readonly _tag: "Complete";
+  readonly exit: ExitEncoded<A, E>;
 }
 
 /**
@@ -494,16 +497,14 @@ export interface CompleteEncoded<A, E> {
  */
 export interface CompleteSchema<
   Success extends Schema.Top,
-  Error extends Schema.Top
-> extends
-  Schema.declareConstructor<
-    Complete<Success["Type"], Error["Type"]>,
-    Complete<Success["Encoded"], Error["Encoded"]>,
-    readonly [Schema.Exit<Success, Error, Schema.Defect>]
-  >
-{
-  readonly success: Success
-  readonly error: Error
+  Error extends Schema.Top,
+> extends Schema.declareConstructor<
+  Complete<Success["Type"], Error["Type"]>,
+  Complete<Success["Encoded"], Error["Encoded"]>,
+  readonly [Schema.Exit<Success, Error, Schema.Defect>]
+> {
+  readonly success: Success;
+  readonly error: Error;
 }
 
 /**
@@ -513,14 +514,14 @@ export interface CompleteSchema<
  * @since 4.0.0
  */
 export class Complete<A, E> extends Data.TaggedClass("Complete")<{
-  readonly exit: Exit.Exit<A, E>
+  readonly exit: Exit.Exit<A, E>;
 }> {
   /**
    * Marks this value as a workflow result for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [ResultTypeId] = ResultTypeId
+  readonly [ResultTypeId] = ResultTypeId;
 
   /**
    * Builds the schema for completed workflow results from success and error schemas.
@@ -528,8 +529,8 @@ export class Complete<A, E> extends Data.TaggedClass("Complete")<{
    * @since 4.0.0
    */
   static Schema<Success extends Schema.Top, Error extends Schema.Top>(options: {
-    readonly success: Success
-    readonly error: Error
+    readonly success: Success;
+    readonly error: Error;
   }): CompleteSchema<Success, Error> {
     // TODO: extract to a helper function
     const schema = Schema.declareConstructor<
@@ -537,43 +538,47 @@ export class Complete<A, E> extends Data.TaggedClass("Complete")<{
       Complete<Success["Encoded"], Error["Encoded"]>
     >()(
       [Schema.Exit(options.success, options.error, Schema.Defect)],
-      ([exit]) => (input, ast, options) => {
-        if (!(isResult(input) && input._tag === "Complete")) {
-          return Effect.fail(new SchemaIssue.InvalidType(ast, Option.some(input)))
-        }
-        return Effect.mapBothEager(
-          SchemaParser.decodeEffect(exit)(input.exit, options),
-          {
-            onSuccess: (exit) => new Complete({ exit }),
-            onFailure: (issue) =>
-              new SchemaIssue.Composite(ast, Option.some(input), [
-                new SchemaIssue.Pointer(["exit"], issue)
-              ])
+      ([exit]) =>
+        (input, ast, options) => {
+          if (!(isResult(input) && input._tag === "Complete")) {
+            return Effect.fail(
+              new SchemaIssue.InvalidType(ast, Option.some(input))
+            );
           }
-        )
-      },
+          return Effect.mapBothEager(
+            SchemaParser.decodeEffect(exit)(input.exit, options),
+            {
+              onSuccess: (exit) => new Complete({ exit }),
+              onFailure: (issue) =>
+                new SchemaIssue.Composite(ast, Option.some(input), [
+                  new SchemaIssue.Pointer(["exit"], issue),
+                ]),
+            }
+          );
+        },
       {
         expected: "Workflow.Complete",
         toCodecJson: ([exit]) =>
           Schema.link<Complete<Success["Encoded"], Error["Encoded"]>>()(
             Schema.Struct({
               _tag: Schema.tag("Complete"),
-              exit
+              exit,
             }),
             Tranformation.transform({
               decode: (encoded) => new Complete({ exit: encoded.exit }),
-              encode: (result) => (({
-                _tag: "Complete",
-                exit: result.exit
-              }) as const)
+              encode: (result) =>
+                ({
+                  _tag: "Complete",
+                  exit: result.exit,
+                }) as const,
             })
-          )
+          ),
       }
-    )
+    );
     return Schema.make(schema.ast, {
       success: options.success,
-      error: options.error
-    })
+      error: options.error,
+    });
   }
 }
 
@@ -588,14 +593,14 @@ export class Suspended extends Schema.Class<Suspended>(
   "effect/workflow/Workflow/Suspended"
 )({
   _tag: Schema.tag("Suspended"),
-  cause: Schema.optional(Schema.Cause(Schema.Never, Schema.Defect))
+  cause: Schema.optional(Schema.Cause(Schema.Never, Schema.Defect)),
 }) {
   /**
    * Marks this value as a workflow result for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [ResultTypeId] = ResultTypeId
+  readonly [ResultTypeId] = ResultTypeId;
 }
 
 /**
@@ -607,13 +612,13 @@ export class Suspended extends Schema.Class<Suspended>(
  */
 export const Result = <
   Success extends Schema.Top,
-  Error extends Schema.Top
+  Error extends Schema.Top,
 >(options: {
-  readonly success: Success
-  readonly error: Error
-}) => Schema.Union([Complete.Schema(options), Suspended])
+  readonly success: Success;
+  readonly error: Error;
+}) => Schema.Union([Complete.Schema(options), Suspended]);
 
-const AnyOrVoid = Schema.Union([Schema.Any, Schema.Void])
+const AnyOrVoid = Schema.Union([Schema.Any, Schema.Void]);
 
 /**
  * Schema for encoded workflow results with generic success and error payloads.
@@ -621,14 +626,15 @@ const AnyOrVoid = Schema.Union([Schema.Any, Schema.Void])
  * @category results
  * @since 4.0.0
  */
-export const ResultEncoded: Schema.Codec<ResultEncoded<any, any>> = Schema.toEncoded(
-  Schema.toCodecJson(
-    Result({
-      success: AnyOrVoid,
-      error: AnyOrVoid
-    })
-  )
-) as any
+export const ResultEncoded: Schema.Codec<ResultEncoded<any, any>> =
+  Schema.toEncoded(
+    Schema.toCodecJson(
+      Result({
+        success: AnyOrVoid,
+        error: AnyOrVoid,
+      })
+    )
+  ) as any;
 
 /**
  * Runs an effect as a workflow execution and converts its outcome into a
@@ -646,53 +652,69 @@ export const intoResult = <A, E, R>(
   Exclude<R, Scope.Scope> | WorkflowInstance
 > =>
   Effect.contextWith((context: Context.Context<WorkflowInstance>) => {
-    const instance = Context.get(context, InstanceTag)
-    const captureDefects = Context.get(instance.workflow.annotations, CaptureDefects)
-    const suspendOnFailure = Context.get(instance.workflow.annotations, SuspendOnFailure)
+    const instance = Context.get(context, InstanceTag);
+    const captureDefects = Context.get(
+      instance.workflow.annotations,
+      CaptureDefects
+    );
+    const suspendOnFailure = Context.get(
+      instance.workflow.annotations,
+      SuspendOnFailure
+    );
     return effect.pipe(
       // so we can use external interruption to suspend the workflow
       Effect.forkChild({ startImmediately: true }),
-      Effect.flatMap((fiber) => Effect.onInterrupt(Fiber.join(fiber), () => Fiber.interrupt(fiber))),
+      Effect.flatMap((fiber) =>
+        Effect.onInterrupt(Fiber.join(fiber), () => Fiber.interrupt(fiber))
+      ),
       Effect.interruptible,
       suspendOnFailure
         ? Effect.catchCause((cause) => {
-          instance.suspended = true
-          if (!Cause.hasInterruptsOnly(cause)) {
-            instance.cause = Cause.die(Cause.squash(cause))
-          }
-          return Effect.interrupt
-        })
+            instance.suspended = true;
+            if (!Cause.hasInterruptsOnly(cause)) {
+              instance.cause = Cause.die(Cause.squash(cause));
+            }
+            return Effect.interrupt;
+          })
         : identity,
       Effect.scoped,
       Effect.matchCauseEffect({
-        onSuccess: (value) => Effect.succeed(new Complete({ exit: Exit.succeed(value) })),
+        onSuccess: (value) =>
+          Effect.succeed(new Complete({ exit: Exit.succeed(value) })),
         onFailure: (cause): Effect.Effect<Result<A, E>> => {
           const [reasons, interrupts] = Arr.partition(
             cause.reasons,
             Filter.fromPredicate(Cause.isInterruptReason)
-          )
-          const hasInterruptsOnly = interrupts.length === cause.reasons.length
-          const filtered = reasons.length === 0 ? cause : Cause.fromReasons(reasons)
+          );
+          const hasInterruptsOnly = interrupts.length === cause.reasons.length;
+          const filtered =
+            reasons.length === 0 ? cause : Cause.fromReasons(reasons);
           return instance.suspended && hasInterruptsOnly
             ? Effect.succeed(new Suspended({ cause: instance.cause }))
             : (!instance.interrupted && hasInterruptsOnly) ||
                 (!captureDefects && Cause.hasDies(cause))
-            ? Effect.failCause(filtered as Cause.Cause<never>)
-            : Effect.succeed(new Complete({ exit: Exit.failCause(filtered) }))
-        }
+              ? Effect.failCause(filtered as Cause.Cause<never>)
+              : Effect.succeed(
+                  new Complete({ exit: Exit.failCause(filtered) })
+                );
+        },
       }),
       (eff) =>
-        Effect.onExitPrimitive(eff, (exit) => {
-          if (Exit.isFailure(exit)) {
-            return Scope.close(instance.scope, exit)
-          } else if (exit.value._tag === "Complete") {
-            return Scope.close(instance.scope, exit.value.exit)
-          }
-          return Effect.void
-        }, true),
+        Effect.onExitPrimitive(
+          eff,
+          (exit) => {
+            if (Exit.isFailure(exit)) {
+              return Scope.close(instance.scope, exit);
+            } else if (exit.value._tag === "Complete") {
+              return Scope.close(instance.scope, exit.value.exit);
+            }
+            return Effect.void;
+          },
+          true
+        ),
       Effect.uninterruptible
-    )
-  })
+    );
+  });
 
 /**
  * Wraps an activity-like effect so workflow suspension waits for currently
@@ -706,13 +728,13 @@ export const wrapActivityResult = <A, E, R>(
   isSuspend: (value: A) => boolean
 ): Effect.Effect<A, E, R | WorkflowInstance> =>
   Effect.contextWith((context: Context.Context<WorkflowInstance>) => {
-    const instance = Context.get(context, InstanceTag)
-    const state = instance.activityState
-    if (state.count === 0) state.latch.closeUnsafe()
-    state.count++
+    const instance = Context.get(context, InstanceTag);
+    const state = instance.activityState;
+    if (state.count === 0) state.latch.closeUnsafe();
+    state.count++;
     return Effect.onExit(effect, (exit) => {
-      state.count--
-      const isSuspended = Exit.isSuccess(exit) && isSuspend(exit.value)
+      state.count--;
+      const isSuspended = Exit.isSuccess(exit) && isSuspend(exit.value);
       if (
         Exit.isSuccess(exit) &&
         isResult(exit.value) &&
@@ -721,28 +743,30 @@ export const wrapActivityResult = <A, E, R>(
       ) {
         instance.cause = instance.cause
           ? Cause.combine(instance.cause, exit.value.cause)
-          : exit.value.cause
+          : exit.value.cause;
       }
       return state.count === 0
         ? state.latch.open
         : isSuspended
-        ? waitForZero(instance)
-        : Effect.void
-    })
-  })
+          ? waitForZero(instance)
+          : Effect.void;
+    });
+  });
 
-const waitForZero = Effect.fnUntraced(function*(instance: WorkflowInstance["Service"]) {
-  const state = instance.activityState
+const waitForZero = Effect.fnUntraced(function* (
+  instance: WorkflowInstance["Service"]
+) {
+  const state = instance.activityState;
   while (true) {
     if (state.count > 0) {
-      yield* state.latch.await
-      yield* Effect.yieldNow
-      continue
+      yield* state.latch.await;
+      yield* Effect.yieldNow;
+      continue;
     }
-    yield* Effect.yieldNow
-    if (state.count === 0) return
+    yield* Effect.yieldNow;
+    if (state.count === 0) return;
   }
-})
+});
 
 /**
  * Accesses the workflow scope, which is only closed when the workflow execution fully completes.
@@ -750,14 +774,8 @@ const waitForZero = Effect.fnUntraced(function*(instance: WorkflowInstance["Serv
  * @category resource management
  * @since 4.0.0
  */
-export const scope: Effect.Effect<
-  Scope.Scope,
-  never,
-  WorkflowInstance
-> = Effect.map(
-  InstanceTag,
-  (instance) => instance.scope as Scope.Scope
-)
+export const scope: Effect.Effect<Scope.Scope, never, WorkflowInstance> =
+  Effect.map(InstanceTag, (instance) => instance.scope as Scope.Scope);
 
 /**
  * Provides the workflow scope to the given effect, and closes the scope only when the workflow execution fully completes.
@@ -768,7 +786,7 @@ export const scope: Effect.Effect<
 export const provideScope = <A, E, R>(
   effect: Effect.Effect<A, E, R>
 ): Effect.Effect<A, E, Exclude<R, Scope.Scope> | WorkflowInstance> =>
-  Effect.flatMap(scope, (scope) => Scope.provide(effect, scope))
+  Effect.flatMap(scope, (scope) => Scope.provide(effect, scope));
 
 /**
  * Adds an exit finalizer to the current workflow scope, preserving the
@@ -779,17 +797,17 @@ export const provideScope = <A, E, R>(
  */
 export const addFinalizer: <R>(
   f: (exit: Exit.Exit<unknown, unknown>) => Effect.Effect<void, never, R>
-) => Effect.Effect<
-  void,
-  never,
-  WorkflowInstance | R
-> = Effect.fnUntraced(function*<R>(
-  f: (exit: Exit.Exit<unknown, unknown>) => Effect.Effect<void, never, R>
-) {
-  const scope = (yield* InstanceTag).scope
-  const services = yield* Effect.context<R>()
-  yield* Scope.addFinalizerExit(scope, (exit) => Effect.provideContext(f(exit), services))
-})
+) => Effect.Effect<void, never, WorkflowInstance | R> = Effect.fnUntraced(
+  function* <R>(
+    f: (exit: Exit.Exit<unknown, unknown>) => Effect.Effect<void, never, R>
+  ) {
+    const scope = (yield* InstanceTag).scope;
+    const services = yield* Effect.context<R>();
+    yield* Scope.addFinalizerExit(scope, (exit) =>
+      Effect.provideContext(f(exit), services)
+    );
+  }
+);
 
 /**
  * Adds compensation logic to an effect inside a Workflow.
@@ -812,24 +830,37 @@ export const addFinalizer: <R>(
  */
 export const withCompensation: {
   <A, R2>(
-    compensation: (value: A, cause: Cause.Cause<unknown>) => Effect.Effect<void, never, R2>
+    compensation: (
+      value: A,
+      cause: Cause.Cause<unknown>
+    ) => Effect.Effect<void, never, R2>
   ): <E, R>(
     effect: Effect.Effect<A, E, R>
-  ) => Effect.Effect<A, E, R | R2 | WorkflowInstance | Scope.Scope>
+  ) => Effect.Effect<A, E, R | R2 | WorkflowInstance | Scope.Scope>;
   <A, E, R, R2>(
     effect: Effect.Effect<A, E, R>,
-    compensation: (value: A, cause: Cause.Cause<unknown>) => Effect.Effect<void, never, R2>
-  ): Effect.Effect<A, E, R | R2 | WorkflowInstance | Scope.Scope>
-} = dual(2, <A, E, R, R2>(
-  effect: Effect.Effect<A, E, R>,
-  compensation: (value: A, cause: Cause.Cause<unknown>) => Effect.Effect<void, never, R2>
-): Effect.Effect<A, E, R | R2 | WorkflowInstance | Scope.Scope> =>
-  Effect.uninterruptibleMask((restore) =>
-    Effect.tap(
-      restore(effect),
-      (value) => addFinalizer((exit) => Exit.isSuccess(exit) ? Effect.void : compensation(value, exit.cause))
+    compensation: (
+      value: A,
+      cause: Cause.Cause<unknown>
+    ) => Effect.Effect<void, never, R2>
+  ): Effect.Effect<A, E, R | R2 | WorkflowInstance | Scope.Scope>;
+} = dual(
+  2,
+  <A, E, R, R2>(
+    effect: Effect.Effect<A, E, R>,
+    compensation: (
+      value: A,
+      cause: Cause.Cause<unknown>
+    ) => Effect.Effect<void, never, R2>
+  ): Effect.Effect<A, E, R | R2 | WorkflowInstance | Scope.Scope> =>
+    Effect.uninterruptibleMask((restore) =>
+      Effect.tap(restore(effect), (value) =>
+        addFinalizer((exit) =>
+          Exit.isSuccess(exit) ? Effect.void : compensation(value, exit.cause)
+        )
+      )
     )
-  ))
+);
 
 /**
  * Marks a workflow instance as suspended and interrupts the current fiber to
@@ -838,12 +869,16 @@ export const withCompensation: {
  * @category results
  * @since 4.0.0
  */
-export const suspend = (instance: WorkflowInstance["Service"]): Effect.Effect<never> =>
-  Effect.interruptible(Effect.callback<never>(() => {
-    instance.suspended = true
-    const fiber = Fiber.getCurrent()!
-    fiber.interruptUnsafe(fiber.id)
-  }))
+export const suspend = (
+  instance: WorkflowInstance["Service"]
+): Effect.Effect<never> =>
+  Effect.interruptible(
+    Effect.callback<never>(() => {
+      instance.suspended = true;
+      const fiber = Fiber.getCurrent()!;
+      fiber.interruptUnsafe(fiber.id);
+    })
+  );
 
 /**
  * Captures defects for a workflow and includes them in the result of the workflow or its activities.
@@ -858,9 +893,9 @@ export const suspend = (instance: WorkflowInstance["Service"]): Effect.Effect<ne
 export const CaptureDefects = Context.Reference<boolean>(
   "effect/workflow/Workflow/CaptureDefects",
   {
-    defaultValue: constTrue
+    defaultValue: constTrue,
   }
-)
+);
 
 /**
  * Marks a workflow to suspend when it encounters any error.
@@ -875,6 +910,6 @@ export const CaptureDefects = Context.Reference<boolean>(
 export const SuspendOnFailure = Context.Reference<boolean>(
   "effect/workflow/Workflow/SuspendOnFailure",
   {
-    defaultValue: constFalse
+    defaultValue: constFalse,
   }
-)
+);

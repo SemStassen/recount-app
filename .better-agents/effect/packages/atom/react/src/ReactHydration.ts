@@ -22,10 +22,11 @@
  *
  * @since 4.0.0
  */
-"use client"
-import * as Hydration from "effect/unstable/reactivity/Hydration"
-import * as React from "react"
-import { RegistryContext } from "./RegistryContext.ts"
+"use client";
+import * as Hydration from "effect/unstable/reactivity/Hydration";
+import * as React from "react";
+
+import { RegistryContext } from "./RegistryContext.ts";
 
 /**
  * Props for a boundary that applies dehydrated Atom values to the nearest
@@ -35,8 +36,8 @@ import { RegistryContext } from "./RegistryContext.ts"
  * @since 4.0.0
  */
 export interface HydrationBoundaryProps {
-  state?: Iterable<Hydration.DehydratedAtom>
-  children?: React.ReactNode
+  state?: Iterable<Hydration.DehydratedAtom>;
+  children?: React.ReactNode;
 }
 
 /**
@@ -62,9 +63,9 @@ export interface HydrationBoundaryProps {
  */
 export const HydrationBoundary: React.FC<HydrationBoundaryProps> = ({
   children,
-  state
+  state,
 }) => {
-  const registry = React.useContext(RegistryContext)
+  const registry = React.useContext(RegistryContext);
 
   // This useMemo is for performance reasons only, everything inside it must
   // be safe to run in every render and code here should be read as "in render".
@@ -81,44 +82,48 @@ export const HydrationBoundary: React.FC<HydrationBoundaryProps> = ({
   // If the transition is aborted, we will have hydrated any _new_ Atom values, but
   // we throw away the fresh data for any existing ones to avoid unexpectedly
   // updating the UI.
-  const hydrationQueue: Array<Hydration.DehydratedAtomValue> | undefined = React.useMemo(() => {
-    if (state) {
-      const dehydratedAtoms = Array.from(state) as Array<Hydration.DehydratedAtomValue>
-      const nodes = registry.getNodes()
+  const hydrationQueue: Array<Hydration.DehydratedAtomValue> | undefined =
+    React.useMemo(() => {
+      if (state) {
+        const dehydratedAtoms = Array.from(
+          state
+        ) as Array<Hydration.DehydratedAtomValue>;
+        const nodes = registry.getNodes();
 
-      const newDehydratedAtoms: Array<Hydration.DehydratedAtomValue> = []
-      const existingDehydratedAtoms: Array<Hydration.DehydratedAtomValue> = []
+        const newDehydratedAtoms: Array<Hydration.DehydratedAtomValue> = [];
+        const existingDehydratedAtoms: Array<Hydration.DehydratedAtomValue> =
+          [];
 
-      for (const dehydratedAtom of dehydratedAtoms) {
-        const existingNode = nodes.get(dehydratedAtom.key)
+        for (const dehydratedAtom of dehydratedAtoms) {
+          const existingNode = nodes.get(dehydratedAtom.key);
 
-        if (!existingNode) {
-          // This is a new Atom value, safe to hydrate immediately
-          newDehydratedAtoms.push(dehydratedAtom)
-        } else {
-          // This Atom value already exists, queue it for later hydration
-          existingDehydratedAtoms.push(dehydratedAtom)
+          if (!existingNode) {
+            // This is a new Atom value, safe to hydrate immediately
+            newDehydratedAtoms.push(dehydratedAtom);
+          } else {
+            // This Atom value already exists, queue it for later hydration
+            existingDehydratedAtoms.push(dehydratedAtom);
+          }
+        }
+
+        if (newDehydratedAtoms.length > 0) {
+          // It's actually fine to call this with state that already exists
+          // in the registry, or is older. hydrate() is idempotent.
+          Hydration.hydrate(registry, newDehydratedAtoms);
+        }
+
+        if (existingDehydratedAtoms.length > 0) {
+          return existingDehydratedAtoms;
         }
       }
-
-      if (newDehydratedAtoms.length > 0) {
-        // It's actually fine to call this with state that already exists
-        // in the registry, or is older. hydrate() is idempotent.
-        Hydration.hydrate(registry, newDehydratedAtoms)
-      }
-
-      if (existingDehydratedAtoms.length > 0) {
-        return existingDehydratedAtoms
-      }
-    }
-    return undefined
-  }, [registry, state])
+      return undefined;
+    }, [registry, state]);
 
   React.useEffect(() => {
     if (hydrationQueue) {
-      Hydration.hydrate(registry, hydrationQueue)
+      Hydration.hydrate(registry, hydrationQueue);
     }
-  }, [registry, hydrationQueue])
+  }, [registry, hydrationQueue]);
 
-  return React.createElement(React.Fragment, {}, children)
-}
+  return React.createElement(React.Fragment, {}, children);
+};

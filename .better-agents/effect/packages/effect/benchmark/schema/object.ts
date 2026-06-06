@@ -1,8 +1,8 @@
-import { type } from "arktype"
-import { Schema } from "effect"
-import { Bench } from "tinybench"
-import * as v from "valibot"
-import { z } from "zod/v4-mini"
+import { type } from "arktype";
+import { Schema } from "effect";
+import { Bench } from "tinybench";
+import * as v from "valibot";
+import { z } from "zod/v4-mini";
 
 /*
 ┌─────────┬──────────────────┬──────────────────┬──────────────────┬────────────────────────┬────────────────────────┬──────────┐
@@ -19,28 +19,28 @@ import { z } from "zod/v4-mini"
 └─────────┴──────────────────┴──────────────────┴──────────────────┴────────────────────────┴────────────────────────┴──────────┘
 */
 
-const bench = new Bench()
+const bench = new Bench();
 
 const schema = Schema.Struct({
-  a: Schema.String
-})
+  a: Schema.String,
+});
 
 const valibot = v.object({
-  a: v.string()
-})
+  a: v.string(),
+});
 
 const arktype = type({
-  a: "string"
-})
+  a: "string",
+});
 
 const zod = z.object({
-  a: z.string()
-})
+  a: z.string(),
+});
 
-const good = { a: "a" }
-const bad = { a: 1 }
+const good = { a: "a" };
+const bad = { a: 1 };
 
-const decodeUnknownExit = Schema.decodeUnknownExit(schema)
+const decodeUnknownExit = Schema.decodeUnknownExit(schema);
 
 // console.log(decodeUnknownExit(good))
 // console.log(decodeUnknownExit(bad))
@@ -52,31 +52,31 @@ const decodeUnknownExit = Schema.decodeUnknownExit(schema)
 // console.log(zod.safeParse(bad))
 
 bench
-  .add("Schema (good)", function() {
-    decodeUnknownExit(good)
+  .add("Schema (good)", function () {
+    decodeUnknownExit(good);
   })
-  .add("Schema (bad)", function() {
-    decodeUnknownExit(bad)
+  .add("Schema (bad)", function () {
+    decodeUnknownExit(bad);
   })
-  .add("Valibot (good)", function() {
-    v.safeParse(valibot, good)
+  .add("Valibot (good)", function () {
+    v.safeParse(valibot, good);
   })
-  .add("Valibot (bad)", function() {
-    v.safeParse(valibot, bad)
+  .add("Valibot (bad)", function () {
+    v.safeParse(valibot, bad);
   })
-  .add("Arktype (good)", function() {
-    arktype(good)
+  .add("Arktype (good)", function () {
+    arktype(good);
   })
-  .add("Arktype (bad)", function() {
-    arktype(bad)
+  .add("Arktype (bad)", function () {
+    arktype(bad);
   })
-  .add("Zod (good)", function() {
-    zod.safeParse(good)
+  .add("Zod (good)", function () {
+    zod.safeParse(good);
   })
-  .add("Zod (bad)", function() {
-    zod.safeParse(bad)
-  })
+  .add("Zod (bad)", function () {
+    zod.safeParse(bad);
+  });
 
-await bench.run()
+await bench.run();
 
-console.table(bench.table())
+console.table(bench.table());

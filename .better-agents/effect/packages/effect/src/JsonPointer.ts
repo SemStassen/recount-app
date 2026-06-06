@@ -85,7 +85,7 @@
  * @since 4.0.0
  */
 export function escapeToken(token: string): string {
-  return token.replace(/~/g, "~0").replace(/\//g, "~1")
+  return token.replace(/~/g, "~0").replace(/\//g, "~1");
 }
 
 /**
@@ -121,5 +121,5 @@ export function escapeToken(token: string): string {
  * @since 4.0.0
  */
 export function unescapeToken(token: string): string {
-  return token.replace(/~1/g, "/").replace(/~0/g, "~")
+  return token.replace(/~1/g, "/").replace(/~0/g, "~");
 }

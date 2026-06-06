@@ -32,7 +32,7 @@
  * @since 2.0.0
  */
 
-import { identity } from "./Function.ts"
+import { identity } from "./Function.ts";
 
 /**
  * Defines the unique symbol used to identify unification behavior in Effect types.
@@ -53,7 +53,7 @@ import { identity } from "./Function.ts"
  * @category symbols
  * @since 2.0.0
  */
-export declare const unifySymbol: unique symbol
+export declare const unifySymbol: unique symbol;
 
 /**
  * The type of the unifySymbol.
@@ -72,7 +72,7 @@ export declare const unifySymbol: unique symbol
  * @category symbols
  * @since 2.0.0
  */
-export type unifySymbol = typeof unifySymbol
+export type unifySymbol = typeof unifySymbol;
 
 /**
  * Defines the unique symbol used to identify the type information for unification.
@@ -92,7 +92,7 @@ export type unifySymbol = typeof unifySymbol
  * @category symbols
  * @since 2.0.0
  */
-export declare const typeSymbol: unique symbol
+export declare const typeSymbol: unique symbol;
 
 /**
  * The type of the typeSymbol.
@@ -111,7 +111,7 @@ export declare const typeSymbol: unique symbol
  * @category symbols
  * @since 2.0.0
  */
-export type typeSymbol = typeof typeSymbol
+export type typeSymbol = typeof typeSymbol;
 
 /**
  * Defines the unique symbol used to specify types that should be ignored during unification.
@@ -131,7 +131,7 @@ export type typeSymbol = typeof typeSymbol
  * @category symbols
  * @since 2.0.0
  */
-export declare const ignoreSymbol: unique symbol
+export declare const ignoreSymbol: unique symbol;
 
 /**
  * The type of the ignoreSymbol.
@@ -150,38 +150,54 @@ export declare const ignoreSymbol: unique symbol
  * @category symbols
  * @since 2.0.0
  */
-export type ignoreSymbol = typeof ignoreSymbol
+export type ignoreSymbol = typeof ignoreSymbol;
 
-type MaybeReturn<F> = F extends () => infer R ? R : NonNullable<F>
+type MaybeReturn<F> = F extends () => infer R ? R : NonNullable<F>;
 
-type Keys<X extends [any, any]> = X extends [infer A, infer Ignore] ? Exclude<keyof A, Ignore>
-  : never
+type Keys<X extends [any, any]> = X extends [infer A, infer Ignore]
+  ? Exclude<keyof A, Ignore>
+  : never;
 
 type Values<X extends [any, any]> = X extends [infer A, infer Ignore]
-  ? Keys<[A, Ignore]> extends infer K ? K extends keyof A ? MaybeReturn<A[K]> : never : never
-  : never
+  ? Keys<[A, Ignore]> extends infer K
+    ? K extends keyof A
+      ? MaybeReturn<A[K]>
+      : never
+    : never
+  : never;
 
-type Ignore<X> = X extends { [ignoreSymbol]?: infer Obj } ? keyof NonNullable<Obj>
-  : never
+type Ignore<X> = X extends { [ignoreSymbol]?: infer Obj }
+  ? keyof NonNullable<Obj>
+  : never;
 
-type ExtractTypes<
-  X
-> = X extends {
-  [typeSymbol]?: infer _Type
-  [unifySymbol]?: infer _Unify
-} ? [NonNullable<_Unify>, Ignore<X>]
-  : never
+type ExtractTypes<X> = X extends {
+  [typeSymbol]?: infer _Type;
+  [unifySymbol]?: infer _Unify;
+}
+  ? [NonNullable<_Unify>, Ignore<X>]
+  : never;
 
-type FilterIn<A> = A extends any ? typeSymbol extends keyof A ? A : never : never
+type FilterIn<A> = A extends any
+  ? typeSymbol extends keyof A
+    ? A
+    : never
+  : never;
 
 type FilterInUnmatched<A, K> = A extends any
   ? typeSymbol extends keyof A
-    ? A extends { [unifySymbol]?: infer U } ? [Extract<keyof NonNullable<U>, K>] extends [never] ? A : never
-    : A
-  : never
-  : never
+    ? A extends { [unifySymbol]?: infer U }
+      ? [Extract<keyof NonNullable<U>, K>] extends [never]
+        ? A
+        : never
+      : A
+    : never
+  : never;
 
-type FilterOut<A> = A extends any ? typeSymbol extends keyof A ? never : A : never
+type FilterOut<A> = A extends any
+  ? typeSymbol extends keyof A
+    ? never
+    : A
+  : never;
 
 /**
  * Unifies types that implement the unification protocol.
@@ -225,28 +241,16 @@ type FilterOut<A> = A extends any ? typeSymbol extends keyof A ? never : A : nev
  * @category models
  * @since 2.0.0
  */
-export type Unify<A> = Values<
-  ExtractTypes<
-    (
-      & FilterIn<A>
-      & { [typeSymbol]: A }
-    )
-  >
-> extends infer Z ?
-    | Z
-    | FilterInUnmatched<
-      A,
-      Keys<
-        ExtractTypes<
-          (
-            & FilterIn<A>
-            & { [typeSymbol]: A }
-          )
-        >
-      >
-    >
-    | FilterOut<A>
-  : never
+export type Unify<A> =
+  Values<ExtractTypes<FilterIn<A> & { [typeSymbol]: A }>> extends infer Z
+    ?
+        | Z
+        | FilterInUnmatched<
+            A,
+            Keys<ExtractTypes<FilterIn<A> & { [typeSymbol]: A }>>
+          >
+        | FilterOut<A>
+    : never;
 
 /**
  * Applies `Unify` to a value or function return type at compile time.
@@ -299,37 +303,44 @@ export const unify: {
     Args3 extends Array<any>,
     Args4 extends Array<any>,
     Args5 extends Array<any>,
-    T
+    T,
   >(
-    x: (...args: Args) => (...args: Args2) => (...args: Args3) => (...args: Args4) => (...args: Args5) => T
-  ): (...args: Args) => (...args: Args2) => (...args: Args3) => (...args: Args4) => (...args: Args5) => Unify<T>
+    x: (
+      ...args: Args
+    ) => (
+      ...args: Args2
+    ) => (...args: Args3) => (...args: Args4) => (...args: Args5) => T
+  ): (
+    ...args: Args
+  ) => (
+    ...args: Args2
+  ) => (...args: Args3) => (...args: Args4) => (...args: Args5) => Unify<T>;
   <
     Args extends Array<any>,
     Args2 extends Array<any>,
     Args3 extends Array<any>,
     Args4 extends Array<any>,
-    T
+    T,
   >(
-    x: (...args: Args) => (...args: Args2) => (...args: Args3) => (...args: Args4) => T
-  ): (...args: Args) => (...args: Args2) => (...args: Args3) => (...args: Args4) => Unify<T>
+    x: (
+      ...args: Args
+    ) => (...args: Args2) => (...args: Args3) => (...args: Args4) => T
+  ): (
+    ...args: Args
+  ) => (...args: Args2) => (...args: Args3) => (...args: Args4) => Unify<T>;
   <
     Args extends Array<any>,
     Args2 extends Array<any>,
     Args3 extends Array<any>,
-    T
+    T,
   >(
     x: (...args: Args) => (...args: Args2) => (...args: Args3) => T
-  ): (...args: Args) => (...args: Args2) => (...args: Args3) => Unify<T>
-  <
-    Args extends Array<any>,
-    Args2 extends Array<any>,
-    T
-  >(
+  ): (...args: Args) => (...args: Args2) => (...args: Args3) => Unify<T>;
+  <Args extends Array<any>, Args2 extends Array<any>, T>(
     x: (...args: Args) => (...args: Args2) => T
-  ): (...args: Args) => (...args: Args2) => Unify<T>
-  <
-    Args extends Array<any>,
-    T
-  >(x: (...args: Args) => T): (...args: Args) => Unify<T>
-  <T>(x: T): Unify<T>
-} = identity as any
+  ): (...args: Args) => (...args: Args2) => Unify<T>;
+  <Args extends Array<any>, T>(
+    x: (...args: Args) => T
+  ): (...args: Args) => Unify<T>;
+  <T>(x: T): Unify<T>;
+} = identity as any;

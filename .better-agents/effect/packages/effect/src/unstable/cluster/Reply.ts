@@ -22,25 +22,25 @@
  *
  * @since 4.0.0
  */
-import type { NonEmptyReadonlyArray } from "../../Array.ts"
-import * as Context from "../../Context.ts"
-import * as Data from "../../Data.ts"
-import * as Effect from "../../Effect.ts"
-import * as Exit from "../../Exit.ts"
-import * as Option from "../../Option.ts"
-import { hasProperty } from "../../Predicate.ts"
-import * as Schema from "../../Schema.ts"
-import * as SchemaIssue from "../../SchemaIssue.ts"
-import * as SchemaParser from "../../SchemaParser.ts"
-import * as SchemaTransformation from "../../SchemaTransformation.ts"
-import * as Rpc from "../rpc/Rpc.ts"
-import type * as RpcMessage from "../rpc/RpcMessage.ts"
-import type * as RpcSchema from "../rpc/RpcSchema.ts"
-import { MalformedMessage } from "./ClusterError.ts"
-import type { OutgoingRequest } from "./Message.ts"
-import { Snowflake, SnowflakeFromBigInt } from "./Snowflake.ts"
+import type { NonEmptyReadonlyArray } from "../../Array.ts";
+import * as Context from "../../Context.ts";
+import * as Data from "../../Data.ts";
+import * as Effect from "../../Effect.ts";
+import * as Exit from "../../Exit.ts";
+import * as Option from "../../Option.ts";
+import { hasProperty } from "../../Predicate.ts";
+import * as Schema from "../../Schema.ts";
+import * as SchemaIssue from "../../SchemaIssue.ts";
+import * as SchemaParser from "../../SchemaParser.ts";
+import * as SchemaTransformation from "../../SchemaTransformation.ts";
+import * as Rpc from "../rpc/Rpc.ts";
+import type * as RpcMessage from "../rpc/RpcMessage.ts";
+import type * as RpcSchema from "../rpc/RpcSchema.ts";
+import { MalformedMessage } from "./ClusterError.ts";
+import type { OutgoingRequest } from "./Message.ts";
+import { Snowflake, SnowflakeFromBigInt } from "./Snowflake.ts";
 
-const TypeId = "~effect/cluster/Reply"
+const TypeId = "~effect/cluster/Reply";
 
 /**
  * Returns `true` when the supplied value is a runtime cluster reply, based on the
@@ -49,7 +49,8 @@ const TypeId = "~effect/cluster/Reply"
  * @category guards
  * @since 4.0.0
  */
-export const isReply = (u: unknown): u is Reply<Rpc.Any> => hasProperty(u, TypeId)
+export const isReply = (u: unknown): u is Reply<Rpc.Any> =>
+  hasProperty(u, TypeId);
 
 /**
  * Runtime reply sent for an RPC request, either as a final exit or a chunk of a
@@ -58,7 +59,7 @@ export const isReply = (u: unknown): u is Reply<Rpc.Any> => hasProperty(u, TypeI
  * @category models
  * @since 4.0.0
  */
-export type Reply<R extends Rpc.Any> = WithExit<R> | Chunk<R>
+export type Reply<R extends Rpc.Any> = WithExit<R> | Chunk<R>;
 
 /**
  * JSON-serializable form of a cluster reply.
@@ -66,7 +67,7 @@ export type Reply<R extends Rpc.Any> = WithExit<R> | Chunk<R>
  * @category models
  * @since 4.0.0
  */
-export type Encoded = WithExitEncoded | ChunkEncoded
+export type Encoded = WithExitEncoded | ChunkEncoded;
 
 /**
  * Schema for reply values that are already in encoded form.
@@ -78,7 +79,7 @@ export type Encoded = WithExitEncoded | ChunkEncoded
  * @category schemas
  * @since 4.0.0
  */
-export const Encoded: Schema.Codec<Encoded> = Schema.Any as any
+export const Encoded: Schema.Codec<Encoded> = Schema.Any as any;
 
 /**
  * Represents a cluster reply paired with the RPC definition and service context required to
@@ -92,10 +93,12 @@ export const Encoded: Schema.Codec<Encoded> = Schema.Any as any
  * @category models
  * @since 4.0.0
  */
-export class ReplyWithContext<R extends Rpc.Any> extends Data.TaggedClass("ReplyWithContext")<{
-  readonly reply: Reply<R>
-  readonly context: Context.Context<Rpc.Services<R>>
-  readonly rpc: R
+export class ReplyWithContext<R extends Rpc.Any> extends Data.TaggedClass(
+  "ReplyWithContext"
+)<{
+  readonly reply: Reply<R>;
+  readonly context: Context.Context<Rpc.Services<R>>;
+  readonly rpc: R;
 }> {
   /**
    * Creates a terminal reply context that dies with the supplied defect.
@@ -103,19 +106,19 @@ export class ReplyWithContext<R extends Rpc.Any> extends Data.TaggedClass("Reply
    * @since 4.0.0
    */
   static fromDefect(options: {
-    readonly id: Snowflake
-    readonly requestId: Snowflake
-    readonly defect: unknown
+    readonly id: Snowflake;
+    readonly requestId: Snowflake;
+    readonly defect: unknown;
   }): ReplyWithContext<any> {
     return new ReplyWithContext({
       reply: new WithExit({
         requestId: options.requestId,
         id: options.id,
-        exit: Exit.die(Schema.encodeSync(Schema.Defect)(options.defect))
+        exit: Exit.die(Schema.encodeSync(Schema.Defect)(options.defect)),
       }),
       context: Context.empty() as any,
-      rpc: neverRpc
-    })
+      rpc: neverRpc,
+    });
   }
   /**
    * Creates a terminal reply context that interrupts the supplied request.
@@ -123,26 +126,26 @@ export class ReplyWithContext<R extends Rpc.Any> extends Data.TaggedClass("Reply
    * @since 4.0.0
    */
   static interrupt(options: {
-    readonly id: Snowflake
-    readonly requestId: Snowflake
+    readonly id: Snowflake;
+    readonly requestId: Snowflake;
   }): ReplyWithContext<any> {
     return new ReplyWithContext({
       reply: new WithExit({
         requestId: options.requestId,
         id: options.id,
-        exit: Exit.interrupt()
+        exit: Exit.interrupt(),
       }),
       context: Context.empty() as any,
-      rpc: neverRpc
-    })
+      rpc: neverRpc,
+    });
   }
 }
 
 const neverRpc = Rpc.make("Never", {
   success: Schema.Never as any,
   error: Schema.Never,
-  payload: {}
-})
+  payload: {},
+});
 
 /**
  * Wire-format representation of a terminal reply containing the request id, reply
@@ -152,10 +155,10 @@ const neverRpc = Rpc.make("Never", {
  * @since 4.0.0
  */
 export interface WithExitEncoded<A = unknown, E = unknown> {
-  readonly _tag: "WithExit"
-  readonly requestId: string
-  readonly id: string
-  readonly exit: RpcMessage.ExitEncoded<A, E>
+  readonly _tag: "WithExit";
+  readonly requestId: string;
+  readonly id: string;
+  readonly exit: RpcMessage.ExitEncoded<A, E>;
 }
 
 /**
@@ -166,14 +169,14 @@ export interface WithExitEncoded<A = unknown, E = unknown> {
  * @since 4.0.0
  */
 export interface ChunkEncoded {
-  readonly _tag: "Chunk"
-  readonly requestId: string
-  readonly id: string
-  readonly sequence: number
-  readonly values: NonEmptyReadonlyArray<unknown>
+  readonly _tag: "Chunk";
+  readonly requestId: string;
+  readonly id: string;
+  readonly sequence: number;
+  readonly values: NonEmptyReadonlyArray<unknown>;
 }
 
-const schemaCache = new WeakMap<Rpc.Any, Schema.Top>()
+const schemaCache = new WeakMap<Rpc.Any, Schema.Top>();
 
 /**
  * Represents a streaming RPC reply chunk for a request, carrying a non-empty
@@ -183,17 +186,17 @@ const schemaCache = new WeakMap<Rpc.Any, Schema.Top>()
  * @since 4.0.0
  */
 export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
-  readonly requestId: Snowflake
-  readonly id: Snowflake
-  readonly sequence: number
-  readonly values: NonEmptyReadonlyArray<Rpc.SuccessChunk<R>>
+  readonly requestId: Snowflake;
+  readonly id: Snowflake;
+  readonly sequence: number;
+  readonly values: NonEmptyReadonlyArray<Rpc.SuccessChunk<R>>;
 }> {
   /**
    * Marks this value as a runtime cluster reply.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Creates an empty chunk reply for the supplied request id.
@@ -205,8 +208,8 @@ export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
       requestId,
       id: Snowflake(BigInt(0)),
       sequence: 0,
-      values: [undefined]
-    })
+      values: [undefined],
+    });
   }
 
   /**
@@ -214,17 +217,20 @@ export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
    *
    * @since 4.0.0
    */
-  static readonly Any = Schema.declare((u): u is Chunk<never> => isReply(u) && u._tag === "Chunk")
+  static readonly Any = Schema.declare(
+    (u): u is Chunk<never> => isReply(u) && u._tag === "Chunk"
+  );
 
   /**
    * Transformation between encoded chunk records and `Chunk` instances.
    *
    * @since 4.0.0
    */
-  static readonly transform: SchemaTransformation.Transformation<any, any> = SchemaTransformation.transform({
-    decode: (a: any) => new Chunk(a),
-    encode: (a) => a as any
-  })
+  static readonly transform: SchemaTransformation.Transformation<any, any> =
+    SchemaTransformation.transform({
+      decode: (a: any) => new Chunk(a),
+      encode: (a) => a as any,
+    });
 
   /**
    * Builds a chunk schema from the streaming success schema of an RPC.
@@ -233,12 +239,21 @@ export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
    */
   static schema<R extends Rpc.Any>(
     rpc: R
-  ): Schema.declareConstructor<Chunk<R>, Chunk<R>, readonly [Rpc.SuccessExitSchema<R>]> {
-    const successSchema = ((rpc as any as Rpc.AnyWithProps).successSchema as RpcSchema.Stream<any, any>).success
+  ): Schema.declareConstructor<
+    Chunk<R>,
+    Chunk<R>,
+    readonly [Rpc.SuccessExitSchema<R>]
+  > {
+    const successSchema = (
+      (rpc as any as Rpc.AnyWithProps).successSchema as RpcSchema.Stream<
+        any,
+        any
+      >
+    ).success;
     if (!successSchema) {
-      return Schema.Never as any
+      return Schema.Never as any;
     }
-    return this.schemaFrom(successSchema) as any
+    return this.schemaFrom(successSchema) as any;
   }
 
   /**
@@ -248,20 +263,35 @@ export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
    */
   static schemaFrom<Success extends Schema.Top>(
     success: Success
-  ): Schema.declareConstructor<Chunk<Rpc.Any>, Chunk<Rpc.Any>, readonly [Success]> {
+  ): Schema.declareConstructor<
+    Chunk<Rpc.Any>,
+    Chunk<Rpc.Any>,
+    readonly [Success]
+  > {
     // TODO: extract to a helper function
     return Schema.declareConstructor<Chunk<Rpc.Any>>()(
       [success],
-      ([success]) => (input, ast, options) => {
-        if (!isReply(input) || input._tag !== "Chunk") {
-          return Effect.fail(new SchemaIssue.InvalidType(ast, Option.some(input)))
-        }
-        return Effect.mapBothEager(SchemaParser.decodeEffect(Schema.NonEmptyArray(success))(input.values, options), {
-          onFailure: (issue) =>
-            new SchemaIssue.Composite(ast, Option.some(input), [new SchemaIssue.Pointer(["values"], issue)]),
-          onSuccess: (values) => new Chunk({ ...input, values } as any)
-        })
-      },
+      ([success]) =>
+        (input, ast, options) => {
+          if (!isReply(input) || input._tag !== "Chunk") {
+            return Effect.fail(
+              new SchemaIssue.InvalidType(ast, Option.some(input))
+            );
+          }
+          return Effect.mapBothEager(
+            SchemaParser.decodeEffect(Schema.NonEmptyArray(success))(
+              input.values,
+              options
+            ),
+            {
+              onFailure: (issue) =>
+                new SchemaIssue.Composite(ast, Option.some(input), [
+                  new SchemaIssue.Pointer(["values"], issue),
+                ]),
+              onSuccess: (values) => new Chunk({ ...input, values } as any),
+            }
+          );
+        },
       {
         expected: "Reply.Chunk",
         toCodecJson: ([success]) =>
@@ -271,15 +301,15 @@ export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
               requestId: SnowflakeFromBigInt,
               id: SnowflakeFromBigInt,
               sequence: Schema.Number,
-              values: Schema.NonEmptyArray(success)
+              values: Schema.NonEmptyArray(success),
             }),
             SchemaTransformation.transform({
               decode: (encoded) => new Chunk(encoded),
-              encode: (result) => ({ ...result })
+              encode: (result) => ({ ...result }),
             })
-          )
+          ),
       }
-    )
+    );
   }
 
   /**
@@ -290,8 +320,8 @@ export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
   withRequestId(requestId: Snowflake): Chunk<R> {
     return new Chunk({
       ...this,
-      requestId
-    })
+      requestId,
+    });
   }
 }
 
@@ -308,16 +338,16 @@ export class Chunk<R extends Rpc.Any> extends Data.TaggedClass("Chunk")<{
  * @since 4.0.0
  */
 export class WithExit<R extends Rpc.Any> extends Data.TaggedClass("WithExit")<{
-  readonly requestId: Snowflake
-  readonly id: Snowflake
-  readonly exit: Rpc.Exit<R>
+  readonly requestId: Snowflake;
+  readonly id: Snowflake;
+  readonly exit: Rpc.Exit<R>;
 }> {
   /**
    * Marks this value as a runtime cluster reply.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Returns `true` when the value is a terminal `WithExit` reply.
@@ -325,7 +355,7 @@ export class WithExit<R extends Rpc.Any> extends Data.TaggedClass("WithExit")<{
    * @since 4.0.0
    */
   static is(u: unknown): u is WithExit<any> {
-    return isReply(u) && u._tag === "WithExit"
+    return isReply(u) && u._tag === "WithExit";
   }
 
   /**
@@ -338,9 +368,15 @@ export class WithExit<R extends Rpc.Any> extends Data.TaggedClass("WithExit")<{
   ): Schema.declareConstructor<
     WithExit<R>,
     WithExit<R>,
-    readonly [Schema.Exit<Rpc.SuccessExitSchema<R>, Rpc.ErrorExitSchema<R>, Rpc.DefectSchema>]
+    readonly [
+      Schema.Exit<
+        Rpc.SuccessExitSchema<R>,
+        Rpc.ErrorExitSchema<R>,
+        Rpc.DefectSchema
+      >,
+    ]
   > {
-    return this.schemaFrom(Rpc.exitSchema(rpc))
+    return this.schemaFrom(Rpc.exitSchema(rpc));
   }
 
   /**
@@ -348,7 +384,11 @@ export class WithExit<R extends Rpc.Any> extends Data.TaggedClass("WithExit")<{
    *
    * @since 4.0.0
    */
-  static schemaFrom<Success extends Schema.Top, Error extends Schema.Top, Defect extends Schema.Top>(
+  static schemaFrom<
+    Success extends Schema.Top,
+    Error extends Schema.Top,
+    Defect extends Schema.Top,
+  >(
     exitSchema: Schema.Exit<Success, Error, Defect>
   ): Schema.declareConstructor<
     WithExit<Rpc.Any>,
@@ -358,16 +398,25 @@ export class WithExit<R extends Rpc.Any> extends Data.TaggedClass("WithExit")<{
     // TODO: extract to a helper function
     return Schema.declareConstructor<WithExit<Rpc.Any>>()(
       [exitSchema],
-      ([exit]) => (input, ast, options) => {
-        if (!isReply(input) || input._tag !== "WithExit") {
-          return Effect.fail(new SchemaIssue.InvalidType(ast, Option.some(input)))
-        }
-        return Effect.mapBothEager(SchemaParser.decodeEffect(exit)(input.exit, options), {
-          onFailure: (issue) =>
-            new SchemaIssue.Composite(ast, Option.some(input), [new SchemaIssue.Pointer(["exit"], issue)]),
-          onSuccess: (exit) => new WithExit({ ...input, exit: exit as any })
-        })
-      },
+      ([exit]) =>
+        (input, ast, options) => {
+          if (!isReply(input) || input._tag !== "WithExit") {
+            return Effect.fail(
+              new SchemaIssue.InvalidType(ast, Option.some(input))
+            );
+          }
+          return Effect.mapBothEager(
+            SchemaParser.decodeEffect(exit)(input.exit, options),
+            {
+              onFailure: (issue) =>
+                new SchemaIssue.Composite(ast, Option.some(input), [
+                  new SchemaIssue.Pointer(["exit"], issue),
+                ]),
+              onSuccess: (exit) =>
+                new WithExit({ ...input, exit: exit as any }),
+            }
+          );
+        },
       {
         expected: "Reply.WithExit",
         toCodecJson: ([exit]) =>
@@ -376,15 +425,15 @@ export class WithExit<R extends Rpc.Any> extends Data.TaggedClass("WithExit")<{
               _tag: Schema.Literal("WithExit"),
               requestId: SnowflakeFromBigInt,
               id: SnowflakeFromBigInt,
-              exit
+              exit,
             }),
             SchemaTransformation.transform({
               decode: (encoded) => new WithExit(encoded as any),
-              encode: (result) => ({ ...result })
+              encode: (result) => ({ ...result }),
             })
-          )
+          ),
       }
-    )
+    );
   }
 
   /**
@@ -395,8 +444,8 @@ export class WithExit<R extends Rpc.Any> extends Data.TaggedClass("WithExit")<{
   withRequestId(requestId: Snowflake): WithExit<R> {
     return new WithExit({
       ...this,
-      requestId
-    })
+      requestId,
+    });
   }
 }
 
@@ -416,12 +465,14 @@ export const Reply = <R extends Rpc.Any>(
   Rpc.ServicesClient<R>
 > => {
   if (schemaCache.has(rpc)) {
-    return schemaCache.get(rpc) as any
+    return schemaCache.get(rpc) as any;
   }
-  const schema = Schema.toCodecJson(Schema.Union([WithExit.schema(rpc), Chunk.schema(rpc)]))
-  schemaCache.set(rpc, schema)
-  return schema as any
-}
+  const schema = Schema.toCodecJson(
+    Schema.Union([WithExit.schema(rpc), Chunk.schema(rpc)])
+  );
+  schemaCache.set(rpc, schema);
+  return schema as any;
+};
 
 /**
  * Serializes a `ReplyWithContext` into its encoded wire representation, using the
@@ -434,14 +485,11 @@ export const Reply = <R extends Rpc.Any>(
 export const serialize = <R extends Rpc.Any>(
   self: ReplyWithContext<R>
 ): Effect.Effect<Encoded, MalformedMessage> => {
-  const schema = Reply(self.rpc)
+  const schema = Reply(self.rpc);
   return MalformedMessage.refail(
-    Effect.provideContext(
-      Schema.encodeEffect(schema)(self.reply),
-      self.context
-    )
-  )
-}
+    Effect.provideContext(Schema.encodeEffect(schema)(self.reply), self.context)
+  );
+};
 
 /**
  * Serializes an outgoing request's last received reply when one exists, returning
@@ -454,14 +502,15 @@ export const serialize = <R extends Rpc.Any>(
 export const serializeLastReceived = <R extends Rpc.Any>(
   self: OutgoingRequest<R>
 ): Effect.Effect<Option.Option<Encoded>, MalformedMessage> => {
-  const lastReceivedReply = self.lastReceivedReply
+  const lastReceivedReply = self.lastReceivedReply;
   if (lastReceivedReply._tag === "None") {
-    return Effect.succeedNone
+    return Effect.succeedNone;
   }
-  const schema = Reply(self.rpc)
+  const schema = Reply(self.rpc);
   return MalformedMessage.refail(
-    Effect.provideContext(Schema.encodeEffect(schema)(lastReceivedReply.value), self.context)
-  ).pipe(
-    Effect.map(Option.some)
-  )
-}
+    Effect.provideContext(
+      Schema.encodeEffect(schema)(lastReceivedReply.value),
+      self.context
+    )
+  ).pipe(Effect.map(Option.some));
+};

@@ -35,13 +35,13 @@
  *
  * @since 4.0.0
  */
-import * as Cache from "../../Cache.ts"
-import * as Context from "../../Context.ts"
-import * as Effect from "../../Effect.ts"
-import * as Equal from "../../Equal.ts"
-import { constant, identity } from "../../Function.ts"
-import * as Hash from "../../Hash.ts"
-import * as Schema from "../../Schema.ts"
+import * as Cache from "../../Cache.ts";
+import * as Context from "../../Context.ts";
+import * as Effect from "../../Effect.ts";
+import * as Equal from "../../Equal.ts";
+import { constant, identity } from "../../Function.ts";
+import * as Hash from "../../Hash.ts";
+import * as Schema from "../../Schema.ts";
 
 /**
  * Service for sending Redis commands and evaluating cached Lua scripts.
@@ -49,16 +49,26 @@ import * as Schema from "../../Schema.ts"
  * @category services
  * @since 4.0.0
  */
-export class Redis extends Context.Service<Redis, {
-  readonly send: <A = unknown>(command: string, ...args: ReadonlyArray<string>) => Effect.Effect<A, RedisError>
+export class Redis extends Context.Service<
+  Redis,
+  {
+    readonly send: <A = unknown>(
+      command: string,
+      ...args: ReadonlyArray<string>
+    ) => Effect.Effect<A, RedisError>;
 
-  readonly eval: <
-    Config extends {
-      readonly params: ReadonlyArray<unknown>
-      readonly result: unknown
-    }
-  >(script: Script<Config>) => (...params: Config["params"]) => Effect.Effect<Config["result"], RedisError>
-}>()("effect/persistence/Redis") {}
+    readonly eval: <
+      Config extends {
+        readonly params: ReadonlyArray<unknown>;
+        readonly result: unknown;
+      },
+    >(
+      script: Script<Config>
+    ) => (
+      ...params: Config["params"]
+    ) => Effect.Effect<Config["result"], RedisError>;
+  }
+>()("effect/persistence/Redis") {}
 
 /**
  * Creates a `Redis` service from a raw command sender.
@@ -71,41 +81,47 @@ export class Redis extends Context.Service<Redis, {
  * @category constructors
  * @since 4.0.0
  */
-export const make = Effect.fnUntraced(function*(
-  options: {
-    readonly send: <A = unknown>(command: string, ...args: ReadonlyArray<string>) => Effect.Effect<A, RedisError>
-  }
-) {
+export const make = Effect.fnUntraced(function* (options: {
+  readonly send: <A = unknown>(
+    command: string,
+    ...args: ReadonlyArray<string>
+  ) => Effect.Effect<A, RedisError>;
+}) {
   const scriptCache = yield* Cache.make({
-    lookup: (script: Script<any>) => options.send<string>("SCRIPT", "LOAD", script.lua),
-    capacity: Number.POSITIVE_INFINITY
-  })
+    lookup: (script: Script<any>) =>
+      options.send<string>("SCRIPT", "LOAD", script.lua),
+    capacity: Number.POSITIVE_INFINITY,
+  });
 
-  const eval_ = <
-    Config extends {
-      readonly params: ReadonlyArray<unknown>
-      readonly result: unknown
-    }
-  >(
-    script: Script<Config>
-  ) =>
-  (...params: Config["params"]): Effect.Effect<Config["result"], RedisError> =>
-    Effect.flatMap(Cache.get(scriptCache, script), (sha) =>
-      options.send<Config["result"]>(
-        "EVALSHA",
-        sha,
-        script.numberOfKeys(...params).toString(),
-        ...script.params(...params).map((param) => String(param))
-      ))
+  const eval_ =
+    <
+      Config extends {
+        readonly params: ReadonlyArray<unknown>;
+        readonly result: unknown;
+      },
+    >(
+      script: Script<Config>
+    ) =>
+    (
+      ...params: Config["params"]
+    ): Effect.Effect<Config["result"], RedisError> =>
+      Effect.flatMap(Cache.get(scriptCache, script), (sha) =>
+        options.send<Config["result"]>(
+          "EVALSHA",
+          sha,
+          script.numberOfKeys(...params).toString(),
+          ...script.params(...params).map((param) => String(param))
+        )
+      );
 
   return identity<Redis["Service"]>({
     send: options.send,
-    eval: eval_
-  })
-})
+    eval: eval_,
+  });
+});
 
-type ErrorTypeId = "~effect/persistence/Redis/RedisError"
-const ErrorTypeId: ErrorTypeId = "~effect/persistence/Redis/RedisError"
+type ErrorTypeId = "~effect/persistence/Redis/RedisError";
+const ErrorTypeId: ErrorTypeId = "~effect/persistence/Redis/RedisError";
 
 /**
  * Error raised by Redis command or script execution.
@@ -115,18 +131,18 @@ const ErrorTypeId: ErrorTypeId = "~effect/persistence/Redis/RedisError"
  */
 export class RedisError extends Schema.ErrorClass<RedisError>(ErrorTypeId)({
   _tag: Schema.tag("RedisError"),
-  cause: Schema.Defect
+  cause: Schema.Defect,
 }) {
   /**
    * Marks this value as a Redis persistence error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [ErrorTypeId]: ErrorTypeId = ErrorTypeId
+  readonly [ErrorTypeId]: ErrorTypeId = ErrorTypeId;
 }
 
-type ScriptTypeId = "~effect/persistence/Redis/Script"
-const ScriptTypeId: ScriptTypeId = "~effect/persistence/Redis/Script"
+type ScriptTypeId = "~effect/persistence/Redis/Script";
+const ScriptTypeId: ScriptTypeId = "~effect/persistence/Redis/Script";
 
 /**
  * Typed descriptor for a Redis Lua script.
@@ -141,42 +157,42 @@ const ScriptTypeId: ScriptTypeId = "~effect/persistence/Redis/Script"
  */
 export interface Script<
   Config extends {
-    readonly params: ReadonlyArray<unknown>
-    readonly result: unknown
-  }
+    readonly params: ReadonlyArray<unknown>;
+    readonly result: unknown;
+  },
 > {
   readonly [ScriptTypeId]: {
-    readonly params: Config["params"]
-    readonly result: Config["result"]
-  }
-  readonly lua: string
-  readonly params: (...params: Config["params"]) => ReadonlyArray<unknown>
-  readonly numberOfKeys: (...params: Config["params"]) => number
+    readonly params: Config["params"];
+    readonly result: Config["result"];
+  };
+  readonly lua: string;
+  readonly params: (...params: Config["params"]) => ReadonlyArray<unknown>;
+  readonly numberOfKeys: (...params: Config["params"]) => number;
 
   /**
    * Set the return type of the script.
    */
   withReturnType<Result>(): Script<{
-    params: Config["params"]
-    result: Result
-  }>
+    params: Config["params"];
+    result: Result;
+  }>;
 }
 
 const ScriptProto = {
   [ScriptTypeId]: {
     params: identity,
-    result: identity
+    result: identity,
   },
   withReturnType() {
-    return this
+    return this;
   },
   [Equal.symbol](that: unknown): boolean {
-    return this === that
+    return this === that;
   },
   [Hash.symbol](): number {
-    return Hash.random(this)
-  }
-}
+    return Hash.random(this);
+  },
+};
 
 /**
  * Constructs a typed Redis Lua script descriptor.
@@ -192,15 +208,18 @@ const ScriptProto = {
 export const script = <Params extends ReadonlyArray<any>>(
   f: (...params: Params) => ReadonlyArray<unknown>,
   options: {
-    readonly lua: string
-    readonly numberOfKeys: number | ((...params: Params) => number)
+    readonly lua: string;
+    readonly numberOfKeys: number | ((...params: Params) => number);
   }
 ): Script<{
-  params: Params
-  result: void
+  params: Params;
+  result: void;
 }> =>
   Object.assign(Object.create(ScriptProto), {
     ...options,
     params: f,
-    numberOfKeys: typeof options.numberOfKeys === "number" ? constant(options.numberOfKeys) : options.numberOfKeys
-  })
+    numberOfKeys:
+      typeof options.numberOfKeys === "number"
+        ? constant(options.numberOfKeys)
+        : options.numberOfKeys,
+  });

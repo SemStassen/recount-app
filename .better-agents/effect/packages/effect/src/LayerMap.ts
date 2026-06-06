@@ -34,18 +34,18 @@
  *
  * @since 3.14.0
  */
-import * as Context from "./Context.ts"
-import type * as Duration from "./Duration.ts"
-import * as Effect from "./Effect.ts"
-import { identity } from "./Function.ts"
-import * as Layer from "./Layer.ts"
-import * as RcMap from "./RcMap.ts"
-import * as Scope from "./Scope.ts"
-import type { Mutable, NoExcessProperties } from "./Types.ts"
+import * as Context from "./Context.ts";
+import type * as Duration from "./Duration.ts";
+import * as Effect from "./Effect.ts";
+import { identity } from "./Function.ts";
+import * as Layer from "./Layer.ts";
+import * as RcMap from "./RcMap.ts";
+import * as Scope from "./Scope.ts";
+import type { Mutable, NoExcessProperties } from "./Types.ts";
 
-const TypeId = "~effect/LayerMap"
+const TypeId = "~effect/LayerMap";
 
-type IdleTimeToLiveInput<K> = Duration.Input | ((key: K) => Duration.Input)
+type IdleTimeToLiveInput<K> = Duration.Input | ((key: K) => Duration.Input);
 
 /**
  * A scoped, keyed map of layer-built service contexts.
@@ -91,27 +91,27 @@ type IdleTimeToLiveInput<K> = Duration.Input | ((key: K) => Duration.Input)
  * @since 3.14.0
  */
 export interface LayerMap<in out K, in out I, in out E = never> {
-  readonly [TypeId]: typeof TypeId
+  readonly [TypeId]: typeof TypeId;
 
   /**
    * The internal RcMap that stores the resources.
    */
-  readonly rcMap: RcMap.RcMap<K, Context.Context<I>, E>
+  readonly rcMap: RcMap.RcMap<K, Context.Context<I>, E>;
 
   /**
    * Retrieves a Layer for the resources associated with the key.
    */
-  get(key: K): Layer.Layer<I, E>
+  get(key: K): Layer.Layer<I, E>;
 
   /**
    * Retrieves the context associated with the key.
    */
-  contextEffect(key: K): Effect.Effect<Context.Context<I>, E, Scope.Scope>
+  contextEffect(key: K): Effect.Effect<Context.Context<I>, E, Scope.Scope>;
 
   /**
    * Invalidates the resource associated with the key.
    */
-  invalidate(key: K): Effect.Effect<void>
+  invalidate(key: K): Effect.Effect<void>;
 }
 
 /**
@@ -159,42 +159,50 @@ export interface LayerMap<in out K, in out I, in out E = never> {
 export const make: <
   K,
   L extends Layer.Layer<any, any, any>,
-  PreloadKeys extends Iterable<K> | undefined = undefined
+  PreloadKeys extends Iterable<K> | undefined = undefined,
 >(
   lookup: (key: K) => L,
-  options?: {
-    readonly idleTimeToLive?: IdleTimeToLiveInput<K> | undefined
-    readonly preloadKeys?: PreloadKeys
-  } | undefined
+  options?:
+    | {
+        readonly idleTimeToLive?: IdleTimeToLiveInput<K> | undefined;
+        readonly preloadKeys?: PreloadKeys;
+      }
+    | undefined
 ) => Effect.Effect<
   LayerMap<K, Layer.Success<L>, Layer.Error<L>>,
   PreloadKeys extends undefined ? never : Layer.Error<L>,
   Scope.Scope | Layer.Services<L>
-> = Effect.fnUntraced(function*<I, K, EL, RL>(
+> = Effect.fnUntraced(function* <I, K, EL, RL>(
   lookup: (key: K) => Layer.Layer<I, EL, RL>,
-  options?: {
-    readonly idleTimeToLive?: IdleTimeToLiveInput<K> | undefined
-  } | undefined
+  options?:
+    | {
+        readonly idleTimeToLive?: IdleTimeToLiveInput<K> | undefined;
+      }
+    | undefined
 ) {
-  const context = yield* Effect.context<never>()
-  const memoMap = Layer.CurrentMemoMap.getOrCreate(context)
+  const context = yield* Effect.context<never>();
+  const memoMap = Layer.CurrentMemoMap.getOrCreate(context);
 
   const rcMap = yield* RcMap.make({
     lookup: (key: K) =>
       Effect.contextWith((_: Context.Context<Scope.Scope>) =>
-        Layer.buildWithMemoMap(lookup(key), memoMap, Context.get(_, Scope.Scope))
+        Layer.buildWithMemoMap(
+          lookup(key),
+          memoMap,
+          Context.get(_, Scope.Scope)
+        )
       ),
-    idleTimeToLive: options?.idleTimeToLive
-  })
+    idleTimeToLive: options?.idleTimeToLive,
+  });
 
   return identity<LayerMap<K, I, any>>({
     [TypeId]: TypeId,
     rcMap,
     get: (key) => Layer.effectContext(RcMap.get(rcMap, key)),
     contextEffect: (key) => RcMap.get(rcMap, key),
-    invalidate: (key) => RcMap.invalidate(rcMap, key)
-  })
-})
+    invalidate: (key) => RcMap.invalidate(rcMap, key),
+  });
+});
 
 /**
  * Creates a `LayerMap` from a record of predefined layers.
@@ -247,13 +255,15 @@ export const make: <
  */
 export const fromRecord = <
   const Layers extends Record<string, Layer.Layer<any, any, any>>,
-  const Preload extends boolean = false
+  const Preload extends boolean = false,
 >(
   layers: Layers,
-  options?: {
-    readonly idleTimeToLive?: IdleTimeToLiveInput<keyof Layers> | undefined
-    readonly preload?: Preload | undefined
-  } | undefined
+  options?:
+    | {
+        readonly idleTimeToLive?: IdleTimeToLiveInput<keyof Layers> | undefined;
+        readonly preload?: Preload | undefined;
+      }
+    | undefined
 ): Effect.Effect<
   LayerMap<
     keyof Layers,
@@ -261,12 +271,15 @@ export const fromRecord = <
     Layer.Error<Layers[keyof Layers]>
   >,
   Preload extends true ? Layer.Error<Layers[keyof Layers]> : never,
-  Scope.Scope | (Layers[keyof Layers] extends Layer.Layer<infer _A, infer _E, infer _R> ? _R : never)
+  | Scope.Scope
+  | (Layers[keyof Layers] extends Layer.Layer<infer _A, infer _E, infer _R>
+      ? _R
+      : never)
 > =>
   make((key: keyof Layers) => layers[key], {
     ...options,
-    preloadKeys: options?.preload ? Object.keys(layers) : undefined
-  }) as any
+    preloadKeys: options?.preload ? Object.keys(layers) : undefined,
+  }) as any;
 
 /**
  * Service class shape produced by `LayerMap.Service`.
@@ -295,7 +308,7 @@ export interface TagClass<
   in out E,
   in out R,
   in out LE,
-  in out Deps extends Layer.Layer<any, any, any>
+  in out Deps extends Layer.Layer<any, any, any>,
 > extends Context.ServiceClass<Self, Id, LayerMap<K, I, E>> {
   /**
    * A default layer for the `LayerMap` service.
@@ -303,29 +316,34 @@ export interface TagClass<
   readonly layer: Layer.Layer<
     Self,
     (Deps extends Layer.Layer<infer _A, infer _E, infer _R> ? _E : never) | LE,
-    | Exclude<R, (Deps extends Layer.Layer<infer _A, infer _E, infer _R> ? _A : never)>
+    | Exclude<
+        R,
+        Deps extends Layer.Layer<infer _A, infer _E, infer _R> ? _A : never
+      >
     | (Deps extends Layer.Layer<infer _A, infer _E, infer _R> ? _R : never)
-  >
+  >;
 
   /**
    * A default layer for the `LayerMap` service without the dependencies provided.
    */
-  readonly layerNoDeps: Layer.Layer<Self, LE, R>
+  readonly layerNoDeps: Layer.Layer<Self, LE, R>;
 
   /**
    * Retrieves a Layer for the resources associated with the key.
    */
-  readonly get: (key: K) => Layer.Layer<I, E, Self>
+  readonly get: (key: K) => Layer.Layer<I, E, Self>;
 
   /**
    * Retrieves the context associated with the key.
    */
-  readonly contextEffect: (key: K) => Effect.Effect<Context.Context<I>, E, Scope.Scope | Self>
+  readonly contextEffect: (
+    key: K
+  ) => Effect.Effect<Context.Context<I>, E, Scope.Scope | Self>;
 
   /**
    * Invalidates the resource associated with the key.
    */
-  readonly invalidate: (key: K) => Effect.Effect<void, never, Self>
+  readonly invalidate: (key: K) => Effect.Effect<void, never, Self>;
 }
 
 /**
@@ -371,73 +389,104 @@ export interface TagClass<
  * @category services
  * @since 3.14.0
  */
-export const Service = <Self>() =>
-<
-  const Id extends string,
-  const Options extends
-    | NoExcessProperties<{
-      readonly lookup: (key: any) => Layer.Layer<any, any, any>
-      readonly dependencies?: ReadonlyArray<Layer.Layer<any, any, any>> | undefined
-      readonly idleTimeToLive?: IdleTimeToLiveInput<any> | undefined
-      readonly preloadKeys?:
-        | Iterable<Options extends { readonly lookup: (key: infer K) => any } ? K : never>
-        | undefined
-    }, Options>
-    | NoExcessProperties<{
-      readonly layers: Record<string, Layer.Layer<any, any, any>>
-      readonly dependencies?: ReadonlyArray<Layer.Layer<any, any, any>> | undefined
-      readonly idleTimeToLive?: IdleTimeToLiveInput<any> | undefined
-      readonly preload?: boolean | undefined
-    }, Options>
->(
-  id: Id,
-  options: Options
-): TagClass<
-  Self,
-  Id,
-  Options extends { readonly lookup: (key: infer K) => any } ? K
-    : Options extends { readonly layers: infer Layers } ? keyof Layers
-    : never,
-  Service.Success<Options>,
-  Options extends { readonly preload: true } ? never : Service.Error<Options>,
-  Service.Services<Options>,
-  Options extends { readonly preload: true } ? Service.Error<Options>
-    : Options extends { readonly preloadKeys: Iterable<any> } ? Service.Error<Options>
-    : never,
-  Options extends { readonly dependencies: ReadonlyArray<Layer.Layer<any, any, any>> } ? Options["dependencies"][number]
-    : never
-> => {
-  const Err = globalThis.Error as any
-  const limit = Err.stackTraceLimit
-  Err.stackTraceLimit = 2
-  const creationError = new Err()
-  Err.stackTraceLimit = limit
-
-  function TagClass() {}
-  const TagClass_ = TagClass as any as Mutable<TagClass<Self, Id, string, any, any, any, any, any>>
-  Object.setPrototypeOf(TagClass, Object.getPrototypeOf(Context.Service<Self, any>(id)))
-  TagClass.key = id
-  Object.defineProperty(TagClass, "stack", {
-    get() {
-      return creationError.stack
+export const Service =
+  <Self>() =>
+  <
+    const Id extends string,
+    const Options extends
+      | NoExcessProperties<
+          {
+            readonly lookup: (key: any) => Layer.Layer<any, any, any>;
+            readonly dependencies?:
+              | ReadonlyArray<Layer.Layer<any, any, any>>
+              | undefined;
+            readonly idleTimeToLive?: IdleTimeToLiveInput<any> | undefined;
+            readonly preloadKeys?:
+              | Iterable<
+                  Options extends { readonly lookup: (key: infer K) => any }
+                    ? K
+                    : never
+                >
+              | undefined;
+          },
+          Options
+        >
+      | NoExcessProperties<
+          {
+            readonly layers: Record<string, Layer.Layer<any, any, any>>;
+            readonly dependencies?:
+              | ReadonlyArray<Layer.Layer<any, any, any>>
+              | undefined;
+            readonly idleTimeToLive?: IdleTimeToLiveInput<any> | undefined;
+            readonly preload?: boolean | undefined;
+          },
+          Options
+        >,
+  >(
+    id: Id,
+    options: Options
+  ): TagClass<
+    Self,
+    Id,
+    Options extends { readonly lookup: (key: infer K) => any }
+      ? K
+      : Options extends { readonly layers: infer Layers }
+        ? keyof Layers
+        : never,
+    Service.Success<Options>,
+    Options extends { readonly preload: true } ? never : Service.Error<Options>,
+    Service.Services<Options>,
+    Options extends { readonly preload: true }
+      ? Service.Error<Options>
+      : Options extends { readonly preloadKeys: Iterable<any> }
+        ? Service.Error<Options>
+        : never,
+    Options extends {
+      readonly dependencies: ReadonlyArray<Layer.Layer<any, any, any>>;
     }
-  })
+      ? Options["dependencies"][number]
+      : never
+  > => {
+    const Err = globalThis.Error as any;
+    const limit = Err.stackTraceLimit;
+    Err.stackTraceLimit = 2;
+    const creationError = new Err();
+    Err.stackTraceLimit = limit;
 
-  TagClass_.layerNoDeps = Layer.effect(TagClass_)(
-    "lookup" in options
-      ? make(options.lookup, options)
-      : fromRecord(options.layers as any, options) as any
-  )
-  TagClass_.layer = options.dependencies && options.dependencies.length > 0 ?
-    Layer.provide(TagClass_.layerNoDeps, options.dependencies as any) :
-    TagClass_.layerNoDeps
+    function TagClass() {}
+    const TagClass_ = TagClass as any as Mutable<
+      TagClass<Self, Id, string, any, any, any, any, any>
+    >;
+    Object.setPrototypeOf(
+      TagClass,
+      Object.getPrototypeOf(Context.Service<Self, any>(id))
+    );
+    TagClass.key = id;
+    Object.defineProperty(TagClass, "stack", {
+      get() {
+        return creationError.stack;
+      },
+    });
 
-  TagClass_.get = (key: string) => Layer.unwrap(Effect.map(TagClass_, (layerMap) => layerMap.get(key)))
-  TagClass_.contextEffect = (key: string) => Effect.flatMap(TagClass_, (layerMap) => layerMap.contextEffect(key))
-  TagClass_.invalidate = (key: string) => Effect.flatMap(TagClass_, (layerMap) => layerMap.invalidate(key))
+    TagClass_.layerNoDeps = Layer.effect(TagClass_)(
+      "lookup" in options
+        ? make(options.lookup, options)
+        : (fromRecord(options.layers as any, options) as any)
+    );
+    TagClass_.layer =
+      options.dependencies && options.dependencies.length > 0
+        ? Layer.provide(TagClass_.layerNoDeps, options.dependencies as any)
+        : TagClass_.layerNoDeps;
 
-  return TagClass as any
-}
+    TagClass_.get = (key: string) =>
+      Layer.unwrap(Effect.map(TagClass_, (layerMap) => layerMap.get(key)));
+    TagClass_.contextEffect = (key: string) =>
+      Effect.flatMap(TagClass_, (layerMap) => layerMap.contextEffect(key));
+    TagClass_.invalidate = (key: string) =>
+      Effect.flatMap(TagClass_, (layerMap) => layerMap.invalidate(key));
+
+    return TagClass as any;
+  };
 
 /**
  * Type helpers for values created with `LayerMap.Service`.
@@ -451,9 +500,13 @@ export declare namespace Service {
    * @category services
    * @since 3.14.0
    */
-  export type Key<Options> = Options extends { readonly lookup: (key: infer K) => any } ? K
-    : Options extends { readonly layers: infer Layers } ? keyof Layers
-    : never
+  export type Key<Options> = Options extends {
+    readonly lookup: (key: infer K) => any;
+  }
+    ? K
+    : Options extends { readonly layers: infer Layers }
+      ? keyof Layers
+      : never;
 
   /**
    * Extracts the layer type produced by a `LayerMap.Service` definition.
@@ -461,9 +514,13 @@ export declare namespace Service {
    * @category services
    * @since 3.14.0
    */
-  export type Layers<Options> = Options extends { readonly lookup: (key: infer _K) => infer Layers } ? Layers
-    : Options extends { readonly layers: infer Layers } ? Layers[keyof Layers]
-    : never
+  export type Layers<Options> = Options extends {
+    readonly lookup: (key: infer _K) => infer Layers;
+  }
+    ? Layers
+    : Options extends { readonly layers: infer Layers }
+      ? Layers[keyof Layers]
+      : never;
 
   /**
    * Extracts the services provided by the layers in a `LayerMap.Service`
@@ -472,7 +529,10 @@ export declare namespace Service {
    * @category services
    * @since 3.14.0
    */
-  export type Success<Options> = Layers<Options> extends Layer.Layer<infer _A, infer _E, infer _R> ? _A : never
+  export type Success<Options> =
+    Layers<Options> extends Layer.Layer<infer _A, infer _E, infer _R>
+      ? _A
+      : never;
 
   /**
    * Extracts the error type of the layers in a `LayerMap.Service` definition.
@@ -480,7 +540,10 @@ export declare namespace Service {
    * @category services
    * @since 3.14.0
    */
-  export type Error<Options> = Layers<Options> extends Layer.Layer<infer _A, infer _E, infer _R> ? _E : never
+  export type Error<Options> =
+    Layers<Options> extends Layer.Layer<infer _A, infer _E, infer _R>
+      ? _E
+      : never;
 
   /**
    * Extracts the service requirements of the layers in a `LayerMap.Service`
@@ -489,5 +552,8 @@ export declare namespace Service {
    * @category services
    * @since 4.0.0
    */
-  export type Services<Options> = Layers<Options> extends Layer.Layer<infer _A, infer _E, infer _R> ? _R : never
+  export type Services<Options> =
+    Layers<Options> extends Layer.Layer<infer _A, infer _E, infer _R>
+      ? _R
+      : never;
 }

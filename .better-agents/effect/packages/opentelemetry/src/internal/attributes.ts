@@ -1,28 +1,36 @@
-import type * as Otel from "@opentelemetry/api"
-import * as Inspectable from "effect/Inspectable"
+import type * as Otel from "@opentelemetry/api";
+import * as Inspectable from "effect/Inspectable";
 
-const bigint1e9 = BigInt(1_000_000_000)
+const bigint1e9 = BigInt(1_000_000_000);
 
 /** @internal */
 export const nanosToHrTime = (timestamp: bigint): Otel.HrTime => {
-  return [Number(timestamp / bigint1e9), Number(timestamp % bigint1e9)]
-}
+  return [Number(timestamp / bigint1e9), Number(timestamp % bigint1e9)];
+};
 
 /** @internal */
-export const recordToAttributes = (record: Record<string, unknown>): Otel.Attributes => {
-  const attributes: Otel.Attributes = {}
+export const recordToAttributes = (
+  record: Record<string, unknown>
+): Otel.Attributes => {
+  const attributes: Otel.Attributes = {};
   for (const [key, value] of Object.entries(record)) {
-    attributes[key] = unknownToAttributeValue(value)
+    attributes[key] = unknownToAttributeValue(value);
   }
-  return attributes
-}
+  return attributes;
+};
 
 /** @internal */
-export const unknownToAttributeValue = (value: unknown): Otel.AttributeValue => {
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return value
+export const unknownToAttributeValue = (
+  value: unknown
+): Otel.AttributeValue => {
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value;
   } else if (typeof value === "bigint") {
-    return value.toString()
+    return value.toString();
   }
-  return Inspectable.toStringUnknown(value)
-}
+  return Inspectable.toStringUnknown(value);
+};

@@ -39,7 +39,7 @@
  * @since 4.0.0
  */
 
-import * as Stream from "effect/Stream"
+import * as Stream from "effect/Stream";
 
 /**
  * Creates a `Stream` from `window.addEventListener`.
@@ -55,13 +55,17 @@ import * as Stream from "effect/Stream"
  */
 export const fromEventListenerWindow = <K extends keyof WindowEventMap>(
   type: K,
-  options?: boolean | {
-    readonly capture?: boolean
-    readonly passive?: boolean
-    readonly once?: boolean
-    readonly bufferSize?: number | undefined
-  } | undefined
-): Stream.Stream<WindowEventMap[K], never, never> => Stream.fromEventListener<WindowEventMap[K]>(window, type, options)
+  options?:
+    | boolean
+    | {
+        readonly capture?: boolean;
+        readonly passive?: boolean;
+        readonly once?: boolean;
+        readonly bufferSize?: number | undefined;
+      }
+    | undefined
+): Stream.Stream<WindowEventMap[K], never, never> =>
+  Stream.fromEventListener<WindowEventMap[K]>(window, type, options);
 
 /**
  * Creates a `Stream` from `document.addEventListener`.
@@ -77,11 +81,14 @@ export const fromEventListenerWindow = <K extends keyof WindowEventMap>(
  */
 export const fromEventListenerDocument = <K extends keyof DocumentEventMap>(
   type: K,
-  options?: boolean | {
-    readonly capture?: boolean
-    readonly passive?: boolean
-    readonly once?: boolean
-    readonly bufferSize?: number | undefined
-  } | undefined
+  options?:
+    | boolean
+    | {
+        readonly capture?: boolean;
+        readonly passive?: boolean;
+        readonly once?: boolean;
+        readonly bufferSize?: number | undefined;
+      }
+    | undefined
 ): Stream.Stream<DocumentEventMap[K], never, never> =>
-  Stream.fromEventListener<DocumentEventMap[K]>(document, type, options)
+  Stream.fromEventListener<DocumentEventMap[K]>(document, type, options);

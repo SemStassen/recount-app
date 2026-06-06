@@ -27,39 +27,39 @@
  * @since 2.0.0
  */
 
-import * as Effect from "./Effect.ts"
-import { format } from "./Formatter.ts"
-import { dual } from "./Function.ts"
-import * as HashMap from "./HashMap.ts"
-import type { Inspectable } from "./Inspectable.ts"
-import { NodeInspectSymbol, toJson } from "./Inspectable.ts"
-import * as Option from "./Option.ts"
-import type { Pipeable } from "./Pipeable.ts"
-import { pipeArguments } from "./Pipeable.ts"
-import { hasProperty } from "./Predicate.ts"
-import type { Result } from "./Result.ts"
-import * as TxRef from "./TxRef.ts"
+import * as Effect from "./Effect.ts";
+import { format } from "./Formatter.ts";
+import { dual } from "./Function.ts";
+import * as HashMap from "./HashMap.ts";
+import type { Inspectable } from "./Inspectable.ts";
+import { NodeInspectSymbol, toJson } from "./Inspectable.ts";
+import * as Option from "./Option.ts";
+import type { Pipeable } from "./Pipeable.ts";
+import { pipeArguments } from "./Pipeable.ts";
+import { hasProperty } from "./Predicate.ts";
+import type { Result } from "./Result.ts";
+import * as TxRef from "./TxRef.ts";
 
-const TypeId = "~effect/transactions/TxHashMap"
+const TypeId = "~effect/transactions/TxHashMap";
 
 const TxHashMapProto = {
   [TypeId]: TypeId,
   [NodeInspectSymbol](this: TxHashMap<unknown, unknown>) {
-    return toJson(this)
+    return toJson(this);
   },
   toString(this: TxHashMap<unknown, unknown>) {
-    return `TxHashMap(${format(toJson((this).ref))})`
+    return `TxHashMap(${format(toJson(this.ref))})`;
   },
   toJSON(this: TxHashMap<unknown, unknown>) {
     return {
       _id: "TxHashMap",
-      ref: toJson((this).ref)
-    }
+      ref: toJson(this.ref),
+    };
   },
   pipe(this: TxHashMap<unknown, unknown>) {
-    return pipeArguments(this, arguments)
-  }
-}
+    return pipeArguments(this, arguments);
+  },
+};
 
 /**
  * A TxHashMap is a transactional hash map data structure that provides atomic operations
@@ -100,8 +100,8 @@ const TxHashMapProto = {
  * @since 4.0.0
  */
 export interface TxHashMap<in out K, in out V> extends Inspectable, Pipeable {
-  readonly [TypeId]: typeof TypeId
-  readonly ref: TxRef.TxRef<HashMap.HashMap<K, V>>
+  readonly [TypeId]: typeof TypeId;
+  readonly ref: TxRef.TxRef<HashMap.HashMap<K, V>>;
 }
 
 /**
@@ -167,7 +167,8 @@ export declare namespace TxHashMap {
    * @category utility types
    * @since 4.0.0
    */
-  export type Key<T extends TxHashMap<any, any>> = T extends TxHashMap<infer K, any> ? K : never
+  export type Key<T extends TxHashMap<any, any>> =
+    T extends TxHashMap<infer K, any> ? K : never;
 
   /**
    * Extracts the value type from a TxHashMap type.
@@ -200,7 +201,8 @@ export declare namespace TxHashMap {
    * @category utility types
    * @since 4.0.0
    */
-  export type Value<T extends TxHashMap<any, any>> = T extends TxHashMap<any, infer V> ? V : never
+  export type Value<T extends TxHashMap<any, any>> =
+    T extends TxHashMap<any, infer V> ? V : never;
 
   /**
    * Extracts the entry type from a TxHashMap type.
@@ -236,7 +238,8 @@ export declare namespace TxHashMap {
    * @category utility types
    * @since 4.0.0
    */
-  export type Entry<T extends TxHashMap<any, any>> = T extends TxHashMap<infer K, infer V> ? readonly [K, V] : never
+  export type Entry<T extends TxHashMap<any, any>> =
+    T extends TxHashMap<infer K, infer V> ? readonly [K, V] : never;
 }
 
 /**
@@ -269,10 +272,10 @@ export declare namespace TxHashMap {
  * @since 2.0.0
  */
 export const empty = <K, V>(): Effect.Effect<TxHashMap<K, V>> =>
-  Effect.gen(function*() {
-    const ref = yield* TxRef.make(HashMap.empty<K, V>())
-    return Object.assign(Object.create(TxHashMapProto), { ref })
-  })
+  Effect.gen(function* () {
+    const ref = yield* TxRef.make(HashMap.empty<K, V>());
+    return Object.assign(Object.create(TxHashMapProto), { ref });
+  });
 
 /**
  * Creates a TxHashMap from the provided key-value pairs.
@@ -309,11 +312,11 @@ export const empty = <K, V>(): Effect.Effect<TxHashMap<K, V>> =>
 export const make = <K, V>(
   ...entries: Array<readonly [K, V]>
 ): Effect.Effect<TxHashMap<K, V>> =>
-  Effect.gen(function*() {
-    const hashMap = HashMap.make(...entries)
-    const ref = yield* TxRef.make(hashMap)
-    return Object.assign(Object.create(TxHashMapProto), { ref })
-  })
+  Effect.gen(function* () {
+    const hashMap = HashMap.make(...entries);
+    const ref = yield* TxRef.make(hashMap);
+    return Object.assign(Object.create(TxHashMapProto), { ref });
+  });
 
 /**
  * Creates a TxHashMap from an iterable of key-value pairs.
@@ -353,11 +356,11 @@ export const make = <K, V>(
 export const fromIterable = <K, V>(
   entries: Iterable<readonly [K, V]>
 ): Effect.Effect<TxHashMap<K, V>> =>
-  Effect.gen(function*() {
-    const hashMap = HashMap.fromIterable(entries)
-    const ref = yield* TxRef.make(hashMap)
-    return Object.assign(Object.create(TxHashMapProto), { ref })
-  })
+  Effect.gen(function* () {
+    const hashMap = HashMap.fromIterable(entries);
+    const ref = yield* TxRef.make(hashMap);
+    return Object.assign(Object.create(TxHashMapProto), { ref });
+  });
 
 /**
  * Looks up the value for the specified key in the TxHashMap.
@@ -392,16 +395,24 @@ export const fromIterable = <K, V>(
  * @since 2.0.0
  */
 export const get: {
-  <K1 extends K, K>(key: K1): <V>(self: TxHashMap<K, V>) => Effect.Effect<Option.Option<V>>
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<Option.Option<V>>
+  <K1 extends K, K>(
+    key: K1
+  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<Option.Option<V>>;
+  <K1 extends K, K, V>(
+    self: TxHashMap<K, V>,
+    key: K1
+  ): Effect.Effect<Option.Option<V>>;
 } = dual(
   2,
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<Option.Option<V>> =>
-    Effect.gen(function*() {
-      const map = yield* TxRef.get(self.ref)
-      return HashMap.get(map, key)
+  <K1 extends K, K, V>(
+    self: TxHashMap<K, V>,
+    key: K1
+  ): Effect.Effect<Option.Option<V>> =>
+    Effect.gen(function* () {
+      const map = yield* TxRef.get(self.ref);
+      return HashMap.get(map, key);
     })
-)
+);
 
 /**
  * Sets the value for the specified key in the TxHashMap.
@@ -441,13 +452,13 @@ export const get: {
  * @since 2.0.0
  */
 export const set: {
-  <K, V>(key: K, value: V): (self: TxHashMap<K, V>) => Effect.Effect<void>
-  <K, V>(self: TxHashMap<K, V>, key: K, value: V): Effect.Effect<void>
+  <K, V>(key: K, value: V): (self: TxHashMap<K, V>) => Effect.Effect<void>;
+  <K, V>(self: TxHashMap<K, V>, key: K, value: V): Effect.Effect<void>;
 } = dual(
   3,
   <K, V>(self: TxHashMap<K, V>, key: K, value: V): Effect.Effect<void> =>
     TxRef.update(self.ref, (map) => HashMap.set(map, key, value))
-)
+);
 
 /**
  * Checks whether the specified key exists in the TxHashMap.
@@ -481,16 +492,21 @@ export const set: {
  * @since 2.0.0
  */
 export const has: {
-  <K1 extends K, K>(key: K1): <V>(self: TxHashMap<K, V>) => Effect.Effect<boolean>
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<boolean>
+  <K1 extends K, K>(
+    key: K1
+  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<boolean>;
+  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<boolean>;
 } = dual(
   2,
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<boolean> =>
-    Effect.gen(function*() {
-      const map = yield* TxRef.get(self.ref)
-      return HashMap.has(map, key)
+  <K1 extends K, K, V>(
+    self: TxHashMap<K, V>,
+    key: K1
+  ): Effect.Effect<boolean> =>
+    Effect.gen(function* () {
+      const map = yield* TxRef.get(self.ref);
+      return HashMap.has(map, key);
     })
-)
+);
 
 /**
  * Removes the specified key from the TxHashMap.
@@ -533,20 +549,25 @@ export const has: {
  * @since 2.0.0
  */
 export const remove: {
-  <K1 extends K, K>(key: K1): <V>(self: TxHashMap<K, V>) => Effect.Effect<boolean>
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<boolean>
+  <K1 extends K, K>(
+    key: K1
+  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<boolean>;
+  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<boolean>;
 } = dual(
   2,
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1): Effect.Effect<boolean> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const existed = HashMap.has(currentMap, key)
+  <K1 extends K, K, V>(
+    self: TxHashMap<K, V>,
+    key: K1
+  ): Effect.Effect<boolean> =>
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const existed = HashMap.has(currentMap, key);
       if (existed) {
-        yield* TxRef.set(self.ref, HashMap.remove(currentMap, key))
+        yield* TxRef.set(self.ref, HashMap.remove(currentMap, key));
       }
-      return existed
+      return existed;
     }).pipe(Effect.tx)
-)
+);
 
 /**
  * Removes all entries from the TxHashMap.
@@ -587,7 +608,8 @@ export const remove: {
  * @category combinators
  * @since 4.0.0
  */
-export const clear = <K, V>(self: TxHashMap<K, V>): Effect.Effect<void> => TxRef.set(self.ref, HashMap.empty<K, V>())
+export const clear = <K, V>(self: TxHashMap<K, V>): Effect.Effect<void> =>
+  TxRef.set(self.ref, HashMap.empty<K, V>());
 
 /**
  * Returns the number of entries in the TxHashMap.
@@ -623,10 +645,10 @@ export const clear = <K, V>(self: TxHashMap<K, V>): Effect.Effect<void> => TxRef
  * @since 2.0.0
  */
 export const size = <K, V>(self: TxHashMap<K, V>): Effect.Effect<number> =>
-  Effect.gen(function*() {
-    const map = yield* TxRef.get(self.ref)
-    return HashMap.size(map)
-  })
+  Effect.gen(function* () {
+    const map = yield* TxRef.get(self.ref);
+    return HashMap.size(map);
+  });
 
 /**
  * Checks whether the TxHashMap is empty.
@@ -658,10 +680,10 @@ export const size = <K, V>(self: TxHashMap<K, V>): Effect.Effect<number> =>
  * @since 2.0.0
  */
 export const isEmpty = <K, V>(self: TxHashMap<K, V>): Effect.Effect<boolean> =>
-  Effect.gen(function*() {
-    const map = yield* TxRef.get(self.ref)
-    return HashMap.isEmpty(map)
-  })
+  Effect.gen(function* () {
+    const map = yield* TxRef.get(self.ref);
+    return HashMap.isEmpty(map);
+  });
 
 /**
  * Checks whether the TxHashMap is non-empty.
@@ -687,8 +709,9 @@ export const isEmpty = <K, V>(self: TxHashMap<K, V>): Effect.Effect<boolean> =>
  * @category combinators
  * @since 4.0.0
  */
-export const isNonEmpty = <K, V>(self: TxHashMap<K, V>): Effect.Effect<boolean> =>
-  Effect.map(isEmpty(self), (empty) => !empty)
+export const isNonEmpty = <K, V>(
+  self: TxHashMap<K, V>
+): Effect.Effect<boolean> => Effect.map(isEmpty(self), (empty) => !empty);
 
 /**
  * Updates the value for the specified key if it exists, returning the previous value in `Some`; returns `None` and leaves the map unchanged when the key is absent.
@@ -740,8 +763,12 @@ export const modify: {
   <K, V>(
     key: K,
     f: (value: V) => V
-  ): (self: TxHashMap<K, V>) => Effect.Effect<Option.Option<V>>
-  <K, V>(self: TxHashMap<K, V>, key: K, f: (value: V) => V): Effect.Effect<Option.Option<V>>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<Option.Option<V>>;
+  <K, V>(
+    self: TxHashMap<K, V>,
+    key: K,
+    f: (value: V) => V
+  ): Effect.Effect<Option.Option<V>>;
 } = dual(
   3,
   <K, V>(
@@ -749,17 +776,17 @@ export const modify: {
     key: K,
     f: (value: V) => V
   ): Effect.Effect<Option.Option<V>> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const currentValue = HashMap.get(currentMap, key)
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const currentValue = HashMap.get(currentMap, key);
       if (Option.isSome(currentValue)) {
-        const newValue = f(currentValue.value)
-        yield* TxRef.set(self.ref, HashMap.set(currentMap, key, newValue))
-        return currentValue
+        const newValue = f(currentValue.value);
+        yield* TxRef.set(self.ref, HashMap.set(currentMap, key, newValue));
+        return currentValue;
       }
-      return Option.none()
+      return Option.none();
     }).pipe(Effect.tx)
-)
+);
 
 /**
  * Updates the value for the specified key using an Option-based update function.
@@ -817,12 +844,12 @@ export const modifyAt: {
   <K, V>(
     key: K,
     f: (value: Option.Option<V>) => Option.Option<V>
-  ): (self: TxHashMap<K, V>) => Effect.Effect<void>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<void>;
   <K, V>(
     self: TxHashMap<K, V>,
     key: K,
     f: (value: Option.Option<V>) => Option.Option<V>
-  ): Effect.Effect<void>
+  ): Effect.Effect<void>;
 } = dual(
   3,
   <K, V>(
@@ -830,18 +857,21 @@ export const modifyAt: {
     key: K,
     f: (value: Option.Option<V>) => Option.Option<V>
   ): Effect.Effect<void> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const currentValue = HashMap.get(currentMap, key)
-      const newValue = f(currentValue)
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const currentValue = HashMap.get(currentMap, key);
+      const newValue = f(currentValue);
 
       if (Option.isSome(newValue)) {
-        yield* TxRef.set(self.ref, HashMap.set(currentMap, key, newValue.value))
+        yield* TxRef.set(
+          self.ref,
+          HashMap.set(currentMap, key, newValue.value)
+        );
       } else if (Option.isSome(currentValue)) {
-        yield* TxRef.set(self.ref, HashMap.remove(currentMap, key))
+        yield* TxRef.set(self.ref, HashMap.remove(currentMap, key));
       }
     }).pipe(Effect.tx)
-)
+);
 
 /**
  * Returns an array of all keys in the TxHashMap.
@@ -875,10 +905,10 @@ export const modifyAt: {
  * @since 2.0.0
  */
 export const keys = <K, V>(self: TxHashMap<K, V>): Effect.Effect<Array<K>> =>
-  Effect.gen(function*() {
-    const map = yield* TxRef.get(self.ref)
-    return Array.from(HashMap.keys(map))
-  })
+  Effect.gen(function* () {
+    const map = yield* TxRef.get(self.ref);
+    return Array.from(HashMap.keys(map));
+  });
 
 /**
  * Returns an array of all values in the TxHashMap.
@@ -913,10 +943,10 @@ export const keys = <K, V>(self: TxHashMap<K, V>): Effect.Effect<Array<K>> =>
  * @since 2.0.0
  */
 export const values = <K, V>(self: TxHashMap<K, V>): Effect.Effect<Array<V>> =>
-  Effect.gen(function*() {
-    const map = yield* TxRef.get(self.ref)
-    return HashMap.toValues(map)
-  })
+  Effect.gen(function* () {
+    const map = yield* TxRef.get(self.ref);
+    return HashMap.toValues(map);
+  });
 
 /**
  * Returns an array of all key-value pairs in the TxHashMap.
@@ -954,10 +984,10 @@ export const values = <K, V>(self: TxHashMap<K, V>): Effect.Effect<Array<V>> =>
 export const entries = <K, V>(
   self: TxHashMap<K, V>
 ): Effect.Effect<Array<readonly [K, V]>> =>
-  Effect.gen(function*() {
-    const map = yield* TxRef.get(self.ref)
-    return HashMap.toEntries(map)
-  })
+  Effect.gen(function* () {
+    const map = yield* TxRef.get(self.ref);
+    return HashMap.toEntries(map);
+  });
 
 /**
  * Returns an immutable snapshot of the current TxHashMap state.
@@ -996,7 +1026,7 @@ export const entries = <K, V>(
  */
 export const snapshot = <K, V>(
   self: TxHashMap<K, V>
-): Effect.Effect<HashMap.HashMap<K, V>> => TxRef.get(self.ref)
+): Effect.Effect<HashMap.HashMap<K, V>> => TxRef.get(self.ref);
 
 /**
  * Merges another HashMap into this TxHashMap. If both maps contain the same key,
@@ -1051,18 +1081,19 @@ export const snapshot = <K, V>(
 export const union: {
   <K1 extends K, K, V1 extends V, V>(
     other: HashMap.HashMap<K1, V1>
-  ): (self: TxHashMap<K, V>) => Effect.Effect<void>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<void>;
   <K1 extends K, K, V1 extends V, V>(
     self: TxHashMap<K, V>,
     other: HashMap.HashMap<K1, V1>
-  ): Effect.Effect<void>
+  ): Effect.Effect<void>;
 } = dual(
   2,
   <K1 extends K, K, V1 extends V, V>(
     self: TxHashMap<K, V>,
     other: HashMap.HashMap<K1, V1>
-  ): Effect.Effect<void> => TxRef.update(self.ref, (map) => HashMap.union(map, other))
-)
+  ): Effect.Effect<void> =>
+    TxRef.update(self.ref, (map) => HashMap.union(map, other))
+);
 
 /**
  * Removes multiple keys from the TxHashMap.
@@ -1110,13 +1141,21 @@ export const union: {
  * @since 4.0.0
  */
 export const removeMany: {
-  <K1 extends K, K>(keys: Iterable<K1>): <V>(self: TxHashMap<K, V>) => Effect.Effect<void>
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, keys: Iterable<K1>): Effect.Effect<void>
+  <K1 extends K, K>(
+    keys: Iterable<K1>
+  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<void>;
+  <K1 extends K, K, V>(
+    self: TxHashMap<K, V>,
+    keys: Iterable<K1>
+  ): Effect.Effect<void>;
 } = dual(
   2,
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, keys: Iterable<K1>): Effect.Effect<void> =>
+  <K1 extends K, K, V>(
+    self: TxHashMap<K, V>,
+    keys: Iterable<K1>
+  ): Effect.Effect<void> =>
     TxRef.update(self.ref, (map) => HashMap.removeMany(map, keys))
-)
+);
 
 /**
  * Sets multiple key-value pairs in the TxHashMap.
@@ -1181,18 +1220,19 @@ export const removeMany: {
 export const setMany: {
   <K1 extends K, K, V1 extends V, V>(
     entries: Iterable<readonly [K1, V1]>
-  ): (self: TxHashMap<K, V>) => Effect.Effect<void>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<void>;
   <K1 extends K, K, V1 extends V, V>(
     self: TxHashMap<K, V>,
     entries: Iterable<readonly [K1, V1]>
-  ): Effect.Effect<void>
+  ): Effect.Effect<void>;
 } = dual(
   2,
   <K1 extends K, K, V1 extends V, V>(
     self: TxHashMap<K, V>,
     entries: Iterable<readonly [K1, V1]>
-  ): Effect.Effect<void> => TxRef.update(self.ref, (map) => HashMap.setMany(map, entries))
-)
+  ): Effect.Effect<void> =>
+    TxRef.update(self.ref, (map) => HashMap.setMany(map, entries))
+);
 
 /**
  * Returns `true` if the specified value is a `TxHashMap`, `false` otherwise.
@@ -1225,8 +1265,8 @@ export const setMany: {
  * @since 4.0.0
  */
 export const isTxHashMap = <K, V>(value: unknown): value is TxHashMap<K, V> => {
-  return hasProperty(value, TypeId)
-}
+  return hasProperty(value, TypeId);
+};
 
 /**
  * Looks up the value for the specified key using a caller-supplied hash.
@@ -1274,20 +1314,23 @@ export const getHash: {
   <K1 extends K, K>(
     key: K1,
     hash: number
-  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<Option.Option<V>>
+  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<Option.Option<V>>;
   <K1 extends K, K, V>(
     self: TxHashMap<K, V>,
     key: K1,
     hash: number
-  ): Effect.Effect<Option.Option<V>>
+  ): Effect.Effect<Option.Option<V>>;
 } = dual(
   3,
   <K1 extends K, K, V>(
     self: TxHashMap<K, V>,
     key: K1,
     hash: number
-  ): Effect.Effect<Option.Option<V>> => TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.getHash(map, key, hash)))
-)
+  ): Effect.Effect<Option.Option<V>> =>
+    TxRef.get(self.ref).pipe(
+      Effect.map((map) => HashMap.getHash(map, key, hash))
+    )
+);
 
 /**
  * Checks whether the specified key has an entry using a caller-supplied hash.
@@ -1344,16 +1387,23 @@ export const hasHash: {
   <K1 extends K, K>(
     key: K1,
     hash: number
-  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<boolean>
-  <K1 extends K, K, V>(self: TxHashMap<K, V>, key: K1, hash: number): Effect.Effect<boolean>
+  ): <V>(self: TxHashMap<K, V>) => Effect.Effect<boolean>;
+  <K1 extends K, K, V>(
+    self: TxHashMap<K, V>,
+    key: K1,
+    hash: number
+  ): Effect.Effect<boolean>;
 } = dual(
   3,
   <K1 extends K, K, V>(
     self: TxHashMap<K, V>,
     key: K1,
     hash: number
-  ): Effect.Effect<boolean> => TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.hasHash(map, key, hash)))
-)
+  ): Effect.Effect<boolean> =>
+    TxRef.get(self.ref).pipe(
+      Effect.map((map) => HashMap.hasHash(map, key, hash))
+    )
+);
 
 /**
  * Transforms all values in the TxHashMap using the provided function, preserving keys.
@@ -1406,23 +1456,23 @@ export const hasHash: {
 export const map: {
   <A, V, K>(
     f: (value: V, key: K) => A
-  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, A>>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, A>>;
   <K, V, A>(
     self: TxHashMap<K, V>,
     f: (value: V, key: K) => A
-  ): Effect.Effect<TxHashMap<K, A>>
+  ): Effect.Effect<TxHashMap<K, A>>;
 } = dual(
   2,
   <K, V, A>(
     self: TxHashMap<K, V>,
     f: (value: V, key: K) => A
   ): Effect.Effect<TxHashMap<K, A>> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const mappedMap = HashMap.map(currentMap, f)
-      return yield* fromHashMap(mappedMap)
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const mappedMap = HashMap.map(currentMap, f);
+      return yield* fromHashMap(mappedMap);
     }).pipe(Effect.tx)
-)
+);
 
 /**
  * Filters the TxHashMap to keep only entries that satisfy the provided predicate.
@@ -1478,30 +1528,30 @@ export const map: {
 export const filter: {
   <K, V, B extends V>(
     predicate: (value: V, key: K) => value is B
-  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, B>>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, B>>;
   <K, V>(
     predicate: (value: V, key: K) => boolean
-  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, V>>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, V>>;
   <K, V, B extends V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => value is B
-  ): Effect.Effect<TxHashMap<K, B>>
+  ): Effect.Effect<TxHashMap<K, B>>;
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<TxHashMap<K, V>>
+  ): Effect.Effect<TxHashMap<K, V>>;
 } = dual(
   2,
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
   ): Effect.Effect<TxHashMap<K, V>> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const filteredMap = HashMap.filter(currentMap, predicate)
-      return yield* fromHashMap(filteredMap)
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const filteredMap = HashMap.filter(currentMap, predicate);
+      return yield* fromHashMap(filteredMap);
     }).pipe(Effect.tx)
-)
+);
 
 /**
  * Reduces the TxHashMap entries to a single value by applying a reducer function.
@@ -1562,20 +1612,21 @@ export const reduce: {
   <A, V, K>(
     zero: A,
     f: (accumulator: A, value: V, key: K) => A
-  ): (self: TxHashMap<K, V>) => Effect.Effect<A>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<A>;
   <K, V, A>(
     self: TxHashMap<K, V>,
     zero: A,
     f: (accumulator: A, value: V, key: K) => A
-  ): Effect.Effect<A>
+  ): Effect.Effect<A>;
 } = dual(
   3,
   <K, V, A>(
     self: TxHashMap<K, V>,
     zero: A,
     f: (accumulator: A, value: V, key: K) => A
-  ): Effect.Effect<A> => TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.reduce(map, zero, f)))
-)
+  ): Effect.Effect<A> =>
+    TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.reduce(map, zero, f)))
+);
 
 /**
  * Combines filtering and mapping in a single operation. Applies a filter to each
@@ -1640,23 +1691,23 @@ export const reduce: {
 export const filterMap: {
   <V, K, A, X>(
     f: (input: V, key: K) => Result<A, X>
-  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, A>>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, A>>;
   <K, V, A, X>(
     self: TxHashMap<K, V>,
     f: (input: V, key: K) => Result<A, X>
-  ): Effect.Effect<TxHashMap<K, A>>
+  ): Effect.Effect<TxHashMap<K, A>>;
 } = dual(
   2,
   <K, V, A, X>(
     self: TxHashMap<K, V>,
     f: (input: V, key: K) => Result<A, X>
   ): Effect.Effect<TxHashMap<K, A>> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const filteredMap = HashMap.filterMap(currentMap, f)
-      return yield* fromHashMap(filteredMap)
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const filteredMap = HashMap.filterMap(currentMap, f);
+      return yield* fromHashMap(filteredMap);
     }).pipe(Effect.tx)
-)
+);
 
 /**
  * Checks whether any entry in the TxHashMap matches the given predicate.
@@ -1703,18 +1754,19 @@ export const filterMap: {
 export const hasBy: {
   <K, V>(
     predicate: (value: V, key: K) => boolean
-  ): (self: TxHashMap<K, V>) => Effect.Effect<boolean>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<boolean>;
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<boolean>
+  ): Effect.Effect<boolean>;
 } = dual(
   2,
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<boolean> => TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.hasBy(map, predicate)))
-)
+  ): Effect.Effect<boolean> =>
+    TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.hasBy(map, predicate)))
+);
 
 /**
  * Finds the first entry in the TxHashMap that matches the given predicate.
@@ -1762,19 +1814,21 @@ export const hasBy: {
 export const findFirst: {
   <K, V>(
     predicate: (value: V, key: K) => boolean
-  ): (self: TxHashMap<K, V>) => Effect.Effect<Option.Option<[K, V]>>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<Option.Option<[K, V]>>;
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<Option.Option<[K, V]>>
+  ): Effect.Effect<Option.Option<[K, V]>>;
 } = dual(
   2,
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
   ): Effect.Effect<Option.Option<[K, V]>> =>
-    TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.findFirst(map, predicate)))
-)
+    TxRef.get(self.ref).pipe(
+      Effect.map((map) => HashMap.findFirst(map, predicate))
+    )
+);
 
 /**
  * Checks whether at least one entry in the TxHashMap satisfies the given predicate.
@@ -1820,18 +1874,19 @@ export const findFirst: {
 export const some: {
   <K, V>(
     predicate: (value: V, key: K) => boolean
-  ): (self: TxHashMap<K, V>) => Effect.Effect<boolean>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<boolean>;
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<boolean>
+  ): Effect.Effect<boolean>;
 } = dual(
   2,
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<boolean> => TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.some(map, predicate)))
-)
+  ): Effect.Effect<boolean> =>
+    TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.some(map, predicate)))
+);
 
 /**
  * Checks whether all entries in the TxHashMap satisfy the given predicate.
@@ -1877,18 +1932,19 @@ export const some: {
 export const every: {
   <K, V>(
     predicate: (value: V, key: K) => boolean
-  ): (self: TxHashMap<K, V>) => Effect.Effect<boolean>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<boolean>;
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<boolean>
+  ): Effect.Effect<boolean>;
 } = dual(
   2,
   <K, V>(
     self: TxHashMap<K, V>,
     predicate: (value: V, key: K) => boolean
-  ): Effect.Effect<boolean> => TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.every(map, predicate)))
-)
+  ): Effect.Effect<boolean> =>
+    TxRef.get(self.ref).pipe(Effect.map((map) => HashMap.every(map, predicate)))
+);
 
 /**
  * Executes a side-effect function for each entry in the TxHashMap.
@@ -1935,23 +1991,23 @@ export const every: {
 export const forEach: {
   <V, K, R, E>(
     f: (value: V, key: K) => Effect.Effect<void, E, R>
-  ): (self: TxHashMap<K, V>) => Effect.Effect<void, E, R>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<void, E, R>;
   <K, V, R, E>(
     self: TxHashMap<K, V>,
     f: (value: V, key: K) => Effect.Effect<void, E, R>
-  ): Effect.Effect<void, E, R>
+  ): Effect.Effect<void, E, R>;
 } = dual(
   2,
   <K, V, R, E>(
     self: TxHashMap<K, V>,
     f: (value: V, key: K) => Effect.Effect<void, E, R>
   ): Effect.Effect<void, E, R> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const entries = HashMap.toEntries(currentMap)
-      yield* Effect.forEach(entries, ([key, value]) => f(value, key))
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const entries = HashMap.toEntries(currentMap);
+      yield* Effect.forEach(entries, ([key, value]) => f(value, key));
     })
-)
+);
 
 /**
  * Maps each entry effectfully to a `TxHashMap` and flattens the produced maps.
@@ -2009,31 +2065,31 @@ export const forEach: {
 export const flatMap: {
   <A, V, K>(
     f: (value: V, key: K) => Effect.Effect<TxHashMap<K, A>>
-  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, A>>
+  ): (self: TxHashMap<K, V>) => Effect.Effect<TxHashMap<K, A>>;
   <K, V, A>(
     self: TxHashMap<K, V>,
     f: (value: V, key: K) => Effect.Effect<TxHashMap<K, A>>
-  ): Effect.Effect<TxHashMap<K, A>>
+  ): Effect.Effect<TxHashMap<K, A>>;
 } = dual(
   2,
   <K, V, A>(
     self: TxHashMap<K, V>,
     f: (value: V, key: K) => Effect.Effect<TxHashMap<K, A>>
   ): Effect.Effect<TxHashMap<K, A>> =>
-    Effect.gen(function*() {
-      const currentMap = yield* TxRef.get(self.ref)
-      const result = yield* empty<K, A>()
+    Effect.gen(function* () {
+      const currentMap = yield* TxRef.get(self.ref);
+      const result = yield* empty<K, A>();
 
-      const mapEntries = HashMap.toEntries(currentMap)
+      const mapEntries = HashMap.toEntries(currentMap);
       for (const [key, value] of mapEntries) {
-        const newMap = yield* f(value, key)
-        const newEntries = yield* entries(newMap)
-        yield* setMany(result, newEntries)
+        const newMap = yield* f(value, key);
+        const newEntries = yield* entries(newMap);
+        yield* setMany(result, newEntries);
       }
 
-      return result
+      return result;
     }).pipe(Effect.tx)
-)
+);
 
 /**
  * Removes all None values from a TxHashMap containing Option values.
@@ -2087,11 +2143,11 @@ export const flatMap: {
 export const compact = <K, A>(
   self: TxHashMap<K, Option.Option<A>>
 ): Effect.Effect<TxHashMap<K, A>> =>
-  Effect.gen(function*() {
-    const currentMap = yield* TxRef.get(self.ref)
-    const compactedMap = HashMap.compact(currentMap)
-    return yield* fromHashMap(compactedMap)
-  }).pipe(Effect.tx)
+  Effect.gen(function* () {
+    const currentMap = yield* TxRef.get(self.ref);
+    const compactedMap = HashMap.compact(currentMap);
+    return yield* fromHashMap(compactedMap);
+  }).pipe(Effect.tx);
 
 /**
  * Returns an array of all key-value pairs in the TxHashMap.
@@ -2132,7 +2188,7 @@ export const compact = <K, A>(
  */
 export const toEntries = <K, V>(
   self: TxHashMap<K, V>
-): Effect.Effect<Array<readonly [K, V]>> => entries(self)
+): Effect.Effect<Array<readonly [K, V]>> => entries(self);
 
 /**
  * Returns an array of all values in the TxHashMap.
@@ -2170,13 +2226,17 @@ export const toEntries = <K, V>(
  * @category combinators
  * @since 4.0.0
  */
-export const toValues = <K, V>(self: TxHashMap<K, V>): Effect.Effect<Array<V>> => values(self)
+export const toValues = <K, V>(
+  self: TxHashMap<K, V>
+): Effect.Effect<Array<V>> => values(self);
 
 /**
  * Helper function to create a TxHashMap from an existing HashMap
  */
-const fromHashMap = <K, V>(hashMap: HashMap.HashMap<K, V>): Effect.Effect<TxHashMap<K, V>> =>
-  Effect.gen(function*() {
-    const ref = yield* TxRef.make(hashMap)
-    return Object.assign(Object.create(TxHashMapProto), { ref })
-  })
+const fromHashMap = <K, V>(
+  hashMap: HashMap.HashMap<K, V>
+): Effect.Effect<TxHashMap<K, V>> =>
+  Effect.gen(function* () {
+    const ref = yield* TxRef.make(hashMap);
+    return Object.assign(Object.create(TxHashMapProto), { ref });
+  });

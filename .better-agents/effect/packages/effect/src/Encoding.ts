@@ -48,9 +48,9 @@
  *
  * @since 4.0.0
  */
-import * as Data from "./Data.ts"
-import { hasProperty } from "./Predicate.ts"
-import * as Result from "./Result.ts"
+import * as Data from "./Data.ts";
+import { hasProperty } from "./Predicate.ts";
+import * as Result from "./Result.ts";
 
 // -------------------------------------------------------------------------------------
 // EncodingError
@@ -75,7 +75,7 @@ import * as Result from "./Result.ts"
  * @category type IDs
  * @since 4.0.0
  */
-export const EncodingErrorTypeId = "~effect/encoding/EncodingError" as const
+export const EncodingErrorTypeId = "~effect/encoding/EncodingError" as const;
 
 /**
  * Literal type of the `EncodingErrorTypeId` marker.
@@ -87,7 +87,7 @@ export const EncodingErrorTypeId = "~effect/encoding/EncodingError" as const
  * @category type IDs
  * @since 4.0.0
  */
-export type EncodingErrorTypeId = typeof EncodingErrorTypeId
+export type EncodingErrorTypeId = typeof EncodingErrorTypeId;
 
 /**
  * Error returned when an encoding or decoding operation cannot process its
@@ -109,10 +109,10 @@ export type EncodingErrorTypeId = typeof EncodingErrorTypeId
  * @since 4.0.0
  */
 export class EncodingError extends Data.TaggedError("EncodingError")<{
-  kind: "Decode" | "Encode"
-  module: string
-  input: unknown
-  message: string
+  kind: "Decode" | "Encode";
+  module: string;
+  input: unknown;
+  message: string;
 }> {
   /**
    * Marks this value as an encoding or decoding error for runtime guards.
@@ -123,7 +123,7 @@ export class EncodingError extends Data.TaggedError("EncodingError")<{
    *
    * @since 4.0.0
    */
-  readonly [EncodingErrorTypeId]: EncodingErrorTypeId = EncodingErrorTypeId
+  readonly [EncodingErrorTypeId]: EncodingErrorTypeId = EncodingErrorTypeId;
 }
 
 /**
@@ -145,7 +145,8 @@ export class EncodingError extends Data.TaggedError("EncodingError")<{
  * @category guards
  * @since 4.0.0
  */
-export const isEncodingError = (u: unknown): u is EncodingError => hasProperty(u, EncodingErrorTypeId)
+export const isEncodingError = (u: unknown): u is EncodingError =>
+  hasProperty(u, EncodingErrorTypeId);
 
 // -------------------------------------------------------------------------------------
 // Base64
@@ -186,7 +187,9 @@ export const isEncodingError = (u: unknown): u is EncodingError => hasProperty(u
  * @since 2.0.0
  */
 export const encodeBase64: (input: Uint8Array | string) => string = (input) =>
-  typeof input === "string" ? base64EncodeUint8Array(encoder.encode(input)) : base64EncodeUint8Array(input)
+  typeof input === "string"
+    ? base64EncodeUint8Array(encoder.encode(input))
+    : base64EncodeUint8Array(input);
 
 /**
  * Decodes a base64 (RFC4648) string into bytes safely.
@@ -215,58 +218,69 @@ export const encodeBase64: (input: Uint8Array | string) => string = (input) =>
  * @category decoding
  * @since 2.0.0
  */
-export const decodeBase64 = (str: string): Result.Result<Uint8Array, EncodingError> => {
-  const stripped = stripCrlf(str)
-  const length = stripped.length
+export const decodeBase64 = (
+  str: string
+): Result.Result<Uint8Array, EncodingError> => {
+  const stripped = stripCrlf(str);
+  const length = stripped.length;
   if (length % 4 !== 0) {
     return Result.fail(
       new EncodingError({
         kind: "Decode",
         module: "Base64",
         input: stripped,
-        message: `Length must be a multiple of 4, but is ${length}`
+        message: `Length must be a multiple of 4, but is ${length}`,
       })
-    )
+    );
   }
 
-  const index = stripped.indexOf("=")
-  if (index !== -1 && ((index < length - 2) || (index === length - 2 && stripped[length - 1] !== "="))) {
+  const index = stripped.indexOf("=");
+  if (
+    index !== -1 &&
+    (index < length - 2 ||
+      (index === length - 2 && stripped[length - 1] !== "="))
+  ) {
     return Result.fail(
       new EncodingError({
         kind: "Decode",
         module: "Base64",
         input: stripped,
-        message: `Found a '=' character, but it is not at the end`
+        message: `Found a '=' character, but it is not at the end`,
       })
-    )
+    );
   }
 
   try {
-    const missingOctets = stripped.endsWith("==") ? 2 : stripped.endsWith("=") ? 1 : 0
-    const result = new Uint8Array(3 * (length / 4) - missingOctets)
+    const missingOctets = stripped.endsWith("==")
+      ? 2
+      : stripped.endsWith("=")
+        ? 1
+        : 0;
+    const result = new Uint8Array(3 * (length / 4) - missingOctets);
     for (let i = 0, j = 0; i < length; i += 4, j += 3) {
-      const buffer = getBase64Code(stripped.charCodeAt(i)) << 18 |
-        getBase64Code(stripped.charCodeAt(i + 1)) << 12 |
-        getBase64Code(stripped.charCodeAt(i + 2)) << 6 |
-        getBase64Code(stripped.charCodeAt(i + 3))
+      const buffer =
+        (getBase64Code(stripped.charCodeAt(i)) << 18) |
+        (getBase64Code(stripped.charCodeAt(i + 1)) << 12) |
+        (getBase64Code(stripped.charCodeAt(i + 2)) << 6) |
+        getBase64Code(stripped.charCodeAt(i + 3));
 
-      result[j] = buffer >> 16
-      result[j + 1] = (buffer >> 8) & 0xff
-      result[j + 2] = buffer & 0xff
+      result[j] = buffer >> 16;
+      result[j + 1] = (buffer >> 8) & 0xff;
+      result[j + 2] = buffer & 0xff;
     }
 
-    return Result.succeed(result)
+    return Result.succeed(result);
   } catch (e) {
     return Result.fail(
       new EncodingError({
         kind: "Decode",
         module: "Base64",
         input: stripped,
-        message: e instanceof Error ? e.message : "Invalid input"
+        message: e instanceof Error ? e.message : "Invalid input",
       })
-    )
+    );
   }
-}
+};
 
 /**
  * Decodes a base64 (RFC4648) string into a UTF-8 string safely.
@@ -295,7 +309,8 @@ export const decodeBase64 = (str: string): Result.Result<Uint8Array, EncodingErr
  * @category decoding
  * @since 2.0.0
  */
-export const decodeBase64String = (str: string) => Result.map(decodeBase64(str), (_) => decoder.decode(_))
+export const decodeBase64String = (str: string) =>
+  Result.map(decodeBase64(str), (_) => decoder.decode(_));
 
 // -------------------------------------------------------------------------------------
 // Base64Url
@@ -334,8 +349,12 @@ export const decodeBase64String = (str: string) => Result.map(decodeBase64(str),
  * @category encoding
  * @since 2.0.0
  */
-export const encodeBase64Url: (input: Uint8Array | string) => string = (input) =>
-  typeof input === "string" ? base64UrlEncodeUint8Array(encoder.encode(input)) : base64UrlEncodeUint8Array(input)
+export const encodeBase64Url: (input: Uint8Array | string) => string = (
+  input
+) =>
+  typeof input === "string"
+    ? base64UrlEncodeUint8Array(encoder.encode(input))
+    : base64UrlEncodeUint8Array(input);
 
 /**
  * Decodes a URL-safe base64 string into bytes safely.
@@ -366,18 +385,20 @@ export const encodeBase64Url: (input: Uint8Array | string) => string = (input) =
  * @category decoding
  * @since 2.0.0
  */
-export const decodeBase64Url = (str: string): Result.Result<Uint8Array, EncodingError> => {
-  const stripped = stripCrlf(str)
-  const length = stripped.length
+export const decodeBase64Url = (
+  str: string
+): Result.Result<Uint8Array, EncodingError> => {
+  const stripped = stripCrlf(str);
+  const length = stripped.length;
   if (length % 4 === 1) {
     return Result.fail(
       new EncodingError({
         module: "Base64Url",
         kind: "Decode",
         input: stripped,
-        message: `Length should be a multiple of 4, but is ${length}`
+        message: `Length should be a multiple of 4, but is ${length}`,
       })
-    )
+    );
   }
 
   if (!/^[-_A-Z0-9]*?={0,2}$/i.test(stripped)) {
@@ -386,17 +407,22 @@ export const decodeBase64Url = (str: string): Result.Result<Uint8Array, Encoding
         module: "Base64Url",
         kind: "Decode",
         input: stripped,
-        message: "Invalid input"
+        message: "Invalid input",
       })
-    )
+    );
   }
 
   // Some variants allow or require omitting the padding '=' signs
-  let sanitized = length % 4 === 2 ? `${stripped}==` : length % 4 === 3 ? `${stripped}=` : stripped
-  sanitized = sanitized.replace(/-/g, "+").replace(/_/g, "/")
+  let sanitized =
+    length % 4 === 2
+      ? `${stripped}==`
+      : length % 4 === 3
+        ? `${stripped}=`
+        : stripped;
+  sanitized = sanitized.replace(/-/g, "+").replace(/_/g, "/");
 
-  return decodeBase64(sanitized)
-}
+  return decodeBase64(sanitized);
+};
 
 /**
  * Decodes a URL-safe base64 string into a UTF-8 string safely.
@@ -426,7 +452,8 @@ export const decodeBase64Url = (str: string): Result.Result<Uint8Array, Encoding
  * @category decoding
  * @since 2.0.0
  */
-export const decodeBase64UrlString = (str: string) => Result.map(decodeBase64Url(str), (_) => decoder.decode(_))
+export const decodeBase64UrlString = (str: string) =>
+  Result.map(decodeBase64Url(str), (_) => decoder.decode(_));
 
 // -------------------------------------------------------------------------------------
 // Hex
@@ -456,7 +483,9 @@ export const decodeBase64UrlString = (str: string) => Result.map(decodeBase64Url
  * @since 2.0.0
  */
 export const encodeHex: (input: Uint8Array | string) => string = (input) =>
-  typeof input === "string" ? hexEncodeUint8Array(encoder.encode(input)) : hexEncodeUint8Array(input)
+  typeof input === "string"
+    ? hexEncodeUint8Array(encoder.encode(input))
+    : hexEncodeUint8Array(input);
 
 /**
  * Decodes a hexadecimal string into bytes safely.
@@ -485,40 +514,42 @@ export const encodeHex: (input: Uint8Array | string) => string = (input) =>
  * @category decoding
  * @since 2.0.0
  */
-export const decodeHex = (str: string): Result.Result<Uint8Array, EncodingError> => {
-  const bytes = new TextEncoder().encode(str)
+export const decodeHex = (
+  str: string
+): Result.Result<Uint8Array, EncodingError> => {
+  const bytes = new TextEncoder().encode(str);
   if (bytes.length % 2 !== 0) {
     return Result.fail(
       new EncodingError({
         module: "Hex",
         kind: "Decode",
         input: str,
-        message: `Length must be a multiple of 2, but is ${bytes.length}`
+        message: `Length must be a multiple of 2, but is ${bytes.length}`,
       })
-    )
+    );
   }
 
   try {
-    const length = bytes.length / 2
-    const result = new Uint8Array(length)
+    const length = bytes.length / 2;
+    const result = new Uint8Array(length);
     for (let i = 0; i < length; i++) {
-      const a = fromHexChar(bytes[i * 2])
-      const b = fromHexChar(bytes[i * 2 + 1])
-      result[i] = (a << 4) | b
+      const a = fromHexChar(bytes[i * 2]);
+      const b = fromHexChar(bytes[i * 2 + 1]);
+      result[i] = (a << 4) | b;
     }
 
-    return Result.succeed(result)
+    return Result.succeed(result);
   } catch (e) {
     return Result.fail(
       new EncodingError({
         module: "Hex",
         kind: "Decode",
         input: str,
-        message: e instanceof Error ? e.message : "Invalid input"
+        message: e instanceof Error ? e.message : "Invalid input",
       })
-    )
+    );
   }
-}
+};
 
 /**
  * Decodes a hexadecimal string into a UTF-8 string safely.
@@ -547,59 +578,60 @@ export const decodeHex = (str: string): Result.Result<Uint8Array, EncodingError>
  * @category decoding
  * @since 2.0.0
  */
-export const decodeHexString = (str: string) => Result.map(decodeHex(str), (_) => decoder.decode(_))
+export const decodeHexString = (str: string) =>
+  Result.map(decodeHex(str), (_) => decoder.decode(_));
 
 // -------------------------------------------------------------------------------------
 // internals
 // -------------------------------------------------------------------------------------
 
-const encoder = new TextEncoder()
-const decoder = new TextDecoder()
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
-const stripCrlf = (str: string) => str.replace(/[\n\r]/g, "")
+const stripCrlf = (str: string) => str.replace(/[\n\r]/g, "");
 
 // Base64 internals
 
 const base64EncodeUint8Array = (bytes: Uint8Array) => {
-  const length = bytes.length
+  const length = bytes.length;
 
-  let result = ""
-  let i: number
+  let result = "";
+  let i: number;
 
   for (i = 2; i < length; i += 3) {
-    result += base64abc[bytes[i - 2] >> 2]
-    result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)]
-    result += base64abc[((bytes[i - 1] & 0x0f) << 2) | (bytes[i] >> 6)]
-    result += base64abc[bytes[i] & 0x3f]
+    result += base64abc[bytes[i - 2] >> 2];
+    result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)];
+    result += base64abc[((bytes[i - 1] & 0x0f) << 2) | (bytes[i] >> 6)];
+    result += base64abc[bytes[i] & 0x3f];
   }
 
   if (i === length + 1) {
-    result += base64abc[bytes[i - 2] >> 2]
-    result += base64abc[(bytes[i - 2] & 0x03) << 4]
-    result += "=="
+    result += base64abc[bytes[i - 2] >> 2];
+    result += base64abc[(bytes[i - 2] & 0x03) << 4];
+    result += "==";
   }
 
   if (i === length) {
-    result += base64abc[bytes[i - 2] >> 2]
-    result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)]
-    result += base64abc[(bytes[i - 1] & 0x0f) << 2]
-    result += "="
+    result += base64abc[bytes[i - 2] >> 2];
+    result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)];
+    result += base64abc[(bytes[i - 1] & 0x0f) << 2];
+    result += "=";
   }
 
-  return result
-}
+  return result;
+};
 
 function getBase64Code(charCode: number) {
   if (charCode >= base64codes.length) {
-    throw new TypeError(`Invalid character ${String.fromCharCode(charCode)}`)
+    throw new TypeError(`Invalid character ${String.fromCharCode(charCode)}`);
   }
 
-  const code = base64codes[charCode]
+  const code = base64codes[charCode];
   if (code === 255) {
-    throw new TypeError(`Invalid character ${String.fromCharCode(charCode)}`)
+    throw new TypeError(`Invalid character ${String.fromCharCode(charCode)}`);
   }
 
-  return code
+  return code;
 }
 
 const base64abc = [
@@ -666,166 +698,53 @@ const base64abc = [
   "8",
   "9",
   "+",
-  "/"
-]
+  "/",
+];
 
 const base64codes = [
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  62,
-  255,
-  255,
-  255,
-  63,
-  52,
-  53,
-  54,
-  55,
-  56,
-  57,
-  58,
-  59,
-  60,
-  61,
-  255,
-  255,
-  255,
-  0,
-  255,
-  255,
-  255,
-  0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  24,
-  25,
-  255,
-  255,
-  255,
-  255,
-  255,
-  255,
-  26,
-  27,
-  28,
-  29,
-  30,
-  31,
-  32,
-  33,
-  34,
-  35,
-  36,
-  37,
-  38,
-  39,
-  40,
-  41,
-  42,
-  43,
-  44,
-  45,
-  46,
-  47,
-  48,
-  49,
-  50,
-  51
-]
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 62, 255, 255,
+  255, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 255, 255, 255, 0, 255, 255,
+  255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  21, 22, 23, 24, 25, 255, 255, 255, 255, 255, 255, 26, 27, 28, 29, 30, 31, 32,
+  33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+];
 
 // Base64Url internals
 
 const base64UrlEncodeUint8Array = (data: Uint8Array) =>
-  base64EncodeUint8Array(data).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
+  base64EncodeUint8Array(data)
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
 
 // Hex internals
 
 const hexEncodeUint8Array = (bytes: Uint8Array) => {
-  let result = ""
+  let result = "";
   for (let i = 0; i < bytes.length; ++i) {
-    result += bytesToHex[bytes[i]]
+    result += bytesToHex[bytes[i]];
   }
 
-  return result
-}
+  return result;
+};
 
 const fromHexChar = (byte: number) => {
   if (48 <= byte && byte <= 57) {
-    return byte - 48
+    return byte - 48;
   }
 
   if (97 <= byte && byte <= 102) {
-    return byte - 97 + 10
+    return byte - 97 + 10;
   }
 
   if (65 <= byte && byte <= 70) {
-    return byte - 65 + 10
+    return byte - 65 + 10;
   }
 
-  throw new TypeError("Invalid input")
-}
+  throw new TypeError("Invalid input");
+};
 
 const bytesToHex = [
   "00",
@@ -1083,5 +1002,5 @@ const bytesToHex = [
   "fc",
   "fd",
   "fe",
-  "ff"
-]
+  "ff",
+];

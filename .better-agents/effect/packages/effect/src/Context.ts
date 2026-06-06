@@ -49,18 +49,22 @@
  *
  * @since 4.0.0
  */
-import type { Effect, EffectIterator } from "./Effect.ts"
-import * as Effectable from "./Effectable.ts"
-import * as Equal from "./Equal.ts"
-import { dual, type LazyArg } from "./Function.ts"
-import * as Hash from "./Hash.ts"
-import type { Inspectable } from "./Inspectable.ts"
-import { exitSucceed, PipeInspectableProto, withFiber } from "./internal/core.ts"
-import type { ErrorWithStackTraceLimit } from "./internal/tracer.ts"
-import * as Option from "./Option.ts"
-import type { Pipeable } from "./Pipeable.ts"
-import { hasProperty } from "./Predicate.ts"
-import type * as Types from "./Types.ts"
+import type { Effect, EffectIterator } from "./Effect.ts";
+import * as Effectable from "./Effectable.ts";
+import * as Equal from "./Equal.ts";
+import { dual, type LazyArg } from "./Function.ts";
+import * as Hash from "./Hash.ts";
+import type { Inspectable } from "./Inspectable.ts";
+import {
+  exitSucceed,
+  PipeInspectableProto,
+  withFiber,
+} from "./internal/core.ts";
+import type { ErrorWithStackTraceLimit } from "./internal/tracer.ts";
+import * as Option from "./Option.ts";
+import type { Pipeable } from "./Pipeable.ts";
+import { hasProperty } from "./Predicate.ts";
+import type * as Types from "./Types.ts";
 
 /**
  * String literal type used as the runtime type identifier for `Context`
@@ -69,7 +73,7 @@ import type * as Types from "./Types.ts"
  * @category type IDs
  * @since 4.0.0
  */
-export type ServiceTypeId = "~effect/Context/Service"
+export type ServiceTypeId = "~effect/Context/Service";
 
 /**
  * Runtime type identifier attached to `Context` service keys and used by
@@ -78,7 +82,7 @@ export type ServiceTypeId = "~effect/Context/Service"
  * @category type IDs
  * @since 4.0.0
  */
-export const ServiceTypeId: ServiceTypeId = "~effect/Context/Service"
+export const ServiceTypeId: ServiceTypeId = "~effect/Context/Service";
 
 /**
  * Typed identifier for a service stored in a `Context`.
@@ -101,12 +105,16 @@ export const ServiceTypeId: ServiceTypeId = "~effect/Context/Service"
  * @category models
  * @since 4.0.0
  */
-export interface Key<out Identifier, out Shape> extends Effect<Shape, never, Identifier> {
-  readonly [ServiceTypeId]: ServiceTypeId
-  readonly Service: Shape
-  readonly Identifier: Identifier
-  readonly key: string
-  readonly stack?: string | undefined
+export interface Key<out Identifier, out Shape> extends Effect<
+  Shape,
+  never,
+  Identifier
+> {
+  readonly [ServiceTypeId]: ServiceTypeId;
+  readonly Service: Shape;
+  readonly Identifier: Identifier;
+  readonly key: string;
+  readonly stack?: string | undefined;
 }
 
 /**
@@ -135,11 +143,16 @@ export interface Key<out Identifier, out Shape> extends Effect<Shape, never, Ide
  * @category models
  * @since 4.0.0
  */
-export interface Service<in out Identifier, in out Shape> extends Key<Identifier, Shape> {
-  of(this: void, self: Shape): Shape
-  context(self: Shape): Context<Identifier>
-  use<A, E, R>(f: (service: Shape) => Effect<A, E, R>): Effect<A, E, R | Identifier>
-  useSync<A>(f: (service: Shape) => A): Effect<A, never, Identifier>
+export interface Service<in out Identifier, in out Shape> extends Key<
+  Identifier,
+  Shape
+> {
+  of(this: void, self: Shape): Shape;
+  context(self: Shape): Context<Identifier>;
+  use<A, E, R>(
+    f: (service: Shape) => Effect<A, E, R>
+  ): Effect<A, E, R | Identifier>;
+  useSync<A>(f: (service: Shape) => A): Effect<A, never, Identifier>;
 }
 
 /**
@@ -160,11 +173,13 @@ export interface Service<in out Identifier, in out Shape> extends Key<Identifier
  * @category models
  * @since 4.0.0
  */
-export interface ServiceClass<in out Self, in out Identifier extends string, in out Shape>
-  extends Service<Self, Shape>
-{
-  new(_: never): ServiceClass.Shape<Identifier, Shape>
-  readonly key: Identifier
+export interface ServiceClass<
+  in out Self,
+  in out Identifier extends string,
+  in out Shape,
+> extends Service<Self, Shape> {
+  new (_: never): ServiceClass.Shape<Identifier, Shape>;
+  readonly key: Identifier;
 }
 
 /**
@@ -182,9 +197,9 @@ export declare namespace ServiceClass {
    * @since 4.0.0
    */
   export interface Shape<Identifier extends string, Service> {
-    readonly [ServiceTypeId]: typeof ServiceTypeId
-    readonly key: Identifier
-    readonly Service: Service
+    readonly [ServiceTypeId]: typeof ServiceTypeId;
+    readonly key: Identifier;
+    readonly Service: Service;
   }
 }
 
@@ -237,105 +252,124 @@ export declare namespace ServiceClass {
  * @since 4.0.0
  */
 export const Service: {
-  <Identifier, Shape = Identifier>(key: string): Service<Identifier, Shape>
+  <Identifier, Shape = Identifier>(key: string): Service<Identifier, Shape>;
   <Self, Shape>(): <
     const Identifier extends string,
     E,
     R = Types.unassigned,
-    Args extends ReadonlyArray<any> = never
+    Args extends ReadonlyArray<any> = never,
   >(
     id: Identifier,
-    options?: {
-      readonly make: ((...args: Args) => Effect<Shape, E, R>) | Effect<Shape, E, R> | undefined
-    } | undefined
-  ) =>
-    & ServiceClass<Self, Identifier, Shape>
-    & ([Types.unassigned] extends [R] ? unknown
-      : { readonly make: [Args] extends [never] ? Effect<Shape, E, R> : (...args: Args) => Effect<Shape, E, R> })
+    options?:
+      | {
+          readonly make:
+            | ((...args: Args) => Effect<Shape, E, R>)
+            | Effect<Shape, E, R>
+            | undefined;
+        }
+      | undefined
+  ) => ServiceClass<Self, Identifier, Shape> &
+    ([Types.unassigned] extends [R]
+      ? unknown
+      : {
+          readonly make: [Args] extends [never]
+            ? Effect<Shape, E, R>
+            : (...args: Args) => Effect<Shape, E, R>;
+        });
   <Self>(): <
     const Identifier extends string,
-    Make extends Effect<any, any, any> | ((...args: any) => Effect<any, any, any>)
+    Make extends
+      | Effect<any, any, any>
+      | ((...args: any) => Effect<any, any, any>),
   >(
     id: Identifier,
     options: {
-      readonly make: Make
+      readonly make: Make;
     }
-  ) =>
-    & ServiceClass<
-      Self,
-      Identifier,
-      Make extends
-        Effect<infer _A, infer _E, infer _R> | ((...args: infer _Args) => Effect<infer _A, infer _E, infer _R>) ? _A
-        : never
-    >
-    & { readonly make: Make }
-} = function() {
-  const prevLimit = (Error as ErrorWithStackTraceLimit).stackTraceLimit
-  ;(Error as ErrorWithStackTraceLimit)
-    .stackTraceLimit = 2
-  const err = new Error()
-  ;(Error as ErrorWithStackTraceLimit).stackTraceLimit = prevLimit
+  ) => ServiceClass<
+    Self,
+    Identifier,
+    Make extends
+      | Effect<infer _A, infer _E, infer _R>
+      | ((...args: infer _Args) => Effect<infer _A, infer _E, infer _R>)
+      ? _A
+      : never
+  > & { readonly make: Make };
+} = function () {
+  const prevLimit = (Error as ErrorWithStackTraceLimit).stackTraceLimit;
+  (Error as ErrorWithStackTraceLimit).stackTraceLimit = 2;
+  const err = new Error();
+  (Error as ErrorWithStackTraceLimit).stackTraceLimit = prevLimit;
   function KeyClass() {}
-  const self = KeyClass as any as Types.Mutable<Reference<any>>
-  Object.setPrototypeOf(self, ServiceProto)
+  const self = KeyClass as any as Types.Mutable<Reference<any>>;
+  Object.setPrototypeOf(self, ServiceProto);
   // @effect-diagnostics-next-line floatingEffect:off
   Object.defineProperty(self, "stack", {
     get() {
-      return err.stack
-    }
-  })
+      return err.stack;
+    },
+  });
   if (arguments.length > 0) {
-    self.key = arguments[0]
+    self.key = arguments[0];
     if (arguments[1]?.defaultValue) {
-      self[ReferenceTypeId] = ReferenceTypeId
-      self.defaultValue = arguments[1].defaultValue
+      self[ReferenceTypeId] = ReferenceTypeId;
+      self.defaultValue = arguments[1].defaultValue;
     }
-    return self
+    return self;
   }
-  return function(key: string, options?: {
-    readonly make?: any
-  }) {
-    self.key = key
+  return function (
+    key: string,
+    options?: {
+      readonly make?: any;
+    }
+  ) {
+    self.key = key;
     if (options?.make) {
-      ;(self as any).make = options.make
+      (self as any).make = options.make;
     }
-    return self
-  }
-} as any
+    return self;
+  };
+} as any;
 
 const ServiceProto: any = {
   [ServiceTypeId]: ServiceTypeId,
   ...Effectable.Prototype<Service<never, any>>({
     label: "Service",
     evaluate(fiber) {
-      return exitSucceed(get(fiber.context, this))
-    }
+      return exitSucceed(get(fiber.context, this));
+    },
   }),
   toJSON<I, A>(this: Service<I, A>) {
     return {
       _id: "Service",
       key: this.key,
-      stack: this.stack
-    }
+      stack: this.stack,
+    };
   },
   of<Service>(this: void, self: Service): Service {
-    return self
+    return self;
   },
   context<Identifier, Shape>(
     this: Service<Identifier, Shape>,
     self: Shape
   ): Context<Identifier> {
-    return make(this, self)
+    return make(this, self);
   },
-  use<A, E, R>(this: Service<never, any>, f: (service: any) => Effect<A, E, R>): Effect<A, E, R> {
-    return withFiber((fiber) => f(get(fiber.context, this)))
+  use<A, E, R>(
+    this: Service<never, any>,
+    f: (service: any) => Effect<A, E, R>
+  ): Effect<A, E, R> {
+    return withFiber((fiber) => f(get(fiber.context, this)));
   },
-  useSync<A>(this: Service<never, any>, f: (service: any) => A): Effect<A, never, never> {
-    return withFiber((fiber) => exitSucceed(f(get(fiber.context, this))))
-  }
-}
+  useSync<A>(
+    this: Service<never, any>,
+    f: (service: any) => A
+  ): Effect<A, never, never> {
+    return withFiber((fiber) => exitSucceed(f(get(fiber.context, this))));
+  },
+};
 
-const ReferenceTypeId = "~effect/Context/Reference" as const
+const ReferenceTypeId = "~effect/Context/Reference" as const;
 
 /**
  * Service key with a lazily computed default value.
@@ -366,10 +400,10 @@ const ReferenceTypeId = "~effect/Context/Reference" as const
  * @since 3.11.0
  */
 export interface Reference<in out Shape> extends Service<never, Shape> {
-  readonly [ReferenceTypeId]: typeof ReferenceTypeId
-  readonly defaultValue: () => Shape
-  [Symbol.iterator](): EffectIterator<Reference<Shape>>
-  new(_: never): {}
+  readonly [ReferenceTypeId]: typeof ReferenceTypeId;
+  readonly defaultValue: () => Shape;
+  [Symbol.iterator](): EffectIterator<Reference<Shape>>;
+  new (_: never): {};
 }
 
 /**
@@ -413,7 +447,7 @@ export declare namespace Service {
    * @category models
    * @since 4.0.0
    */
-  export type Any = Key<never, any> | Key<any, any>
+  export type Any = Key<never, any> | Key<any, any>;
 
   /**
    * Extracts the service implementation type stored behind a `Context` service
@@ -436,7 +470,7 @@ export declare namespace Service {
    * @category models
    * @since 4.0.0
    */
-  export type Shape<T> = T extends Key<infer _I, infer S> ? S : never
+  export type Shape<T> = T extends Key<infer _I, infer S> ? S : never;
 
   /**
    * Extracts the identifier, or requirement type, associated with a `Context`
@@ -459,10 +493,10 @@ export declare namespace Service {
    * @category models
    * @since 2.0.0
    */
-  export type Identifier<T> = T extends Key<infer I, infer _S> ? I : never
+  export type Identifier<T> = T extends Key<infer I, infer _S> ? I : never;
 }
 
-const TypeId = "~effect/Context" as const
+const TypeId = "~effect/Context" as const;
 
 /**
  * Immutable collection of service implementations used for dependency
@@ -493,12 +527,13 @@ const TypeId = "~effect/Context" as const
  * @category models
  * @since 2.0.0
  */
-export interface Context<in Services> extends Equal.Equal, Pipeable, Inspectable {
+export interface Context<in Services>
+  extends Equal.Equal, Pipeable, Inspectable {
   readonly [TypeId]: {
-    readonly _Services: Types.Contravariant<Services>
-  }
-  readonly mapUnsafe: ReadonlyMap<string, any>
-  mutable: boolean
+    readonly _Services: Types.Contravariant<Services>;
+  };
+  readonly mapUnsafe: ReadonlyMap<string, any>;
+  mutable: boolean;
 }
 
 /**
@@ -531,43 +566,46 @@ export interface Context<in Services> extends Equal.Equal, Pipeable, Inspectable
  * @category constructors
  * @since 4.0.0
  */
-export const makeUnsafe = <Services = never>(mapUnsafe: ReadonlyMap<string, any>): Context<Services> => {
-  const self = Object.create(Proto)
-  self.mapUnsafe = mapUnsafe
-  self.mutable = false
-  return self
-}
+export const makeUnsafe = <Services = never>(
+  mapUnsafe: ReadonlyMap<string, any>
+): Context<Services> => {
+  const self = Object.create(Proto);
+  self.mapUnsafe = mapUnsafe;
+  self.mutable = false;
+  return self;
+};
 
 const Proto: Omit<Context<never>, "mapUnsafe" | "mutable"> = {
   ...PipeInspectableProto,
   [TypeId]: {
-    _Services: (_: never) => _
+    _Services: (_: never) => _,
   },
   toJSON(this: Context<never>) {
     return {
       _id: "Context",
-      services: Array.from(this.mapUnsafe).map(([key, value]) => ({ key, value }))
-    }
+      services: Array.from(this.mapUnsafe).map(([key, value]) => ({
+        key,
+        value,
+      })),
+    };
   },
   [Equal.symbol]<A>(this: Context<A>, that: unknown): boolean {
-    if (
-      !isContext(that)
-      || this.mapUnsafe.size !== that.mapUnsafe.size
-    ) return false
+    if (!isContext(that) || this.mapUnsafe.size !== that.mapUnsafe.size)
+      return false;
     for (const k of this.mapUnsafe.keys()) {
       if (
         !that.mapUnsafe.has(k) ||
         !Equal.equals(this.mapUnsafe.get(k), that.mapUnsafe.get(k))
       ) {
-        return false
+        return false;
       }
     }
-    return true
+    return true;
   },
   [Hash.symbol]<A>(this: Context<A>): number {
-    return Hash.number(this.mapUnsafe.size)
-  }
-}
+    return Hash.number(this.mapUnsafe.size);
+  },
+};
 
 /**
  * Checks whether the provided argument is a `Context`.
@@ -602,7 +640,8 @@ const Proto: Omit<Context<never>, "mapUnsafe" | "mutable"> = {
  * @category guards
  * @since 2.0.0
  */
-export const isContext = (u: unknown): u is Context<never> => hasProperty(u, TypeId)
+export const isContext = (u: unknown): u is Context<never> =>
+  hasProperty(u, TypeId);
 
 /**
  * Checks whether the provided argument is a `Key`.
@@ -619,7 +658,8 @@ export const isContext = (u: unknown): u is Context<never> => hasProperty(u, Typ
  * @category guards
  * @since 4.0.0
  */
-export const isKey = (u: unknown): u is Key<any, any> => hasProperty(u, ServiceTypeId)
+export const isKey = (u: unknown): u is Key<any, any> =>
+  hasProperty(u, ServiceTypeId);
 
 /**
  * Checks whether the provided argument is a `Reference`.
@@ -641,7 +681,8 @@ export const isKey = (u: unknown): u is Key<any, any> => hasProperty(u, ServiceT
  * @category guards
  * @since 3.11.0
  */
-export const isReference = (u: unknown): u is Reference<any> => hasProperty(u, ReferenceTypeId)
+export const isReference = (u: unknown): u is Reference<any> =>
+  hasProperty(u, ReferenceTypeId);
 
 /**
  * Returns an empty `Context`.
@@ -658,8 +699,8 @@ export const isReference = (u: unknown): u is Reference<any> => hasProperty(u, R
  * @category constructors
  * @since 2.0.0
  */
-export const empty = (): Context<never> => emptyContext
-const emptyContext = makeUnsafe(new Map())
+export const empty = (): Context<never> => emptyContext;
+const emptyContext = makeUnsafe(new Map());
 
 /**
  * Creates a new `Context` with a single service associated to the key.
@@ -683,7 +724,7 @@ const emptyContext = makeUnsafe(new Map())
 export const make = <I, S>(
   key: Key<I, S>,
   service: Types.NoInfer<S>
-): Context<I> => makeUnsafe(new Map([[key.key, service]]))
+): Context<I> => makeUnsafe(new Map([[key.key, service]]));
 
 /**
  * Adds a service to a given `Context`.
@@ -726,20 +767,23 @@ export const add: {
   <I, S>(
     key: Key<I, S>,
     service: Types.NoInfer<S>
-  ): <Services>(self: Context<Services>) => Context<Services | I>
+  ): <Services>(self: Context<Services>) => Context<Services | I>;
   <Services, I, S>(
     self: Context<Services>,
     key: Key<I, S>,
     service: Types.NoInfer<S>
-  ): Context<Services | I>
-} = dual(3, <Services, I, S>(
-  self: Context<Services>,
-  key: Key<I, S>,
-  service: Types.NoInfer<S>
-): Context<Services | I> =>
-  withMapUnsafe(self, (map) => {
-    map.set(key.key, service)
-  }))
+  ): Context<Services | I>;
+} = dual(
+  3,
+  <Services, I, S>(
+    self: Context<Services>,
+    key: Key<I, S>,
+    service: Types.NoInfer<S>
+  ): Context<Services | I> =>
+    withMapUnsafe(self, (map) => {
+      map.set(key.key, service);
+    })
+);
 
 /**
  * Adds or removes a service depending on an `Option`.
@@ -778,24 +822,27 @@ export const addOrOmit: {
   <I, S>(
     key: Key<I, S>,
     service: Option.Option<Types.NoInfer<S>>
-  ): <Services>(self: Context<Services>) => Context<Services | I>
+  ): <Services>(self: Context<Services>) => Context<Services | I>;
   <Services, I, S>(
     self: Context<Services>,
     key: Key<I, S>,
     service: Option.Option<Types.NoInfer<S>>
-  ): Context<Services | I>
-} = dual(3, <Services, I, S>(
-  self: Context<Services>,
-  key: Key<I, S>,
-  service: Option.Option<Types.NoInfer<S>>
-): Context<Services | I> =>
-  withMapUnsafe(self, (map) => {
-    if (service._tag === "None") {
-      map.delete(key.key)
-    } else {
-      map.set(key.key, service.value)
-    }
-  }))
+  ): Context<Services | I>;
+} = dual(
+  3,
+  <Services, I, S>(
+    self: Context<Services>,
+    key: Key<I, S>,
+    service: Option.Option<Types.NoInfer<S>>
+  ): Context<Services | I> =>
+    withMapUnsafe(self, (map) => {
+      if (service._tag === "None") {
+        map.delete(key.key);
+      } else {
+        map.set(key.key, service.value);
+      }
+    })
+);
 
 /**
  * Gets the service for a key, or evaluates the fallback when a non-reference
@@ -847,14 +894,28 @@ export const addOrOmit: {
  * @since 3.7.0
  */
 export const getOrElse: {
-  <S, I, B>(key: Key<I, S>, orElse: LazyArg<B>): <Services>(self: Context<Services>) => S | B
-  <Services, S, I, B>(self: Context<Services>, key: Key<I, S>, orElse: LazyArg<B>): S | B
-} = dual(3, <Services, S, I, B>(self: Context<Services>, key: Key<I, S>, orElse: LazyArg<B>): S | B => {
-  if (self.mapUnsafe.has(key.key)) {
-    return self.mapUnsafe.get(key.key)! as any
+  <S, I, B>(
+    key: Key<I, S>,
+    orElse: LazyArg<B>
+  ): <Services>(self: Context<Services>) => S | B;
+  <Services, S, I, B>(
+    self: Context<Services>,
+    key: Key<I, S>,
+    orElse: LazyArg<B>
+  ): S | B;
+} = dual(
+  3,
+  <Services, S, I, B>(
+    self: Context<Services>,
+    key: Key<I, S>,
+    orElse: LazyArg<B>
+  ): S | B => {
+    if (self.mapUnsafe.has(key.key)) {
+      return self.mapUnsafe.get(key.key)! as any;
+    }
+    return isReference(key) ? getDefaultValue(key) : orElse();
   }
-  return isReference(key) ? getDefaultValue(key) : orElse()
-})
+);
 
 /**
  * Returns the service currently stored for a key, or `undefined` when the key
@@ -876,12 +937,13 @@ export const getOrElse: {
  * @since 4.0.0
  */
 export const getOrUndefined: {
-  <S, I>(key: Key<I, S>): <Services>(self: Context<Services>) => S | undefined
-  <Services, S, I>(self: Context<Services>, key: Key<I, S>): S | undefined
+  <S, I>(key: Key<I, S>): <Services>(self: Context<Services>) => S | undefined;
+  <Services, S, I>(self: Context<Services>, key: Key<I, S>): S | undefined;
 } = dual(
   2,
-  <Services, S, I>(self: Context<Services>, key: Key<I, S>): S | undefined => self.mapUnsafe.get(key.key)
-)
+  <Services, S, I>(self: Context<Services>, key: Key<I, S>): S | undefined =>
+    self.mapUnsafe.get(key.key)
+);
 
 /**
  * Gets the service for a key, throwing if an absent non-reference key cannot be
@@ -920,18 +982,21 @@ export const getOrUndefined: {
  * @since 4.0.0
  */
 export const getUnsafe: {
-  <S, I>(service: Key<I, S>): <Services>(self: Context<Services>) => S
-  <Services, S, I>(self: Context<Services>, services: Key<I, S>): S
+  <S, I>(service: Key<I, S>): <Services>(self: Context<Services>) => S;
+  <Services, S, I>(self: Context<Services>, services: Key<I, S>): S;
 } = dual(
   2,
-  <Services, I extends Services, S>(self: Context<Services>, service: Key<I, S>): S => {
+  <Services, I extends Services, S>(
+    self: Context<Services>,
+    service: Key<I, S>
+  ): S => {
     if (!self.mapUnsafe.has(service.key)) {
-      if (ReferenceTypeId in service) return getDefaultValue(service as any)
-      throw serviceNotFoundError(service)
+      if (ReferenceTypeId in service) return getDefaultValue(service as any);
+      throw serviceNotFoundError(service);
     }
-    return self.mapUnsafe.get(service.key)! as any
+    return self.mapUnsafe.get(service.key)! as any;
   }
-)
+);
 
 /**
  * Gets a service from the context that corresponds to the given key.
@@ -965,9 +1030,14 @@ export const getUnsafe: {
  * @since 2.0.0
  */
 export const get: {
-  <Services, I extends Services, S>(service: Key<I, S>): (self: Context<Services>) => S
-  <Services, I extends Services, S>(self: Context<Services>, service: Key<I, S>): S
-} = getUnsafe
+  <Services, I extends Services, S>(
+    service: Key<I, S>
+  ): (self: Context<Services>) => S;
+  <Services, I extends Services, S>(
+    self: Context<Services>,
+    service: Key<I, S>
+  ): S;
+} = getUnsafe;
 
 /**
  * Gets the value for a `Context.Reference`, returning its cached default when
@@ -1010,42 +1080,45 @@ export const get: {
  * @category unsafe
  * @since 4.0.0
  */
-export const getReferenceUnsafe = <Services, S>(self: Context<Services>, service: Reference<S>): S => {
+export const getReferenceUnsafe = <Services, S>(
+  self: Context<Services>,
+  service: Reference<S>
+): S => {
   if (!self.mapUnsafe.has(service.key)) {
-    return getDefaultValue(service as any)
+    return getDefaultValue(service as any);
   }
-  return self.mapUnsafe.get(service.key)! as any
-}
+  return self.mapUnsafe.get(service.key)! as any;
+};
 
-const defaultValueCacheKey = "~effect/Context/defaultValue" as const
+const defaultValueCacheKey = "~effect/Context/defaultValue" as const;
 
 const getDefaultValue = (ref: Reference<any>) => {
   if (defaultValueCacheKey in ref) {
-    return ref[defaultValueCacheKey] as any
+    return ref[defaultValueCacheKey] as any;
   }
-  return (ref as any)[defaultValueCacheKey] = ref.defaultValue()
-}
+  return ((ref as any)[defaultValueCacheKey] = ref.defaultValue());
+};
 
 const serviceNotFoundError = (service: Key<any, any>) => {
   const error = new Error(
     `Service not found${service.key ? `: ${String(service.key)}` : ""}`
-  )
+  );
   if (service.stack) {
-    const lines = service.stack.split("\n")
+    const lines = service.stack.split("\n");
     if (lines.length > 2) {
-      const afterAt = lines[2].match(/at (.*)/)
+      const afterAt = lines[2].match(/at (.*)/);
       if (afterAt) {
-        error.message = error.message + ` (defined at ${afterAt[1]})`
+        error.message = error.message + ` (defined at ${afterAt[1]})`;
       }
     }
   }
   if (error.stack) {
-    const lines = error.stack.split("\n")
-    lines.splice(1, 3)
-    error.stack = lines.join("\n")
+    const lines = error.stack.split("\n");
+    lines.splice(1, 3);
+    error.stack = lines.join("\n");
   }
-  return error
-}
+  return error;
+};
 
 /**
  * Gets the service for a key safely wrapped in an `Option`.
@@ -1085,14 +1158,27 @@ const serviceNotFoundError = (service: Key<any, any>) => {
  * @since 2.0.0
  */
 export const getOption: {
-  <S, I>(service: Key<I, S>): <Services>(self: Context<Services>) => Option.Option<S>
-  <Services, S, I>(self: Context<Services>, service: Key<I, S>): Option.Option<S>
-} = dual(2, <Services, I extends Services, S>(self: Context<Services>, service: Key<I, S>): Option.Option<S> => {
-  if (self.mapUnsafe.has(service.key)) {
-    return Option.some(self.mapUnsafe.get(service.key)! as any)
+  <S, I>(
+    service: Key<I, S>
+  ): <Services>(self: Context<Services>) => Option.Option<S>;
+  <Services, S, I>(
+    self: Context<Services>,
+    service: Key<I, S>
+  ): Option.Option<S>;
+} = dual(
+  2,
+  <Services, I extends Services, S>(
+    self: Context<Services>,
+    service: Key<I, S>
+  ): Option.Option<S> => {
+    if (self.mapUnsafe.has(service.key)) {
+      return Option.some(self.mapUnsafe.get(service.key)! as any);
+    }
+    return isReference(service)
+      ? Option.some(getDefaultValue(service as any))
+      : Option.none();
   }
-  return isReference(service) ? Option.some(getDefaultValue(service as any)) : Option.none()
-})
+);
 
 /**
  * Merges two `Context`s into one.
@@ -1130,15 +1216,26 @@ export const getOption: {
  * @since 2.0.0
  */
 export const merge: {
-  <R1>(that: Context<R1>): <Services>(self: Context<Services>) => Context<R1 | Services>
-  <Services, R1>(self: Context<Services>, that: Context<R1>): Context<Services | R1>
-} = dual(2, <Services, R1>(self: Context<Services>, that: Context<R1>): Context<Services | R1> => {
-  if (self.mapUnsafe.size === 0) return that as any
-  if (that.mapUnsafe.size === 0) return self as any
-  return withMapUnsafe(self, (map) => {
-    that.mapUnsafe.forEach((value, key) => map.set(key, value))
-  })
-})
+  <R1>(
+    that: Context<R1>
+  ): <Services>(self: Context<Services>) => Context<R1 | Services>;
+  <Services, R1>(
+    self: Context<Services>,
+    that: Context<R1>
+  ): Context<Services | R1>;
+} = dual(
+  2,
+  <Services, R1>(
+    self: Context<Services>,
+    that: Context<R1>
+  ): Context<Services | R1> => {
+    if (self.mapUnsafe.size === 0) return that as any;
+    if (that.mapUnsafe.size === 0) return self as any;
+    return withMapUnsafe(self, (map) => {
+      that.mapUnsafe.forEach((value, key) => map.set(key, value));
+    });
+  }
+);
 
 /**
  * Merges any number of `Context`s into one.
@@ -1185,14 +1282,14 @@ export const merge: {
 export const mergeAll = <T extends Array<unknown>>(
   ...ctxs: [...{ [K in keyof T]: Context<T[K]> }]
 ): Context<T[number]> => {
-  const map = new Map()
+  const map = new Map();
   for (let i = 0; i < ctxs.length; i++) {
     ctxs[i].mapUnsafe.forEach((value, key) => {
-      map.set(key, value)
-    })
+      map.set(key, value);
+    });
   }
-  return makeUnsafe(map)
-}
+  return makeUnsafe(map);
+};
 
 /**
  * Returns a new `Context` that contains only the specified services.
@@ -1229,17 +1326,18 @@ export const mergeAll = <T extends Array<unknown>>(
  * @category filtering
  * @since 2.0.0
  */
-export const pick = <S extends ReadonlyArray<Key<any, any>>>(
-  ...services: S
-) =>
-<Services>(self: Context<Services>): Context<Services & Service.Identifier<S[number]>> =>
-  withMapUnsafe(self, (map) => {
-    const keySet = new Set(services.map((key) => key.key))
-    map.forEach((_, key) => {
-      if (keySet.has(key)) return
-      map.delete(key)
-    })
-  })
+export const pick =
+  <S extends ReadonlyArray<Key<any, any>>>(...services: S) =>
+  <Services>(
+    self: Context<Services>
+  ): Context<Services & Service.Identifier<S[number]>> =>
+    withMapUnsafe(self, (map) => {
+      const keySet = new Set(services.map((key) => key.key));
+      map.forEach((_, key) => {
+        if (keySet.has(key)) return;
+        map.delete(key);
+      });
+    });
 
 /**
  * Returns a new `Context` with the specified service keys removed.
@@ -1276,15 +1374,16 @@ export const pick = <S extends ReadonlyArray<Key<any, any>>>(
  * @category filtering
  * @since 2.0.0
  */
-export const omit = <S extends ReadonlyArray<Key<any, any>>>(
-  ...keys: S
-) =>
-<Services>(self: Context<Services>): Context<Exclude<Services, Service.Identifier<S[number]>>> =>
-  withMapUnsafe(self, (map) => {
-    for (let i = 0; i < keys.length; i++) {
-      map.delete(keys[i].key)
-    }
-  })
+export const omit =
+  <S extends ReadonlyArray<Key<any, any>>>(...keys: S) =>
+  <Services>(
+    self: Context<Services>
+  ): Context<Exclude<Services, Service.Identifier<S[number]>>> =>
+    withMapUnsafe(self, (map) => {
+      for (let i = 0; i < keys.length; i++) {
+        map.delete(keys[i].key);
+      }
+    });
 
 /**
  * Performs a series of mutations on a `Context`. Prevents unnecessary copying
@@ -1307,28 +1406,37 @@ export const omit = <S extends ReadonlyArray<Key<any, any>>>(
 export const mutate: {
   <Services, B>(
     f: (context: Context<Services>) => Context<B>
-  ): <Services>(self: Context<Services>) => Context<B>
-  <Services, B>(self: Context<Services>, f: (context: Context<Services>) => Context<B>): Context<B>
+  ): <Services>(self: Context<Services>) => Context<B>;
+  <Services, B>(
+    self: Context<Services>,
+    f: (context: Context<Services>) => Context<B>
+  ): Context<B>;
 } = dual(
   2,
-  <Services, B>(self: Context<Services>, f: (context: Context<Services>) => Context<B>): Context<B> => {
-    const next = makeUnsafe<Services>(new Map(self.mapUnsafe))
-    next.mutable = true
-    const result = f(next)
-    result.mutable = false
-    return result
+  <Services, B>(
+    self: Context<Services>,
+    f: (context: Context<Services>) => Context<B>
+  ): Context<B> => {
+    const next = makeUnsafe<Services>(new Map(self.mapUnsafe));
+    next.mutable = true;
+    const result = f(next);
+    result.mutable = false;
+    return result;
   }
-)
+);
 
-const withMapUnsafe = <Services, B>(self: Context<Services>, f: (map: Map<string, any>) => void): Context<B> => {
+const withMapUnsafe = <Services, B>(
+  self: Context<Services>,
+  f: (map: Map<string, any>) => void
+): Context<B> => {
   if (self.mutable) {
-    f(self.mapUnsafe as any)
-    return self as any
+    f(self.mapUnsafe as any);
+    return self as any;
   }
-  const map = new Map(self.mapUnsafe)
-  f(map)
-  return makeUnsafe(map)
-}
+  const map = new Map(self.mapUnsafe);
+  f(map);
+  return makeUnsafe(map);
+};
 
 /**
  * Creates a context key with a default value.
@@ -1375,4 +1483,4 @@ const withMapUnsafe = <Services, B>(self: Context<Services>, f: (map: Map<string
 export const Reference: <Service>(
   key: string,
   options: { readonly defaultValue: () => Service }
-) => Reference<Service> = Service as any
+) => Reference<Service> = Service as any;

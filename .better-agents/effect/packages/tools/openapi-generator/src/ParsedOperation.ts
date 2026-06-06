@@ -10,14 +10,14 @@
  *
  * @since 4.0.0
  */
-import type * as Types from "effect/Types"
+import type * as Types from "effect/Types";
 import type {
   OpenAPISecurityRequirement,
   OpenAPISpecExternalDocs,
   OpenAPISpecLicense,
   OpenAPISpecMethodName,
-  OpenAPISpecServer
-} from "effect/unstable/httpapi/OpenApi"
+  OpenAPISpecServer,
+} from "effect/unstable/httpapi/OpenApi";
 
 /**
  * Root OpenAPI metadata preserved for generated client and HttpApi output.
@@ -26,12 +26,12 @@ import type {
  * @since 4.0.0
  */
 export interface ParsedOpenApiMetadata {
-  readonly title: string
-  readonly version: string
-  readonly summary: string | undefined
-  readonly description: string | undefined
-  readonly license: OpenAPISpecLicense | undefined
-  readonly servers: ReadonlyArray<OpenAPISpecServer> | undefined
+  readonly title: string;
+  readonly version: string;
+  readonly summary: string | undefined;
+  readonly description: string | undefined;
+  readonly license: OpenAPISpecLicense | undefined;
+  readonly servers: ReadonlyArray<OpenAPISpecServer> | undefined;
 }
 
 /**
@@ -41,9 +41,9 @@ export interface ParsedOpenApiMetadata {
  * @since 4.0.0
  */
 export interface ParsedOpenApiTag {
-  readonly name: string
-  readonly description: string | undefined
-  readonly externalDocs: OpenAPISpecExternalDocs | undefined
+  readonly name: string;
+  readonly description: string | undefined;
+  readonly externalDocs: OpenAPISpecExternalDocs | undefined;
 }
 
 /**
@@ -53,13 +53,13 @@ export interface ParsedOpenApiTag {
  * @since 4.0.0
  */
 export interface ParsedOpenApiSecurityScheme {
-  readonly name: string
-  readonly type: "basic" | "bearer" | "apiKey" | "http"
-  readonly description: string | undefined
-  readonly bearerFormat: string | undefined
-  readonly scheme: string | undefined
-  readonly key: string | undefined
-  readonly in: "header" | "query" | "cookie" | undefined
+  readonly name: string;
+  readonly type: "basic" | "bearer" | "apiKey" | "http";
+  readonly description: string | undefined;
+  readonly bearerFormat: string | undefined;
+  readonly scheme: string | undefined;
+  readonly key: string | undefined;
+  readonly in: "header" | "query" | "cookie" | undefined;
 }
 
 /**
@@ -69,10 +69,10 @@ export interface ParsedOpenApiSecurityScheme {
  * @since 4.0.0
  */
 export interface ParsedOpenApi {
-  readonly metadata: ParsedOpenApiMetadata
-  readonly tags: ReadonlyArray<ParsedOpenApiTag>
-  readonly securitySchemes: ReadonlyArray<ParsedOpenApiSecurityScheme>
-  readonly operations: ReadonlyArray<ParsedOperation>
+  readonly metadata: ParsedOpenApiMetadata;
+  readonly tags: ReadonlyArray<ParsedOpenApiTag>;
+  readonly securitySchemes: ReadonlyArray<ParsedOpenApiSecurityScheme>;
+  readonly operations: ReadonlyArray<ParsedOperation>;
 }
 
 /**
@@ -82,10 +82,10 @@ export interface ParsedOpenApi {
  * @since 4.0.0
  */
 export interface ParsedOperationMetadata {
-  readonly summary: string | undefined
-  readonly description: string | undefined
-  readonly deprecated: boolean
-  readonly externalDocs: OpenAPISpecExternalDocs | undefined
+  readonly summary: string | undefined;
+  readonly description: string | undefined;
+  readonly deprecated: boolean;
+  readonly externalDocs: OpenAPISpecExternalDocs | undefined;
 }
 
 /**
@@ -95,11 +95,11 @@ export interface ParsedOperationMetadata {
  * @since 4.0.0
  */
 export interface ParsedOperationParameter {
-  readonly name: string
-  readonly in: "path" | "query" | "header" | "cookie"
-  readonly required: boolean
-  readonly description: string | undefined
-  readonly schema: {}
+  readonly name: string;
+  readonly in: "path" | "query" | "header" | "cookie";
+  readonly required: boolean;
+  readonly description: string | undefined;
+  readonly schema: {};
 }
 
 /**
@@ -109,8 +109,8 @@ export interface ParsedOperationParameter {
  * @since 4.0.0
  */
 export interface ParsedOperationRequestBody {
-  readonly required: boolean
-  readonly contentTypes: Array<string>
+  readonly required: boolean;
+  readonly contentTypes: Array<string>;
 }
 
 /**
@@ -124,7 +124,7 @@ export type ParsedOperationMediaTypeEncoding =
   | "multipart"
   | "form-url-encoded"
   | "text"
-  | "binary"
+  | "binary";
 
 /**
  * Media type whose schema can be represented in generated Effect code.
@@ -133,9 +133,9 @@ export type ParsedOperationMediaTypeEncoding =
  * @since 4.0.0
  */
 export interface ParsedOperationMediaTypeSchema {
-  readonly contentType: string
-  readonly encoding: ParsedOperationMediaTypeEncoding
-  readonly schema: string
+  readonly contentType: string;
+  readonly encoding: ParsedOperationMediaTypeEncoding;
+  readonly schema: string;
 }
 
 /**
@@ -145,12 +145,12 @@ export interface ParsedOperationMediaTypeSchema {
  * @since 4.0.0
  */
 export interface ParsedOperationResponse {
-  readonly status: string
-  readonly description: string | undefined
-  readonly contentTypes: Array<string>
-  readonly hasHeaders: boolean
-  readonly isEmpty: boolean
-  readonly representable: ReadonlyArray<ParsedOperationMediaTypeSchema>
+  readonly status: string;
+  readonly description: string | undefined;
+  readonly contentTypes: Array<string>;
+  readonly hasHeaders: boolean;
+  readonly isEmpty: boolean;
+  readonly representable: ReadonlyArray<ParsedOperationMediaTypeSchema>;
 }
 
 /**
@@ -159,7 +159,8 @@ export interface ParsedOperationResponse {
  * @category models
  * @since 4.0.0
  */
-export type ParsedOperationSecurityRequirement = Readonly<OpenAPISecurityRequirement>
+export type ParsedOperationSecurityRequirement =
+  Readonly<OpenAPISecurityRequirement>;
 
 /**
  * Normalized operation model shared by all OpenAPI generator backends.
@@ -168,46 +169,46 @@ export type ParsedOperationSecurityRequirement = Readonly<OpenAPISecurityRequire
  * @since 4.0.0
  */
 export interface ParsedOperation {
-  readonly id: string
-  readonly operationId: string | undefined
-  readonly path: string
-  readonly method: OpenAPISpecMethodName
-  readonly tags: ReadonlyArray<string>
-  readonly metadata: ParsedOperationMetadata
+  readonly id: string;
+  readonly operationId: string | undefined;
+  readonly path: string;
+  readonly method: OpenAPISpecMethodName;
+  readonly tags: ReadonlyArray<string>;
+  readonly metadata: ParsedOperationMetadata;
   readonly parameters: {
-    readonly path: ReadonlyArray<ParsedOperationParameter>
-    readonly query: ReadonlyArray<ParsedOperationParameter>
-    readonly header: ReadonlyArray<ParsedOperationParameter>
-    readonly cookie: ReadonlyArray<ParsedOperationParameter>
-  }
-  readonly requestBody: ParsedOperationRequestBody | undefined
-  readonly responses: ReadonlyArray<ParsedOperationResponse>
-  readonly defaultResponse: ParsedOperationResponse | undefined
-  readonly effectiveSecurity: ReadonlyArray<ParsedOperationSecurityRequirement>
-  readonly description: string | undefined
-  readonly params?: string
-  readonly paramsOptional: boolean
-  readonly urlParams: ReadonlyArray<string>
-  readonly headers: ReadonlyArray<string>
-  readonly cookies: ReadonlyArray<string>
-  readonly payload?: string
-  readonly payloadFormData: boolean
-  readonly payloadFormUrlEncoded: boolean
-  readonly pathSchema: string | undefined
-  readonly querySchema: string | undefined
-  readonly querySchemaOptional: boolean
-  readonly headersSchema: string | undefined
-  readonly headersSchemaOptional: boolean
-  readonly requestBodyRepresentable: ReadonlyArray<ParsedOperationMediaTypeSchema>
-  readonly pathIds: ReadonlyArray<string>
-  readonly pathTemplate: string
-  readonly successSchemas: ReadonlyMap<string, string>
-  readonly errorSchemas: ReadonlyMap<string, string>
-  readonly voidSchemas: ReadonlySet<string>
+    readonly path: ReadonlyArray<ParsedOperationParameter>;
+    readonly query: ReadonlyArray<ParsedOperationParameter>;
+    readonly header: ReadonlyArray<ParsedOperationParameter>;
+    readonly cookie: ReadonlyArray<ParsedOperationParameter>;
+  };
+  readonly requestBody: ParsedOperationRequestBody | undefined;
+  readonly responses: ReadonlyArray<ParsedOperationResponse>;
+  readonly defaultResponse: ParsedOperationResponse | undefined;
+  readonly effectiveSecurity: ReadonlyArray<ParsedOperationSecurityRequirement>;
+  readonly description: string | undefined;
+  readonly params?: string;
+  readonly paramsOptional: boolean;
+  readonly urlParams: ReadonlyArray<string>;
+  readonly headers: ReadonlyArray<string>;
+  readonly cookies: ReadonlyArray<string>;
+  readonly payload?: string;
+  readonly payloadFormData: boolean;
+  readonly payloadFormUrlEncoded: boolean;
+  readonly pathSchema: string | undefined;
+  readonly querySchema: string | undefined;
+  readonly querySchemaOptional: boolean;
+  readonly headersSchema: string | undefined;
+  readonly headersSchemaOptional: boolean;
+  readonly requestBodyRepresentable: ReadonlyArray<ParsedOperationMediaTypeSchema>;
+  readonly pathIds: ReadonlyArray<string>;
+  readonly pathTemplate: string;
+  readonly successSchemas: ReadonlyMap<string, string>;
+  readonly errorSchemas: ReadonlyMap<string, string>;
+  readonly voidSchemas: ReadonlySet<string>;
   // SSE streaming response schema (text/event-stream)
-  readonly sseSchema?: string
+  readonly sseSchema?: string;
   // Binary stream response (application/octet-stream)
-  readonly binaryResponse: boolean
+  readonly binaryResponse: boolean;
 }
 
 /**
@@ -217,11 +218,11 @@ export interface ParsedOperation {
  * @since 4.0.0
  */
 export const makeDeepMutable = (options: {
-  readonly id: string
-  readonly method: OpenAPISpecMethodName
-  readonly pathIds: Array<string>
-  readonly pathTemplate: string
-  readonly description: string | undefined
+  readonly id: string;
+  readonly method: OpenAPISpecMethodName;
+  readonly pathIds: Array<string>;
+  readonly pathTemplate: string;
+  readonly description: string | undefined;
 }): Types.DeepMutable<ParsedOperation> => ({
   ...options,
   operationId: undefined,
@@ -231,13 +232,13 @@ export const makeDeepMutable = (options: {
     summary: undefined,
     description: options.description,
     deprecated: false,
-    externalDocs: undefined
+    externalDocs: undefined,
   },
   parameters: {
     path: [],
     query: [],
     header: [],
-    cookie: []
+    cookie: [],
   },
   requestBody: undefined,
   responses: [],
@@ -258,5 +259,5 @@ export const makeDeepMutable = (options: {
   errorSchemas: new Map(),
   voidSchemas: new Set(),
   paramsOptional: true,
-  binaryResponse: false
-})
+  binaryResponse: false,
+});

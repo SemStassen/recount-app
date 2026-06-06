@@ -94,7 +94,8 @@ const CorsLayer = HttpRouter.middleware(
 
 const HttpTracingLayer = Layer.succeed(
   HttpMiddleware.TracerDisabledWhen,
-  (request) => request.method === "OPTIONS" &&
+  (request) =>
+    request.method === "OPTIONS" &&
     request.headers["access-control-request-method"] !== undefined
 );
 

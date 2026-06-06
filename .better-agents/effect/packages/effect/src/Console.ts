@@ -73,12 +73,12 @@
  *
  * @since 2.0.0
  */
-import type * as Context from "./Context.ts"
-import type * as Effect from "./Effect.ts"
-import { dual } from "./Function.ts"
-import * as core from "./internal/core.ts"
-import * as effect from "./internal/effect.ts"
-import type { Scope } from "./Scope.ts"
+import type * as Context from "./Context.ts";
+import type * as Effect from "./Effect.ts";
+import { dual } from "./Function.ts";
+import * as core from "./internal/core.ts";
+import * as effect from "./internal/effect.ts";
+import type { Scope } from "./Scope.ts";
 
 /**
  * Represents a console interface for logging, debugging, timing, and grouping output.
@@ -87,25 +87,25 @@ import type { Scope } from "./Scope.ts"
  * @since 2.0.0
  */
 export interface Console {
-  assert(condition: boolean, ...args: ReadonlyArray<any>): void
-  clear(): void
-  count(label?: string): void
-  countReset(label?: string): void
-  debug(...args: ReadonlyArray<any>): void
-  dir(item: any, options?: any): void
-  dirxml(...args: ReadonlyArray<any>): void
-  error(...args: ReadonlyArray<any>): void
-  group(...args: ReadonlyArray<any>): void
-  groupCollapsed(...args: ReadonlyArray<any>): void
-  groupEnd(): void
-  info(...args: ReadonlyArray<any>): void
-  log(...args: ReadonlyArray<any>): void
-  table(tabularData: any, properties?: ReadonlyArray<string>): void
-  time(label?: string): void
-  timeEnd(label?: string): void
-  timeLog(label?: string, ...args: ReadonlyArray<any>): void
-  trace(...args: ReadonlyArray<any>): void
-  warn(...args: ReadonlyArray<any>): void
+  assert(condition: boolean, ...args: ReadonlyArray<any>): void;
+  clear(): void;
+  count(label?: string): void;
+  countReset(label?: string): void;
+  debug(...args: ReadonlyArray<any>): void;
+  dir(item: any, options?: any): void;
+  dirxml(...args: ReadonlyArray<any>): void;
+  error(...args: ReadonlyArray<any>): void;
+  group(...args: ReadonlyArray<any>): void;
+  groupCollapsed(...args: ReadonlyArray<any>): void;
+  groupEnd(): void;
+  info(...args: ReadonlyArray<any>): void;
+  log(...args: ReadonlyArray<any>): void;
+  table(tabularData: any, properties?: ReadonlyArray<string>): void;
+  time(label?: string): void;
+  timeEnd(label?: string): void;
+  timeLog(label?: string, ...args: ReadonlyArray<any>): void;
+  trace(...args: ReadonlyArray<any>): void;
+  warn(...args: ReadonlyArray<any>): void;
 }
 
 /**
@@ -137,7 +137,7 @@ export interface Console {
  * @category references
  * @since 2.0.0
  */
-export const Console: Context.Reference<Console> = effect.ConsoleRef
+export const Console: Context.Reference<Console> = effect.ConsoleRef;
 
 /**
  * Creates an Effect that provides access to the current console service and lets you perform operations with it within an Effect context.
@@ -158,8 +158,10 @@ export const Console: Context.Reference<Console> = effect.ConsoleRef
  * @category constructors
  * @since 2.0.0
  */
-export const consoleWith = <A, E, R>(f: (console: Console) => Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
-  core.withFiber((fiber) => f(fiber.getRef(Console)))
+export const consoleWith = <A, E, R>(
+  f: (console: Console) => Effect.Effect<A, E, R>
+): Effect.Effect<A, E, R> =>
+  core.withFiber((fiber) => f(fiber.getRef(Console)));
 
 /**
  * Writes the supplied assertion message to the console as an error when `condition` is false; when `condition` is true, no console output is produced.
@@ -178,12 +180,15 @@ export const consoleWith = <A, E, R>(f: (console: Console) => Effect.Effect<A, E
  * @category accessors
  * @since 2.0.0
  */
-export const assert = (condition: boolean, ...args: ReadonlyArray<any>): Effect.Effect<void> =>
+export const assert = (
+  condition: boolean,
+  ...args: ReadonlyArray<any>
+): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.assert(condition, ...args)
+      console.assert(condition, ...args);
     })
-  )
+  );
 
 /**
  * Runs the current console service's clear operation.
@@ -215,9 +220,9 @@ export const assert = (condition: boolean, ...args: ReadonlyArray<any>): Effect.
  */
 export const clear: Effect.Effect<void> = consoleWith((console) =>
   effect.sync(() => {
-    console.clear()
+    console.clear();
   })
-)
+);
 
 /**
  * Logs and increments the counter associated with `label`, using the console's default counter when no label is provided.
@@ -240,9 +245,9 @@ export const clear: Effect.Effect<void> = consoleWith((console) =>
 export const count = (label?: string): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.count(label)
+      console.count(label);
     })
-  )
+  );
 
 /**
  * Resets the counter associated with the specified label back to zero.
@@ -266,9 +271,9 @@ export const count = (label?: string): Effect.Effect<void> =>
 export const countReset = (label?: string): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.countReset(label)
+      console.countReset(label);
     })
-  )
+  );
 
 /**
  * Writes a debug message through the current `Console` service.
@@ -296,9 +301,9 @@ export const countReset = (label?: string): Effect.Effect<void> =>
 export const debug = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.debug(...args)
+      console.debug(...args);
     })
-  )
+  );
 
 /**
  * Displays an interactive list of the properties of the specified object, optionally using console-specific inspection options for debugging complex data structures.
@@ -321,9 +326,9 @@ export const debug = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
 export const dir = (item: any, options?: any): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.dir(item, options)
+      console.dir(item, options);
     })
-  )
+  );
 
 /**
  * Displays an interactive tree of descendant XML or HTML elements, which is particularly useful for inspecting DOM elements in browser environments.
@@ -347,9 +352,9 @@ export const dir = (item: any, options?: any): Effect.Effect<void> =>
 export const dirxml = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.dirxml(...args)
+      console.dirxml(...args);
     })
-  )
+  );
 
 /**
  * Writes an error-level message to the console, typically displayed with error
@@ -375,9 +380,9 @@ export const dirxml = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
 export const error = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.error(...args)
+      console.error(...args);
     })
-  )
+  );
 
 /**
  * Creates a scoped console group, optionally collapsed and labeled, and closes it automatically when the Effect scope is finalized.
@@ -403,23 +408,25 @@ export const error = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
  * @since 2.0.0
  */
 export const group = (
-  options?: { label?: string | undefined; collapsed?: boolean | undefined } | undefined
+  options?:
+    | { label?: string | undefined; collapsed?: boolean | undefined }
+    | undefined
 ): Effect.Effect<void, never, Scope> =>
   consoleWith((console) =>
     effect.acquireRelease(
       effect.sync(() => {
         if (options?.collapsed) {
-          console.groupCollapsed(options.label)
+          console.groupCollapsed(options.label);
         } else {
-          console.group(options?.label)
+          console.group(options?.label);
         }
       }),
       () =>
         effect.sync(() => {
-          console.groupEnd()
+          console.groupEnd();
         })
     )
-  )
+  );
 
 /**
  * Writes an informational message to the console, typically displayed with info
@@ -445,9 +452,9 @@ export const group = (
 export const info = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.info(...args)
+      console.info(...args);
     })
-  )
+  );
 
 /**
  * Logs a general-purpose message to the console.
@@ -470,9 +477,9 @@ export const info = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
 export const log = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.log(...args)
+      console.log(...args);
     })
-  )
+  );
 
 /**
  * Displays tabular data as a formatted table in the console, optionally limited to selected properties.
@@ -496,12 +503,15 @@ export const log = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
  * @category accessors
  * @since 2.0.0
  */
-export const table = (tabularData: any, properties?: ReadonlyArray<string>): Effect.Effect<void> =>
+export const table = (
+  tabularData: any,
+  properties?: ReadonlyArray<string>
+): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.table(tabularData, properties)
+      console.table(tabularData, properties);
     })
-  )
+  );
 
 /**
  * Starts a scoped timer for `label` and automatically ends it when the Effect scope is finalized.
@@ -526,18 +536,20 @@ export const table = (tabularData: any, properties?: ReadonlyArray<string>): Eff
  * @category accessors
  * @since 2.0.0
  */
-export const time = (label?: string | undefined): Effect.Effect<void, never, Scope> =>
+export const time = (
+  label?: string | undefined
+): Effect.Effect<void, never, Scope> =>
   consoleWith((console) =>
     effect.acquireRelease(
       effect.sync(() => {
-        console.time(label)
+        console.time(label);
       }),
       () =>
         effect.sync(() => {
-          console.timeEnd(label)
+          console.timeEnd(label);
         })
     )
-  )
+  );
 
 /**
  * Logs the elapsed time for an existing timer without stopping it, allowing progress reports for long-running operations.
@@ -563,12 +575,15 @@ export const time = (label?: string | undefined): Effect.Effect<void, never, Sco
  * @category accessors
  * @since 2.0.0
  */
-export const timeLog = (label?: string, ...args: ReadonlyArray<any>): Effect.Effect<void> =>
+export const timeLog = (
+  label?: string,
+  ...args: ReadonlyArray<any>
+): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.timeLog(label, ...args)
+      console.timeLog(label, ...args);
     })
-  )
+  );
 
 /**
  * Writes the current stack trace to the console to show how the current point in
@@ -591,9 +606,9 @@ export const timeLog = (label?: string, ...args: ReadonlyArray<any>): Effect.Eff
 export const trace = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.trace(...args)
+      console.trace(...args);
     })
-  )
+  );
 
 /**
  * Writes a warning-level message to the console, typically displayed with
@@ -618,9 +633,9 @@ export const trace = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
 export const warn = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
   consoleWith((console) =>
     effect.sync(() => {
-      console.warn(...args)
+      console.warn(...args);
     })
-  )
+  );
 
 /**
  * Runs an Effect inside an optionally labeled or collapsed console group, starting the group before execution and ending it after the Effect completes.
@@ -646,36 +661,37 @@ export const warn = (...args: ReadonlyArray<any>): Effect.Effect<void> =>
  * @since 2.0.0
  */
 export const withGroup = dual<
-  (
-    options?: {
-      readonly label?: string | undefined
-      readonly collapsed?: boolean | undefined
-    }
-  ) => <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>,
+  (options?: {
+    readonly label?: string | undefined;
+    readonly collapsed?: boolean | undefined;
+  }) => <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>,
   <A, E, R>(
     self: Effect.Effect<A, E, R>,
     options?: {
-      readonly label?: string | undefined
-      readonly collapsed?: boolean | undefined
+      readonly label?: string | undefined;
+      readonly collapsed?: boolean | undefined;
     }
   ) => Effect.Effect<A, E, R>
->((args) => core.isEffect(args[0]), (self, options) =>
-  consoleWith((console) =>
-    effect.acquireUseRelease(
-      effect.sync(() => {
-        if (options?.collapsed) {
-          console.groupCollapsed(options.label)
-        } else {
-          console.group(options?.label)
-        }
-      }),
-      () => self,
-      () =>
+>(
+  (args) => core.isEffect(args[0]),
+  (self, options) =>
+    consoleWith((console) =>
+      effect.acquireUseRelease(
         effect.sync(() => {
-          console.groupEnd()
-        })
+          if (options?.collapsed) {
+            console.groupCollapsed(options.label);
+          } else {
+            console.group(options?.label);
+          }
+        }),
+        () => self,
+        () =>
+          effect.sync(() => {
+            console.groupEnd();
+          })
+      )
     )
-  ))
+);
 
 /**
  * Runs an Effect with a console timer, starting the timer before execution and ending it after the Effect completes.
@@ -700,18 +716,26 @@ export const withGroup = dual<
  * @since 2.0.0
  */
 export const withTime = dual<
-  (label?: string) => <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>,
-  <A, E, R>(self: Effect.Effect<A, E, R>, label?: string) => Effect.Effect<A, E, R>
->((args) => core.isEffect(args[0]), (self, label) =>
-  consoleWith((console) =>
-    effect.acquireUseRelease(
-      effect.sync(() => {
-        console.time(label)
-      }),
-      () => self,
-      () =>
+  (
+    label?: string
+  ) => <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>,
+  <A, E, R>(
+    self: Effect.Effect<A, E, R>,
+    label?: string
+  ) => Effect.Effect<A, E, R>
+>(
+  (args) => core.isEffect(args[0]),
+  (self, label) =>
+    consoleWith((console) =>
+      effect.acquireUseRelease(
         effect.sync(() => {
-          console.timeEnd(label)
-        })
+          console.time(label);
+        }),
+        () => self,
+        () =>
+          effect.sync(() => {
+            console.timeEnd(label);
+          })
+      )
     )
-  ))
+);

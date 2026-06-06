@@ -36,38 +36,52 @@
  *
  * @since 4.0.0
  */
-import type { NonEmptyReadonlyArray } from "../../Array.ts"
-import * as Cause from "../../Cause.ts"
-import { Clock } from "../../Clock.ts"
-import * as Context from "../../Context.ts"
-import * as Duration from "../../Duration.ts"
-import * as Effect from "../../Effect.ts"
-import * as Fiber from "../../Fiber.ts"
-import { constant, constFalse, constTrue, dual, flow, identity } from "../../Function.ts"
-import * as Inspectable from "../../Inspectable.ts"
-import * as Layer from "../../Layer.ts"
-import * as Option from "../../Option.ts"
-import { type Pipeable, pipeArguments } from "../../Pipeable.ts"
-import * as Predicate from "../../Predicate.ts"
-import * as Ref from "../../Ref.ts"
-import * as Result from "../../Result.ts"
-import * as Schedule from "../../Schedule.ts"
-import type * as Scope from "../../Scope.ts"
-import * as Stream from "../../Stream.ts"
-import * as Tracer from "../../Tracer.ts"
-import type { EqualsWith, ExcludeTag, ExtractTag, NoExcessProperties, NoInfer, Tags } from "../../Types.ts"
-import type * as RateLimiter from "../persistence/RateLimiter.ts"
-import * as Cookies from "./Cookies.ts"
-import * as Headers from "./Headers.ts"
-import * as Error from "./HttpClientError.ts"
-import * as HttpClientRequest from "./HttpClientRequest.ts"
-import * as HttpClientResponse from "./HttpClientResponse.ts"
-import * as HttpIncomingMessage from "./HttpIncomingMessage.ts"
-import * as HttpMethod from "./HttpMethod.ts"
-import * as TraceContext from "./HttpTraceContext.ts"
-import * as UrlParams from "./UrlParams.ts"
+import type { NonEmptyReadonlyArray } from "../../Array.ts";
+import * as Cause from "../../Cause.ts";
+import { Clock } from "../../Clock.ts";
+import * as Context from "../../Context.ts";
+import * as Duration from "../../Duration.ts";
+import * as Effect from "../../Effect.ts";
+import * as Fiber from "../../Fiber.ts";
+import {
+  constant,
+  constFalse,
+  constTrue,
+  dual,
+  flow,
+  identity,
+} from "../../Function.ts";
+import * as Inspectable from "../../Inspectable.ts";
+import * as Layer from "../../Layer.ts";
+import * as Option from "../../Option.ts";
+import { type Pipeable, pipeArguments } from "../../Pipeable.ts";
+import * as Predicate from "../../Predicate.ts";
+import * as Ref from "../../Ref.ts";
+import * as Result from "../../Result.ts";
+import * as Schedule from "../../Schedule.ts";
+import type * as Scope from "../../Scope.ts";
+import * as Stream from "../../Stream.ts";
+import * as Tracer from "../../Tracer.ts";
+import type {
+  EqualsWith,
+  ExcludeTag,
+  ExtractTag,
+  NoExcessProperties,
+  NoInfer,
+  Tags,
+} from "../../Types.ts";
+import type * as RateLimiter from "../persistence/RateLimiter.ts";
+import * as Cookies from "./Cookies.ts";
+import * as Headers from "./Headers.ts";
+import * as Error from "./HttpClientError.ts";
+import * as HttpClientRequest from "./HttpClientRequest.ts";
+import * as HttpClientResponse from "./HttpClientResponse.ts";
+import * as HttpIncomingMessage from "./HttpIncomingMessage.ts";
+import * as HttpMethod from "./HttpMethod.ts";
+import * as TraceContext from "./HttpTraceContext.ts";
+import * as UrlParams from "./UrlParams.ts";
 
-const TypeId = "~effect/http/HttpClient"
+const TypeId = "~effect/http/HttpClient";
 
 /**
  * Returns `true` if the provided value is an `HttpClient`.
@@ -75,7 +89,8 @@ const TypeId = "~effect/http/HttpClient"
  * @category guards
  * @since 4.0.0
  */
-export const isHttpClient = (u: unknown): u is HttpClient => Predicate.hasProperty(u, TypeId)
+export const isHttpClient = (u: unknown): u is HttpClient =>
+  Predicate.hasProperty(u, TypeId);
 
 /**
  * HTTP client whose requests produce `HttpClientResponse` values and can fail with `HttpClientError`.
@@ -101,42 +116,43 @@ export declare namespace HttpClient {
    * @category models
    * @since 4.0.0
    */
-  export interface With<E, R = never> extends Pipeable, Inspectable.Inspectable {
-    readonly [TypeId]: typeof TypeId
-    readonly preprocess: Preprocess<E, R>
-    readonly postprocess: Postprocess<E, R>
+  export interface With<E, R = never>
+    extends Pipeable, Inspectable.Inspectable {
+    readonly [TypeId]: typeof TypeId;
+    readonly preprocess: Preprocess<E, R>;
+    readonly postprocess: Postprocess<E, R>;
     readonly execute: (
       request: HttpClientRequest.HttpClientRequest
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
 
     readonly get: (
       url: string | URL,
       options?: HttpClientRequest.Options.NoUrl
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
     readonly head: (
       url: string | URL,
       options?: HttpClientRequest.Options.NoUrl
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
     readonly post: (
       url: string | URL,
       options?: HttpClientRequest.Options.NoUrl
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
     readonly patch: (
       url: string | URL,
       options?: HttpClientRequest.Options.NoUrl
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
     readonly put: (
       url: string | URL,
       options?: HttpClientRequest.Options.NoUrl
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
     readonly del: (
       url: string | URL,
       options?: HttpClientRequest.Options.NoUrl
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
     readonly options: (
       url: string | URL,
       options?: HttpClientRequest.Options.NoUrl
-    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
   }
 
   /**
@@ -147,7 +163,7 @@ export declare namespace HttpClient {
    */
   export type Preprocess<E, R> = (
     request: HttpClientRequest.HttpClientRequest
-  ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E, R>
+  ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E, R>;
 
   /**
    * Function that turns a preprocessed request effect into the response effect executed by the client.
@@ -157,7 +173,7 @@ export declare namespace HttpClient {
    */
   export type Postprocess<E = never, R = never> = (
     request: Effect.Effect<HttpClientRequest.HttpClientRequest, E, R>
-  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>;
 }
 
 /**
@@ -171,15 +187,13 @@ export declare namespace HttpClient {
  * @category services
  * @since 4.0.0
  */
-export const HttpClient: Context.Service<HttpClient, HttpClient> = Context.Service<HttpClient, HttpClient>(
-  "effect/HttpClient"
-)
+export const HttpClient: Context.Service<HttpClient, HttpClient> =
+  Context.Service<HttpClient, HttpClient>("effect/HttpClient");
 
-const accessor = (method: keyof HttpClient) => (...args: Array<any>): Effect.Effect<any, any, any> =>
-  Effect.flatMap(
-    HttpClient,
-    (client) => (client as any)[method](...args)
-  )
+const accessor =
+  (method: keyof HttpClient) =>
+  (...args: Array<any>): Effect.Effect<any, any, any> =>
+    Effect.flatMap(HttpClient, (client) => (client as any)[method](...args));
 
 /**
  * Executes a prebuilt `HttpClientRequest` using the `HttpClient` service from the environment.
@@ -189,7 +203,11 @@ const accessor = (method: keyof HttpClient) => (...args: Array<any>): Effect.Eff
  */
 export const execute: (
   request: HttpClientRequest.HttpClientRequest
-) => Effect.Effect<HttpClientResponse.HttpClientResponse, Error.HttpClientError, HttpClient> = accessor("execute")
+) => Effect.Effect<
+  HttpClientResponse.HttpClientResponse,
+  Error.HttpClientError,
+  HttpClient
+> = accessor("execute");
 
 /**
  * Executes a `GET` request using the `HttpClient` service from the environment.
@@ -197,11 +215,14 @@ export const execute: (
  * @category accessors
  * @since 4.0.0
  */
-export const get: (url: string | URL, options?: HttpClientRequest.Options.NoUrl | undefined) => Effect.Effect<
+export const get: (
+  url: string | URL,
+  options?: HttpClientRequest.Options.NoUrl | undefined
+) => Effect.Effect<
   HttpClientResponse.HttpClientResponse,
   Error.HttpClientError,
   HttpClient
-> = accessor("get")
+> = accessor("get");
 
 /**
  * Executes a `HEAD` request using the `HttpClient` service from the environment.
@@ -209,11 +230,14 @@ export const get: (url: string | URL, options?: HttpClientRequest.Options.NoUrl 
  * @category accessors
  * @since 4.0.0
  */
-export const head: (url: string | URL, options?: HttpClientRequest.Options.NoUrl | undefined) => Effect.Effect<
+export const head: (
+  url: string | URL,
+  options?: HttpClientRequest.Options.NoUrl | undefined
+) => Effect.Effect<
   HttpClientResponse.HttpClientResponse,
   Error.HttpClientError,
   HttpClient
-> = accessor("head")
+> = accessor("head");
 
 /**
  * Executes a `POST` request using the `HttpClient` service from the environment.
@@ -221,11 +245,14 @@ export const head: (url: string | URL, options?: HttpClientRequest.Options.NoUrl
  * @category accessors
  * @since 4.0.0
  */
-export const post: (url: string | URL, options?: HttpClientRequest.Options.NoUrl | undefined) => Effect.Effect<
+export const post: (
+  url: string | URL,
+  options?: HttpClientRequest.Options.NoUrl | undefined
+) => Effect.Effect<
   HttpClientResponse.HttpClientResponse,
   Error.HttpClientError,
   HttpClient
-> = accessor("post")
+> = accessor("post");
 
 /**
  * Executes a `PATCH` request using the `HttpClient` service from the environment.
@@ -233,11 +260,14 @@ export const post: (url: string | URL, options?: HttpClientRequest.Options.NoUrl
  * @category accessors
  * @since 4.0.0
  */
-export const patch: (url: string | URL, options?: HttpClientRequest.Options.NoUrl | undefined) => Effect.Effect<
+export const patch: (
+  url: string | URL,
+  options?: HttpClientRequest.Options.NoUrl | undefined
+) => Effect.Effect<
   HttpClientResponse.HttpClientResponse,
   Error.HttpClientError,
   HttpClient
-> = accessor("patch")
+> = accessor("patch");
 
 /**
  * Executes a `PUT` request using the `HttpClient` service from the environment.
@@ -245,11 +275,14 @@ export const patch: (url: string | URL, options?: HttpClientRequest.Options.NoUr
  * @category accessors
  * @since 4.0.0
  */
-export const put: (url: string | URL, options?: HttpClientRequest.Options.NoUrl | undefined) => Effect.Effect<
+export const put: (
+  url: string | URL,
+  options?: HttpClientRequest.Options.NoUrl | undefined
+) => Effect.Effect<
   HttpClientResponse.HttpClientResponse,
   Error.HttpClientError,
   HttpClient
-> = accessor("put")
+> = accessor("put");
 
 /**
  * Executes a `DELETE` request using the `HttpClient` service from the environment.
@@ -257,11 +290,14 @@ export const put: (url: string | URL, options?: HttpClientRequest.Options.NoUrl 
  * @category accessors
  * @since 4.0.0
  */
-export const del: (url: string | URL, options?: HttpClientRequest.Options.NoUrl | undefined) => Effect.Effect<
+export const del: (
+  url: string | URL,
+  options?: HttpClientRequest.Options.NoUrl | undefined
+) => Effect.Effect<
   HttpClientResponse.HttpClientResponse,
   Error.HttpClientError,
   HttpClient
-> = accessor("del")
+> = accessor("del");
 
 /**
  * Executes an `OPTIONS` request using the `HttpClient` service from the environment.
@@ -269,11 +305,14 @@ export const del: (url: string | URL, options?: HttpClientRequest.Options.NoUrl 
  * @category accessors
  * @since 4.0.0
  */
-export const options: (url: string | URL, options?: HttpClientRequest.Options.NoUrl | undefined) => Effect.Effect<
+export const options: (
+  url: string | URL,
+  options?: HttpClientRequest.Options.NoUrl | undefined
+) => Effect.Effect<
   HttpClientResponse.HttpClientResponse,
   Error.HttpClientError,
   HttpClient
-> = accessor("options")
+> = accessor("options");
 
 /**
  * Transforms a client by wrapping the response effect for each request.
@@ -291,25 +330,30 @@ export const transform: {
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
       request: HttpClientRequest.HttpClientRequest
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-  ): (self: HttpClient.With<E, R>) => HttpClient.With<E | E1, R | R1>
+  ): (self: HttpClient.With<E, R>) => HttpClient.With<E | E1, R | R1>;
   <E, R, E1, R1>(
     self: HttpClient.With<E, R>,
     f: (
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
       request: HttpClientRequest.HttpClientRequest
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-  ): HttpClient.With<E | E1, R | R1>
-} = dual(2, <E, R, E1, R1>(
-  self: HttpClient.With<E, R>,
-  f: (
-    effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
-    request: HttpClientRequest.HttpClientRequest
-  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-): HttpClient.With<E | E1, R | R1> =>
-  makeWith(
-    Effect.flatMap((request) => f(self.postprocess(Effect.succeed(request)), request)),
-    self.preprocess
-  ))
+  ): HttpClient.With<E | E1, R | R1>;
+} = dual(
+  2,
+  <E, R, E1, R1>(
+    self: HttpClient.With<E, R>,
+    f: (
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
+      request: HttpClientRequest.HttpClientRequest
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
+  ): HttpClient.With<E | E1, R | R1> =>
+    makeWith(
+      Effect.flatMap((request) =>
+        f(self.postprocess(Effect.succeed(request)), request)
+      ),
+      self.preprocess
+    )
+);
 
 /**
  * Transforms a client by applying an effectful transformation to each response effect.
@@ -322,35 +366,39 @@ export const transformResponse: {
     f: (
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-  ): (self: HttpClient.With<E, R>) => HttpClient.With<E1, R1>
+  ): (self: HttpClient.With<E, R>) => HttpClient.With<E1, R1>;
   <E, R, E1, R1>(
     self: HttpClient.With<E, R>,
     f: (
       effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-  ): HttpClient.With<E1, R1>
-} = dual(2, <E, R, E1, R1>(
-  self: HttpClient.With<E, R>,
-  f: (
-    effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
-  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-): HttpClient.With<E1, R1> => makeWith((request) => f(self.postprocess(request)), self.preprocess))
+  ): HttpClient.With<E1, R1>;
+} = dual(
+  2,
+  <E, R, E1, R1>(
+    self: HttpClient.With<E, R>,
+    f: (
+      effect: Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>
+    ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
+  ): HttpClient.With<E1, R1> =>
+    makeWith((request) => f(self.postprocess(request)), self.preprocess)
+);
 
 const catch_: {
   <E, E2, R2>(
     f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>
-  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E2, R2 | R>
+  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E2, R2 | R>;
   <E, R, A2, E2, R2>(
     self: HttpClient.With<E, R>,
     f: (e: E) => Effect.Effect<A2, E2, R2>
-  ): HttpClient.With<E2, R | R2>
+  ): HttpClient.With<E2, R | R2>;
 } = dual(
   2,
   <E, R, E2, R2>(
     self: HttpClient.With<E, R>,
     f: (e: E) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>
   ): HttpClient.With<E2, R | R2> => transformResponse(self, Effect.catch(f))
-)
+);
 
 export {
   /**
@@ -359,8 +407,8 @@ export {
    * @category error handling
    * @since 4.0.0
    */
-  catch_ as catch
-}
+  catch_ as catch,
+};
 
 /**
  * Handles client failures with one or more matching `_tag` values and returns a transformed client.
@@ -372,18 +420,27 @@ export const catchTag: {
   <K extends Tags<E> | NonEmptyReadonlyArray<Tags<E>>, E, E1, R1>(
     tag: K,
     f: (
-      e: ExtractTag<NoInfer<E>, K extends NonEmptyReadonlyArray<string> ? K[number] : K>
+      e: ExtractTag<
+        NoInfer<E>,
+        K extends NonEmptyReadonlyArray<string> ? K[number] : K
+      >
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
   ): <R>(
     self: HttpClient.With<E, R>
-  ) => HttpClient.With<E1 | ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>, R1 | R>
+  ) => HttpClient.With<
+    E1 | ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>,
+    R1 | R
+  >;
   <R, E, K extends Tags<E> | NonEmptyReadonlyArray<Tags<E>>, R1, E1>(
     self: HttpClient.With<E, R>,
     tag: K,
     f: (
       e: ExtractTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-  ): HttpClient.With<E1 | ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>, R1 | R>
+  ): HttpClient.With<
+    E1 | ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>,
+    R1 | R
+  >;
 } = dual(
   3,
   <R, E, K extends Tags<E> | NonEmptyReadonlyArray<Tags<E>>, R1, E1>(
@@ -392,17 +449,22 @@ export const catchTag: {
     f: (
       e: ExtractTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E1, R1>
-  ): HttpClient.With<E1 | ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>, R1 | R> =>
-    transformResponse(
-      self,
-      (effect) =>
-        Effect.catchTag<HttpClientResponse.HttpClientResponse, E, R, K, R1, E1, HttpClientResponse.HttpClientResponse>(
-          effect,
-          tag,
-          f
-        )
+  ): HttpClient.With<
+    E1 | ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>,
+    R1 | R
+  > =>
+    transformResponse(self, (effect) =>
+      Effect.catchTag<
+        HttpClientResponse.HttpClientResponse,
+        E,
+        R,
+        K,
+        R1,
+        E1,
+        HttpClientResponse.HttpClientResponse
+      >(effect, tag, f)
     )
-)
+);
 
 /**
  * Handles client failures by matching their `_tag` values against a case map.
@@ -413,90 +475,113 @@ export const catchTag: {
 export const catchTags: {
   <
     E,
-    Cases extends
-      & {
-        [K in Extract<E, { _tag: string }>["_tag"]]+?: (
-          error: Extract<E, { _tag: K }>
-        ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>
-      }
-      & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
+    Cases extends {
+      [K in Extract<E, { _tag: string }>["_tag"]]+?: (
+        error: Extract<E, { _tag: K }>
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
+    } & (unknown extends E
+      ? {}
+      : {
+          [K in Exclude<
+            keyof Cases,
+            Extract<E, { _tag: string }>["_tag"]
+          >]: never;
+        }),
   >(
     cases: Cases
-  ): <R>(
-    self: HttpClient.With<E, R>
-  ) => HttpClient.With<
+  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<
     | Exclude<E, { _tag: keyof Cases }>
     | {
-      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, infer E, any> ? E : never
-    }[keyof Cases],
+        [K in keyof Cases]: Cases[K] extends (
+          ...args: Array<any>
+        ) => Effect.Effect<any, infer E, any>
+          ? E
+          : never;
+      }[keyof Cases],
     | R
     | {
-      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, any, infer R> ? R : never
-    }[keyof Cases]
-  >
+        [K in keyof Cases]: Cases[K] extends (
+          ...args: Array<any>
+        ) => Effect.Effect<any, any, infer R>
+          ? R
+          : never;
+      }[keyof Cases]
+  >;
   <
     E extends { _tag: string },
     R,
-    Cases extends
-      & {
-        [K in Extract<E, { _tag: string }>["_tag"]]+?: (
-          error: Extract<E, { _tag: K }>
-        ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>
-      }
-      & (unknown extends E ? {} : { [K in Exclude<keyof Cases, Extract<E, { _tag: string }>["_tag"]>]: never })
+    Cases extends {
+      [K in Extract<E, { _tag: string }>["_tag"]]+?: (
+        error: Extract<E, { _tag: K }>
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
+    } & (unknown extends E
+      ? {}
+      : {
+          [K in Exclude<
+            keyof Cases,
+            Extract<E, { _tag: string }>["_tag"]
+          >]: never;
+        }),
   >(
     self: HttpClient.With<E, R>,
     cases: Cases
   ): HttpClient.With<
     | Exclude<E, { _tag: keyof Cases }>
     | {
-      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, infer E, any> ? E : never
-    }[keyof Cases],
+        [K in keyof Cases]: Cases[K] extends (
+          ...args: Array<any>
+        ) => Effect.Effect<any, infer E, any>
+          ? E
+          : never;
+      }[keyof Cases],
     | R
     | {
-      [K in keyof Cases]: Cases[K] extends (...args: Array<any>) => Effect.Effect<any, any, infer R> ? R : never
-    }[keyof Cases]
-  >
+        [K in keyof Cases]: Cases[K] extends (
+          ...args: Array<any>
+        ) => Effect.Effect<any, any, infer R>
+          ? R
+          : never;
+      }[keyof Cases]
+  >;
 } = dual(
   2,
   <
     E extends { _tag: string },
     R,
-    Cases extends
-      & {
-        [K in Extract<E, { _tag: string }>["_tag"]]+?: (
-          error: Extract<E, { _tag: K }>
-        ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>
-      }
-      & (unknown extends E ? {}
-        : {
-          [
-            K in Exclude<
-              keyof Cases,
-              Extract<E, { _tag: string }>["_tag"]
-            >
-          ]: never
-        })
+    Cases extends {
+      [K in Extract<E, { _tag: string }>["_tag"]]+?: (
+        error: Extract<E, { _tag: K }>
+      ) => Effect.Effect<HttpClientResponse.HttpClientResponse, any, any>;
+    } & (unknown extends E
+      ? {}
+      : {
+          [K in Exclude<
+            keyof Cases,
+            Extract<E, { _tag: string }>["_tag"]
+          >]: never;
+        }),
   >(
     self: HttpClient.With<E, R>,
     cases: Cases
   ): HttpClient.With<
     | Exclude<E, { _tag: keyof Cases }>
     | {
-      [K in keyof Cases]: Cases[K] extends (
-        ...args: Array<any>
-      ) => Effect.Effect<any, infer E, any> ? E
-        : never
-    }[keyof Cases],
+        [K in keyof Cases]: Cases[K] extends (
+          ...args: Array<any>
+        ) => Effect.Effect<any, infer E, any>
+          ? E
+          : never;
+      }[keyof Cases],
     | R
     | {
-      [K in keyof Cases]: Cases[K] extends (
-        ...args: Array<any>
-      ) => Effect.Effect<any, any, infer R> ? R
-        : never
-    }[keyof Cases]
+        [K in keyof Cases]: Cases[K] extends (
+          ...args: Array<any>
+        ) => Effect.Effect<any, any, infer R>
+          ? R
+          : never;
+      }[keyof Cases]
   > => transformResponse(self, Effect.catchTags(cases) as any)
-)
+);
 
 /**
  * Filters the result of a response, or runs an alternative effect if the predicate fails.
@@ -506,7 +591,10 @@ export const catchTags: {
  */
 export const filterOrElse: {
   <B extends HttpClientResponse.HttpClientResponse, E2, R2>(
-    refinement: Predicate.Refinement<NoInfer<HttpClientResponse.HttpClientResponse>, B>,
+    refinement: Predicate.Refinement<
+      NoInfer<HttpClientResponse.HttpClientResponse>,
+      B
+    >,
     orElse: (
       response: EqualsWith<
         HttpClientResponse.HttpClientResponse,
@@ -515,13 +603,15 @@ export const filterOrElse: {
         Exclude<NoInfer<HttpClientResponse.HttpClientResponse>, B>
       >
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R2 | R>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R2 | R>;
   <E2, R2>(
-    predicate: Predicate.Predicate<NoInfer<HttpClientResponse.HttpClientResponse>>,
+    predicate: Predicate.Predicate<
+      NoInfer<HttpClientResponse.HttpClientResponse>
+    >,
     orElse: (
       response: NoInfer<HttpClientResponse.HttpClientResponse>
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R2 | R>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R2 | R>;
   <E, R, B extends HttpClientResponse.HttpClientResponse, E2, R2>(
     self: HttpClient.With<E, R>,
     refinement: Predicate.Refinement<HttpClientResponse.HttpClientResponse, B>,
@@ -533,15 +623,17 @@ export const filterOrElse: {
         Exclude<HttpClientResponse.HttpClientResponse, B>
       >
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>
-  ): HttpClient.With<E2 | E, R2 | R>
+  ): HttpClient.With<E2 | E, R2 | R>;
   <E, R, E2, R2>(
     self: HttpClient.With<E, R>,
     predicate: Predicate.Predicate<HttpClientResponse.HttpClientResponse>,
     orElse: (
       response: HttpClientResponse.HttpClientResponse
     ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E2, R2>
-  ): HttpClient.With<E2 | E, R2 | R>
-} = dual(3, (self, f, orElse) => transformResponse(self, Effect.filterOrElse(f, orElse)))
+  ): HttpClient.With<E2 | E, R2 | R>;
+} = dual(3, (self, f, orElse) =>
+  transformResponse(self, Effect.filterOrElse(f, orElse))
+);
 
 /**
  * Filters successful responses, or fails with the error produced by `orFailWith` when the predicate does not match.
@@ -551,24 +643,36 @@ export const filterOrElse: {
  */
 export const filterOrFail: {
   <B extends HttpClientResponse.HttpClientResponse, E2>(
-    refinement: Predicate.Refinement<NoInfer<HttpClientResponse.HttpClientResponse>, B>,
+    refinement: Predicate.Refinement<
+      NoInfer<HttpClientResponse.HttpClientResponse>,
+      B
+    >,
     orFailWith: (response: NoInfer<HttpClientResponse.HttpClientResponse>) => E2
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R>;
   <E2>(
-    predicate: Predicate.Predicate<NoInfer<HttpClientResponse.HttpClientResponse>>,
+    predicate: Predicate.Predicate<
+      NoInfer<HttpClientResponse.HttpClientResponse>
+    >,
     orFailWith: (response: NoInfer<HttpClientResponse.HttpClientResponse>) => E2
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E2 | E, R>;
   <E, R, B extends HttpClientResponse.HttpClientResponse, E2>(
     self: HttpClient.With<E, R>,
-    refinement: Predicate.Refinement<NoInfer<HttpClientResponse.HttpClientResponse>, B>,
+    refinement: Predicate.Refinement<
+      NoInfer<HttpClientResponse.HttpClientResponse>,
+      B
+    >,
     orFailWith: (response: NoInfer<HttpClientResponse.HttpClientResponse>) => E2
-  ): HttpClient.With<E2 | E, R>
+  ): HttpClient.With<E2 | E, R>;
   <E, R, E2>(
     self: HttpClient.With<E, R>,
-    predicate: Predicate.Predicate<NoInfer<HttpClientResponse.HttpClientResponse>>,
+    predicate: Predicate.Predicate<
+      NoInfer<HttpClientResponse.HttpClientResponse>
+    >,
     orFailWith: (response: NoInfer<HttpClientResponse.HttpClientResponse>) => E2
-  ): HttpClient.With<E2 | E, R>
-} = dual(3, (self, f, orFailWith) => transformResponse(self, Effect.filterOrFail(f, orFailWith)))
+  ): HttpClient.With<E2 | E, R>;
+} = dual(3, (self, f, orFailWith) =>
+  transformResponse(self, Effect.filterOrFail(f, orFailWith))
+);
 
 /**
  * Filters responses by HTTP status code.
@@ -577,13 +681,23 @@ export const filterOrFail: {
  * @since 4.0.0
  */
 export const filterStatus: {
-  (f: (status: number) => boolean): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | Error.HttpClientError, R>
-  <E, R>(self: HttpClient.With<E, R>, f: (status: number) => boolean): HttpClient.With<E | Error.HttpClientError, R>
+  (
+    f: (status: number) => boolean
+  ): <E, R>(
+    self: HttpClient.With<E, R>
+  ) => HttpClient.With<E | Error.HttpClientError, R>;
+  <E, R>(
+    self: HttpClient.With<E, R>,
+    f: (status: number) => boolean
+  ): HttpClient.With<E | Error.HttpClientError, R>;
 } = dual(
   2,
-  <E, R>(self: HttpClient.With<E, R>, f: (status: number) => boolean): HttpClient.With<E | Error.HttpClientError, R> =>
+  <E, R>(
+    self: HttpClient.With<E, R>,
+    f: (status: number) => boolean
+  ): HttpClient.With<E | Error.HttpClientError, R> =>
     transformResponse(self, Effect.flatMap(HttpClientResponse.filterStatus(f)))
-)
+);
 
 /**
  * Filters responses that return a 2xx status code.
@@ -591,8 +705,11 @@ export const filterStatus: {
  * @category filters
  * @since 4.0.0
  */
-export const filterStatusOk: <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | Error.HttpClientError, R> =
-  transformResponse(Effect.flatMap(HttpClientResponse.filterStatusOk))
+export const filterStatusOk: <E, R>(
+  self: HttpClient.With<E, R>
+) => HttpClient.With<E | Error.HttpClientError, R> = transformResponse(
+  Effect.flatMap(HttpClientResponse.filterStatusOk)
+);
 
 /**
  * Constructs an `HttpClient.With` from a preprocessing function and a postprocessing function.
@@ -610,34 +727,39 @@ export const makeWith = <E2, R2, E, R>(
   ) => Effect.Effect<HttpClientResponse.HttpClientResponse, E, R>,
   preprocess: HttpClient.Preprocess<E2, R2>
 ): HttpClient.With<E, R> => {
-  const self = Object.create(Proto)
-  self.preprocess = preprocess
-  self.postprocess = postprocess
-  self.execute = function(request: HttpClientRequest.HttpClientRequest) {
-    return postprocess(preprocess(request))
-  }
-  return self
-}
+  const self = Object.create(Proto);
+  self.preprocess = preprocess;
+  self.postprocess = postprocess;
+  self.execute = function (request: HttpClientRequest.HttpClientRequest) {
+    return postprocess(preprocess(request));
+  };
+  return self;
+};
 
 const Proto = {
   [TypeId]: TypeId,
   pipe() {
-    return pipeArguments(this, arguments)
+    return pipeArguments(this, arguments);
   },
   ...Inspectable.BaseProto,
   toJSON() {
     return {
-      _id: "effect/HttpClient"
-    }
+      _id: "effect/HttpClient",
+    };
   },
   ...Object.fromEntries(
-    HttpMethod.allShort.map((
-      [fullMethod, method]
-    ) => [method, function(this: HttpClient, url: string | URL, options?: HttpClientRequest.Options.NoUrl) {
-      return this.execute(HttpClientRequest.make(fullMethod)(url, options))
-    }])
-  )
-}
+    HttpMethod.allShort.map(([fullMethod, method]) => [
+      method,
+      function (
+        this: HttpClient,
+        url: string | URL,
+        options?: HttpClientRequest.Options.NoUrl
+      ) {
+        return this.execute(HttpClientRequest.make(fullMethod)(url, options));
+      },
+    ])
+  ),
+};
 
 /**
  * Constructs an `HttpClient` from a low-level request runner.
@@ -654,97 +776,136 @@ export const make = (
     request: HttpClientRequest.HttpClientRequest,
     url: URL,
     signal: AbortSignal,
-    fiber: Fiber.Fiber<HttpClientResponse.HttpClientResponse, Error.HttpClientError>
-  ) => Effect.Effect<HttpClientResponse.HttpClientResponse, Error.HttpClientError>
+    fiber: Fiber.Fiber<
+      HttpClientResponse.HttpClientResponse,
+      Error.HttpClientError
+    >
+  ) => Effect.Effect<
+    HttpClientResponse.HttpClientResponse,
+    Error.HttpClientError
+  >
 ): HttpClient =>
-  makeWith((effect) =>
-    Effect.flatMap(effect, (request) =>
-      Effect.withFiber((fiber) => {
-        const scopedController = scopedRequests.get(request)
-        const controller = scopedController ?? new AbortController()
-        const urlResult = UrlParams.makeUrl(request.url, request.urlParams, Option.getOrUndefined(request.hash))
-        if (Result.isFailure(urlResult)) {
-          return Effect.fail(
-            new Error.HttpClientError({
-              reason: new Error.InvalidUrlError({
-                request,
-                cause: urlResult.failure
+  makeWith(
+    (effect) =>
+      Effect.flatMap(effect, (request) =>
+        Effect.withFiber((fiber) => {
+          const scopedController = scopedRequests.get(request);
+          const controller = scopedController ?? new AbortController();
+          const urlResult = UrlParams.makeUrl(
+            request.url,
+            request.urlParams,
+            Option.getOrUndefined(request.hash)
+          );
+          if (Result.isFailure(urlResult)) {
+            return Effect.fail(
+              new Error.HttpClientError({
+                reason: new Error.InvalidUrlError({
+                  request,
+                  cause: urlResult.failure,
+                }),
               })
-            })
-          )
-        }
-        const url = urlResult.success
-        const tracerDisabled = fiber.getRef(Tracer.DisablePropagation) ||
-          fiber.getRef(TracerDisabledWhen)(request)
-        if (tracerDisabled) {
-          const effect = f(request, url, controller.signal, fiber as any)
-          if (scopedController) return effect
-          return Effect.uninterruptibleMask((restore) =>
-            Effect.matchCauseEffect(restore(effect), {
-              onSuccess(response) {
-                responseRegistry.register(response, controller)
-                return Effect.succeed(new InterruptibleResponse(response, controller))
-              },
-              onFailure(cause) {
-                if (Cause.hasInterrupts(cause)) {
-                  controller.abort()
-                }
-                return Effect.failCause(cause)
-              }
-            })
-          )
-        }
-        return Effect.useSpan(
-          fiber.getRef(SpanNameGenerator)(request),
-          { kind: "client" },
-          (span) => {
-            span.attribute("http.request.method", request.method)
-            span.attribute("server.address", url.origin)
-            if (url.port !== "") {
-              span.attribute("server.port", +url.port)
-            }
-            span.attribute("url.full", url.toString())
-            span.attribute("url.path", url.pathname)
-            span.attribute("url.scheme", url.protocol.slice(0, -1))
-            const query = url.search.slice(1)
-            if (query !== "") {
-              span.attribute("url.query", query)
-            }
-            const redactedHeaderNames = fiber.getRef(Headers.CurrentRedactedNames)
-            const redactedHeaders = Headers.redact(request.headers, redactedHeaderNames)
-            for (const name in redactedHeaders) {
-              span.attribute(`http.request.header.${name}`, String(redactedHeaders[name]))
-            }
-            request = fiber.getRef(TracerPropagationEnabled)
-              ? HttpClientRequest.setHeaders(request, TraceContext.toHeaders(span))
-              : request
-            return Effect.uninterruptibleMask((restore) =>
-              restore(f(request, url, controller.signal, fiber as any)).pipe(
-                Effect.withParentSpan(span, { captureStackTrace: false }),
-                Effect.matchCauseEffect({
-                  onSuccess: (response) => {
-                    span.attribute("http.response.status_code", response.status)
-                    const redactedHeaders = Headers.redact(response.headers, redactedHeaderNames)
-                    for (const name in redactedHeaders) {
-                      span.attribute(`http.response.header.${name}`, String(redactedHeaders[name]))
-                    }
-
-                    if (scopedController) return Effect.succeed(response)
-                    responseRegistry.register(response, controller)
-                    return Effect.succeed(new InterruptibleResponse(response, controller))
-                  },
-                  onFailure(cause) {
-                    if (!scopedController && Cause.hasInterrupts(cause)) {
-                      controller.abort()
-                    }
-                    return Effect.failCause(cause)
-                  }
-                })
-              )
-            )
+            );
           }
-        )
-      })), Effect.succeed as HttpClient.Preprocess<never, never>)
+          const url = urlResult.success;
+          const tracerDisabled =
+            fiber.getRef(Tracer.DisablePropagation) ||
+            fiber.getRef(TracerDisabledWhen)(request);
+          if (tracerDisabled) {
+            const effect = f(request, url, controller.signal, fiber as any);
+            if (scopedController) return effect;
+            return Effect.uninterruptibleMask((restore) =>
+              Effect.matchCauseEffect(restore(effect), {
+                onSuccess(response) {
+                  responseRegistry.register(response, controller);
+                  return Effect.succeed(
+                    new InterruptibleResponse(response, controller)
+                  );
+                },
+                onFailure(cause) {
+                  if (Cause.hasInterrupts(cause)) {
+                    controller.abort();
+                  }
+                  return Effect.failCause(cause);
+                },
+              })
+            );
+          }
+          return Effect.useSpan(
+            fiber.getRef(SpanNameGenerator)(request),
+            { kind: "client" },
+            (span) => {
+              span.attribute("http.request.method", request.method);
+              span.attribute("server.address", url.origin);
+              if (url.port !== "") {
+                span.attribute("server.port", +url.port);
+              }
+              span.attribute("url.full", url.toString());
+              span.attribute("url.path", url.pathname);
+              span.attribute("url.scheme", url.protocol.slice(0, -1));
+              const query = url.search.slice(1);
+              if (query !== "") {
+                span.attribute("url.query", query);
+              }
+              const redactedHeaderNames = fiber.getRef(
+                Headers.CurrentRedactedNames
+              );
+              const redactedHeaders = Headers.redact(
+                request.headers,
+                redactedHeaderNames
+              );
+              for (const name in redactedHeaders) {
+                span.attribute(
+                  `http.request.header.${name}`,
+                  String(redactedHeaders[name])
+                );
+              }
+              request = fiber.getRef(TracerPropagationEnabled)
+                ? HttpClientRequest.setHeaders(
+                    request,
+                    TraceContext.toHeaders(span)
+                  )
+                : request;
+              return Effect.uninterruptibleMask((restore) =>
+                restore(f(request, url, controller.signal, fiber as any)).pipe(
+                  Effect.withParentSpan(span, { captureStackTrace: false }),
+                  Effect.matchCauseEffect({
+                    onSuccess: (response) => {
+                      span.attribute(
+                        "http.response.status_code",
+                        response.status
+                      );
+                      const redactedHeaders = Headers.redact(
+                        response.headers,
+                        redactedHeaderNames
+                      );
+                      for (const name in redactedHeaders) {
+                        span.attribute(
+                          `http.response.header.${name}`,
+                          String(redactedHeaders[name])
+                        );
+                      }
+
+                      if (scopedController) return Effect.succeed(response);
+                      responseRegistry.register(response, controller);
+                      return Effect.succeed(
+                        new InterruptibleResponse(response, controller)
+                      );
+                    },
+                    onFailure(cause) {
+                      if (!scopedController && Cause.hasInterrupts(cause)) {
+                        controller.abort();
+                      }
+                      return Effect.failCause(cause);
+                    },
+                  })
+                )
+              );
+            }
+          );
+        })
+      ),
+    Effect.succeed as HttpClient.Preprocess<never, never>
+  );
 
 /**
  * Appends a transformation of the request object before sending it.
@@ -754,19 +915,28 @@ export const make = (
  */
 export const mapRequest: {
   (
-    f: (a: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => HttpClientRequest.HttpClientRequest
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>;
   <E, R>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest
-  ): HttpClient.With<E, R>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => HttpClientRequest.HttpClientRequest
+  ): HttpClient.With<E, R>;
 } = dual(
   2,
   <E, R>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest
-  ): HttpClient.With<E, R> => makeWith(self.postprocess, (request) => Effect.map(self.preprocess(request), f))
-)
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => HttpClientRequest.HttpClientRequest
+  ): HttpClient.With<E, R> =>
+    makeWith(self.postprocess, (request) =>
+      Effect.map(self.preprocess(request), f)
+    )
+);
 
 /**
  * Appends an effectful transformation of the request object before sending it.
@@ -776,20 +946,28 @@ export const mapRequest: {
  */
 export const mapRequestEffect: {
   <E2, R2>(
-    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>;
   <E, R, E2, R2>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
-  ): HttpClient.With<E | E2, R | R2>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
+  ): HttpClient.With<E | E2, R | R2>;
 } = dual(
   2,
   <E, R, E2, R2>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
   ): HttpClient.With<E | E2, R | R2> =>
-    makeWith(self.postprocess as any, (request) => Effect.flatMap(self.preprocess(request), f))
-)
+    makeWith(self.postprocess as any, (request) =>
+      Effect.flatMap(self.preprocess(request), f)
+    )
+);
 
 /**
  * Prepends a transformation of the request object before sending it.
@@ -799,19 +977,26 @@ export const mapRequestEffect: {
  */
 export const mapRequestInput: {
   (
-    f: (a: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => HttpClientRequest.HttpClientRequest
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>;
   <E, R>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest
-  ): HttpClient.With<E, R>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => HttpClientRequest.HttpClientRequest
+  ): HttpClient.With<E, R>;
 } = dual(
   2,
   <E, R>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest
-  ): HttpClient.With<E, R> => makeWith(self.postprocess, (request) => self.preprocess(f(request)))
-)
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => HttpClientRequest.HttpClientRequest
+  ): HttpClient.With<E, R> =>
+    makeWith(self.postprocess, (request) => self.preprocess(f(request)))
+);
 
 /**
  * Prepends an effectful transformation of the request object before sending it.
@@ -821,20 +1006,28 @@ export const mapRequestInput: {
  */
 export const mapRequestInputEffect: {
   <E2, R2>(
-    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>;
   <E, R, E2, R2>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
-  ): HttpClient.With<E | E2, R | R2>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
+  ): HttpClient.With<E | E2, R | R2>;
 } = dual(
   2,
   <E, R, E2, R2>(
     self: HttpClient.With<E, R>,
-    f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
+    f: (
+      a: HttpClientRequest.HttpClientRequest
+    ) => Effect.Effect<HttpClientRequest.HttpClientRequest, E2, R2>
   ): HttpClient.With<E | E2, R | R2> =>
-    makeWith(self.postprocess as any, (request) => Effect.flatMap(f(request), self.preprocess))
-)
+    makeWith(self.postprocess as any, (request) =>
+      Effect.flatMap(f(request), self.preprocess)
+    )
+);
 
 /**
  * Namespace containing type-level helpers for retrying HTTP clients.
@@ -852,18 +1045,58 @@ export declare namespace Retry {
    * @category error handling
    * @since 4.0.0
    */
-  export type Return<R, E, O extends NoExcessProperties<Effect.Retry.Options<E>, O>> = HttpClient.With<
-    | (O extends { schedule: Schedule.Schedule<infer _O, infer _I, infer _E, infer _R> } ? E | _E
-      : O extends { times: number } ? E
-      : O extends { until: Predicate.Refinement<E, infer E2> } ? E2
-      : E)
-    | (O extends { while: (...args: Array<any>) => Effect.Effect<infer _A, infer E, infer _R> } ? E : never)
-    | (O extends { until: (...args: Array<any>) => Effect.Effect<infer _A, infer E, infer _R> } ? E : never),
-    | R
-    | (O extends { schedule: Schedule.Schedule<infer _O, infer _I, infer _E, infer R> } ? R : never)
-    | (O extends { while: (...args: Array<any>) => Effect.Effect<infer _A, infer _E, infer R> } ? R : never)
-    | (O extends { until: (...args: Array<any>) => Effect.Effect<infer _A, infer _E, infer R> } ? R : never)
-  > extends infer Z ? Z : never
+  export type Return<
+    R,
+    E,
+    O extends NoExcessProperties<Effect.Retry.Options<E>, O>,
+  > =
+    HttpClient.With<
+      | (O extends {
+          schedule: Schedule.Schedule<infer _O, infer _I, infer _E, infer _R>;
+        }
+          ? E | _E
+          : O extends { times: number }
+            ? E
+            : O extends { until: Predicate.Refinement<E, infer E2> }
+              ? E2
+              : E)
+      | (O extends {
+          while: (
+            ...args: Array<any>
+          ) => Effect.Effect<infer _A, infer E, infer _R>;
+        }
+          ? E
+          : never)
+      | (O extends {
+          until: (
+            ...args: Array<any>
+          ) => Effect.Effect<infer _A, infer E, infer _R>;
+        }
+          ? E
+          : never),
+      | R
+      | (O extends {
+          schedule: Schedule.Schedule<infer _O, infer _I, infer _E, infer R>;
+        }
+          ? R
+          : never)
+      | (O extends {
+          while: (
+            ...args: Array<any>
+          ) => Effect.Effect<infer _A, infer _E, infer R>;
+        }
+          ? R
+          : never)
+      | (O extends {
+          until: (
+            ...args: Array<any>
+          ) => Effect.Effect<infer _A, infer _E, infer R>;
+        }
+          ? R
+          : never)
+    > extends infer Z
+      ? Z
+      : never;
 }
 
 /**
@@ -875,25 +1108,26 @@ export declare namespace Retry {
 export const retry: {
   <E, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     options: O
-  ): <R>(self: HttpClient.With<E, R>) => Retry.Return<R, E, O>
+  ): <R>(self: HttpClient.With<E, R>) => Retry.Return<R, E, O>;
   <B, E, ES, R1>(
     policy: Schedule.Schedule<B, NoInfer<E>, ES, R1>
-  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | ES, R1 | R>
+  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | ES, R1 | R>;
   <E, R, O extends NoExcessProperties<Effect.Retry.Options<E>, O>>(
     self: HttpClient.With<E, R>,
     options: O
-  ): Retry.Return<R, E, O>
+  ): Retry.Return<R, E, O>;
   <E, R, B, ES, R1>(
     self: HttpClient.With<E, R>,
     policy: Schedule.Schedule<B, E, ES, R1>
-  ): HttpClient.With<E | ES, R1 | R>
+  ): HttpClient.With<E | ES, R1 | R>;
 } = dual(
   2,
   <E extends E0, E0, ES, R, R1, B>(
     self: HttpClient.With<E, R>,
     policy: Schedule.Schedule<B, E0, ES, R1>
-  ): HttpClient.With<E | ES, R | R1> => transformResponse(self, Effect.retry(policy))
-)
+  ): HttpClient.With<E | ES, R | R1> =>
+    transformResponse(self, Effect.retry(policy))
+);
 
 /**
  * Retries common transient errors, such as rate limiting, timeouts or network issues.
@@ -916,91 +1150,116 @@ export const retryTransient: {
     B = never,
     ES = never,
     R1 = never,
-    const RetryOn extends "errors-only" | "response-only" | "errors-and-responses" =
+    const RetryOn extends
+      | "errors-only"
+      | "response-only"
+      | "errors-and-responses" =
       | "errors-only"
       | "response-only"
       | "errors-and-responses",
-    Input = RetryOn extends "errors-only" ? E
-      : RetryOn extends "response-only" ? HttpClientResponse.HttpClientResponse
-      : HttpClientResponse.HttpClientResponse | E
-  >(
-    options: {
-      readonly retryOn?: RetryOn | undefined
-      readonly while?: Predicate.Predicate<NoInfer<E | ES>>
-      readonly schedule?: Schedule.Schedule<B, NoInfer<Input>, ES, R1>
-      readonly times?: number
-    }
-  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | ES, R1 | R>
+    Input = RetryOn extends "errors-only"
+      ? E
+      : RetryOn extends "response-only"
+        ? HttpClientResponse.HttpClientResponse
+        : HttpClientResponse.HttpClientResponse | E,
+  >(options: {
+    readonly retryOn?: RetryOn | undefined;
+    readonly while?: Predicate.Predicate<NoInfer<E | ES>>;
+    readonly schedule?: Schedule.Schedule<B, NoInfer<Input>, ES, R1>;
+    readonly times?: number;
+  }): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | ES, R1 | R>;
   <
     E,
     R,
     B = never,
     ES = never,
     R1 = never,
-    const RetryOn extends "errors-only" | "response-only" | "errors-and-responses" =
+    const RetryOn extends
+      | "errors-only"
+      | "response-only"
+      | "errors-and-responses" =
       | "errors-only"
       | "response-only"
       | "errors-and-responses",
-    Input = RetryOn extends "errors-only" ? E
-      : RetryOn extends "response-only" ? HttpClientResponse.HttpClientResponse
-      : HttpClientResponse.HttpClientResponse | E
+    Input = RetryOn extends "errors-only"
+      ? E
+      : RetryOn extends "response-only"
+        ? HttpClientResponse.HttpClientResponse
+        : HttpClientResponse.HttpClientResponse | E,
   >(
     self: HttpClient.With<E, R>,
     options: {
-      readonly retryOn?: RetryOn | undefined
-      readonly while?: Predicate.Predicate<NoInfer<E | ES>>
-      readonly schedule?: Schedule.Schedule<B, NoInfer<Input>, ES, R1>
-      readonly times?: number
+      readonly retryOn?: RetryOn | undefined;
+      readonly while?: Predicate.Predicate<NoInfer<E | ES>>;
+      readonly schedule?: Schedule.Schedule<B, NoInfer<Input>, ES, R1>;
+      readonly times?: number;
     }
-  ): HttpClient.With<E | ES, R1 | R>
+  ): HttpClient.With<E | ES, R1 | R>;
   <B, E, ES = never, R1 = never>(
-    options: Schedule.Schedule<B, NoInfer<HttpClientResponse.HttpClientResponse | E>, ES, R1>
-  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | ES, R1 | R>
+    options: Schedule.Schedule<
+      B,
+      NoInfer<HttpClientResponse.HttpClientResponse | E>,
+      ES,
+      R1
+    >
+  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | ES, R1 | R>;
   <E, R, B, ES = never, R1 = never>(
     self: HttpClient.With<E, R>,
-    options: Schedule.Schedule<B, NoInfer<HttpClientResponse.HttpClientResponse | E>, ES, R1>
-  ): HttpClient.With<E | ES, R1 | R>
+    options: Schedule.Schedule<
+      B,
+      NoInfer<HttpClientResponse.HttpClientResponse | E>,
+      ES,
+      R1
+    >
+  ): HttpClient.With<E | ES, R1 | R>;
 } = dual(
   2,
-  <
-    E,
-    R,
-    B,
-    ES = never,
-    R1 = never
-  >(
+  <E, R, B, ES = never, R1 = never>(
     self: HttpClient.With<E, R>,
-    options: {
-      readonly retryOn?: "errors-only" | "response-only" | "errors-and-responses" | undefined
-      readonly while?: Predicate.Predicate<E | ES>
-      readonly schedule?: Schedule.Schedule<B, any, ES, R1>
-      readonly times?: number
-    } | Schedule.Schedule<B, any, ES, R1>
+    options:
+      | {
+          readonly retryOn?:
+            | "errors-only"
+            | "response-only"
+            | "errors-and-responses"
+            | undefined;
+          readonly while?: Predicate.Predicate<E | ES>;
+          readonly schedule?: Schedule.Schedule<B, any, ES, R1>;
+          readonly times?: number;
+        }
+      | Schedule.Schedule<B, any, ES, R1>
   ): HttpClient.With<E | ES, R1 | R> => {
-    const isOnlySchedule = Schedule.isSchedule(options)
-    const retryOn = isOnlySchedule ? "errors-and-responses" : options.retryOn ?? "errors-and-responses"
-    const schedule = isOnlySchedule ? options : options.schedule
-    const passthroughSchedule = schedule && Schedule.passthrough(schedule)
-    const times = isOnlySchedule ? undefined : options.times
+    const isOnlySchedule = Schedule.isSchedule(options);
+    const retryOn = isOnlySchedule
+      ? "errors-and-responses"
+      : (options.retryOn ?? "errors-and-responses");
+    const schedule = isOnlySchedule ? options : options.schedule;
+    const passthroughSchedule = schedule && Schedule.passthrough(schedule);
+    const times = isOnlySchedule ? undefined : options.times;
     return transformResponse(
       self,
       flow(
-        retryOn === "errors-only" ? identity : Effect.repeat({
-          schedule: passthroughSchedule!,
-          times,
-          while: isTransientResponse
-        }),
-        retryOn === "response-only" ? identity : Effect.retry({
-          while: isOnlySchedule || options.while === undefined
-            ? isTransientError
-            : Predicate.or(isTransientError, options.while),
-          schedule,
-          times
-        })
+        retryOn === "errors-only"
+          ? identity
+          : Effect.repeat({
+              schedule: passthroughSchedule!,
+              times,
+              while: isTransientResponse,
+            }),
+        retryOn === "response-only"
+          ? identity
+          : Effect.retry({
+              while:
+                isOnlySchedule || options.while === undefined
+                  ? isTransientError
+                  : Predicate.or(isTransientError, options.while),
+              schedule,
+              times,
+            })
       )
-    )
+    );
   }
-)
+);
 
 /**
  * Namespace containing configuration types for `withRateLimiter`.
@@ -1022,33 +1281,38 @@ export declare namespace WithRateLimiter {
     /**
      * The `RateLimiter` service to use for rate limiting.
      */
-    readonly limiter: RateLimiter.RateLimiter
+    readonly limiter: RateLimiter.RateLimiter;
     /**
      * The initial rate limit window duration.
      */
-    readonly window: Duration.Input
+    readonly window: Duration.Input;
     /**
      * The initial maximum number of allowed requests in the window.
      */
-    readonly limit: number
+    readonly limit: number;
     /**
      * The key to identify the rate limit. Requests with the same key will share
      * the same rate limit. This can be used to implement per-user or
      * per-endpoint rate limits.
      */
-    readonly key: string | ((request: HttpClientRequest.HttpClientRequest) => string)
+    readonly key:
+      | string
+      | ((request: HttpClientRequest.HttpClientRequest) => string);
     /**
      * Defaults to `"fixed-window"`.
      */
-    readonly algorithm?: "fixed-window" | "token-bucket" | undefined
+    readonly algorithm?: "fixed-window" | "token-bucket" | undefined;
     /**
      * Defaults to `1`.
      */
-    readonly tokens?: number | ((request: HttpClientRequest.HttpClientRequest) => number) | undefined
+    readonly tokens?:
+      | number
+      | ((request: HttpClientRequest.HttpClientRequest) => number)
+      | undefined;
     /**
      * Disable automatic limits updates from response headers.
      */
-    readonly disableResponseInspection?: boolean | undefined
+    readonly disableResponseInspection?: boolean | undefined;
   }
 }
 
@@ -1065,103 +1329,126 @@ export declare namespace WithRateLimiter {
  * @since 4.0.0
  */
 export const withRateLimiter: {
-  (options: WithRateLimiter.Options): <E, R>(
+  (
+    options: WithRateLimiter.Options
+  ): <E, R>(
     self: HttpClient.With<E, R>
-  ) => HttpClient.With<E | RateLimiter.RateLimiterError, R>
+  ) => HttpClient.With<E | RateLimiter.RateLimiterError, R>;
   <E, R>(
     self: HttpClient.With<E, R>,
     options: WithRateLimiter.Options
-  ): HttpClient.With<E | RateLimiter.RateLimiterError, R>
-} = dual(2, <E, R>(
-  self: HttpClient.With<E, R>,
-  options: WithRateLimiter.Options
-): HttpClient.With<E | RateLimiter.RateLimiterError, R> => {
-  const initialState: RateLimiterState = {
-    initial: true,
-    limit: options.limit,
-    window: Duration.max(Duration.fromInputUnsafe(options.window), Duration.millis(1))
-  }
-  const states = new Map<string, RateLimiterState>()
+  ): HttpClient.With<E | RateLimiter.RateLimiterError, R>;
+} = dual(
+  2,
+  <E, R>(
+    self: HttpClient.With<E, R>,
+    options: WithRateLimiter.Options
+  ): HttpClient.With<E | RateLimiter.RateLimiterError, R> => {
+    const initialState: RateLimiterState = {
+      initial: true,
+      limit: options.limit,
+      window: Duration.max(
+        Duration.fromInputUnsafe(options.window),
+        Duration.millis(1)
+      ),
+    };
+    const states = new Map<string, RateLimiterState>();
 
-  const keyOption = options.key
-  const resolveKey: (request: HttpClientRequest.HttpClientRequest) => string = typeof keyOption === "function"
-    ? keyOption
-    : constant(keyOption)
-  const tokensOption = options.tokens
-  const resolveTokens: (request: HttpClientRequest.HttpClientRequest) => number = typeof tokensOption === "function"
-    ? tokensOption
-    : constant(tokensOption ?? 1)
+    const keyOption = options.key;
+    const resolveKey: (request: HttpClientRequest.HttpClientRequest) => string =
+      typeof keyOption === "function" ? keyOption : constant(keyOption);
+    const tokensOption = options.tokens;
+    const resolveTokens: (
+      request: HttpClientRequest.HttpClientRequest
+    ) => number =
+      typeof tokensOption === "function"
+        ? tokensOption
+        : constant(tokensOption ?? 1);
 
-  const getState = (key: string): RateLimiterState => {
-    const current = states.get(key)
-    if (current !== undefined) {
-      return current
-    }
-    states.set(key, initialState)
-    return initialState
-  }
-
-  const onResponse = options.disableResponseInspection
-    ? undefined
-    : (clock: Clock, key: string, headers: Headers.Headers, tokens: number) => {
-      const current = getState(key)
-      const next = parseRateLimiterState(current, clock, headers, tokens)
-      if (next.limit !== current.limit || !Duration.equals(next.window, current.window)) {
-        states.set(key, next)
+    const getState = (key: string): RateLimiterState => {
+      const current = states.get(key);
+      if (current !== undefined) {
+        return current;
       }
-    }
+      states.set(key, initialState);
+      return initialState;
+    };
 
-  return transform(self, function loop(effect, request): Effect.Effect<
-    HttpClientResponse.HttpClientResponse,
-    E | RateLimiter.RateLimiterError,
-    R
-  > {
-    const fiber = Fiber.getCurrent()!
-    const clock = fiber.getRef(Clock)
-    const key = resolveKey(request)
-    const tokens = Math.max(resolveTokens(request), 1)
-    const current = getState(key)
-    function retry(response: HttpClientResponse.HttpClientResponse) {
-      if (options.disableResponseInspection) return loop(effect, request)
-      const retryAfter = parseRetryAfter(clock, getHeader(response.headers, "retry-after"))
-      return retryAfter
-        ? Effect.flatMap(Effect.sleep(retryAfter), () => loop(effect, request))
-        : loop(effect, request)
-    }
-    return Effect.flatMap(
-      options.limiter.consume({
-        algorithm: options.algorithm,
-        onExceeded: "delay",
-        key,
-        limit: current.limit,
-        window: current.window,
-        tokens
-      }),
-      ({ delay }) => {
-        const run = Effect.matchEffect(effect, {
-          onSuccess(response) {
-            onResponse?.(clock, key, response.headers, tokens)
-            if (response.status !== 429) return Effect.succeed(response)
-            return retry(response)
-          },
-          onFailure(error) {
-            if (isTooManyRequestsHttpClientError(error)) {
-              onResponse?.(clock, key, error.reason.response.headers, tokens)
-              return retry(error.reason.response)
-            }
-            return Effect.fail(error)
+    const onResponse = options.disableResponseInspection
+      ? undefined
+      : (
+          clock: Clock,
+          key: string,
+          headers: Headers.Headers,
+          tokens: number
+        ) => {
+          const current = getState(key);
+          const next = parseRateLimiterState(current, clock, headers, tokens);
+          if (
+            next.limit !== current.limit ||
+            !Duration.equals(next.window, current.window)
+          ) {
+            states.set(key, next);
           }
-        })
-        return Duration.isZero(delay) ? run : Effect.delay(run, delay)
+        };
+
+    return transform(self, function loop(effect, request): Effect.Effect<
+      HttpClientResponse.HttpClientResponse,
+      E | RateLimiter.RateLimiterError,
+      R
+    > {
+      const fiber = Fiber.getCurrent()!;
+      const clock = fiber.getRef(Clock);
+      const key = resolveKey(request);
+      const tokens = Math.max(resolveTokens(request), 1);
+      const current = getState(key);
+      function retry(response: HttpClientResponse.HttpClientResponse) {
+        if (options.disableResponseInspection) return loop(effect, request);
+        const retryAfter = parseRetryAfter(
+          clock,
+          getHeader(response.headers, "retry-after")
+        );
+        return retryAfter
+          ? Effect.flatMap(Effect.sleep(retryAfter), () =>
+              loop(effect, request)
+            )
+          : loop(effect, request);
       }
-    )
-  })
-})
+      return Effect.flatMap(
+        options.limiter.consume({
+          algorithm: options.algorithm,
+          onExceeded: "delay",
+          key,
+          limit: current.limit,
+          window: current.window,
+          tokens,
+        }),
+        ({ delay }) => {
+          const run = Effect.matchEffect(effect, {
+            onSuccess(response) {
+              onResponse?.(clock, key, response.headers, tokens);
+              if (response.status !== 429) return Effect.succeed(response);
+              return retry(response);
+            },
+            onFailure(error) {
+              if (isTooManyRequestsHttpClientError(error)) {
+                onResponse?.(clock, key, error.reason.response.headers, tokens);
+                return retry(error.reason.response);
+              }
+              return Effect.fail(error);
+            },
+          });
+          return Duration.isZero(delay) ? run : Effect.delay(run, delay);
+        }
+      );
+    });
+  }
+);
 
 interface RateLimiterState {
-  readonly limit: number
-  readonly window: Duration.Duration
-  readonly initial: boolean
+  readonly limit: number;
+  readonly window: Duration.Duration;
+  readonly initial: boolean;
 }
 
 const parseRateLimiterState = (
@@ -1170,124 +1457,139 @@ const parseRateLimiterState = (
   headers: Headers.Headers,
   tokens: number
 ): RateLimiterState => {
-  const limit = parseRateLimitLimit(state, headers, tokens) ?? state.limit
-  const window = parseRateLimitWindow(clock, headers) ?? state.window
+  const limit = parseRateLimitLimit(state, headers, tokens) ?? state.limit;
+  const window = parseRateLimitWindow(clock, headers) ?? state.window;
   if (limit === state.limit && Duration.equals(window, state.window)) {
-    return state
+    return state;
   }
-  return { limit, window, initial: false }
-}
+  return { limit, window, initial: false };
+};
 
 const parseRateLimitLimit = (
   state: RateLimiterState,
   headers: Headers.Headers,
   tokens: number
 ): number | undefined => {
-  const raw = getHeader(headers, "ratelimit-limit", "x-ratelimit-limit")
-  const value = parseNumberHeader(raw)
+  const raw = getHeader(headers, "ratelimit-limit", "x-ratelimit-limit");
+  const value = parseNumberHeader(raw);
   if (value !== undefined && value > 0) {
-    return value
+    return value;
   }
-  const remaining = parseRateLimitRemaining(headers)
+  const remaining = parseRateLimitRemaining(headers);
   if (remaining === undefined) {
-    return undefined
+    return undefined;
   }
-  return state.initial ? remaining + tokens : Math.max(remaining + tokens, state.limit)
-}
+  return state.initial
+    ? remaining + tokens
+    : Math.max(remaining + tokens, state.limit);
+};
 
-const parseRateLimitRemaining = (headers: Headers.Headers): number | undefined => {
-  const raw = getHeader(headers, "ratelimit-remaining", "x-ratelimit-remaining")
-  const value = parseNumberHeader(raw)
-  return value !== undefined && value >= 0 ? value : undefined
-}
+const parseRateLimitRemaining = (
+  headers: Headers.Headers
+): number | undefined => {
+  const raw = getHeader(
+    headers,
+    "ratelimit-remaining",
+    "x-ratelimit-remaining"
+  );
+  const value = parseNumberHeader(raw);
+  return value !== undefined && value >= 0 ? value : undefined;
+};
 
 const parseRateLimitWindow = (
   clock: Clock,
   headers: Headers.Headers
 ): Duration.Duration | undefined => {
-  const retryAfter = parseRetryAfter(
-    clock,
-    getHeader(headers, "retry-after")
-  )
+  const retryAfter = parseRetryAfter(clock, getHeader(headers, "retry-after"));
   if (retryAfter !== undefined) {
-    return retryAfter
+    return retryAfter;
   }
-  const resetAfter = parseResetAfter(getHeader(headers, "ratelimit-reset-after", "x-ratelimit-reset-after"))
+  const resetAfter = parseResetAfter(
+    getHeader(headers, "ratelimit-reset-after", "x-ratelimit-reset-after")
+  );
   if (resetAfter !== undefined) {
-    return resetAfter
+    return resetAfter;
   }
-  return parseResetHeader(clock, getHeader(headers, "ratelimit-reset", "x-ratelimit-reset"))
-}
+  return parseResetHeader(
+    clock,
+    getHeader(headers, "ratelimit-reset", "x-ratelimit-reset")
+  );
+};
 
 const parseRetryAfter = (
   clock: Clock,
   value: string | undefined
 ): Duration.Duration | undefined => {
   if (value === undefined) {
-    return undefined
+    return undefined;
   }
-  const numeric = parseNumberHeader(value)
+  const numeric = parseNumberHeader(value);
   if (numeric !== undefined) {
-    return Duration.max(Duration.seconds(numeric), Duration.millis(1))
+    return Duration.max(Duration.seconds(numeric), Duration.millis(1));
   }
-  const parsedDate = Date.parse(value)
+  const parsedDate = Date.parse(value);
   if (Number.isNaN(parsedDate)) {
-    return undefined
+    return undefined;
   }
-  const millis = parsedDate - clock.currentTimeMillisUnsafe()
+  const millis = parsedDate - clock.currentTimeMillisUnsafe();
   if (millis <= 0) {
-    return Duration.millis(1)
+    return Duration.millis(1);
   }
-  return Duration.millis(millis)
-}
+  return Duration.millis(millis);
+};
 
-const parseResetAfter = (value: string | undefined): Duration.Duration | undefined => {
-  const numeric = parseNumberHeader(value)
+const parseResetAfter = (
+  value: string | undefined
+): Duration.Duration | undefined => {
+  const numeric = parseNumberHeader(value);
   if (numeric === undefined || numeric <= 0) {
-    return undefined
+    return undefined;
   }
-  return Duration.max(Duration.seconds(numeric), Duration.millis(1))
-}
+  return Duration.max(Duration.seconds(numeric), Duration.millis(1));
+};
 
 const parseResetHeader = (
   clock: Clock,
   value: string | undefined
 ): Duration.Duration | undefined => {
-  const numeric = parseNumberHeader(value)
+  const numeric = parseNumberHeader(value);
   if (numeric === undefined || numeric <= 0) {
-    return undefined
+    return undefined;
   }
-  const nowMillis = clock.currentTimeMillisUnsafe()
+  const nowMillis = clock.currentTimeMillisUnsafe();
   if (numeric > 1_000_000_000_000) {
-    return Duration.millis(Math.max(numeric - nowMillis, 1))
+    return Duration.millis(Math.max(numeric - nowMillis, 1));
   }
   if (numeric > 1_000_000_000) {
-    return Duration.millis(Math.max((numeric * 1_000) - nowMillis, 1))
+    return Duration.millis(Math.max(numeric * 1_000 - nowMillis, 1));
   }
-  return Duration.max(Duration.seconds(numeric), Duration.millis(1))
-}
+  return Duration.max(Duration.seconds(numeric), Duration.millis(1));
+};
 
 const parseNumberHeader = (value: string | undefined): number | undefined => {
   if (value === undefined) {
-    return undefined
+    return undefined;
   }
-  const match = /-?\d+(?:\.\d+)?/.exec(value)
+  const match = /-?\d+(?:\.\d+)?/.exec(value);
   if (match === null) {
-    return undefined
+    return undefined;
   }
-  const parsed = Number(match[0])
-  return Number.isFinite(parsed) ? parsed : undefined
-}
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
 
-const getHeader = (headers: Headers.Headers, ...keys: Array<string>): string | undefined => {
+const getHeader = (
+  headers: Headers.Headers,
+  ...keys: Array<string>
+): string | undefined => {
   for (let i = 0; i < keys.length; i++) {
-    const value = headers[keys[i]]
+    const value = headers[keys[i]];
     if (value !== undefined) {
-      return value
+      return value;
     }
   }
-  return undefined
-}
+  return undefined;
+};
 
 /**
  * Performs an additional effect after a successful request.
@@ -1297,19 +1599,25 @@ const getHeader = (headers: Headers.Headers, ...keys: Array<string>): string | u
  */
 export const tap: {
   <_, E2, R2>(
-    f: (response: HttpClientResponse.HttpClientResponse) => Effect.Effect<_, E2, R2>
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>
+    f: (
+      response: HttpClientResponse.HttpClientResponse
+    ) => Effect.Effect<_, E2, R2>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>;
   <E, R, _, E2, R2>(
     self: HttpClient.With<E, R>,
-    f: (response: HttpClientResponse.HttpClientResponse) => Effect.Effect<_, E2, R2>
-  ): HttpClient.With<E | E2, R | R2>
+    f: (
+      response: HttpClientResponse.HttpClientResponse
+    ) => Effect.Effect<_, E2, R2>
+  ): HttpClient.With<E | E2, R | R2>;
 } = dual(
   2,
   <E, R, _, E2, R2>(
     self: HttpClient.With<E, R>,
-    f: (response: HttpClientResponse.HttpClientResponse) => Effect.Effect<_, E2, R2>
+    f: (
+      response: HttpClientResponse.HttpClientResponse
+    ) => Effect.Effect<_, E2, R2>
   ): HttpClient.With<E | E2, R | R2> => transformResponse(self, Effect.tap(f))
-)
+);
 
 /**
  * Performs an additional effect after an unsuccessful request.
@@ -1320,18 +1628,19 @@ export const tap: {
 export const tapError: {
   <_, E, E2, R2>(
     f: (e: NoInfer<E>) => Effect.Effect<_, E2, R2>
-  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>
+  ): <R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>;
   <E, R, _, E2, R2>(
     self: HttpClient.With<E, R>,
     f: (e: NoInfer<E>) => Effect.Effect<_, E2, R2>
-  ): HttpClient.With<E | E2, R | R2>
+  ): HttpClient.With<E | E2, R | R2>;
 } = dual(
   2,
   <E, R, _, E2, R2>(
     self: HttpClient.With<E, R>,
     f: (e: NoInfer<E>) => Effect.Effect<_, E2, R2>
-  ): HttpClient.With<E | E2, R | R2> => transformResponse(self, Effect.tapError(f))
-)
+  ): HttpClient.With<E | E2, R | R2> =>
+    transformResponse(self, Effect.tapError(f))
+);
 
 /**
  * Performs an additional effect on the request before sending it.
@@ -1342,19 +1651,21 @@ export const tapError: {
 export const tapRequest: {
   <_, E2, R2>(
     f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>
-  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E | E2, R | R2>;
   <E, R, _, E2, R2>(
     self: HttpClient.With<E, R>,
     f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>
-  ): HttpClient.With<E | E2, R | R2>
+  ): HttpClient.With<E | E2, R | R2>;
 } = dual(
   2,
   <E, R, _, E2, R2>(
     self: HttpClient.With<E, R>,
     f: (a: HttpClientRequest.HttpClientRequest) => Effect.Effect<_, E2, R2>
   ): HttpClient.With<E | E2, R | R2> =>
-    makeWith(self.postprocess as any, (request) => Effect.tap(self.preprocess(request), f))
-)
+    makeWith(self.postprocess as any, (request) =>
+      Effect.tap(self.preprocess(request), f)
+    )
+);
 
 /**
  * Adds a `Ref` of cookies to the client for handling cookies across requests.
@@ -1368,8 +1679,13 @@ export const tapRequest: {
  * @since 4.0.0
  */
 export const withCookiesRef: {
-  (ref: Ref.Ref<Cookies.Cookies>): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>
-  <E, R>(self: HttpClient.With<E, R>, ref: Ref.Ref<Cookies.Cookies>): HttpClient.With<E, R>
+  (
+    ref: Ref.Ref<Cookies.Cookies>
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>;
+  <E, R>(
+    self: HttpClient.With<E, R>,
+    ref: Ref.Ref<Cookies.Cookies>
+  ): HttpClient.With<E, R>;
 } = dual(
   2,
   <E, R>(
@@ -1378,21 +1694,23 @@ export const withCookiesRef: {
   ): HttpClient.With<E, R> =>
     makeWith(
       (request: Effect.Effect<HttpClientRequest.HttpClientRequest, E, R>) =>
-        Effect.tap(
-          self.postprocess(request),
-          (response) => Ref.update(ref, (cookies) => Cookies.merge(cookies, response.cookies))
+        Effect.tap(self.postprocess(request), (response) =>
+          Ref.update(ref, (cookies) => Cookies.merge(cookies, response.cookies))
         ),
       (request) =>
         Effect.flatMap(self.preprocess(request), (request) =>
-          Effect.map(
-            Ref.get(ref),
-            (cookies) =>
-              Cookies.isEmpty(cookies)
-                ? request
-                : HttpClientRequest.setHeader(request, "cookie", Cookies.toCookieHeader(cookies))
-          ))
+          Effect.map(Ref.get(ref), (cookies) =>
+            Cookies.isEmpty(cookies)
+              ? request
+              : HttpClientRequest.setHeader(
+                  request,
+                  "cookie",
+                  Cookies.toCookieHeader(cookies)
+                )
+          )
+        )
     )
-)
+);
 
 /**
  * Attaches the lifetime of the `HttpClientRequest` to a `Scope`.
@@ -1403,17 +1721,14 @@ export const withCookiesRef: {
 export const withScope = <E, R>(
   self: HttpClient.With<E, R>
 ): HttpClient.With<E, R | Scope.Scope> =>
-  transform(
-    self,
-    (effect, request) => {
-      const controller = new AbortController()
-      scopedRequests.set(request, controller)
-      return Effect.andThen(
-        Effect.addFinalizer(() => Effect.sync(() => controller.abort())),
-        effect
-      )
-    }
-  )
+  transform(self, (effect, request) => {
+    const controller = new AbortController();
+    scopedRequests.set(request, controller);
+    return Effect.andThen(
+      Effect.addFinalizer(() => Effect.sync(() => controller.abort())),
+      effect
+    );
+  });
 
 /**
  * Enables following HTTP redirects up to a specified number of times.
@@ -1422,36 +1737,41 @@ export const withScope = <E, R>(
  * @since 4.0.0
  */
 export const followRedirects: {
-  (maxRedirects?: number | undefined): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>
-  <E, R>(self: HttpClient.With<E, R>, maxRedirects?: number | undefined): HttpClient.With<E, R>
-} = dual((args) => isHttpClient(args[0]), <E, R>(
-  self: HttpClient.With<E, R>,
-  maxRedirects?: number | undefined
-): HttpClient.With<E, R> =>
-  makeWith(
-    (request) => {
+  (
+    maxRedirects?: number | undefined
+  ): <E, R>(self: HttpClient.With<E, R>) => HttpClient.With<E, R>;
+  <E, R>(
+    self: HttpClient.With<E, R>,
+    maxRedirects?: number | undefined
+  ): HttpClient.With<E, R>;
+} = dual(
+  (args) => isHttpClient(args[0]),
+  <E, R>(
+    self: HttpClient.With<E, R>,
+    maxRedirects?: number | undefined
+  ): HttpClient.With<E, R> =>
+    makeWith((request) => {
       const loop = (
         request: HttpClientRequest.HttpClientRequest,
         redirects: number
       ): Effect.Effect<HttpClientResponse.HttpClientResponse, E, R> =>
-        Effect.flatMap(
-          self.postprocess(Effect.succeed(request)),
-          (response) =>
-            response.status >= 300 && response.status < 400 && response.headers.location &&
-              redirects < (maxRedirects ?? 10)
-              ? loop(
+        Effect.flatMap(self.postprocess(Effect.succeed(request)), (response) =>
+          response.status >= 300 &&
+          response.status < 400 &&
+          response.headers.location &&
+          redirects < (maxRedirects ?? 10)
+            ? loop(
                 HttpClientRequest.setUrl(
                   request,
                   new URL(response.headers.location, response.request.url)
                 ),
                 redirects + 1
               )
-              : Effect.succeed(response)
-        )
-      return Effect.flatMap(request, (request) => loop(request, 0))
-    },
-    self.preprocess
-  ))
+            : Effect.succeed(response)
+        );
+      return Effect.flatMap(request, (request) => loop(request, 0));
+    }, self.preprocess)
+);
 
 /**
  * Context reference for a predicate that disables client-side tracing for matching outgoing requests.
@@ -1462,8 +1782,8 @@ export const followRedirects: {
 export const TracerDisabledWhen = Context.Reference<
   Predicate.Predicate<HttpClientRequest.HttpClientRequest>
 >("effect/http/HttpClient/TracerDisabledWhen", {
-  defaultValue: () => constFalse
-})
+  defaultValue: () => constFalse,
+});
 
 /**
  * Context reference that controls whether outgoing client spans are propagated to request headers.
@@ -1471,9 +1791,12 @@ export const TracerDisabledWhen = Context.Reference<
  * @category references
  * @since 4.0.0
  */
-export const TracerPropagationEnabled = Context.Reference<boolean>("effect/HttpClient/TracerPropagationEnabled", {
-  defaultValue: constTrue
-})
+export const TracerPropagationEnabled = Context.Reference<boolean>(
+  "effect/HttpClient/TracerPropagationEnabled",
+  {
+    defaultValue: constTrue,
+  }
+);
 
 /**
  * Context reference for generating the span name used for outgoing client request spans.
@@ -1484,8 +1807,8 @@ export const TracerPropagationEnabled = Context.Reference<boolean>("effect/HttpC
 export const SpanNameGenerator = Context.Reference<
   (request: HttpClientRequest.HttpClientRequest) => string
 >("effect/http/HttpClient/SpanNameGenerator", {
-  defaultValue: () => (request) => `http.client ${request.method}`
-})
+  defaultValue: () => (request) => `http.client ${request.method}`,
+});
 
 /**
  * Creates an `HttpClient` layer and merges the layer construction context into client response effects.
@@ -1501,10 +1824,13 @@ export const layerMergedContext = <E, R>(
       Effect.map(effect, (client) =>
         transformResponse(
           client,
-          Effect.updateContext((input: Context.Context<never>) => Context.merge(context, input))
-        ))
+          Effect.updateContext((input: Context.Context<never>) =>
+            Context.merge(context, input)
+          )
+        )
+      )
     )
-  )
+  );
 
 // -----------------------------------------------------------------------------
 // internal
@@ -1513,138 +1839,156 @@ export const layerMergedContext = <E, R>(
 const responseRegistry = (() => {
   if ("FinalizationRegistry" in globalThis && globalThis.FinalizationRegistry) {
     const registry = new FinalizationRegistry((controller: AbortController) => {
-      controller.abort()
-    })
+      controller.abort();
+    });
     return {
-      register(response: HttpClientResponse.HttpClientResponse, controller: AbortController) {
-        registry.register(response, controller, response)
+      register(
+        response: HttpClientResponse.HttpClientResponse,
+        controller: AbortController
+      ) {
+        registry.register(response, controller, response);
       },
       unregister(response: HttpClientResponse.HttpClientResponse) {
-        registry.unregister(response)
-      }
-    }
+        registry.unregister(response);
+      },
+    };
   }
 
-  const timers = new Map<HttpClientResponse.HttpClientResponse, any>()
+  const timers = new Map<HttpClientResponse.HttpClientResponse, any>();
   return {
-    register(response: HttpClientResponse.HttpClientResponse, controller: AbortController) {
-      timers.set(response, setTimeout(() => controller.abort(), 5000))
+    register(
+      response: HttpClientResponse.HttpClientResponse,
+      controller: AbortController
+    ) {
+      timers.set(
+        response,
+        setTimeout(() => controller.abort(), 5000)
+      );
     },
     unregister(response: HttpClientResponse.HttpClientResponse) {
-      const timer = timers.get(response)
-      if (timer === undefined) return
-      clearTimeout(timer)
-      timers.delete(response)
-    }
-  }
-})()
+      const timer = timers.get(response);
+      if (timer === undefined) return;
+      clearTimeout(timer);
+      timers.delete(response);
+    },
+  };
+})();
 
-const scopedRequests = new WeakMap<HttpClientRequest.HttpClientRequest, AbortController>()
+const scopedRequests = new WeakMap<
+  HttpClientRequest.HttpClientRequest,
+  AbortController
+>();
 
-class InterruptibleResponse implements HttpClientResponse.HttpClientResponse, Pipeable {
-  readonly original: HttpClientResponse.HttpClientResponse
-  readonly controller: AbortController
+class InterruptibleResponse
+  implements HttpClientResponse.HttpClientResponse, Pipeable
+{
+  readonly original: HttpClientResponse.HttpClientResponse;
+  readonly controller: AbortController;
 
   constructor(
     original: HttpClientResponse.HttpClientResponse,
     controller: AbortController
   ) {
-    this.original = original
-    this.controller = controller
+    this.original = original;
+    this.controller = controller;
   }
 
-  readonly [HttpClientResponse.TypeId] = HttpClientResponse.TypeId
-  readonly [HttpIncomingMessage.TypeId] = HttpIncomingMessage.TypeId
+  readonly [HttpClientResponse.TypeId] = HttpClientResponse.TypeId;
+  readonly [HttpIncomingMessage.TypeId] = HttpIncomingMessage.TypeId;
 
   private applyInterrupt<A, E, R>(effect: Effect.Effect<A, E, R>) {
     return Effect.suspend(() => {
-      responseRegistry.unregister(this.original)
-      return Effect.onInterrupt(
-        effect,
-        () =>
-          Effect.sync(() => {
-            this.controller.abort()
-          })
-      )
-    })
+      responseRegistry.unregister(this.original);
+      return Effect.onInterrupt(effect, () =>
+        Effect.sync(() => {
+          this.controller.abort();
+        })
+      );
+    });
   }
 
   get request() {
-    return this.original.request
+    return this.original.request;
   }
 
   get status() {
-    return this.original.status
+    return this.original.status;
   }
 
   get headers() {
-    return this.original.headers
+    return this.original.headers;
   }
 
   get cookies() {
-    return this.original.cookies
+    return this.original.cookies;
   }
 
   get remoteAddress() {
-    return this.original.remoteAddress
+    return this.original.remoteAddress;
   }
 
   get formData() {
-    return this.applyInterrupt(this.original.formData)
+    return this.applyInterrupt(this.original.formData);
   }
 
   get text() {
-    return this.applyInterrupt(this.original.text)
+    return this.applyInterrupt(this.original.text);
   }
 
   get json() {
-    return this.applyInterrupt(this.original.json)
+    return this.applyInterrupt(this.original.json);
   }
 
   get urlParamsBody() {
-    return this.applyInterrupt(this.original.urlParamsBody)
+    return this.applyInterrupt(this.original.urlParamsBody);
   }
 
   get arrayBuffer() {
-    return this.applyInterrupt(this.original.arrayBuffer)
+    return this.applyInterrupt(this.original.arrayBuffer);
   }
 
   get stream() {
     return Stream.suspend(() => {
-      responseRegistry.unregister(this.original)
+      responseRegistry.unregister(this.original);
       return Stream.ensuring(
         this.original.stream,
         Effect.sync(() => {
-          this.controller.abort()
+          this.controller.abort();
         })
-      )
-    })
+      );
+    });
   }
 
   toJSON() {
-    return this.original.toJSON()
+    return this.original.toJSON();
   }
 
   [Inspectable.NodeInspectSymbol]() {
-    return this.original[Inspectable.NodeInspectSymbol]()
+    return this.original[Inspectable.NodeInspectSymbol]();
   }
 
   pipe() {
-    return pipeArguments(this, arguments)
+    return pipeArguments(this, arguments);
   }
 }
 
-const isTransientError = (error: unknown) => Cause.isTimeoutError(error) || isTransientHttpError(error)
+const isTransientError = (error: unknown) =>
+  Cause.isTimeoutError(error) || isTransientHttpError(error);
 
 const isTransientHttpError = (error: unknown) =>
   Error.isHttpClientError(error) &&
   (error.reason._tag === "TransportError" ||
-    (error.reason._tag === "StatusCodeError" && isTransientResponse(error.reason.response)))
+    (error.reason._tag === "StatusCodeError" &&
+      isTransientResponse(error.reason.response)));
 
 const isTooManyRequestsHttpClientError = (
   error: unknown
-): error is Error.HttpClientError & { readonly reason: Error.StatusCodeError } =>
-  Error.isHttpClientError(error) && error.reason._tag === "StatusCodeError" && error.reason.response.status === 429
+): error is Error.HttpClientError & {
+  readonly reason: Error.StatusCodeError;
+} =>
+  Error.isHttpClientError(error) &&
+  error.reason._tag === "StatusCodeError" &&
+  error.reason.response.status === 429;
 
 const isTransientResponse = (response: HttpClientResponse.HttpClientResponse) =>
   response.status === 408 ||
@@ -1652,4 +1996,4 @@ const isTransientResponse = (response: HttpClientResponse.HttpClientResponse) =>
   response.status === 500 ||
   response.status === 502 ||
   response.status === 503 ||
-  response.status === 504
+  response.status === 504;

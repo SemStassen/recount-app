@@ -21,24 +21,24 @@
  *
  * @since 4.0.0
  */
-import * as Arr from "../../Array.ts"
-import type { NonEmptyReadonlyArray } from "../../Array.ts"
-import type * as Brand from "../../Brand.ts"
-import * as Cause from "../../Cause.ts"
-import * as Context from "../../Context.ts"
-import * as Effect from "../../Effect.ts"
-import * as Encoding from "../../Encoding.ts"
-import * as Exit from "../../Exit.ts"
-import * as Filter from "../../Filter.ts"
-import { dual } from "../../Function.ts"
-import * as Option from "../../Option.ts"
-import * as Schema from "../../Schema.ts"
-import * as SchemaGetter from "../../SchemaGetter.ts"
-import type * as Activity from "./Activity.ts"
-import * as Workflow from "./Workflow.ts"
-import type { WorkflowEngine, WorkflowInstance } from "./WorkflowEngine.ts"
+import * as Arr from "../../Array.ts";
+import type { NonEmptyReadonlyArray } from "../../Array.ts";
+import type * as Brand from "../../Brand.ts";
+import * as Cause from "../../Cause.ts";
+import * as Context from "../../Context.ts";
+import * as Effect from "../../Effect.ts";
+import * as Encoding from "../../Encoding.ts";
+import * as Exit from "../../Exit.ts";
+import * as Filter from "../../Filter.ts";
+import { dual } from "../../Function.ts";
+import * as Option from "../../Option.ts";
+import * as Schema from "../../Schema.ts";
+import * as SchemaGetter from "../../SchemaGetter.ts";
+import type * as Activity from "./Activity.ts";
+import * as Workflow from "./Workflow.ts";
+import type { WorkflowEngine, WorkflowInstance } from "./WorkflowEngine.ts";
 
-const TypeId = "~effect/workflow/DurableDeferred"
+const TypeId = "~effect/workflow/DurableDeferred";
 
 /**
  * Named durable deferred value whose completion is persisted by the workflow
@@ -49,14 +49,14 @@ const TypeId = "~effect/workflow/DurableDeferred"
  */
 export interface DurableDeferred<
   Success extends Schema.Top,
-  Error extends Schema.Top = Schema.Never
+  Error extends Schema.Top = Schema.Never,
 > {
-  readonly [TypeId]: typeof TypeId
-  readonly name: string
-  readonly successSchema: Success
-  readonly errorSchema: Error
-  readonly exitSchema: Schema.Exit<Schema.Top, Schema.Top, Schema.Top>
-  readonly withActivityAttempt: Effect.Effect<DurableDeferred<Success, Error>>
+  readonly [TypeId]: typeof TypeId;
+  readonly name: string;
+  readonly successSchema: Success;
+  readonly errorSchema: Error;
+  readonly exitSchema: Schema.Exit<Schema.Top, Schema.Top, Schema.Top>;
+  readonly withActivityAttempt: Effect.Effect<DurableDeferred<Success, Error>>;
 }
 
 /**
@@ -67,8 +67,8 @@ export interface DurableDeferred<
  * @since 4.0.0
  */
 export interface Any {
-  readonly [TypeId]: typeof TypeId
-  readonly name: string
+  readonly [TypeId]: typeof TypeId;
+  readonly name: string;
 }
 
 /**
@@ -79,11 +79,11 @@ export interface Any {
  * @since 4.0.0
  */
 export interface AnyWithProps {
-  readonly [TypeId]: typeof TypeId
-  readonly name: string
-  readonly successSchema: Schema.Top
-  readonly errorSchema: Schema.Top
-  readonly exitSchema: Schema.Exit<any, any, any>
+  readonly [TypeId]: typeof TypeId;
+  readonly name: string;
+  readonly successSchema: Schema.Top;
+  readonly errorSchema: Schema.Top;
+  readonly exitSchema: Schema.Exit<any, any, any>;
 }
 
 /**
@@ -95,16 +95,16 @@ export interface AnyWithProps {
  */
 export const make = <
   Success extends Schema.Top = Schema.Void,
-  Error extends Schema.Top = Schema.Never
+  Error extends Schema.Top = Schema.Never,
 >(
   name: string,
   options?: {
-    readonly success?: Success | undefined
-    readonly error?: Error | undefined
+    readonly success?: Success | undefined;
+    readonly error?: Error | undefined;
   }
 ): DurableDeferred<Success, Error> => {
-  const successSchema = options?.success ?? (Schema.Void as any as Success)
-  const errorSchema = options?.error ?? (Schema.Never as any as Error)
+  const successSchema = options?.success ?? (Schema.Void as any as Success);
+  const errorSchema = options?.error ?? (Schema.Never as any as Error);
   return {
     [TypeId]: TypeId as typeof TypeId,
     name,
@@ -115,31 +115,31 @@ export const make = <
       Schema.toCodecJson(errorSchema),
       Schema.toCodecJson(Schema.Defect)
     ) as any,
-    withActivityAttempt: Effect.gen(function*() {
-      const attempt = yield* CurrentAttempt
+    withActivityAttempt: Effect.gen(function* () {
+      const attempt = yield* CurrentAttempt;
       return make(`${name}/${attempt}`, {
         success: successSchema,
-        error: errorSchema
-      })
-    })
-  }
-}
+        error: errorSchema,
+      });
+    }),
+  };
+};
 
 const EngineTag = Context.Service<WorkflowEngine, WorkflowEngine["Service"]>(
   "effect/workflow/WorkflowEngine" satisfies typeof WorkflowEngine.key
-)
+);
 
 const InstanceTag = Context.Service<
   WorkflowInstance,
   WorkflowInstance["Service"]
 >(
   "effect/workflow/WorkflowEngine/WorkflowInstance" satisfies typeof WorkflowInstance.key
-)
+);
 
 const CurrentAttempt = Context.Reference<number>(
   "effect/workflow/Activity/CurrentAttempt" satisfies typeof Activity.CurrentAttempt.key,
   { defaultValue: () => 1 }
-)
+);
 
 const await_: <Success extends Schema.Top, Error extends Schema.Top>(
   self: DurableDeferred<Success, Error>
@@ -150,21 +150,21 @@ const await_: <Success extends Schema.Top, Error extends Schema.Top>(
   | WorkflowInstance
   | Success["DecodingServices"]
   | Error["DecodingServices"]
-> = Effect.fnUntraced(function*<
+> = Effect.fnUntraced(function* <
   Success extends Schema.Top,
-  Error extends Schema.Top
+  Error extends Schema.Top,
 >(self: DurableDeferred<Success, Error>) {
-  const engine = yield* EngineTag
-  const instance = yield* InstanceTag
+  const engine = yield* EngineTag;
+  const instance = yield* InstanceTag;
   const exit = yield* Workflow.wrapActivityResult(
     engine.deferredResult(self),
     Option.isNone
-  )
+  );
   if (Option.isNone(exit)) {
-    return yield* Workflow.suspend(instance)
+    return yield* Workflow.suspend(instance);
   }
-  return yield* exit.value as Exit.Exit<any, any>
-})
+  return yield* exit.value as Exit.Exit<any, any>;
+});
 
 export {
   /**
@@ -174,8 +174,8 @@ export {
    * @category combinators
    * @since 4.0.0
    */
-  await_ as await
-}
+  await_ as await,
+};
 
 /**
  * Runs an effect and records its exit into the durable deferred, resuming
@@ -197,7 +197,7 @@ export const into: {
     | WorkflowInstance
     | Success["DecodingServices"]
     | Error["DecodingServices"]
-  >
+  >;
   <Success extends Schema.Top, Error extends Schema.Top, R>(
     effect: Effect.Effect<Success["Type"], Error["Type"], R>,
     self: DurableDeferred<Success, Error>
@@ -209,7 +209,7 @@ export const into: {
     | WorkflowInstance
     | Success["DecodingServices"]
     | Error["DecodingServices"]
-  >
+  >;
 } = dual(
   2,
   <Success extends Schema.Top, Error extends Schema.Top, R>(
@@ -226,36 +226,37 @@ export const into: {
   > =>
     Effect.contextWith(
       (context: Context.Context<WorkflowEngine | WorkflowInstance>) => {
-        const engine = Context.get(context, EngineTag)
-        const parentInstance = Context.get(context, InstanceTag)
-        const instance = { ...parentInstance }
+        const engine = Context.get(context, EngineTag);
+        const parentInstance = Context.get(context, InstanceTag);
+        const instance = { ...parentInstance };
         return Effect.onExit(
           Effect.provideService(effect, InstanceTag, instance),
-          Effect.fnUntraced(function*(exit) {
+          Effect.fnUntraced(function* (exit) {
             if (Exit.isFailure(exit)) {
               const [reasons, interrupts] = Arr.partition(
                 exit.cause.reasons,
                 Filter.fromPredicate(Cause.isInterruptReason)
-              )
-              const hasInterruptsOnly = interrupts.length === exit.cause.reasons.length
+              );
+              const hasInterruptsOnly =
+                interrupts.length === exit.cause.reasons.length;
               if (hasInterruptsOnly && instance.suspended) {
-                parentInstance.suspended = true
-                return
+                parentInstance.suspended = true;
+                return;
               } else if (interrupts.length > 0) {
-                exit = Exit.failCause(Cause.fromReasons(reasons))
+                exit = Exit.failCause(Cause.fromReasons(reasons));
               }
             }
             yield* engine.deferredDone(self, {
               workflowName: instance.workflow.name,
               executionId: instance.executionId,
               deferredName: self.name,
-              exit
-            })
+              exit,
+            });
           })
-        )
+        );
       }
     )
-)
+);
 
 /**
  * Runs effects as a durable race, returning a previously persisted result when
@@ -267,12 +268,12 @@ export const into: {
 export const raceAll = <
   const Effects extends NonEmptyReadonlyArray<Effect.Effect<any, any, any>>,
   Success extends Schema.Schema<Effect.Success<Effects[number]>>,
-  Error extends Schema.Schema<Effect.Error<Effects[number]>>
+  Error extends Schema.Schema<Effect.Error<Effects[number]>>,
 >(options: {
-  name: string
-  success: Success
-  error: Error
-  effects: Effects
+  name: string;
+  success: Success;
+  error: Error;
+  effects: Effects;
 }): Effect.Effect<
   Effect.Success<Effects[number]>,
   Effect.Error<Effects[number]>,
@@ -286,20 +287,17 @@ export const raceAll = <
 > => {
   const deferred = make<any, any>(`raceAll/${options.name}`, {
     success: options.success,
-    error: options.error
-  })
-  return Effect.gen(function*() {
-    const engine = yield* EngineTag
-    const exit = yield* engine.deferredResult(deferred)
+    error: options.error,
+  });
+  return Effect.gen(function* () {
+    const engine = yield* EngineTag;
+    const exit = yield* engine.deferredResult(deferred);
     if (Option.isSome(exit)) {
-      return yield* Effect.flatten(exit.value) as Effect.Effect<any, any, any>
+      return yield* Effect.flatten(exit.value) as Effect.Effect<any, any, any>;
     }
-    return yield* into(
-      Effect.raceAll(options.effects),
-      deferred
-    )
-  })
-}
+    return yield* into(Effect.raceAll(options.effects), deferred);
+  });
+};
 
 /**
  * Runtime brand identifier for durable deferred tokens.
@@ -307,7 +305,7 @@ export const raceAll = <
  * @category type IDs
  * @since 4.0.0
  */
-export const TokenTypeId = "~effect/workflow/DurableDeferred/Token"
+export const TokenTypeId = "~effect/workflow/DurableDeferred/Token";
 
 /**
  * Type-level brand identifier for `Token` values.
@@ -315,7 +313,7 @@ export const TokenTypeId = "~effect/workflow/DurableDeferred/Token"
  * @category type IDs
  * @since 4.0.0
  */
-export type TokenTypeId = typeof TokenTypeId
+export type TokenTypeId = typeof TokenTypeId;
 
 /**
  * Branded string token identifying a durable deferred for a workflow
@@ -324,7 +322,7 @@ export type TokenTypeId = typeof TokenTypeId
  * @category token
  * @since 4.0.0
  */
-export type Token = Brand.Branded<string, TokenTypeId>
+export type Token = Brand.Branded<string, TokenTypeId>;
 
 /**
  * Schema for branded durable deferred tokens.
@@ -332,7 +330,8 @@ export type Token = Brand.Branded<string, TokenTypeId>
  * @category token
  * @since 4.0.0
  */
-export const Token: Schema.brand<Schema.String, TokenTypeId> = Schema.String.pipe(Schema.brand(TokenTypeId))
+export const Token: Schema.brand<Schema.String, TokenTypeId> =
+  Schema.String.pipe(Schema.brand(TokenTypeId));
 
 /**
  * Schema for a decoded durable deferred token containing the workflow
@@ -346,7 +345,7 @@ export class TokenParsed extends Schema.Class<TokenParsed>(
 )({
   workflowName: Schema.String,
   executionId: Schema.String,
-  deferredName: Schema.String
+  deferredName: Schema.String,
 }) {
   /**
    * Encodes the parsed workflow, execution, and deferred names back into a token.
@@ -356,7 +355,7 @@ export class TokenParsed extends Schema.Class<TokenParsed>(
   get asToken(): Token {
     return Encoding.encodeBase64Url(
       JSON.stringify([this.workflowName, this.executionId, this.deferredName])
-    ) as Token
+    ) as Token;
   }
 
   /**
@@ -371,7 +370,7 @@ export class TokenParsed extends Schema.Class<TokenParsed>(
       ),
       {
         decode: SchemaGetter.decodeBase64UrlString(),
-        encode: SchemaGetter.encodeBase64Url()
+        encode: SchemaGetter.encodeBase64Url(),
       }
     ),
     Schema.decodeTo(TokenParsed, {
@@ -380,7 +379,7 @@ export class TokenParsed extends Schema.Class<TokenParsed>(
           new TokenParsed({
             workflowName,
             executionId,
-            deferredName
+            deferredName,
           })
       ),
       encode: SchemaGetter.transform(
@@ -388,25 +387,25 @@ export class TokenParsed extends Schema.Class<TokenParsed>(
           [
             parsed.workflowName,
             parsed.executionId,
-            parsed.deferredName
+            parsed.deferredName,
           ] as const
-      )
+      ),
     })
-  )
+  );
 
   /**
    * Decodes a durable deferred token string into its parsed components.
    *
    * @since 4.0.0
    */
-  static readonly fromString = Schema.decodeSync(TokenParsed.FromString)
+  static readonly fromString = Schema.decodeSync(TokenParsed.FromString);
 
   /**
    * Encodes parsed durable deferred token components into a token string.
    *
    * @since 4.0.0
    */
-  static readonly encode = Schema.encodeSync(TokenParsed.FromString)
+  static readonly encode = Schema.encodeSync(TokenParsed.FromString);
 }
 
 /**
@@ -419,13 +418,13 @@ export class TokenParsed extends Schema.Class<TokenParsed>(
 export const token: <Success extends Schema.Top, Error extends Schema.Top>(
   self: DurableDeferred<Success, Error>
 ) => Effect.Effect<Token, never, WorkflowInstance> = Effect.fnUntraced(
-  function*<Success extends Schema.Top, Error extends Schema.Top>(
+  function* <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>
   ) {
-    const instance = yield* InstanceTag
-    return tokenFromExecutionId(self, instance)
+    const instance = yield* InstanceTag;
+    return tokenFromExecutionId(self, instance);
   }
-)
+);
 
 /**
  * Creates a durable deferred token from an explicit workflow, execution ID,
@@ -436,30 +435,30 @@ export const token: <Success extends Schema.Top, Error extends Schema.Top>(
  */
 export const tokenFromExecutionId: {
   (options: {
-    readonly workflow: Workflow.Any
-    readonly executionId: string
+    readonly workflow: Workflow.Any;
+    readonly executionId: string;
   }): <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>
-  ) => Token
+  ) => Token;
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: { readonly workflow: Workflow.Any; readonly executionId: string }
-  ): Token
+  ): Token;
 } = dual(
   2,
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly workflow: Workflow.Any
-      readonly executionId: string
+      readonly workflow: Workflow.Any;
+      readonly executionId: string;
     }
   ): Token =>
     new TokenParsed({
       workflowName: options.workflow.name,
       executionId: options.executionId,
-      deferredName: self.name
+      deferredName: self.name,
     }).asToken
-)
+);
 
 /**
  * Creates a durable deferred token by deriving the workflow execution ID from
@@ -470,41 +469,42 @@ export const tokenFromExecutionId: {
  */
 export const tokenFromPayload: {
   <W extends Workflow.Any>(options: {
-    readonly workflow: W
-    readonly payload: Workflow.PayloadSchema<W>["~type.make.in"]
+    readonly workflow: W;
+    readonly payload: Workflow.PayloadSchema<W>["~type.make.in"];
   }): <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>
-  ) => Effect.Effect<Token>
+  ) => Effect.Effect<Token>;
   <
     Success extends Schema.Top,
     Error extends Schema.Top,
-    W extends Workflow.Any
+    W extends Workflow.Any,
   >(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly workflow: W
-      readonly payload: Workflow.PayloadSchema<W>["~type.make.in"]
+      readonly workflow: W;
+      readonly payload: Workflow.PayloadSchema<W>["~type.make.in"];
     }
-  ): Effect.Effect<Token>
+  ): Effect.Effect<Token>;
 } = dual(
   2,
   <
     Success extends Schema.Top,
     Error extends Schema.Top,
-    W extends Workflow.Any
+    W extends Workflow.Any,
   >(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly workflow: W
-      readonly payload: Workflow.PayloadSchema<W>["~type.make.in"]
+      readonly workflow: W;
+      readonly payload: Workflow.PayloadSchema<W>["~type.make.in"];
     }
   ): Effect.Effect<Token> =>
     Effect.map(options.workflow.executionId(options.payload), (executionId) =>
       tokenFromExecutionId(self, {
         workflow: options.workflow,
-        executionId
-      }))
-)
+        executionId,
+      })
+    )
+);
 
 /**
  * Completes the durable deferred identified by a token with the supplied exit,
@@ -515,48 +515,48 @@ export const tokenFromPayload: {
  */
 export const done: {
   <Success extends Schema.Top, Error extends Schema.Top>(options: {
-    readonly token: Token
-    readonly exit: Exit.Exit<Success["Type"], Error["Type"]>
+    readonly token: Token;
+    readonly exit: Exit.Exit<Success["Type"], Error["Type"]>;
   }): (
     self: DurableDeferred<Success, Error>
   ) => Effect.Effect<
     void,
     never,
     WorkflowEngine | Success["EncodingServices"] | Error["EncodingServices"]
-  >
+  >;
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly exit: Exit.Exit<Success["Type"], Error["Type"]>
+      readonly token: Token;
+      readonly exit: Exit.Exit<Success["Type"], Error["Type"]>;
     }
   ): Effect.Effect<
     void,
     never,
     WorkflowEngine | Success["EncodingServices"] | Error["EncodingServices"]
-  >
+  >;
 } = dual(
   2,
-  Effect.fnUntraced(function*<
+  Effect.fnUntraced(function* <
     Success extends Schema.Top,
-    Error extends Schema.Top
+    Error extends Schema.Top,
   >(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly exit: Exit.Exit<Success["Type"], Error["Type"]>
+      readonly token: Token;
+      readonly exit: Exit.Exit<Success["Type"], Error["Type"]>;
     }
   ) {
-    const engine = yield* EngineTag
-    const token = TokenParsed.fromString(options.token)
+    const engine = yield* EngineTag;
+    const token = TokenParsed.fromString(options.token);
     yield* engine.deferredDone(self, {
       workflowName: token.workflowName,
       executionId: token.executionId,
       deferredName: token.deferredName,
-      exit: options.exit
-    })
+      exit: options.exit,
+    });
   })
-)
+);
 
 /**
  * Completes the durable deferred identified by a token with a successful
@@ -567,32 +567,32 @@ export const done: {
  */
 export const succeed: {
   <Success extends Schema.Top, Error extends Schema.Top>(options: {
-    readonly token: Token
-    readonly value: Success["Type"]
+    readonly token: Token;
+    readonly value: Success["Type"];
   }): (
     self: DurableDeferred<Success, Error>
-  ) => Effect.Effect<void, never, WorkflowEngine | Success["EncodingServices"]>
+  ) => Effect.Effect<void, never, WorkflowEngine | Success["EncodingServices"]>;
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly value: Success["Type"]
+      readonly token: Token;
+      readonly value: Success["Type"];
     }
-  ): Effect.Effect<void, never, WorkflowEngine | Success["EncodingServices"]>
+  ): Effect.Effect<void, never, WorkflowEngine | Success["EncodingServices"]>;
 } = dual(
   2,
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly value: Success["Type"]
+      readonly token: Token;
+      readonly value: Success["Type"];
     }
   ): Effect.Effect<void, never, WorkflowEngine | Success["EncodingServices"]> =>
     done(self, {
       token: options.token,
-      exit: Exit.succeed(options.value)
+      exit: Exit.succeed(options.value),
     })
-)
+);
 
 /**
  * Completes the durable deferred identified by a token with a typed failure.
@@ -602,32 +602,32 @@ export const succeed: {
  */
 export const fail: {
   <Success extends Schema.Top, Error extends Schema.Top>(options: {
-    readonly token: Token
-    readonly error: Error["Type"]
+    readonly token: Token;
+    readonly error: Error["Type"];
   }): (
     self: DurableDeferred<Success, Error>
-  ) => Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>
+  ) => Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>;
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly error: Error["Type"]
+      readonly token: Token;
+      readonly error: Error["Type"];
     }
-  ): Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>
+  ): Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>;
 } = dual(
   2,
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly error: Error["Type"]
+      readonly token: Token;
+      readonly error: Error["Type"];
     }
   ): Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]> =>
     done(self, {
       token: options.token,
-      exit: Exit.fail(options.error)
+      exit: Exit.fail(options.error),
     })
-)
+);
 
 /**
  * Completes the durable deferred identified by a token with a failure cause.
@@ -637,29 +637,29 @@ export const fail: {
  */
 export const failCause: {
   <Success extends Schema.Top, Error extends Schema.Top>(options: {
-    readonly token: Token
-    readonly cause: Cause.Cause<Error["Type"]>
+    readonly token: Token;
+    readonly cause: Cause.Cause<Error["Type"]>;
   }): (
     self: DurableDeferred<Success, Error>
-  ) => Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>
+  ) => Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>;
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly cause: Cause.Cause<Error["Type"]>
+      readonly token: Token;
+      readonly cause: Cause.Cause<Error["Type"]>;
     }
-  ): Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>
+  ): Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]>;
 } = dual(
   2,
   <Success extends Schema.Top, Error extends Schema.Top>(
     self: DurableDeferred<Success, Error>,
     options: {
-      readonly token: Token
-      readonly cause: Cause.Cause<Error["Type"]>
+      readonly token: Token;
+      readonly cause: Cause.Cause<Error["Type"]>;
     }
   ): Effect.Effect<void, never, WorkflowEngine | Error["EncodingServices"]> =>
     done(self, {
       token: options.token,
-      exit: Exit.failCause(options.cause)
+      exit: Exit.failCause(options.cause),
     })
-)
+);

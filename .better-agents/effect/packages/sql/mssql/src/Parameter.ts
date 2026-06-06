@@ -36,9 +36,9 @@
  *
  * @since 4.0.0
  */
-import { identity } from "effect/Function"
-import type { DataType } from "tedious/lib/data-type.ts"
-import type { ParameterOptions } from "tedious/lib/request.ts"
+import { identity } from "effect/Function";
+import type { DataType } from "tedious/lib/data-type.ts";
+import type { ParameterOptions } from "tedious/lib/request.ts";
 
 /**
  * Runtime type identifier used to mark SQL Server stored procedure parameter metadata.
@@ -46,7 +46,7 @@ import type { ParameterOptions } from "tedious/lib/request.ts"
  * @category type IDs
  * @since 4.0.0
  */
-export const TypeId: TypeId = "~@effect/sql-mssql/Parameter"
+export const TypeId: TypeId = "~@effect/sql-mssql/Parameter";
 
 /**
  * Type-level identifier used to mark SQL Server stored procedure parameter metadata.
@@ -54,7 +54,7 @@ export const TypeId: TypeId = "~@effect/sql-mssql/Parameter"
  * @category type IDs
  * @since 4.0.0
  */
-export type TypeId = "~@effect/sql-mssql/Parameter"
+export type TypeId = "~@effect/sql-mssql/Parameter";
 
 /**
  * Metadata for a SQL Server stored procedure parameter, including its name, Tedious data type, options, and phantom value type.
@@ -63,11 +63,11 @@ export type TypeId = "~@effect/sql-mssql/Parameter"
  * @since 4.0.0
  */
 export interface Parameter<out A> {
-  readonly [TypeId]: (_: never) => A
-  readonly _tag: "Parameter"
-  readonly name: string
-  readonly type: DataType
-  readonly options: ParameterOptions
+  readonly [TypeId]: (_: never) => A;
+  readonly _tag: "Parameter";
+  readonly name: string;
+  readonly type: DataType;
+  readonly options: ParameterOptions;
 }
 
 /**
@@ -85,5 +85,5 @@ export const make = <A>(
   _tag: "Parameter",
   name,
   type,
-  options
-})
+  options,
+});

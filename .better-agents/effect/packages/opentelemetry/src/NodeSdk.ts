@@ -23,21 +23,28 @@
  *
  * @since 4.0.0
  */
-import type * as Otel from "@opentelemetry/api"
-import type { LoggerProviderConfig, LogRecordProcessor } from "@opentelemetry/sdk-logs"
-import type { MetricReader } from "@opentelemetry/sdk-metrics"
-import type { SpanProcessor, TracerConfig } from "@opentelemetry/sdk-trace-base"
-import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node"
-import type { NonEmptyReadonlyArray } from "effect/Array"
-import type * as Duration from "effect/Duration"
-import * as Effect from "effect/Effect"
-import { constant, type LazyArg } from "effect/Function"
-import * as Layer from "effect/Layer"
-import { isNonEmpty } from "./internal/utilities.ts"
-import * as Logger from "./Logger.ts"
-import * as Metrics from "./Metrics.ts"
-import * as Resource from "./Resource.ts"
-import * as Tracer from "./Tracer.ts"
+import type * as Otel from "@opentelemetry/api";
+import type {
+  LoggerProviderConfig,
+  LogRecordProcessor,
+} from "@opentelemetry/sdk-logs";
+import type { MetricReader } from "@opentelemetry/sdk-metrics";
+import type {
+  SpanProcessor,
+  TracerConfig,
+} from "@opentelemetry/sdk-trace-base";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import type { NonEmptyReadonlyArray } from "effect/Array";
+import type * as Duration from "effect/Duration";
+import * as Effect from "effect/Effect";
+import { constant, type LazyArg } from "effect/Function";
+import * as Layer from "effect/Layer";
+
+import { isNonEmpty } from "./internal/utilities.ts";
+import * as Logger from "./Logger.ts";
+import * as Metrics from "./Metrics.ts";
+import * as Resource from "./Resource.ts";
+import * as Tracer from "./Tracer.ts";
 
 /**
  * Configuration for the Node OpenTelemetry layer, including optional tracing, metrics, logging, resource, and shutdown settings.
@@ -46,19 +53,32 @@ import * as Tracer from "./Tracer.ts"
  * @since 4.0.0
  */
 export interface Configuration {
-  readonly spanProcessor?: SpanProcessor | ReadonlyArray<SpanProcessor> | undefined
-  readonly tracerConfig?: Omit<TracerConfig, "resource"> | undefined
-  readonly metricReader?: MetricReader | ReadonlyArray<MetricReader> | undefined
-  readonly metricTemporality?: Metrics.TemporalityPreference | undefined
-  readonly logRecordProcessor?: LogRecordProcessor | ReadonlyArray<LogRecordProcessor> | undefined
-  readonly loggerProviderConfig?: Omit<LoggerProviderConfig, "resource"> | undefined
-  readonly loggerMergeWithExisting?: boolean | undefined
-  readonly resource?: {
-    readonly serviceName: string
-    readonly serviceVersion?: string
-    readonly attributes?: Otel.Attributes
-  } | undefined
-  readonly shutdownTimeout?: Duration.Input | undefined
+  readonly spanProcessor?:
+    | SpanProcessor
+    | ReadonlyArray<SpanProcessor>
+    | undefined;
+  readonly tracerConfig?: Omit<TracerConfig, "resource"> | undefined;
+  readonly metricReader?:
+    | MetricReader
+    | ReadonlyArray<MetricReader>
+    | undefined;
+  readonly metricTemporality?: Metrics.TemporalityPreference | undefined;
+  readonly logRecordProcessor?:
+    | LogRecordProcessor
+    | ReadonlyArray<LogRecordProcessor>
+    | undefined;
+  readonly loggerProviderConfig?:
+    | Omit<LoggerProviderConfig, "resource">
+    | undefined;
+  readonly loggerMergeWithExisting?: boolean | undefined;
+  readonly resource?:
+    | {
+        readonly serviceName: string;
+        readonly serviceVersion?: string;
+        readonly attributes?: Otel.Attributes;
+      }
+    | undefined;
+  readonly shutdownTimeout?: Duration.Input | undefined;
 }
 
 /**
@@ -70,31 +90,35 @@ export interface Configuration {
 export const layerTracerProvider = (
   processor: SpanProcessor | NonEmptyReadonlyArray<SpanProcessor>,
   config?: Omit<TracerConfig, "resource"> & {
-    readonly shutdownTimeout?: Duration.Input | undefined
+    readonly shutdownTimeout?: Duration.Input | undefined;
   }
 ): Layer.Layer<Tracer.OtelTracerProvider, never, Resource.Resource> =>
   Layer.effect(
     Tracer.OtelTracerProvider,
-    Effect.gen(function*() {
-      const resource = yield* Resource.Resource
+    Effect.gen(function* () {
+      const resource = yield* Resource.Resource;
       return yield* Effect.acquireRelease(
         Effect.sync(() => {
           const provider = new NodeTracerProvider({
             ...(config ?? undefined),
             resource,
-            spanProcessors: Array.isArray(processor) ? (processor as any) : [processor]
-          })
-          return provider
+            spanProcessors: Array.isArray(processor)
+              ? (processor as any)
+              : [processor],
+          });
+          return provider;
         }),
         (provider) =>
-          Effect.promise(() => provider.forceFlush().then(() => provider.shutdown())).pipe(
+          Effect.promise(() =>
+            provider.forceFlush().then(() => provider.shutdown())
+          ).pipe(
             Effect.ignore,
             Effect.interruptible,
             Effect.timeoutOption(config?.shutdownTimeout ?? 3000)
           )
-      )
+      );
     })
-  )
+  );
 
 /**
  * Creates a Node OpenTelemetry layer from configuration, enabling tracing, metrics, and logging only when their processors or readers are supplied.
@@ -120,51 +144,55 @@ export const layerTracerProvider = (
  * @since 4.0.0
  */
 export const layer: {
-  (evaluate: LazyArg<Configuration>): Layer.Layer<Resource.Resource>
-  <R, E>(evaluate: Effect.Effect<Configuration, E, R>): Layer.Layer<Resource.Resource, E, R>
+  (evaluate: LazyArg<Configuration>): Layer.Layer<Resource.Resource>;
+  <R, E>(
+    evaluate: Effect.Effect<Configuration, E, R>
+  ): Layer.Layer<Resource.Resource, E, R>;
 } = (
   evaluate: LazyArg<Configuration> | Effect.Effect<Configuration, any, any>
 ): Layer.Layer<Resource.Resource> =>
   Layer.unwrap(
-    Effect.gen(function*() {
+    Effect.gen(function* () {
       const config = yield* Effect.isEffect(evaluate)
-        ? evaluate as Effect.Effect<Configuration>
-        : Effect.sync(evaluate)
+        ? (evaluate as Effect.Effect<Configuration>)
+        : Effect.sync(evaluate);
 
-      const ResourceLive = Resource.layerFromEnv(config.resource && Resource.configToAttributes(config.resource))
+      const ResourceLive = Resource.layerFromEnv(
+        config.resource && Resource.configToAttributes(config.resource)
+      );
 
       const TracerLive = isNonEmpty(config.spanProcessor)
         ? Layer.provide(
-          Tracer.layer,
-          layerTracerProvider(config.spanProcessor, {
-            ...config.tracerConfig,
-            shutdownTimeout: config.shutdownTimeout
-          })
-        )
-        : Layer.empty
+            Tracer.layer,
+            layerTracerProvider(config.spanProcessor, {
+              ...config.tracerConfig,
+              shutdownTimeout: config.shutdownTimeout,
+            })
+          )
+        : Layer.empty;
 
       const MetricsLive = isNonEmpty(config.metricReader)
         ? Metrics.layer(constant(config.metricReader), {
-          shutdownTimeout: config.shutdownTimeout,
-          temporality: config.metricTemporality
-        })
-        : Layer.empty
+            shutdownTimeout: config.shutdownTimeout,
+            temporality: config.metricTemporality,
+          })
+        : Layer.empty;
 
       const LoggerLive = isNonEmpty(config.logRecordProcessor)
         ? Layer.provide(
-          Logger.layer({ mergeWithExisting: config.loggerMergeWithExisting }),
-          Logger.layerLoggerProvider(config.logRecordProcessor, {
-            ...config.loggerProviderConfig,
-            shutdownTimeout: config.shutdownTimeout
-          })
-        )
-        : Layer.empty
+            Logger.layer({ mergeWithExisting: config.loggerMergeWithExisting }),
+            Logger.layerLoggerProvider(config.logRecordProcessor, {
+              ...config.loggerProviderConfig,
+              shutdownTimeout: config.shutdownTimeout,
+            })
+          )
+        : Layer.empty;
 
       return Layer.mergeAll(TracerLive, MetricsLive, LoggerLive).pipe(
         Layer.provideMerge(ResourceLive)
-      )
+      );
     })
-  )
+  );
 
 /**
  * Layer that provides an empty OpenTelemetry `Resource`.
@@ -172,4 +200,4 @@ export const layer: {
  * @category layers
  * @since 2.0.0
  */
-export const layerEmpty: Layer.Layer<Resource.Resource> = Resource.layerEmpty
+export const layerEmpty: Layer.Layer<Resource.Resource> = Resource.layerEmpty;

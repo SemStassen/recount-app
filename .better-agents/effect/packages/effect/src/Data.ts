@@ -75,12 +75,12 @@
  *
  * @since 2.0.0
  */
-import type * as Cause from "./Cause.ts"
-import * as core from "./internal/core.ts"
-import * as Pipeable from "./Pipeable.ts"
-import * as Predicate from "./Predicate.ts"
-import type * as Types from "./Types.ts"
-import type { Unify } from "./Unify.ts"
+import type * as Cause from "./Cause.ts";
+import * as core from "./internal/core.ts";
+import * as Pipeable from "./Pipeable.ts";
+import * as Predicate from "./Predicate.ts";
+import type * as Types from "./Types.ts";
+import type { Unify } from "./Unify.ts";
 
 /**
  * Provides a base class for immutable data types.
@@ -115,16 +115,16 @@ import type { Unify } from "./Unify.ts"
  * @category constructors
  * @since 2.0.0
  */
-export const Class: new<A extends Record<string, any> = {}>(
+export const Class: new <A extends Record<string, any> = {}>(
   args: Types.VoidIfEmpty<{ readonly [P in keyof A]: A[P] }>
 ) => Readonly<A> & Pipeable.Pipeable = class extends Pipeable.Class {
   constructor(props: any) {
-    super()
+    super();
     if (props) {
-      Object.assign(this, props)
+      Object.assign(this, props);
     }
   }
-} as any
+} as any;
 
 /**
  * Provides a base class for immutable data types with a `_tag` discriminator.
@@ -162,12 +162,14 @@ export const Class: new<A extends Record<string, any> = {}>(
  */
 export const TaggedClass = <Tag extends string>(
   tag: Tag
-): new<A extends Record<string, any> = {}>(
-  args: Types.VoidIfEmpty<{ readonly [P in keyof A as P extends "_tag" ? never : P]: A[P] }>
+): new <A extends Record<string, any> = {}>(
+  args: Types.VoidIfEmpty<{
+    readonly [P in keyof A as P extends "_tag" ? never : P]: A[P];
+  }>
 ) => Readonly<A> & { readonly _tag: Tag } & Pipeable.Pipeable =>
   class extends Class {
-    readonly _tag = tag
-  } as any
+    readonly _tag = tag;
+  } as any;
 
 /**
  * Transforms a record of variant definitions into a discriminated union type.
@@ -214,21 +216,27 @@ export const TaggedClass = <Tag extends string>(
  * @since 2.0.0
  */
 export type TaggedEnum<
-  A extends Record<string, Record<string, any>> & UntaggedChildren<A>
-> = keyof A extends infer Tag ? Tag extends keyof A ? Types.Simplify<
-      { readonly _tag: Tag } & { readonly [K in keyof A[Tag]]: A[Tag][K] }
-    >
-  : never
-  : never
+  A extends Record<string, Record<string, any>> & UntaggedChildren<A>,
+> = keyof A extends infer Tag
+  ? Tag extends keyof A
+    ? Types.Simplify<
+        { readonly _tag: Tag } & { readonly [K in keyof A[Tag]]: A[Tag][K] }
+      >
+    : never
+  : never;
 
-type ChildrenAreTagged<A> = keyof A extends infer K ? K extends keyof A ? "_tag" extends keyof A[K] ? true
-    : false
-  : never
-  : never
+type ChildrenAreTagged<A> = keyof A extends infer K
+  ? K extends keyof A
+    ? "_tag" extends keyof A[K]
+      ? true
+      : false
+    : never
+  : never;
 
-type UntaggedChildren<A> = true extends ChildrenAreTagged<A>
-  ? "It looks like you're trying to create a tagged enum, but one or more of its members already has a `_tag` property."
-  : unknown
+type UntaggedChildren<A> =
+  true extends ChildrenAreTagged<A>
+    ? "It looks like you're trying to create a tagged enum, but one or more of its members already has a `_tag` property."
+    : unknown;
 
 /**
  * Namespace for `TaggedEnum` utility types.
@@ -289,13 +297,13 @@ export declare namespace TaggedEnum {
    * @since 2.0.0
    */
   export interface WithGenerics<Count extends number> {
-    readonly taggedEnum: { readonly _tag: string }
-    readonly numberOfGenerics: Count
+    readonly taggedEnum: { readonly _tag: string };
+    readonly numberOfGenerics: Count;
 
-    readonly A: unknown
-    readonly B: unknown
-    readonly C: unknown
-    readonly D: unknown
+    readonly A: unknown;
+    readonly B: unknown;
+    readonly C: unknown;
+    readonly D: unknown;
   }
 
   /**
@@ -334,13 +342,13 @@ export declare namespace TaggedEnum {
     A = unknown,
     B = unknown,
     C = unknown,
-    D = unknown
+    D = unknown,
   > = (Z & {
-    readonly A: A
-    readonly B: B
-    readonly C: C
-    readonly D: D
-  })["taggedEnum"]
+    readonly A: A;
+    readonly B: B;
+    readonly C: C;
+    readonly D: D;
+  })["taggedEnum"];
 
   /**
    * Extracts the constructor argument type for a specific variant of a tagged
@@ -379,11 +387,12 @@ export declare namespace TaggedEnum {
   export type Args<
     A extends { readonly _tag: string },
     K extends A["_tag"],
-    E = Extract<A, { readonly _tag: K }>
+    E = Extract<A, { readonly _tag: K }>,
   > = {
-    readonly [K in keyof E as K extends "_tag" ? never : K]: E[K]
-  } extends infer T ? Types.VoidIfEmpty<T>
-    : never
+    readonly [K in keyof E as K extends "_tag" ? never : K]: E[K];
+  } extends infer T
+    ? Types.VoidIfEmpty<T>
+    : never;
 
   /**
    * Extracts the full variant type (including `_tag`) for a specific tag.
@@ -412,8 +421,8 @@ export declare namespace TaggedEnum {
    */
   export type Value<
     A extends { readonly _tag: string },
-    K extends A["_tag"]
-  > = Extract<A, { readonly _tag: K }>
+    K extends A["_tag"],
+  > = Extract<A, { readonly _tag: K }>;
 
   /**
    * The full constructors-and-matchers object type returned by {@link taggedEnum}.
@@ -467,34 +476,34 @@ export declare namespace TaggedEnum {
       readonly [Tag in A["_tag"]]: ConstructorFrom<
         Extract<A, { readonly _tag: Tag }>,
         "_tag"
-      >
+      >;
     } & {
       readonly $is: <Tag extends A["_tag"]>(
         tag: Tag
-      ) => (u: unknown) => u is Extract<A, { readonly _tag: Tag }>
+      ) => (u: unknown) => u is Extract<A, { readonly _tag: Tag }>;
       readonly $match: {
         <
           Cases extends {
             readonly [Tag in A["_tag"]]: (
               args: Extract<A, { readonly _tag: Tag }>
-            ) => any
-          }
+            ) => any;
+          },
         >(
           cases: Cases
-        ): (value: A) => Unify<ReturnType<Cases[A["_tag"]]>>
+        ): (value: A) => Unify<ReturnType<Cases[A["_tag"]]>>;
         <
           Cases extends {
             readonly [Tag in A["_tag"]]: (
               args: Extract<A, { readonly _tag: Tag }>
-            ) => any
-          }
+            ) => any;
+          },
         >(
           value: A,
           cases: Cases
-        ): Unify<ReturnType<Cases[A["_tag"]]>>
-      }
+        ): Unify<ReturnType<Cases[A["_tag"]]>>;
+      };
     }
-  >
+  >;
 
   /**
    * Function type that constructs a tagged-union variant from its fields,
@@ -513,8 +522,10 @@ export declare namespace TaggedEnum {
    * @since 4.0.0
    */
   export type ConstructorFrom<A, Tag extends keyof A = never> = (
-    args: Types.VoidIfEmpty<{ readonly [P in keyof A as P extends Tag ? never : P]: A[P] }>
-  ) => A
+    args: Types.VoidIfEmpty<{
+      readonly [P in keyof A as P extends Tag ? never : P]: A[P];
+    }>
+  ) => A;
 
   /**
    * Type-guard and pattern-matching interface for generic tagged enums.
@@ -539,9 +550,9 @@ export declare namespace TaggedEnum {
     ) => {
       <T extends TaggedEnum.Kind<Z, any, any, any, any>>(
         u: T
-      ): u is T & { readonly _tag: Tag }
-      (u: unknown): u is Extract<TaggedEnum.Kind<Z>, { readonly _tag: Tag }>
-    }
+      ): u is T & { readonly _tag: Tag };
+      (u: unknown): u is Extract<TaggedEnum.Kind<Z>, { readonly _tag: Tag }>;
+    };
     readonly $match: {
       <
         A,
@@ -554,13 +565,13 @@ export declare namespace TaggedEnum {
               TaggedEnum.Kind<Z, A, B, C, D>,
               { readonly _tag: Tag }
             >
-          ) => any
-        }
+          ) => any;
+        },
       >(
         cases: Cases
       ): (
         self: TaggedEnum.Kind<Z, A, B, C, D>
-      ) => Unify<ReturnType<Cases[Z["taggedEnum"]["_tag"]]>>
+      ) => Unify<ReturnType<Cases[Z["taggedEnum"]["_tag"]]>>;
       <
         A,
         B,
@@ -572,13 +583,13 @@ export declare namespace TaggedEnum {
               TaggedEnum.Kind<Z, A, B, C, D>,
               { readonly _tag: Tag }
             >
-          ) => any
-        }
+          ) => any;
+        },
       >(
         self: TaggedEnum.Kind<Z, A, B, C, D>,
         cases: Cases
-      ): Unify<ReturnType<Cases[Z["taggedEnum"]["_tag"]]>>
-    }
+      ): Unify<ReturnType<Cases[Z["taggedEnum"]["_tag"]]>>;
+    };
   }
 }
 
@@ -663,9 +674,9 @@ export const taggedEnum: {
           Tag,
           Extract<TaggedEnum.Kind<Z, A>, { readonly _tag: Tag }>
         >
-      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A>, Tag>
+      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A>, Tag>;
     } & TaggedEnum.GenericMatchers<Z>
-  >
+  >;
 
   <Z extends TaggedEnum.WithGenerics<2>>(): Types.Simplify<
     {
@@ -675,9 +686,9 @@ export const taggedEnum: {
           Tag,
           Extract<TaggedEnum.Kind<Z, A, B>, { readonly _tag: Tag }>
         >
-      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A, B>, Tag>
+      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A, B>, Tag>;
     } & TaggedEnum.GenericMatchers<Z>
-  >
+  >;
 
   <Z extends TaggedEnum.WithGenerics<3>>(): Types.Simplify<
     {
@@ -687,9 +698,9 @@ export const taggedEnum: {
           Tag,
           Extract<TaggedEnum.Kind<Z, A, B, C>, { readonly _tag: Tag }>
         >
-      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A, B, C>, Tag>
+      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A, B, C>, Tag>;
     } & TaggedEnum.GenericMatchers<Z>
-  >
+  >;
 
   <Z extends TaggedEnum.WithGenerics<4>>(): Types.Simplify<
     {
@@ -699,53 +710,53 @@ export const taggedEnum: {
           Tag,
           Extract<TaggedEnum.Kind<Z, A, B, C, D>, { readonly _tag: Tag }>
         >
-      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A, B, C, D>, Tag>
+      ) => TaggedEnum.Value<TaggedEnum.Kind<Z, A, B, C, D>, Tag>;
     } & TaggedEnum.GenericMatchers<Z>
-  >
+  >;
 
-  <A extends { readonly _tag: string }>(): TaggedEnum.Constructor<A>
+  <A extends { readonly _tag: string }>(): TaggedEnum.Constructor<A>;
 } = () =>
   new Proxy(
     {},
     {
       get(_target, tag, _receiver) {
         if (tag === "$is") {
-          return Predicate.isTagged
+          return Predicate.isTagged;
         } else if (tag === "$match") {
-          return taggedMatch
+          return taggedMatch;
         }
-        return (props: any) => ({ ...props, _tag: tag })
-      }
+        return (props: any) => ({ ...props, _tag: tag });
+      },
     }
-  ) as any
+  ) as any;
 
 function taggedMatch<
   A extends { readonly _tag: string },
   Cases extends {
-    readonly [K in A["_tag"]]: (args: Extract<A, { readonly _tag: K }>) => any
-  }
->(self: A, cases: Cases): ReturnType<Cases[A["_tag"]]>
+    readonly [K in A["_tag"]]: (args: Extract<A, { readonly _tag: K }>) => any;
+  },
+>(self: A, cases: Cases): ReturnType<Cases[A["_tag"]]>;
 function taggedMatch<
   A extends { readonly _tag: string },
   Cases extends {
-    readonly [K in A["_tag"]]: (args: Extract<A, { readonly _tag: K }>) => any
-  }
->(cases: Cases): (value: A) => ReturnType<Cases[A["_tag"]]>
+    readonly [K in A["_tag"]]: (args: Extract<A, { readonly _tag: K }>) => any;
+  },
+>(cases: Cases): (value: A) => ReturnType<Cases[A["_tag"]]>;
 function taggedMatch<
   A extends { readonly _tag: string },
   Cases extends {
-    readonly [K in A["_tag"]]: (args: Extract<A, { readonly _tag: K }>) => any
-  }
+    readonly [K in A["_tag"]]: (args: Extract<A, { readonly _tag: K }>) => any;
+  },
 >(): any {
   if (arguments.length === 1) {
-    const cases = arguments[0] as Cases
-    return function(value: A): ReturnType<Cases[A["_tag"]]> {
-      return cases[value._tag as A["_tag"]](value as any)
-    }
+    const cases = arguments[0] as Cases;
+    return function (value: A): ReturnType<Cases[A["_tag"]]> {
+      return cases[value._tag as A["_tag"]](value as any);
+    };
   }
-  const value = arguments[0] as A
-  const cases = arguments[1] as Cases
-  return cases[value._tag as A["_tag"]](value as any)
+  const value = arguments[0] as A;
+  const cases = arguments[1] as Cases;
+  return cases[value._tag as A["_tag"]](value as any);
 }
 
 /**
@@ -787,9 +798,9 @@ function taggedMatch<
  * @category constructors
  * @since 2.0.0
  */
-export const Error: new<A extends Record<string, any> = {}>(
+export const Error: new <A extends Record<string, any> = {}>(
   args: Types.VoidIfEmpty<{ readonly [P in keyof A]: A[P] }>
-) => Cause.YieldableError & Readonly<A> = core.Error
+) => Cause.YieldableError & Readonly<A> = core.Error;
 
 /**
  * Creates a tagged error class with a `_tag` discriminator.
@@ -836,6 +847,9 @@ export const Error: new<A extends Record<string, any> = {}>(
  */
 export const TaggedError: <Tag extends string>(
   tag: Tag
-) => new<A extends Record<string, any> = {}>(
-  args: Types.VoidIfEmpty<{ readonly [P in keyof A as P extends "_tag" ? never : P]: A[P] }>
-) => Cause.YieldableError & { readonly _tag: Tag } & Readonly<A> = core.TaggedError as any
+) => new <A extends Record<string, any> = {}>(
+  args: Types.VoidIfEmpty<{
+    readonly [P in keyof A as P extends "_tag" ? never : P]: A[P];
+  }>
+) => Cause.YieldableError & { readonly _tag: Tag } & Readonly<A> =
+  core.TaggedError as any;

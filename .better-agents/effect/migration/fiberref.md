@@ -29,23 +29,23 @@ services — `yield*` them directly.
 **v3**
 
 ```ts
-import { Effect, FiberRef } from "effect"
+import { Effect, FiberRef } from "effect";
 
-const program = Effect.gen(function*() {
-  const level = yield* FiberRef.get(FiberRef.currentLogLevel)
-  console.log(level)
-})
+const program = Effect.gen(function* () {
+  const level = yield* FiberRef.get(FiberRef.currentLogLevel);
+  console.log(level);
+});
 ```
 
 **v4**
 
 ```ts
-import { Effect, References } from "effect"
+import { Effect, References } from "effect";
 
-const program = Effect.gen(function*() {
-  const level = yield* References.CurrentLogLevel
-  console.log(level) // "Info" (default)
-})
+const program = Effect.gen(function* () {
+  const level = yield* References.CurrentLogLevel;
+  console.log(level); // "Info" (default)
+});
 ```
 
 ## Scoped Updates (`Effect.locally` → `Effect.provideService`)
@@ -56,25 +56,25 @@ v4, use `Effect.provideService` with the reference.
 **v3**
 
 ```ts
-import { Effect, FiberRef, LogLevel } from "effect"
+import { Effect, FiberRef, LogLevel } from "effect";
 
 const program = Effect.locally(
   myEffect,
   FiberRef.currentLogLevel,
   LogLevel.Debug
-)
+);
 ```
 
 **v4**
 
 ```ts
-import { Effect, References } from "effect"
+import { Effect, References } from "effect";
 
 const program = Effect.provideService(
   myEffect,
   References.CurrentLogLevel,
   "Debug"
-)
+);
 ```
 
 ## Writing References
@@ -85,25 +85,25 @@ set via `Effect.provideService`, which scopes the value to the provided effect.
 **v3**
 
 ```ts
-import { Effect, FiberRef } from "effect"
+import { Effect, FiberRef } from "effect";
 
-const program = Effect.gen(function*() {
-  yield* FiberRef.set(FiberRef.currentConcurrency, 10)
+const program = Effect.gen(function* () {
+  yield* FiberRef.set(FiberRef.currentConcurrency, 10);
   // subsequent code sees concurrency = 10
-})
+});
 ```
 
 **v4**
 
 ```ts
-import { Effect, References } from "effect"
+import { Effect, References } from "effect";
 
 const program = Effect.provideService(
-  Effect.gen(function*() {
-    const concurrency = yield* References.CurrentConcurrency
-    console.log(concurrency) // 10
+  Effect.gen(function* () {
+    const concurrency = yield* References.CurrentConcurrency;
+    console.log(concurrency); // 10
   }),
   References.CurrentConcurrency,
   10
-)
+);
 ```

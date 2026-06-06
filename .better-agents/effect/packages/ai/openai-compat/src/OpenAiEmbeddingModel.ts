@@ -35,16 +35,20 @@
  *
  * @since 4.0.0
  */
-import * as Context from "effect/Context"
-import * as Effect from "effect/Effect"
-import { dual } from "effect/Function"
-import * as Layer from "effect/Layer"
-import type { Simplify } from "effect/Types"
-import * as AiError from "effect/unstable/ai/AiError"
-import * as EmbeddingModel from "effect/unstable/ai/EmbeddingModel"
-import * as AiModel from "effect/unstable/ai/Model"
-import type { CreateEmbedding200, CreateEmbeddingRequestJson } from "./OpenAiClient.ts"
-import { OpenAiClient } from "./OpenAiClient.ts"
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import { dual } from "effect/Function";
+import * as Layer from "effect/Layer";
+import type { Simplify } from "effect/Types";
+import * as AiError from "effect/unstable/ai/AiError";
+import * as EmbeddingModel from "effect/unstable/ai/EmbeddingModel";
+import * as AiModel from "effect/unstable/ai/Model";
+
+import type {
+  CreateEmbedding200,
+  CreateEmbeddingRequestJson,
+} from "./OpenAiClient.ts";
+import { OpenAiClient } from "./OpenAiClient.ts";
 
 /**
  * A model identifier accepted by an OpenAI-compatible embeddings endpoint.
@@ -52,7 +56,7 @@ import { OpenAiClient } from "./OpenAiClient.ts"
  * @category models
  * @since 4.0.0
  */
-export type Model = string
+export type Model = string;
 
 /**
  * Context service for OpenAI embedding model configuration.
@@ -77,14 +81,8 @@ export type Model = string
 export class Config extends Context.Service<
   Config,
   Simplify<
-    & Partial<
-      Omit<
-        CreateEmbeddingRequestJson,
-        "input"
-      >
-    >
-    & {
-      readonly [x: string]: unknown
+    Partial<Omit<CreateEmbeddingRequestJson, "input">> & {
+      readonly [x: string]: unknown;
     }
   >
 >()("@effect/ai-openai-compat/OpenAiEmbeddingModel/Config") {}
@@ -106,10 +104,14 @@ export class Config extends Context.Service<
 export const model = (
   model: string,
   options: {
-    readonly dimensions: number
-    readonly config?: Omit<typeof Config.Service, "model" | "dimensions">
+    readonly dimensions: number;
+    readonly config?: Omit<typeof Config.Service, "model" | "dimensions">;
   }
-): AiModel.Model<"openai", EmbeddingModel.EmbeddingModel | EmbeddingModel.Dimensions, OpenAiClient> =>
+): AiModel.Model<
+  "openai",
+  EmbeddingModel.EmbeddingModel | EmbeddingModel.Dimensions,
+  OpenAiClient
+> =>
   AiModel.make(
     "openai",
     model,
@@ -118,12 +120,12 @@ export const model = (
         model,
         config: {
           ...options.config,
-          dimensions: options.dimensions
-        }
+          dimensions: options.dimensions,
+        },
       }),
       Layer.succeed(EmbeddingModel.Dimensions, options.dimensions)
     )
-  )
+  );
 
 /**
  * Creates an OpenAI-compatible embedding model service backed by `OpenAiClient`.
@@ -153,25 +155,31 @@ export const model = (
  * @category constructors
  * @since 4.0.0
  */
-export const make = Effect.fnUntraced(function*({ model, config: providerConfig }: {
-  readonly model: string
-  readonly config?: Omit<typeof Config.Service, "model"> | undefined
+export const make = Effect.fnUntraced(function* ({
+  model,
+  config: providerConfig,
+}: {
+  readonly model: string;
+  readonly config?: Omit<typeof Config.Service, "model"> | undefined;
 }): Effect.fn.Return<EmbeddingModel.Service, never, OpenAiClient> {
-  const client = yield* OpenAiClient
+  const client = yield* OpenAiClient;
 
-  const makeConfig = Effect.gen(function*() {
-    const services = yield* Effect.context<never>()
-    return { model, ...providerConfig, ...services.mapUnsafe.get(Config.key) }
-  })
+  const makeConfig = Effect.gen(function* () {
+    const services = yield* Effect.context<never>();
+    return { model, ...providerConfig, ...services.mapUnsafe.get(Config.key) };
+  });
 
   return yield* EmbeddingModel.make({
-    embedMany: Effect.fnUntraced(function*({ inputs }) {
-      const config = yield* makeConfig
-      const response = yield* client.createEmbedding({ ...config, input: inputs })
-      return yield* mapProviderResponse(inputs.length, response)
-    })
-  })
-})
+    embedMany: Effect.fnUntraced(function* ({ inputs }) {
+      const config = yield* makeConfig;
+      const response = yield* client.createEmbedding({
+        ...config,
+        input: inputs,
+      });
+      return yield* mapProviderResponse(inputs.length, response);
+    }),
+  });
+});
 
 /**
  * Creates a layer for an OpenAI-compatible embedding model service.
@@ -189,10 +197,10 @@ export const make = Effect.fnUntraced(function*({ model, config: providerConfig 
  * @since 4.0.0
  */
 export const layer = (options: {
-  readonly model: string
-  readonly config?: Omit<typeof Config.Service, "model"> | undefined
+  readonly model: string;
+  readonly config?: Omit<typeof Config.Service, "model"> | undefined;
 }): Layer.Layer<EmbeddingModel.EmbeddingModel, never, OpenAiClient> =>
-  Layer.effect(EmbeddingModel.EmbeddingModel, make(options))
+  Layer.effect(EmbeddingModel.EmbeddingModel, make(options));
 
 /**
  * Provides scoped request config overrides for OpenAI-compatible embedding model operations.
@@ -215,22 +223,33 @@ export const layer = (options: {
  * @since 4.0.0
  */
 export const withConfigOverride: {
-  (overrides: typeof Config.Service): <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, Config>>
-  <A, E, R>(self: Effect.Effect<A, E, R>, overrides: typeof Config.Service): Effect.Effect<A, E, Exclude<R, Config>>
+  (
+    overrides: typeof Config.Service
+  ): <A, E, R>(
+    self: Effect.Effect<A, E, R>
+  ) => Effect.Effect<A, E, Exclude<R, Config>>;
+  <A, E, R>(
+    self: Effect.Effect<A, E, R>,
+    overrides: typeof Config.Service
+  ): Effect.Effect<A, E, Exclude<R, Config>>;
 } = dual<
   (
     overrides: typeof Config.Service
-  ) => <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, Exclude<R, Config>>,
-  <A, E, R>(self: Effect.Effect<A, E, R>, overrides: typeof Config.Service) => Effect.Effect<A, E, Exclude<R, Config>>
+  ) => <A, E, R>(
+    self: Effect.Effect<A, E, R>
+  ) => Effect.Effect<A, E, Exclude<R, Config>>,
+  <A, E, R>(
+    self: Effect.Effect<A, E, R>,
+    overrides: typeof Config.Service
+  ) => Effect.Effect<A, E, Exclude<R, Config>>
 >(2, (self, overrides) =>
-  Effect.flatMap(
-    Effect.serviceOption(Config),
-    (config) =>
-      Effect.provideService(self, Config, {
-        ...(config._tag === "Some" ? config.value : {}),
-        ...overrides
-      })
-  ))
+  Effect.flatMap(Effect.serviceOption(Config), (config) =>
+    Effect.provideService(self, Config, {
+      ...(config._tag === "Some" ? config.value : {}),
+      ...overrides,
+    })
+  )
+);
 
 const mapProviderResponse = (
   inputLength: number,
@@ -238,45 +257,65 @@ const mapProviderResponse = (
 ): Effect.Effect<EmbeddingModel.ProviderResponse, AiError.AiError> => {
   if (response.data.length !== inputLength) {
     return Effect.fail(
-      invalidOutput(`Provider returned ${response.data.length} embeddings but expected ${inputLength}`)
-    )
+      invalidOutput(
+        `Provider returned ${response.data.length} embeddings but expected ${inputLength}`
+      )
+    );
   }
 
-  const results = new Array<Array<number>>(inputLength)
-  const seen = new Set<number>()
+  const results = new Array<Array<number>>(inputLength);
+  const seen = new Set<number>();
 
   for (const entry of response.data) {
-    if (!Number.isInteger(entry.index) || entry.index < 0 || entry.index >= inputLength) {
-      return Effect.fail(invalidOutput(`Provider returned invalid embedding index: ${entry.index}`))
+    if (
+      !Number.isInteger(entry.index) ||
+      entry.index < 0 ||
+      entry.index >= inputLength
+    ) {
+      return Effect.fail(
+        invalidOutput(
+          `Provider returned invalid embedding index: ${entry.index}`
+        )
+      );
     }
     if (seen.has(entry.index)) {
-      return Effect.fail(invalidOutput(`Provider returned duplicate embedding index: ${entry.index}`))
+      return Effect.fail(
+        invalidOutput(
+          `Provider returned duplicate embedding index: ${entry.index}`
+        )
+      );
     }
     if (!Array.isArray(entry.embedding)) {
-      return Effect.fail(invalidOutput(`Provider returned non-vector embedding at index ${entry.index}`))
+      return Effect.fail(
+        invalidOutput(
+          `Provider returned non-vector embedding at index ${entry.index}`
+        )
+      );
     }
 
-    seen.add(entry.index)
-    results[entry.index] = [...entry.embedding]
+    seen.add(entry.index);
+    results[entry.index] = [...entry.embedding];
   }
 
   if (seen.size !== inputLength) {
     return Effect.fail(
-      invalidOutput(`Provider returned embeddings for ${seen.size} inputs but expected ${inputLength}`)
-    )
+      invalidOutput(
+        `Provider returned embeddings for ${seen.size} inputs but expected ${inputLength}`
+      )
+    );
   }
 
   return Effect.succeed({
     results,
     usage: {
-      inputTokens: response.usage?.prompt_tokens
-    }
-  })
-}
+      inputTokens: response.usage?.prompt_tokens,
+    },
+  });
+};
 
 const invalidOutput = (description: string): AiError.AiError =>
   AiError.make({
     module: "OpenAiEmbeddingModel",
     method: "embedMany",
-    reason: new AiError.InvalidOutputError({ description })
-  })
+    reason: new AiError.InvalidOutputError({ description }),
+  });

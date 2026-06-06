@@ -31,12 +31,12 @@
  *
  * @since 4.0.0
  */
-import * as Schema from "../../Schema.ts"
-import { HttpClientErrorSchema } from "../http/HttpClientError.ts"
-import { SocketErrorReason } from "../socket/Socket.ts"
-import { WorkerErrorReason } from "../workers/WorkerError.ts"
+import * as Schema from "../../Schema.ts";
+import { HttpClientErrorSchema } from "../http/HttpClientError.ts";
+import { SocketErrorReason } from "../socket/Socket.ts";
+import { WorkerErrorReason } from "../workers/WorkerError.ts";
 
-const TypeId = "~effect/rpc/RpcClientError"
+const TypeId = "~effect/rpc/RpcClientError";
 
 /**
  * Represents a client-side RPC defect, such as a protocol violation or
@@ -45,10 +45,12 @@ const TypeId = "~effect/rpc/RpcClientError"
  * @category errors
  * @since 4.0.0
  */
-export class RpcClientDefect extends Schema.ErrorClass<RpcClientDefect>("effect/rpc/RpcClientError/RpcClientDefect")({
+export class RpcClientDefect extends Schema.ErrorClass<RpcClientDefect>(
+  "effect/rpc/RpcClientError/RpcClientDefect"
+)({
   _tag: Schema.tag("RpcClientDefect"),
   message: Schema.String,
-  cause: Schema.Defect
+  cause: Schema.Defect,
 }) {}
 
 /**
@@ -64,17 +66,17 @@ export class RpcClientError extends Schema.ErrorClass<RpcClientError>(TypeId)({
     WorkerErrorReason,
     SocketErrorReason,
     HttpClientErrorSchema,
-    RpcClientDefect
-  ])
+    RpcClientDefect,
+  ]),
 }) {
   /**
    * Marks this value as an RPC client error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   override get message(): string {
-    return `${this.reason._tag}: ${this.reason.message}`
+    return `${this.reason._tag}: ${this.reason.message}`;
   }
 }

@@ -25,15 +25,15 @@
  *
  * @since 4.0.0
  */
-import * as Predicate from "../../Predicate.ts"
-import * as Runtime from "../../Runtime.ts"
-import * as Schema from "../../Schema.ts"
+import * as Predicate from "../../Predicate.ts";
+import * as Runtime from "../../Runtime.ts";
+import * as Schema from "../../Schema.ts";
 
 /**
  * @category type IDs
  * @since 4.0.0
  */
-const TypeId = "~effect/cli/CliError"
+const TypeId = "~effect/cli/CliError";
 
 /**
  * Type guard to check if a value is a CLI error.
@@ -65,7 +65,8 @@ const TypeId = "~effect/cli/CliError"
  * @category guards
  * @since 4.0.0
  */
-export const isCliError = (u: unknown): u is CliError => Predicate.hasProperty(u, TypeId)
+export const isCliError = (u: unknown): u is CliError =>
+  Predicate.hasProperty(u, TypeId);
 
 /**
  * Union type representing all possible CLI error conditions.
@@ -107,7 +108,7 @@ export type CliError =
   | InvalidValue
   | UnknownSubcommand
   | ShowHelp
-  | UserError
+  | UserError;
 
 /**
  * Error thrown when an unrecognized option is encountered.
@@ -142,18 +143,20 @@ export type CliError =
  * @category models
  * @since 4.0.0
  */
-export class UnrecognizedOption extends Schema.ErrorClass<UnrecognizedOption>(`${TypeId}/UnrecognizedOption`)({
+export class UnrecognizedOption extends Schema.ErrorClass<UnrecognizedOption>(
+  `${TypeId}/UnrecognizedOption`
+)({
   _tag: Schema.tag("UnrecognizedOption"),
   option: Schema.String,
   command: Schema.optional(Schema.Array(Schema.String)),
-  suggestions: Schema.Array(Schema.String)
+  suggestions: Schema.Array(Schema.String),
 }) {
   /**
    * Marks this value as a CLI parsing error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Formats the unrecognized option with command context and suggestions.
@@ -161,13 +164,14 @@ export class UnrecognizedOption extends Schema.ErrorClass<UnrecognizedOption>(`$
    * @since 4.0.0
    */
   override get message() {
-    const suggestionText = this.suggestions.length > 0
-      ? `\n\n  Did you mean this?\n    ${this.suggestions.join("\n    ")}`
-      : ""
+    const suggestionText =
+      this.suggestions.length > 0
+        ? `\n\n  Did you mean this?\n    ${this.suggestions.join("\n    ")}`
+        : "";
     const baseMessage = this.command
       ? `Unrecognized flag: ${this.option} in command ${this.command.join(" ")}`
-      : `Unrecognized flag: ${this.option}`
-    return baseMessage + suggestionText
+      : `Unrecognized flag: ${this.option}`;
+    return baseMessage + suggestionText;
   }
 }
 
@@ -193,18 +197,20 @@ export class UnrecognizedOption extends Schema.ErrorClass<UnrecognizedOption>(`$
  * @category models
  * @since 4.0.0
  */
-export class DuplicateOption extends Schema.ErrorClass<DuplicateOption>(`${TypeId}/DuplicateOption`)({
+export class DuplicateOption extends Schema.ErrorClass<DuplicateOption>(
+  `${TypeId}/DuplicateOption`
+)({
   _tag: Schema.tag("DuplicateOption"),
   option: Schema.String,
   parentCommand: Schema.String,
-  childCommand: Schema.String
+  childCommand: Schema.String,
 }) {
   /**
    * Marks this value as a CLI configuration error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Explains which parent and child commands define the duplicate option.
@@ -212,8 +218,10 @@ export class DuplicateOption extends Schema.ErrorClass<DuplicateOption>(`${TypeI
    * @since 4.0.0
    */
   override get message() {
-    return `Duplicate flag name "${this.option}" in parent command "${this.parentCommand}" and subcommand "${this.childCommand}". ` +
+    return (
+      `Duplicate flag name "${this.option}" in parent command "${this.parentCommand}" and subcommand "${this.childCommand}". ` +
       `Parent will always claim this flag (Mode A semantics). Consider renaming one of them to avoid confusion.`
+    );
   }
 }
 
@@ -247,16 +255,18 @@ export class DuplicateOption extends Schema.ErrorClass<DuplicateOption>(`${TypeI
  * @category models
  * @since 4.0.0
  */
-export class MissingOption extends Schema.ErrorClass<MissingOption>(`${TypeId}/MissingOption`)({
+export class MissingOption extends Schema.ErrorClass<MissingOption>(
+  `${TypeId}/MissingOption`
+)({
   _tag: Schema.tag("MissingOption"),
-  option: Schema.String
+  option: Schema.String,
 }) {
   /**
    * Marks this value as a missing CLI option error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Formats the missing required flag for display.
@@ -264,7 +274,7 @@ export class MissingOption extends Schema.ErrorClass<MissingOption>(`${TypeId}/M
    * @since 4.0.0
    */
   override get message() {
-    return `Missing required flag: --${this.option}`
+    return `Missing required flag: --${this.option}`;
   }
 }
 
@@ -297,16 +307,18 @@ export class MissingOption extends Schema.ErrorClass<MissingOption>(`${TypeId}/M
  * @category models
  * @since 4.0.0
  */
-export class MissingArgument extends Schema.ErrorClass<MissingArgument>(`${TypeId}/MissingArgument`)({
+export class MissingArgument extends Schema.ErrorClass<MissingArgument>(
+  `${TypeId}/MissingArgument`
+)({
   _tag: Schema.tag("MissingArgument"),
-  argument: Schema.String
+  argument: Schema.String,
 }) {
   /**
    * Marks this value as a missing CLI argument error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Formats the missing required positional argument for display.
@@ -314,7 +326,7 @@ export class MissingArgument extends Schema.ErrorClass<MissingArgument>(`${TypeI
    * @since 4.0.0
    */
   override get message() {
-    return `Missing required argument: ${this.argument}`
+    return `Missing required argument: ${this.argument}`;
   }
 }
 
@@ -352,19 +364,21 @@ export class MissingArgument extends Schema.ErrorClass<MissingArgument>(`${TypeI
  * @category models
  * @since 4.0.0
  */
-export class InvalidValue extends Schema.ErrorClass<InvalidValue>(`${TypeId}/InvalidValue`)({
+export class InvalidValue extends Schema.ErrorClass<InvalidValue>(
+  `${TypeId}/InvalidValue`
+)({
   _tag: Schema.tag("InvalidValue"),
   option: Schema.String,
   value: Schema.String,
   expected: Schema.String,
-  kind: Schema.Union([Schema.Literal("flag"), Schema.Literal("argument")])
+  kind: Schema.Union([Schema.Literal("flag"), Schema.Literal("argument")]),
 }) {
   /**
    * Marks this value as an invalid CLI value error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Formats the invalid flag or argument value with the expected input.
@@ -373,9 +387,9 @@ export class InvalidValue extends Schema.ErrorClass<InvalidValue>(`${TypeId}/Inv
    */
   override get message() {
     if (this.kind === "argument") {
-      return `Invalid value for argument <${this.option}>: "${this.value}". Expected: ${this.expected}`
+      return `Invalid value for argument <${this.option}>: "${this.value}". Expected: ${this.expected}`;
     }
-    return `Invalid value for flag --${this.option}: "${this.value}". Expected: ${this.expected}`
+    return `Invalid value for flag --${this.option}: "${this.value}". Expected: ${this.expected}`;
   }
 }
 
@@ -415,18 +429,20 @@ export class InvalidValue extends Schema.ErrorClass<InvalidValue>(`${TypeId}/Inv
  * @category models
  * @since 4.0.0
  */
-export class UnknownSubcommand extends Schema.ErrorClass<UnknownSubcommand>(`${TypeId}/UnknownSubcommand`)({
+export class UnknownSubcommand extends Schema.ErrorClass<UnknownSubcommand>(
+  `${TypeId}/UnknownSubcommand`
+)({
   _tag: Schema.tag("UnknownSubcommand"),
   subcommand: Schema.String,
   parent: Schema.optional(Schema.Array(Schema.String)),
-  suggestions: Schema.Array(Schema.String)
+  suggestions: Schema.Array(Schema.String),
 }) {
   /**
    * Marks this value as an unknown CLI subcommand error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 
   /**
    * Formats the unknown subcommand with parent command context and suggestions.
@@ -434,12 +450,13 @@ export class UnknownSubcommand extends Schema.ErrorClass<UnknownSubcommand>(`${T
    * @since 4.0.0
    */
   override get message() {
-    const suggestionText = this.suggestions.length > 0
-      ? `\n\n  Did you mean this?\n    ${this.suggestions.join("\n    ")}`
-      : ""
+    const suggestionText =
+      this.suggestions.length > 0
+        ? `\n\n  Did you mean this?\n    ${this.suggestions.join("\n    ")}`
+        : "";
     return this.parent
       ? `Unknown subcommand "${this.subcommand}" for "${this.parent.join(" ")}"${suggestionText}`
-      : `Unknown subcommand "${this.subcommand}"${suggestionText}`
+      : `Unknown subcommand "${this.subcommand}"${suggestionText}`;
   }
 }
 
@@ -479,16 +496,18 @@ export class UnknownSubcommand extends Schema.ErrorClass<UnknownSubcommand>(`${T
  * @category models
  * @since 4.0.0
  */
-export class UserError extends Schema.ErrorClass<UserError>(`${TypeId}/UserError`)({
+export class UserError extends Schema.ErrorClass<UserError>(
+  `${TypeId}/UserError`
+)({
   _tag: Schema.tag("UserError"),
-  cause: Schema.Defect
+  cause: Schema.Defect,
 }) {
   /**
    * Marks this value as a user handler error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
 }
 
 /**
@@ -510,7 +529,7 @@ export const NonShowHelpErrors: Schema.Union<
     typeof MissingArgument,
     typeof InvalidValue,
     typeof UnknownSubcommand,
-    typeof UserError
+    typeof UserError,
   ]
 > = Schema.Union([
   UnrecognizedOption,
@@ -519,8 +538,8 @@ export const NonShowHelpErrors: Schema.Union<
   MissingArgument,
   InvalidValue,
   UnknownSubcommand,
-  UserError
-])
+  UserError,
+]);
 
 /**
  * Type of CLI errors that are not `ShowHelp`.
@@ -534,7 +553,7 @@ export const NonShowHelpErrors: Schema.Union<
  * @category models
  * @since 4.0.0
  */
-export type NonShowHelpErrors = typeof NonShowHelpErrors.Type
+export type NonShowHelpErrors = typeof NonShowHelpErrors.Type;
 
 /**
  * Error data requesting CLI help rendering for a command path.
@@ -548,17 +567,19 @@ export type NonShowHelpErrors = typeof NonShowHelpErrors.Type
  * @category models
  * @since 4.0.0
  */
-export class ShowHelp extends Schema.ErrorClass<ShowHelp>(`${TypeId}/ShowHelp`)({
-  _tag: Schema.tag("ShowHelp"),
-  commandPath: Schema.Array(Schema.String),
-  errors: Schema.Array(NonShowHelpErrors)
-}) {
-  readonly [TypeId] = TypeId
+export class ShowHelp extends Schema.ErrorClass<ShowHelp>(`${TypeId}/ShowHelp`)(
+  {
+    _tag: Schema.tag("ShowHelp"),
+    commandPath: Schema.Array(Schema.String),
+    errors: Schema.Array(NonShowHelpErrors),
+  }
+) {
+  readonly [TypeId] = TypeId;
 
-  override readonly [Runtime.errorExitCode] = this.errors.length ? 1 : 0
-  override readonly [Runtime.errorReported] = false
+  override readonly [Runtime.errorExitCode] = this.errors.length ? 1 : 0;
+  override readonly [Runtime.errorReported] = false;
 
   override get message() {
-    return "Help requested"
+    return "Help requested";
   }
 }

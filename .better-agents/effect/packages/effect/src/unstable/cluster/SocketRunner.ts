@@ -22,30 +22,35 @@
  *
  * @since 4.0.0
  */
-import * as Effect from "../../Effect.ts"
-import * as Layer from "../../Layer.ts"
-import type * as RpcSerialization from "../rpc/RpcSerialization.ts"
-import * as RpcServer from "../rpc/RpcServer.ts"
-import { SocketServer } from "../socket/SocketServer.ts"
-import type { MessageStorage } from "./MessageStorage.ts"
-import type { RunnerHealth } from "./RunnerHealth.ts"
-import type * as Runners from "./Runners.ts"
-import * as RunnerServer from "./RunnerServer.ts"
-import type * as RunnerStorage from "./RunnerStorage.ts"
-import type * as Sharding from "./Sharding.ts"
-import type { ShardingConfig } from "./ShardingConfig.ts"
+import * as Effect from "../../Effect.ts";
+import * as Layer from "../../Layer.ts";
+import type * as RpcSerialization from "../rpc/RpcSerialization.ts";
+import * as RpcServer from "../rpc/RpcServer.ts";
+import { SocketServer } from "../socket/SocketServer.ts";
+import type { MessageStorage } from "./MessageStorage.ts";
+import type { RunnerHealth } from "./RunnerHealth.ts";
+import type * as Runners from "./Runners.ts";
+import * as RunnerServer from "./RunnerServer.ts";
+import type * as RunnerStorage from "./RunnerStorage.ts";
+import type * as Sharding from "./Sharding.ts";
+import type { ShardingConfig } from "./ShardingConfig.ts";
 
-const withLogAddress = <A, E, R>(layer: Layer.Layer<A, E, R>): Layer.Layer<A, E, R | SocketServer> =>
-  Layer.effectDiscard(Effect.gen(function*() {
-    const server = yield* SocketServer
-    const address = server.address._tag === "UnixAddress"
-      ? server.address.path
-      : `${server.address.hostname}:${server.address.port}`
-    yield* Effect.annotateLogs(Effect.logInfo(`Listening on: ${address}`), {
-      package: "@effect/cluster",
-      service: "Runner"
+const withLogAddress = <A, E, R>(
+  layer: Layer.Layer<A, E, R>
+): Layer.Layer<A, E, R | SocketServer> =>
+  Layer.effectDiscard(
+    Effect.gen(function* () {
+      const server = yield* SocketServer;
+      const address =
+        server.address._tag === "UnixAddress"
+          ? server.address.path
+          : `${server.address.hostname}:${server.address.port}`;
+      yield* Effect.annotateLogs(Effect.logInfo(`Listening on: ${address}`), {
+        package: "@effect/cluster",
+        service: "Runner",
+      });
     })
-  })).pipe(Layer.provideMerge(layer))
+  ).pipe(Layer.provideMerge(layer));
 
 /**
  * Layer that runs a cluster runner over the socket RPC protocol, providing
@@ -88,7 +93,7 @@ export const layer: Layer.Layer<
 > = RunnerServer.layerWithClients.pipe(
   withLogAddress,
   Layer.provide(RpcServer.layerProtocolSocketServer)
-)
+);
 
 /**
  * Provides a client-only socket runner layer that provides `Sharding` and `Runners` clients
@@ -105,5 +110,8 @@ export const layer: Layer.Layer<
 export const layerClientOnly: Layer.Layer<
   Sharding.Sharding | Runners.Runners,
   never,
-  Runners.RpcClientProtocol | ShardingConfig | MessageStorage | RunnerStorage.RunnerStorage
-> = RunnerServer.layerClientOnly
+  | Runners.RpcClientProtocol
+  | ShardingConfig
+  | MessageStorage
+  | RunnerStorage.RunnerStorage
+> = RunnerServer.layerClientOnly;

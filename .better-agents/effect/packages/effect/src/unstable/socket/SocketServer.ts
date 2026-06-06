@@ -23,10 +23,10 @@
  *
  * @since 4.0.0
  */
-import * as Context from "../../Context.ts"
-import * as Data from "../../Data.ts"
-import type * as Effect from "../../Effect.ts"
-import type * as Socket from "./Socket.ts"
+import * as Context from "../../Context.ts";
+import * as Data from "../../Data.ts";
+import type * as Effect from "../../Effect.ts";
+import type * as Socket from "./Socket.ts";
 
 /**
  * Context service for a socket server, exposing its bound address and a run
@@ -35,12 +35,15 @@ import type * as Socket from "./Socket.ts"
  * @category services
  * @since 4.0.0
  */
-export class SocketServer extends Context.Service<SocketServer, {
-  readonly address: Address
-  readonly run: <R, E, _>(
-    handler: (socket: Socket.Socket) => Effect.Effect<_, E, R>
-  ) => Effect.Effect<never, SocketServerError, R>
-}>()("@effect/platform/SocketServer") {}
+export class SocketServer extends Context.Service<
+  SocketServer,
+  {
+    readonly address: Address;
+    readonly run: <R, E, _>(
+      handler: (socket: Socket.Socket) => Effect.Effect<_, E, R>
+    ) => Effect.Effect<never, SocketServerError, R>;
+  }
+>()("@effect/platform/SocketServer") {}
 
 /**
  * Runtime type identifier attached to `SocketServerError` values.
@@ -48,7 +51,8 @@ export class SocketServer extends Context.Service<SocketServer, {
  * @category type IDs
  * @since 4.0.0
  */
-export const ErrorTypeId: ErrorTypeId = "@effect/platform/SocketServer/SocketServerError"
+export const ErrorTypeId: ErrorTypeId =
+  "@effect/platform/SocketServer/SocketServerError";
 
 /**
  * Type-level identifier used to mark `SocketServerError` values.
@@ -56,7 +60,7 @@ export const ErrorTypeId: ErrorTypeId = "@effect/platform/SocketServer/SocketSer
  * @category type IDs
  * @since 4.0.0
  */
-export type ErrorTypeId = "@effect/platform/SocketServer/SocketServerError"
+export type ErrorTypeId = "@effect/platform/SocketServer/SocketServerError";
 
 /**
  * Error reason for failures that occur while opening a socket server.
@@ -64,11 +68,13 @@ export type ErrorTypeId = "@effect/platform/SocketServer/SocketServerError"
  * @category errors
  * @since 4.0.0
  */
-export class SocketServerOpenError extends Data.TaggedError("SocketServerOpenError")<{
-  readonly cause: unknown
+export class SocketServerOpenError extends Data.TaggedError(
+  "SocketServerOpenError"
+)<{
+  readonly cause: unknown;
 }> {
   override get message(): string {
-    return "Open"
+    return "Open";
   }
 }
 
@@ -78,11 +84,13 @@ export class SocketServerOpenError extends Data.TaggedError("SocketServerOpenErr
  * @category errors
  * @since 4.0.0
  */
-export class SocketServerUnknownError extends Data.TaggedError("SocketServerUnknownError")<{
-  readonly cause: unknown
+export class SocketServerUnknownError extends Data.TaggedError(
+  "SocketServerUnknownError"
+)<{
+  readonly cause: unknown;
 }> {
   override get message(): string {
-    return "Unknown"
+    return "Unknown";
   }
 }
 
@@ -92,7 +100,9 @@ export class SocketServerUnknownError extends Data.TaggedError("SocketServerUnkn
  * @category errors
  * @since 4.0.0
  */
-export type SocketServerErrorReason = SocketServerOpenError | SocketServerUnknownError
+export type SocketServerErrorReason =
+  | SocketServerOpenError
+  | SocketServerUnknownError;
 
 /**
  * Tagged socket server error that wraps a server error reason and exposes its
@@ -102,22 +112,20 @@ export type SocketServerErrorReason = SocketServerOpenError | SocketServerUnknow
  * @since 4.0.0
  */
 export class SocketServerError extends Data.TaggedError("SocketServerError")<{
-  readonly reason: SocketServerErrorReason
+  readonly reason: SocketServerErrorReason;
 }> {
-  constructor(props: {
-    readonly reason: SocketServerErrorReason
-  }) {
+  constructor(props: { readonly reason: SocketServerErrorReason }) {
     super({
       ...props,
-      cause: props.reason.cause
-    } as any)
+      cause: props.reason.cause,
+    } as any);
   }
   /**
    * Marks this value as a socket server error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [ErrorTypeId]: ErrorTypeId = ErrorTypeId
+  readonly [ErrorTypeId]: ErrorTypeId = ErrorTypeId;
 
   /**
    * Delegates the public message to the underlying socket server error reason.
@@ -125,7 +133,7 @@ export class SocketServerError extends Data.TaggedError("SocketServerError")<{
    * @since 4.0.0
    */
   override get message(): string {
-    return this.reason.message
+    return this.reason.message;
   }
 }
 
@@ -135,7 +143,7 @@ export class SocketServerError extends Data.TaggedError("SocketServerError")<{
  * @category models
  * @since 4.0.0
  */
-export type Address = UnixAddress | TcpAddress
+export type Address = UnixAddress | TcpAddress;
 
 /**
  * TCP socket server address with hostname and port.
@@ -144,9 +152,9 @@ export type Address = UnixAddress | TcpAddress
  * @since 4.0.0
  */
 export interface TcpAddress {
-  readonly _tag: "TcpAddress"
-  readonly hostname: string
-  readonly port: number
+  readonly _tag: "TcpAddress";
+  readonly hostname: string;
+  readonly port: number;
 }
 
 /**
@@ -156,6 +164,6 @@ export interface TcpAddress {
  * @since 4.0.0
  */
 export interface UnixAddress {
-  readonly _tag: "UnixAddress"
-  readonly path: string
+  readonly _tag: "UnixAddress";
+  readonly path: string;
 }

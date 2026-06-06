@@ -55,9 +55,15 @@
  * @category tuples
  * @since 2.0.0
  */
-type TupleOf_<T, N extends number, R extends Array<unknown>> = `${N}` extends `-${number}` ? never
-  : R["length"] extends N ? R
-  : TupleOf_<T, N, [T, ...R]>
+type TupleOf_<
+  T,
+  N extends number,
+  R extends Array<unknown>,
+> = `${N}` extends `-${number}`
+  ? never
+  : R["length"] extends N
+    ? R
+    : TupleOf_<T, N, [T, ...R]>;
 
 /**
  * Constructs a tuple type with exactly `N` elements of type `T`.
@@ -93,7 +99,11 @@ type TupleOf_<T, N extends number, R extends Array<unknown>> = `${N}` extends `-
  * @category tuples
  * @since 3.3.0
  */
-export type TupleOf<N extends number, T> = N extends N ? number extends N ? Array<T> : TupleOf_<T, N, []> : never
+export type TupleOf<N extends number, T> = N extends N
+  ? number extends N
+    ? Array<T>
+    : TupleOf_<T, N, []>
+  : never;
 
 /**
  * Constructs a tuple type with at least `N` elements of type `T`.
@@ -126,7 +136,10 @@ export type TupleOf<N extends number, T> = N extends N ? number extends N ? Arra
  * @category tuples
  * @since 3.3.0
  */
-export type TupleOfAtLeast<N extends number, T> = [...TupleOf<N, T>, ...Array<T>]
+export type TupleOfAtLeast<N extends number, T> = [
+  ...TupleOf<N, T>,
+  ...Array<T>,
+];
 
 /**
  * Extracts the `_tag` string literal types from a union.
@@ -159,7 +172,7 @@ export type TupleOfAtLeast<N extends number, T> = [...TupleOf<N, T>, ...Array<T>
  * @category types
  * @since 2.0.0
  */
-export type Tags<E> = E extends { readonly _tag: string } ? E["_tag"] : never
+export type Tags<E> = E extends { readonly _tag: string } ? E["_tag"] : never;
 
 /**
  * Excludes members of a tagged union by their `_tag` value.
@@ -193,7 +206,7 @@ export type Tags<E> = E extends { readonly _tag: string } ? E["_tag"] : never
  * @category types
  * @since 2.0.0
  */
-export type ExcludeTag<E, K extends string> = Exclude<E, { readonly _tag: K }>
+export type ExcludeTag<E, K extends string> = Exclude<E, { readonly _tag: K }>;
 
 /**
  * Extracts a specific member of a tagged union by its `_tag` value.
@@ -226,7 +239,13 @@ export type ExcludeTag<E, K extends string> = Exclude<E, { readonly _tag: K }>
  * @category types
  * @since 2.0.0
  */
-export type ExtractTag<E, K extends string> = E extends { readonly _tag: infer T } ? K extends T ? E : never : never
+export type ExtractTag<E, K extends string> = E extends {
+  readonly _tag: infer T;
+}
+  ? K extends T
+    ? E
+    : never
+  : never;
 
 /**
  * Transforms a union type into an intersection type.
@@ -258,8 +277,11 @@ export type ExtractTag<E, K extends string> = E extends { readonly _tag: infer T
  * @category types
  * @since 2.0.0
  */
-export type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (x: infer R) => any ? R
-  : never
+export type UnionToIntersection<T> = (
+  T extends any ? (x: T) => any : never
+) extends (x: infer R) => any
+  ? R
+  : never;
 
 /**
  * Flattens an intersection type into a single object type for readability.
@@ -290,8 +312,10 @@ export type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) ext
  * @since 2.0.0
  */
 export type Simplify<A> = {
-  [K in keyof A]: A[K]
-} extends infer B ? B : never
+  [K in keyof A]: A[K];
+} extends infer B
+  ? B
+  : never;
 
 /**
  * Determines if two types are exactly equal at the type level.
@@ -321,10 +345,10 @@ export type Simplify<A> = {
  * @category models
  * @since 2.0.0
  */
-export type Equals<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
-  T
->() => T extends Y ? 1 : 2 ? true
-  : false
+export type Equals<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+    ? true
+    : false;
 
 /**
  * Determines if two types are equal, returning custom types for each case.
@@ -351,7 +375,8 @@ export type Equals<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
  * @category models
  * @since 3.15.0
  */
-export type EqualsWith<A, B, Y, N> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? Y : N
+export type EqualsWith<A, B, Y, N> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? Y : N;
 
 /**
  * Checks whether an object type contains any of the specified keys.
@@ -378,9 +403,11 @@ export type EqualsWith<A, B, Y, N> = (<T>() => T extends A ? 1 : 2) extends (<T>
  * @category models
  * @since 2.0.0
  */
-export type Has<A, Key extends string> = (Key extends infer K ? K extends keyof A ? true : never : never) extends never
+export type Has<A, Key extends string> = (
+  Key extends infer K ? (K extends keyof A ? true : never) : never
+) extends never
   ? false
-  : true
+  : true;
 
 /**
  * Left-biased merge of two object types where keys from `Source` take
@@ -412,7 +439,7 @@ export type Has<A, Key extends string> = (Key extends infer K ? K extends keyof 
  * @category models
  * @since 2.0.0
  */
-export type MergeLeft<Source, Target> = MergeRight<Target, Source>
+export type MergeLeft<Source, Target> = MergeRight<Target, Source>;
 
 /**
  * Right-biased merge of two object types where keys from `Source` take
@@ -445,11 +472,12 @@ export type MergeLeft<Source, Target> = MergeRight<Target, Source>
  * @since 2.0.0
  */
 export type MergeRight<Target, Source> = Simplify<
-  & Source
-  & {
-    [Key in keyof Target as Key extends keyof Source ? never : Key]: Target[Key]
+  Source & {
+    [Key in keyof Target as Key extends keyof Source
+      ? never
+      : Key]: Target[Key];
   }
->
+>;
 
 /**
  * Describes the concurrency level for Effect operations that run multiple
@@ -479,7 +507,7 @@ export type MergeRight<Target, Source> = Simplify<
  * @category models
  * @since 2.0.0
  */
-export type Concurrency = number | "unbounded" | "inherit"
+export type Concurrency = number | "unbounded" | "inherit";
 
 /**
  * Removes `readonly` from all properties of `T`. Supports arrays, tuples,
@@ -518,8 +546,8 @@ export type Concurrency = number | "unbounded" | "inherit"
  * @since 2.0.0
  */
 export type Mutable<T> = {
-  -readonly [P in keyof T]: T[P]
-}
+  -readonly [P in keyof T]: T[P];
+};
 
 /**
  * Recursively removes `readonly` from all properties, including nested
@@ -551,10 +579,14 @@ export type Mutable<T> = {
  * @category types
  * @since 3.1.0
  */
-export type DeepMutable<T> = T extends ReadonlyMap<infer K, infer V> ? Map<DeepMutable<K>, DeepMutable<V>>
-  : T extends ReadonlySet<infer V> ? Set<DeepMutable<V>>
-  : T extends string | number | boolean | bigint | symbol | Function ? T
-  : { -readonly [K in keyof T]: DeepMutable<T[K]> }
+export type DeepMutable<T> =
+  T extends ReadonlyMap<infer K, infer V>
+    ? Map<DeepMutable<K>, DeepMutable<V>>
+    : T extends ReadonlySet<infer V>
+      ? Set<DeepMutable<V>>
+      : T extends string | number | boolean | bigint | symbol | Function
+        ? T
+        : { -readonly [K in keyof T]: DeepMutable<T[K]> };
 
 /**
  * Prevents TypeScript from inferring a type parameter from a specific
@@ -583,7 +615,7 @@ export type DeepMutable<T> = T extends ReadonlyMap<infer K, infer V> ? Map<DeepM
  * @category models
  * @since 2.0.0
  */
-export type NoInfer<A> = [A][A extends any ? 0 : never]
+export type NoInfer<A> = [A][A extends any ? 0 : never];
 
 /**
  * Function-type alias encoding invariant variance for a phantom type
@@ -617,7 +649,7 @@ export type NoInfer<A> = [A][A extends any ? 0 : never]
  * @category models
  * @since 2.0.0
  */
-export type Invariant<A> = (_: A) => A
+export type Invariant<A> = (_: A) => A;
 
 /**
  * Namespace for {@link Invariant}-related utilities.
@@ -650,7 +682,7 @@ export declare namespace Invariant {
    * @category models
    * @since 3.9.0
    */
-  export type Type<A> = A extends Invariant<infer U> ? U : never
+  export type Type<A> = A extends Invariant<infer U> ? U : never;
 }
 
 /**
@@ -685,7 +717,7 @@ export declare namespace Invariant {
  * @category models
  * @since 2.0.0
  */
-export type Covariant<A> = (_: never) => A
+export type Covariant<A> = (_: never) => A;
 
 /**
  * Namespace for {@link Covariant}-related utilities.
@@ -718,7 +750,7 @@ export declare namespace Covariant {
    * @category models
    * @since 3.9.0
    */
-  export type Type<A> = A extends Covariant<infer U> ? U : never
+  export type Type<A> = A extends Covariant<infer U> ? U : never;
 }
 
 /**
@@ -753,7 +785,7 @@ export declare namespace Covariant {
  * @category models
  * @since 2.0.0
  */
-export type Contravariant<A> = (_: A) => void
+export type Contravariant<A> = (_: A) => void;
 
 /**
  * Namespace for {@link Contravariant}-related utilities.
@@ -786,7 +818,7 @@ export declare namespace Contravariant {
    * @category models
    * @since 3.9.0
    */
-  export type Type<A> = A extends Contravariant<infer U> ? U : never
+  export type Type<A> = A extends Contravariant<infer U> ? U : never;
 }
 
 /**
@@ -800,7 +832,7 @@ export declare namespace Contravariant {
  * @category types
  * @since 3.19.20
  */
-export type VoidIfEmpty<S> = keyof S extends never ? void : S
+export type VoidIfEmpty<S> = keyof S extends never ? void : S;
 
 /**
  * Excludes function types from a union, keeping only non-function members.
@@ -825,7 +857,7 @@ export type VoidIfEmpty<S> = keyof S extends never ? void : S
  * @category types
  * @since 2.0.0
  */
-export type NotFunction<T> = T extends Function ? never : T
+export type NotFunction<T> = T extends Function ? never : T;
 
 /**
  * Constrains a type to prevent excess properties not present in `T`.
@@ -853,7 +885,8 @@ export type NotFunction<T> = T extends Function ? never : T
  * @category types
  * @since 3.9.0
  */
-export type NoExcessProperties<T, U> = T & Readonly<Record<Exclude<keyof U, keyof T>, never>>
+export type NoExcessProperties<T, U> = T &
+  Readonly<Record<Exclude<keyof U, keyof T>, never>>;
 
 /**
  * Branded marker interface representing an unassigned type parameter.
@@ -874,7 +907,7 @@ export type NoExcessProperties<T, U> = T & Readonly<Record<Exclude<keyof U, keyo
  * @since 4.0.0
  */
 export interface unassigned {
-  readonly _: unique symbol
+  readonly _: unique symbol;
 }
 
 /**
@@ -896,7 +929,7 @@ export interface unassigned {
  * @since 4.0.0
  */
 export interface unhandled {
-  readonly _: unique symbol
+  readonly _: unique symbol;
 }
 
 /**
@@ -927,7 +960,7 @@ export interface unhandled {
  * @category types
  * @since 4.0.0
  */
-export type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true
+export type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true;
 
 /**
  * Extracts the `reason` type from an error that has a `reason` field.
@@ -961,7 +994,7 @@ export type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true
  * @category types
  * @since 4.0.0
  */
-export type ReasonOf<E> = E extends { readonly reason: infer R } ? R : never
+export type ReasonOf<E> = E extends { readonly reason: infer R } ? R : never;
 
 /**
  * Extracts the `_tag` values from the `reason` type of an error.
@@ -995,8 +1028,11 @@ export type ReasonOf<E> = E extends { readonly reason: infer R } ? R : never
  * @category types
  * @since 4.0.0
  */
-export type ReasonTags<E> = E extends { readonly reason: { readonly _tag: string } } ? E["reason"]["_tag"]
-  : never
+export type ReasonTags<E> = E extends {
+  readonly reason: { readonly _tag: string };
+}
+  ? E["reason"]["_tag"]
+  : never;
 
 /**
  * Extracts a specific reason variant by its `_tag` from an error's `reason`
@@ -1031,10 +1067,15 @@ export type ReasonTags<E> = E extends { readonly reason: { readonly _tag: string
  * @category types
  * @since 4.0.0
  */
-export type ExtractReason<E, K extends string> = E extends { readonly reason: infer R }
-  ? R extends { readonly _tag: infer T } ? K extends T ? R : never
-  : never
-  : never
+export type ExtractReason<E, K extends string> = E extends {
+  readonly reason: infer R;
+}
+  ? R extends { readonly _tag: infer T }
+    ? K extends T
+      ? R
+      : never
+    : never
+  : never;
 
 /**
  * Narrows a specific reason variant by its `_tag` from an error's `reason`
@@ -1069,10 +1110,15 @@ export type ExtractReason<E, K extends string> = E extends { readonly reason: in
  * @category types
  * @since 4.0.0
  */
-export type NarrowReason<E, K extends string> = E extends { readonly reason: infer R }
-  ? R extends { readonly _tag: infer T } ? K extends T ? E & { readonly reason: R } : never
-  : never
-  : never
+export type NarrowReason<E, K extends string> = E extends {
+  readonly reason: infer R;
+}
+  ? R extends { readonly _tag: infer T }
+    ? K extends T
+      ? E & { readonly reason: R }
+      : never
+    : never
+  : never;
 
 /**
  * Narrows an error's `reason` field to exclude a specific reason variant by
@@ -1108,10 +1154,15 @@ export type NarrowReason<E, K extends string> = E extends { readonly reason: inf
  * @category types
  * @since 4.0.0
  */
-export type OmitReason<E, K extends string> = E extends { readonly reason: infer R }
-  ? R extends { readonly _tag: infer T } ? K extends T ? never : E & { readonly reason: R }
-  : never
-  : never
+export type OmitReason<E, K extends string> = E extends {
+  readonly reason: infer R;
+}
+  ? R extends { readonly _tag: infer T }
+    ? K extends T
+      ? never
+      : E & { readonly reason: R }
+    : never
+  : never;
 
 /**
  * Excludes a specific reason variant by its `_tag` from an error's `reason`
@@ -1146,9 +1197,11 @@ export type OmitReason<E, K extends string> = E extends { readonly reason: infer
  * @category types
  * @since 4.0.0
  */
-export type ExcludeReason<E, K extends string> = E extends { readonly reason: infer R }
+export type ExcludeReason<E, K extends string> = E extends {
+  readonly reason: infer R;
+}
   ? Exclude<R, { readonly _tag: K }>
-  : never
+  : never;
 
 /**
  * Extracts the required keys from a type.
@@ -1160,4 +1213,6 @@ export type ExcludeReason<E, K extends string> = E extends { readonly reason: in
  * @category types
  * @since 4.0.0
  */
-export type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T]
+export type RequiredKeys<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? never : K;
+}[keyof T];

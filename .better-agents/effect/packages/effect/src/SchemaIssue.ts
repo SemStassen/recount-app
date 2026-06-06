@@ -78,17 +78,22 @@
  *
  * @since 4.0.0
  */
-import type { StandardSchemaV1 } from "@standard-schema/spec"
-import * as Arr from "./Array.ts"
-import { format, formatPath, type Formatter as FormatterI } from "./Formatter.ts"
-import * as InternalAnnotations from "./internal/schema/annotations.ts"
-import * as Option from "./Option.ts"
-import { hasProperty } from "./Predicate.ts"
-import * as Redacted from "./Redacted.ts"
-import type * as Schema from "./Schema.ts"
-import type * as SchemaAST from "./SchemaAST.ts"
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
-const TypeId = "~effect/SchemaIssue/Issue"
+import * as Arr from "./Array.ts";
+import {
+  format,
+  formatPath,
+  type Formatter as FormatterI,
+} from "./Formatter.ts";
+import * as InternalAnnotations from "./internal/schema/annotations.ts";
+import * as Option from "./Option.ts";
+import { hasProperty } from "./Predicate.ts";
+import * as Redacted from "./Redacted.ts";
+import type * as Schema from "./Schema.ts";
+import type * as SchemaAST from "./SchemaAST.ts";
+
+const TypeId = "~effect/SchemaIssue/Issue";
 
 /**
  * Returns `true` if the given value is an {@link Issue}.
@@ -121,7 +126,7 @@ const TypeId = "~effect/SchemaIssue/Issue"
  * @since 4.0.0
  */
 export function isIssue(u: unknown): u is Issue {
-  return hasProperty(u, TypeId)
+  return hasProperty(u, TypeId);
 }
 
 /**
@@ -149,7 +154,7 @@ export type Leaf =
   | MissingKey
   | UnexpectedKey
   | Forbidden
-  | OneOf
+  | OneOf;
 
 /**
  * The root discriminated union of all validation error nodes.
@@ -181,12 +186,12 @@ export type Issue =
   | Encoding
   | Pointer
   | Composite
-  | AnyOf
+  | AnyOf;
 
 class Base {
-  readonly [TypeId] = TypeId
+  readonly [TypeId] = TypeId;
   toString(this: Issue): string {
-    return defaultFormatter(this)
+    return defaultFormatter(this);
   }
 }
 
@@ -225,19 +230,19 @@ class Base {
  * @since 4.0.0
  */
 export class Filter extends Base {
-  readonly _tag = "Filter"
+  readonly _tag = "Filter";
   /**
    * The input value that caused the issue.
    */
-  readonly actual: unknown
+  readonly actual: unknown;
   /**
    * The filter that failed.
    */
-  readonly filter: SchemaAST.Filter<unknown>
+  readonly filter: SchemaAST.Filter<unknown>;
   /**
    * The issue that occurred.
    */
-  readonly issue: Issue
+  readonly issue: Issue;
 
   constructor(
     /**
@@ -253,10 +258,10 @@ export class Filter extends Base {
      */
     issue: Issue
   ) {
-    super()
-    this.actual = actual
-    this.filter = filter
-    this.issue = issue
+    super();
+    this.actual = actual;
+    this.filter = filter;
+    this.issue = issue;
   }
 }
 
@@ -282,19 +287,19 @@ export class Filter extends Base {
  * @since 4.0.0
  */
 export class Encoding extends Base {
-  readonly _tag = "Encoding"
+  readonly _tag = "Encoding";
   /**
    * The schema that caused the issue.
    */
-  readonly ast: SchemaAST.AST
+  readonly ast: SchemaAST.AST;
   /**
    * The input value that caused the issue.
    */
-  readonly actual: Option.Option<unknown>
+  readonly actual: Option.Option<unknown>;
   /**
    * The issue that occurred.
    */
-  readonly issue: Issue
+  readonly issue: Issue;
 
   constructor(
     /**
@@ -310,10 +315,10 @@ export class Encoding extends Base {
      */
     issue: Issue
   ) {
-    super()
-    this.ast = ast
-    this.actual = actual
-    this.issue = issue
+    super();
+    this.ast = ast;
+    this.actual = actual;
+    this.issue = issue;
   }
 }
 
@@ -340,15 +345,15 @@ export class Encoding extends Base {
  * @since 3.10.0
  */
 export class Pointer extends Base {
-  readonly _tag = "Pointer"
+  readonly _tag = "Pointer";
   /**
    * The path to the location in the input that caused the issue.
    */
-  readonly path: ReadonlyArray<PropertyKey>
+  readonly path: ReadonlyArray<PropertyKey>;
   /**
    * The issue that occurred.
    */
-  readonly issue: Issue
+  readonly issue: Issue;
 
   constructor(
     /**
@@ -360,9 +365,9 @@ export class Pointer extends Base {
      */
     issue: Issue
   ) {
-    super()
-    this.path = path
-    this.issue = issue
+    super();
+    this.path = path;
+    this.issue = issue;
   }
 }
 
@@ -385,11 +390,11 @@ export class Pointer extends Base {
  * @since 4.0.0
  */
 export class MissingKey extends Base {
-  readonly _tag = "MissingKey"
+  readonly _tag = "MissingKey";
   /**
    * The metadata for the issue.
    */
-  readonly annotations: Schema.Annotations.Key<unknown> | undefined
+  readonly annotations: Schema.Annotations.Key<unknown> | undefined;
 
   constructor(
     /**
@@ -397,8 +402,8 @@ export class MissingKey extends Base {
      */
     annotations: Schema.Annotations.Key<unknown> | undefined
   ) {
-    super()
-    this.annotations = annotations
+    super();
+    this.annotations = annotations;
   }
 }
 
@@ -424,15 +429,15 @@ export class MissingKey extends Base {
  * @since 4.0.0
  */
 export class UnexpectedKey extends Base {
-  readonly _tag = "UnexpectedKey"
+  readonly _tag = "UnexpectedKey";
   /**
    * The schema that caused the issue.
    */
-  readonly ast: SchemaAST.AST
+  readonly ast: SchemaAST.AST;
   /**
    * The input value that caused the issue.
    */
-  readonly actual: unknown
+  readonly actual: unknown;
 
   constructor(
     /**
@@ -444,9 +449,9 @@ export class UnexpectedKey extends Base {
      */
     actual: unknown
   ) {
-    super()
-    this.ast = ast
-    this.actual = actual
+    super();
+    this.ast = ast;
+    this.actual = actual;
   }
 }
 
@@ -472,19 +477,19 @@ export class UnexpectedKey extends Base {
  * @since 3.10.0
  */
 export class Composite extends Base {
-  readonly _tag = "Composite"
+  readonly _tag = "Composite";
   /**
    * The schema that caused the issue.
    */
-  readonly ast: SchemaAST.AST
+  readonly ast: SchemaAST.AST;
   /**
    * The input value that caused the issue.
    */
-  readonly actual: Option.Option<unknown>
+  readonly actual: Option.Option<unknown>;
   /**
    * The issues that occurred.
    */
-  readonly issues: readonly [Issue, ...Array<Issue>]
+  readonly issues: readonly [Issue, ...Array<Issue>];
 
   constructor(
     /**
@@ -500,10 +505,10 @@ export class Composite extends Base {
      */
     issues: readonly [Issue, ...Array<Issue>]
   ) {
-    super()
-    this.ast = ast
-    this.actual = actual
-    this.issues = issues
+    super();
+    this.ast = ast;
+    this.actual = actual;
+    this.issues = issues;
   }
 }
 
@@ -544,15 +549,15 @@ export class Composite extends Base {
  * @since 4.0.0
  */
 export class InvalidType extends Base {
-  readonly _tag = "InvalidType"
+  readonly _tag = "InvalidType";
   /**
    * The schema that caused the issue.
    */
-  readonly ast: SchemaAST.AST
+  readonly ast: SchemaAST.AST;
   /**
    * The input value that caused the issue.
    */
-  readonly actual: Option.Option<unknown>
+  readonly actual: Option.Option<unknown>;
 
   constructor(
     /**
@@ -564,9 +569,9 @@ export class InvalidType extends Base {
      */
     actual: Option.Option<unknown>
   ) {
-    super()
-    this.ast = ast
-    this.actual = actual
+    super();
+    this.ast = ast;
+    this.actual = actual;
   }
 }
 
@@ -607,15 +612,15 @@ export class InvalidType extends Base {
  * @since 4.0.0
  */
 export class InvalidValue extends Base {
-  readonly _tag = "InvalidValue"
+  readonly _tag = "InvalidValue";
   /**
    * The value that caused the issue.
    */
-  readonly actual: Option.Option<unknown>
+  readonly actual: Option.Option<unknown>;
   /**
    * The metadata for the issue.
    */
-  readonly annotations: Schema.Annotations.Issue | undefined
+  readonly annotations: Schema.Annotations.Issue | undefined;
 
   constructor(
     /**
@@ -627,9 +632,9 @@ export class InvalidValue extends Base {
      */
     annotations?: Schema.Annotations.Issue | undefined
   ) {
-    super()
-    this.actual = actual
-    this.annotations = annotations
+    super();
+    this.actual = actual;
+    this.annotations = annotations;
   }
 }
 
@@ -668,15 +673,15 @@ export class InvalidValue extends Base {
  * @since 3.10.0
  */
 export class Forbidden extends Base {
-  readonly _tag = "Forbidden"
+  readonly _tag = "Forbidden";
   /**
    * The input value that caused the issue.
    */
-  readonly actual: Option.Option<unknown>
+  readonly actual: Option.Option<unknown>;
   /**
    * The metadata for the issue.
    */
-  readonly annotations: Schema.Annotations.Issue | undefined
+  readonly annotations: Schema.Annotations.Issue | undefined;
 
   constructor(
     /**
@@ -688,9 +693,9 @@ export class Forbidden extends Base {
      */
     annotations: Schema.Annotations.Issue | undefined
   ) {
-    super()
-    this.actual = actual
-    this.annotations = annotations
+    super();
+    this.actual = actual;
+    this.annotations = annotations;
   }
 }
 
@@ -716,19 +721,19 @@ export class Forbidden extends Base {
  * @since 4.0.0
  */
 export class AnyOf extends Base {
-  readonly _tag = "AnyOf"
+  readonly _tag = "AnyOf";
   /**
    * The schema that caused the issue.
    */
-  readonly ast: SchemaAST.Union
+  readonly ast: SchemaAST.Union;
   /**
    * The input value that caused the issue.
    */
-  readonly actual: unknown
+  readonly actual: unknown;
   /**
    * The issues that occurred.
    */
-  readonly issues: ReadonlyArray<Issue>
+  readonly issues: ReadonlyArray<Issue>;
 
   constructor(
     /**
@@ -744,10 +749,10 @@ export class AnyOf extends Base {
      */
     issues: ReadonlyArray<Issue>
   ) {
-    super()
-    this.ast = ast
-    this.actual = actual
-    this.issues = issues
+    super();
+    this.ast = ast;
+    this.actual = actual;
+    this.issues = issues;
   }
 }
 
@@ -774,19 +779,19 @@ export class AnyOf extends Base {
  * @since 4.0.0
  */
 export class OneOf extends Base {
-  readonly _tag = "OneOf"
+  readonly _tag = "OneOf";
   /**
    * The schema that caused the issue.
    */
-  readonly ast: SchemaAST.Union
+  readonly ast: SchemaAST.Union;
   /**
    * The input value that caused the issue.
    */
-  readonly actual: unknown
+  readonly actual: unknown;
   /**
    * The schemas that were successful.
    */
-  readonly successes: ReadonlyArray<SchemaAST.AST>
+  readonly successes: ReadonlyArray<SchemaAST.AST>;
 
   constructor(
     /**
@@ -802,10 +807,10 @@ export class OneOf extends Base {
      */
     successes: ReadonlyArray<SchemaAST.AST>
   ) {
-    super()
-    this.ast = ast
-    this.actual = actual
-    this.successes = successes
+    super();
+    this.ast = ast;
+    this.actual = actual;
+    this.successes = successes;
   }
 }
 
@@ -847,57 +852,69 @@ export function getActual(issue: Issue): Option.Option<unknown> {
   switch (issue._tag) {
     case "Pointer":
     case "MissingKey":
-      return Option.none()
+      return Option.none();
     case "InvalidType":
     case "InvalidValue":
     case "Forbidden":
     case "Encoding":
     case "Composite":
-      return issue.actual
+      return issue.actual;
     case "AnyOf":
     case "UnexpectedKey":
     case "OneOf":
     case "Filter":
-      return Option.some(issue.actual)
+      return Option.some(issue.actual);
   }
 }
 
 function makeFilterIssue(input: unknown, entry: Schema.FilterIssue): Issue {
   if (isIssue(entry)) {
-    return entry
+    return entry;
   }
   if (typeof entry === "string") {
-    return new InvalidValue(Option.some(input), { message: entry })
+    return new InvalidValue(Option.some(input), { message: entry });
   }
-  const inner = typeof entry.issue === "string"
-    ? new InvalidValue(Option.some(input), { message: entry.issue })
-    : entry.issue
-  return new Pointer(entry.path, inner)
+  const inner =
+    typeof entry.issue === "string"
+      ? new InvalidValue(Option.some(input), { message: entry.issue })
+      : entry.issue;
+  return new Pointer(entry.path, inner);
 }
 
 /** @internal */
-export function makeSingle(input: unknown, out: undefined | boolean | Schema.FilterIssue): Issue | undefined {
+export function makeSingle(
+  input: unknown,
+  out: undefined | boolean | Schema.FilterIssue
+): Issue | undefined {
   if (out === undefined) {
-    return undefined
+    return undefined;
   }
   if (typeof out === "boolean") {
-    return out ? undefined : new InvalidValue(Option.some(input))
+    return out ? undefined : new InvalidValue(Option.some(input));
   }
-  return makeFilterIssue(input, out)
+  return makeFilterIssue(input, out);
 }
 
 /** @internal */
-export function make(input: unknown, ast: SchemaAST.AST, out: Schema.FilterOutput): Issue | undefined {
+export function make(
+  input: unknown,
+  ast: SchemaAST.AST,
+  out: Schema.FilterOutput
+): Issue | undefined {
   if (Array.isArray(out)) {
     if (Arr.isReadonlyArrayNonEmpty(out)) {
       if (out.length === 1) {
-        return makeFilterIssue(input, out[0])
+        return makeFilterIssue(input, out[0]);
       }
-      return new Composite(ast, Option.some(input), Arr.map(out, (entry) => makeFilterIssue(input, entry)))
+      return new Composite(
+        ast,
+        Option.some(input),
+        Arr.map(out, (entry) => makeFilterIssue(input, entry))
+      );
     }
-    return undefined
+    return undefined;
   }
-  return makeSingle(input, out as undefined | boolean | Schema.FilterIssue)
+  return makeSingle(input, out as undefined | boolean | Schema.FilterIssue);
 }
 
 /**
@@ -927,7 +944,7 @@ export interface Formatter<out Format> extends FormatterI<Issue, Format> {}
  * @category Formatter
  * @since 4.0.0
  */
-export type LeafHook = (issue: Leaf) => string
+export type LeafHook = (issue: Leaf) => string;
 
 /**
  * Returns the built-in {@link LeafHook} used by default formatters.
@@ -964,23 +981,26 @@ export type LeafHook = (issue: Leaf) => string
  * @since 4.0.0
  */
 export const defaultLeafHook: LeafHook = (issue): string => {
-  const message = findMessage(issue)
-  if (message !== undefined) return message
+  const message = findMessage(issue);
+  if (message !== undefined) return message;
   switch (issue._tag) {
     case "InvalidType":
-      return getExpectedMessage(InternalAnnotations.getExpected(issue.ast), formatOption(issue.actual))
+      return getExpectedMessage(
+        InternalAnnotations.getExpected(issue.ast),
+        formatOption(issue.actual)
+      );
     case "InvalidValue":
-      return `Invalid data ${formatOption(issue.actual)}`
+      return `Invalid data ${formatOption(issue.actual)}`;
     case "MissingKey":
-      return "Missing key"
+      return "Missing key";
     case "UnexpectedKey":
-      return `Unexpected key with value ${format(issue.actual)}`
+      return `Unexpected key with value ${format(issue.actual)}`;
     case "Forbidden":
-      return "Forbidden operation"
+      return "Forbidden operation";
     case "OneOf":
-      return `Expected exactly one member to match the input ${format(issue.actual)}`
+      return `Expected exactly one member to match the input ${format(issue.actual)}`;
   }
-}
+};
 
 /**
  * Callback type used to format {@link Filter} issues into strings.
@@ -1001,7 +1021,7 @@ export const defaultLeafHook: LeafHook = (issue): string => {
  * @category Formatter
  * @since 4.0.0
  */
-export type CheckHook = (issue: Filter) => string | undefined
+export type CheckHook = (issue: Filter) => string | undefined;
 
 /**
  * Returns the built-in {@link CheckHook} used by default formatters.
@@ -1024,8 +1044,8 @@ export type CheckHook = (issue: Filter) => string | undefined
  * @since 4.0.0
  */
 export const defaultCheckHook: CheckHook = (issue): string | undefined => {
-  return findMessage(issue.issue) ?? findMessage(issue)
-}
+  return findMessage(issue.issue) ?? findMessage(issue);
+};
 
 /**
  * Creates a {@link Formatter} that produces a `StandardSchemaV1.FailureResult`.
@@ -1060,22 +1080,27 @@ export const defaultCheckHook: CheckHook = (issue): string | undefined => {
  * @since 4.0.0
  */
 export function makeFormatterStandardSchemaV1(options?: {
-  readonly leafHook?: LeafHook | undefined
-  readonly checkHook?: CheckHook | undefined
+  readonly leafHook?: LeafHook | undefined;
+  readonly checkHook?: CheckHook | undefined;
 }): Formatter<StandardSchemaV1.FailureResult> {
   return (issue) => ({
-    issues: toDefaultIssues(issue, [], options?.leafHook ?? defaultLeafHook, options?.checkHook ?? defaultCheckHook)
-  })
+    issues: toDefaultIssues(
+      issue,
+      [],
+      options?.leafHook ?? defaultLeafHook,
+      options?.checkHook ?? defaultCheckHook
+    ),
+  });
 }
 
 // A subtype of StandardSchemaV1.Issue
 type DefaultIssue = {
-  readonly message: string
-  readonly path: ReadonlyArray<PropertyKey>
-}
+  readonly message: string;
+  readonly path: ReadonlyArray<PropertyKey>;
+};
 
 function getExpectedMessage(expected: string, actual: string): string {
-  return `Expected ${expected}, got ${actual}`
+  return `Expected ${expected}, got ${actual}`;
 }
 
 function toDefaultIssues(
@@ -1086,50 +1111,67 @@ function toDefaultIssues(
 ): Array<DefaultIssue> {
   switch (issue._tag) {
     case "Filter": {
-      const message = checkHook(issue)
+      const message = checkHook(issue);
       if (message !== undefined) {
-        return [{ path, message }]
+        return [{ path, message }];
       }
       switch (issue.issue._tag) {
         case "InvalidValue":
-          return [{
-            path,
-            message: getExpectedMessage(formatCheck(issue.filter), format(issue.actual))
-          }]
+          return [
+            {
+              path,
+              message: getExpectedMessage(
+                formatCheck(issue.filter),
+                format(issue.actual)
+              ),
+            },
+          ];
         default:
-          return toDefaultIssues(issue.issue, path, leafHook, checkHook)
+          return toDefaultIssues(issue.issue, path, leafHook, checkHook);
       }
     }
     case "Encoding":
-      return toDefaultIssues(issue.issue, path, leafHook, checkHook)
+      return toDefaultIssues(issue.issue, path, leafHook, checkHook);
     case "Pointer":
-      return toDefaultIssues(issue.issue, [...path, ...issue.path], leafHook, checkHook)
+      return toDefaultIssues(
+        issue.issue,
+        [...path, ...issue.path],
+        leafHook,
+        checkHook
+      );
     case "Composite":
-      return issue.issues.flatMap((issue) => toDefaultIssues(issue, path, leafHook, checkHook))
+      return issue.issues.flatMap((issue) =>
+        toDefaultIssues(issue, path, leafHook, checkHook)
+      );
     case "AnyOf": {
-      const message = findMessage(issue)
+      const message = findMessage(issue);
       if (issue.issues.length === 0) {
-        if (message !== undefined) return [{ path, message }]
+        if (message !== undefined) return [{ path, message }];
 
-        const expected = getExpectedMessage(InternalAnnotations.getExpected(issue.ast), format(issue.actual))
-        return [{ path, message: expected }]
+        const expected = getExpectedMessage(
+          InternalAnnotations.getExpected(issue.ast),
+          format(issue.actual)
+        );
+        return [{ path, message: expected }];
       }
-      return issue.issues.flatMap((issue) => toDefaultIssues(issue, path, leafHook, checkHook))
+      return issue.issues.flatMap((issue) =>
+        toDefaultIssues(issue, path, leafHook, checkHook)
+      );
     }
     default:
-      return [{ path, message: leafHook(issue) }]
+      return [{ path, message: leafHook(issue) }];
   }
 }
 
 function formatCheck<T>(check: SchemaAST.Check<T>): string {
-  const expected = check.annotations?.expected
-  if (typeof expected === "string") return expected
+  const expected = check.annotations?.expected;
+  if (typeof expected === "string") return expected;
 
   switch (check._tag) {
     case "Filter":
-      return "<filter>"
+      return "<filter>";
     case "FilterGroup":
-      return check.checks.map((check) => formatCheck(check)).join(" & ")
+      return check.checks.map((check) => formatCheck(check)).join(" & ");
   }
 }
 
@@ -1169,19 +1211,19 @@ export function makeFormatterDefault(): Formatter<string> {
   return (issue) =>
     toDefaultIssues(issue, [], defaultLeafHook, defaultCheckHook)
       .map(formatDefaultIssue)
-      .join("\n")
+      .join("\n");
 }
 
 /** @internal */
-export const defaultFormatter = makeFormatterDefault()
+export const defaultFormatter = makeFormatterDefault();
 
 function formatDefaultIssue(issue: DefaultIssue): string {
-  let out = issue.message
+  let out = issue.message;
   if (issue.path && issue.path.length > 0) {
-    const path = formatPath(issue.path as ReadonlyArray<PropertyKey>)
-    out += `\n  at ${path}`
+    const path = formatPath(issue.path as ReadonlyArray<PropertyKey>);
+    out += `\n  at ${path}`;
   }
-  return out
+  return out;
 }
 
 function findMessage(issue: Issue): string | undefined {
@@ -1190,18 +1232,21 @@ function findMessage(issue: Issue): string | undefined {
     case "OneOf":
     case "Composite":
     case "AnyOf":
-      return getMessageAnnotation(issue.ast.annotations)
+      return getMessageAnnotation(issue.ast.annotations);
     case "InvalidValue":
     case "Forbidden":
-      return getMessageAnnotation(issue.annotations)
+      return getMessageAnnotation(issue.annotations);
     case "MissingKey":
-      return getMessageAnnotation(issue.annotations, "messageMissingKey")
+      return getMessageAnnotation(issue.annotations, "messageMissingKey");
     case "UnexpectedKey":
-      return getMessageAnnotation(issue.ast.annotations, "messageUnexpectedKey")
+      return getMessageAnnotation(
+        issue.ast.annotations,
+        "messageUnexpectedKey"
+      );
     case "Filter":
-      return getMessageAnnotation(issue.filter.annotations)
+      return getMessageAnnotation(issue.filter.annotations);
     case "Encoding":
-      return findMessage(issue.issue)
+      return findMessage(issue.issue);
   }
 }
 
@@ -1209,36 +1254,43 @@ function getMessageAnnotation(
   annotations: Schema.Annotations.Annotations | undefined,
   type: "message" | "messageMissingKey" | "messageUnexpectedKey" = "message"
 ): string | undefined {
-  const message = annotations?.[type]
-  if (typeof message === "string") return message
+  const message = annotations?.[type];
+  if (typeof message === "string") return message;
 }
 
 function formatOption(actual: Option.Option<unknown>): string {
-  if (Option.isNone(actual)) return "no value provided"
-  return format(actual.value)
+  if (Option.isNone(actual)) return "no value provided";
+  return format(actual.value);
 }
 
 /** @internal */
 export function redact(issue: Issue): Issue {
   switch (issue._tag) {
     case "MissingKey":
-      return issue
+      return issue;
     case "Forbidden":
-      return new Forbidden(Option.map(issue.actual, Redacted.make), issue.annotations)
+      return new Forbidden(
+        Option.map(issue.actual, Redacted.make),
+        issue.annotations
+      );
     case "Filter":
-      return new Filter(Redacted.make(issue.actual), issue.filter, redact(issue.issue))
+      return new Filter(
+        Redacted.make(issue.actual),
+        issue.filter,
+        redact(issue.issue)
+      );
     case "Pointer":
-      return new Pointer(issue.path, redact(issue.issue))
+      return new Pointer(issue.path, redact(issue.issue));
 
     case "Encoding":
     case "InvalidType":
     case "InvalidValue":
     case "Composite":
-      return new InvalidValue(Option.map(issue.actual, Redacted.make))
+      return new InvalidValue(Option.map(issue.actual, Redacted.make));
 
     case "AnyOf":
     case "OneOf":
     case "UnexpectedKey":
-      return new InvalidValue(Option.some(Redacted.make(issue.actual)))
+      return new InvalidValue(Option.some(Redacted.make(issue.actual)));
   }
 }

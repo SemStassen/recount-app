@@ -1,6 +1,7 @@
 export { TrackedTimeRow } from "./tracked-time-row";
 export {
   isRunningTrackedTimeRow,
+  TrackedTimeRowStateMismatchError,
   timerFromTrackedTimeRow,
   timeEntryFromTrackedTimeRow,
   trackedTimeRowFromTimeEntry,

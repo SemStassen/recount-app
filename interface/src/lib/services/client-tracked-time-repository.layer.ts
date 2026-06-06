@@ -10,7 +10,7 @@ import {
 } from "@recount/core/modules/time/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { and, eq, queryOnce } from "@tanstack/react-db";
-import { Effect, Layer, Option } from "effect";
+import { Effect, Layer, Option, Result } from "effect";
 
 import {
   type TrackedTimeCollectionInsert,
@@ -80,7 +80,9 @@ export function createClientTrackedTimeRepositoryLayer(
             trackedTimeRows.map(toTrackedTimeCollectionInsert)
           );
 
-          return trackedTimeRows.map(timeEntryFromTrackedTimeRow);
+          return trackedTimeRows.map((trackedTimeRow) =>
+            Result.getOrThrow(timeEntryFromTrackedTimeRow(trackedTimeRow))
+          );
         },
         catch: toRepositoryError,
       }),
@@ -111,7 +113,9 @@ export function createClientTrackedTimeRepositoryLayer(
             throw new Error(`Time entry ${id} was not found after local write`);
           }
 
-          return timeEntryFromTrackedTimeRow(toTrackedTimeRow(timeEntry));
+          return Result.getOrThrow(
+            timeEntryFromTrackedTimeRow(toTrackedTimeRow(timeEntry))
+          );
         },
         catch: toRepositoryError,
       }),
@@ -141,7 +145,9 @@ export function createClientTrackedTimeRepositoryLayer(
           }
 
           return Option.some(
-            timeEntryFromTrackedTimeRow(toTrackedTimeRow(timeEntry))
+            Result.getOrThrow(
+              timeEntryFromTrackedTimeRow(toTrackedTimeRow(timeEntry))
+            )
           );
         },
         catch: toRepositoryError,
@@ -151,7 +157,8 @@ export function createClientTrackedTimeRepositoryLayer(
         try: async () =>
           Option.map(
             await findCurrentTrackedTimeRow(params),
-            timerFromTrackedTimeRow
+            (trackedTimeRow) =>
+              Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
           ),
         catch: toRepositoryError,
       }),
@@ -175,7 +182,7 @@ export function createClientTrackedTimeRepositoryLayer(
             toTrackedTimeCollectionInsert(trackedTimeRow),
           ]);
 
-          return timerFromTrackedTimeRow(trackedTimeRow);
+          return Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow));
         },
         catch: (cause) =>
           cause instanceof TimerAlreadyRunningError
@@ -204,7 +211,9 @@ export function createClientTrackedTimeRepositoryLayer(
             workspaceMemberId,
           });
 
-          return Option.map(updatedTimer, timerFromTrackedTimeRow);
+          return Option.map(updatedTimer, (trackedTimeRow) =>
+            Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
+          );
         },
         catch: toRepositoryError,
       }),
@@ -246,7 +255,9 @@ export function createClientTrackedTimeRepositoryLayer(
           }
 
           return Option.some(
-            timeEntryFromTrackedTimeRow(toTrackedTimeRow(completedTimeEntry))
+            Result.getOrThrow(
+              timeEntryFromTrackedTimeRow(toTrackedTimeRow(completedTimeEntry))
+            )
           );
         },
         catch: toRepositoryError,

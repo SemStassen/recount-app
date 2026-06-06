@@ -1,2 +1,2 @@
 /** @internal */
-export const internalInterruptors = new Set<number>()
+export const internalInterruptors = new Set<number>();

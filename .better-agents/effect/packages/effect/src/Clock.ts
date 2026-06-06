@@ -58,10 +58,10 @@
  *
  * @since 2.0.0
  */
-import type * as Context from "./Context.ts"
-import type * as Duration from "./Duration.ts"
-import type { Effect } from "./Effect.ts"
-import * as effect from "./internal/effect.ts"
+import type * as Context from "./Context.ts";
+import type * as Duration from "./Duration.ts";
+import type { Effect } from "./Effect.ts";
+import * as effect from "./internal/effect.ts";
 
 /**
  * Represents a time-based clock which provides functionality related to time
@@ -98,7 +98,7 @@ export interface Clock {
    * Use to read millisecond time synchronously when you already have a `Clock`
    * service and can accept non-effectful access.
    */
-  currentTimeMillisUnsafe(): number
+  currentTimeMillisUnsafe(): number;
   /**
    * Returns the current time in milliseconds.
    *
@@ -106,7 +106,7 @@ export interface Clock {
    *
    * Use to read millisecond time through this `Clock` service in `Effect`.
    */
-  readonly currentTimeMillis: Effect<number>
+  readonly currentTimeMillis: Effect<number>;
   /**
    * Returns the current time in nanoseconds unsafely.
    *
@@ -115,7 +115,7 @@ export interface Clock {
    * Use to read nanosecond time synchronously when you already have a `Clock`
    * service and can accept non-effectful access.
    */
-  currentTimeNanosUnsafe(): bigint
+  currentTimeNanosUnsafe(): bigint;
   /**
    * Returns the current time in nanoseconds.
    *
@@ -123,7 +123,7 @@ export interface Clock {
    *
    * Use to read nanosecond time through this `Clock` service in `Effect`.
    */
-  readonly currentTimeNanos: Effect<bigint>
+  readonly currentTimeNanos: Effect<bigint>;
   /**
    * Asynchronously sleeps for the specified duration.
    *
@@ -131,7 +131,7 @@ export interface Clock {
    *
    * Use to delay an `Effect` workflow by a duration through this `Clock` service.
    */
-  sleep(duration: Duration.Duration): Effect<void>
+  sleep(duration: Duration.Duration): Effect<void>;
 }
 
 /**
@@ -160,7 +160,7 @@ export interface Clock {
  * @category references
  * @since 2.0.0
  */
-export const Clock: Context.Reference<Clock> = effect.ClockRef
+export const Clock: Context.Reference<Clock> = effect.ClockRef;
 
 /**
  * Accesses the current Clock service and uses it to run the provided function.
@@ -190,7 +190,9 @@ export const Clock: Context.Reference<Clock> = effect.ClockRef
  * @category constructors
  * @since 2.0.0
  */
-export const clockWith: <A, E, R>(f: (clock: Clock) => Effect<A, E, R>) => Effect<A, E, R> = effect.clockWith
+export const clockWith: <A, E, R>(
+  f: (clock: Clock) => Effect<A, E, R>
+) => Effect<A, E, R> = effect.clockWith;
 
 /**
  * Returns an Effect that succeeds with the current time in milliseconds.
@@ -218,7 +220,7 @@ export const clockWith: <A, E, R>(f: (clock: Clock) => Effect<A, E, R>) => Effec
  * @category constructors
  * @since 2.0.0
  */
-export const currentTimeMillis: Effect<number> = effect.currentTimeMillis
+export const currentTimeMillis: Effect<number> = effect.currentTimeMillis;
 
 /**
  * Returns an Effect that succeeds with the current time in nanoseconds.
@@ -243,4 +245,4 @@ export const currentTimeMillis: Effect<number> = effect.currentTimeMillis
  * @category constructors
  * @since 2.0.0
  */
-export const currentTimeNanos: Effect<bigint> = effect.currentTimeNanos
+export const currentTimeNanos: Effect<bigint> = effect.currentTimeNanos;

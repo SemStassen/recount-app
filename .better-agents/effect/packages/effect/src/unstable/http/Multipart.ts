@@ -39,28 +39,28 @@
  *
  * @since 4.0.0
  */
-import * as Arr from "../../Array.ts"
-import * as Cause from "../../Cause.ts"
-import * as Channel from "../../Channel.ts"
-import * as Context from "../../Context.ts"
-import * as Data from "../../Data.ts"
-import * as Effect from "../../Effect.ts"
-import * as Exit from "../../Exit.ts"
-import * as FileSystem from "../../FileSystem.ts"
-import { constant, dual } from "../../Function.ts"
-import * as Inspectable from "../../Inspectable.ts"
-import * as Option from "../../Option.ts"
-import * as Path from "../../Path.ts"
-import * as Predicate from "../../Predicate.ts"
-import * as Pull from "../../Pull.ts"
-import * as Schema from "../../Schema.ts"
-import type { ParseOptions } from "../../SchemaAST.ts"
-import * as SchemaTransformation from "../../SchemaTransformation.ts"
-import type * as Scope from "../../Scope.ts"
-import * as Stream from "../../Stream.ts"
-import * as UndefinedOr from "../../UndefinedOr.ts"
-import * as IncomingMessage from "./HttpIncomingMessage.ts"
-import * as MP from "./Multipasta.ts"
+import * as Arr from "../../Array.ts";
+import * as Cause from "../../Cause.ts";
+import * as Channel from "../../Channel.ts";
+import * as Context from "../../Context.ts";
+import * as Data from "../../Data.ts";
+import * as Effect from "../../Effect.ts";
+import * as Exit from "../../Exit.ts";
+import * as FileSystem from "../../FileSystem.ts";
+import { constant, dual } from "../../Function.ts";
+import * as Inspectable from "../../Inspectable.ts";
+import * as Option from "../../Option.ts";
+import * as Path from "../../Path.ts";
+import * as Predicate from "../../Predicate.ts";
+import * as Pull from "../../Pull.ts";
+import * as Schema from "../../Schema.ts";
+import type { ParseOptions } from "../../SchemaAST.ts";
+import * as SchemaTransformation from "../../SchemaTransformation.ts";
+import type * as Scope from "../../Scope.ts";
+import * as Stream from "../../Stream.ts";
+import * as UndefinedOr from "../../UndefinedOr.ts";
+import * as IncomingMessage from "./HttpIncomingMessage.ts";
+import * as MP from "./Multipasta.ts";
 
 /**
  * Type identifier used to brand multipart part values.
@@ -68,7 +68,7 @@ import * as MP from "./Multipasta.ts"
  * @category type IDs
  * @since 4.0.0
  */
-export const TypeId = "~effect/http/Multipart"
+export const TypeId = "~effect/http/Multipart";
 
 /**
  * A parsed multipart part.
@@ -80,7 +80,7 @@ export const TypeId = "~effect/http/Multipart"
  * @category models
  * @since 4.0.0
  */
-export type Part = Field | File
+export type Part = Field | File;
 
 /**
  * Namespace containing shared multipart part model types.
@@ -100,8 +100,8 @@ export declare namespace Part {
    * @since 4.0.0
    */
   export interface Proto extends Inspectable.Inspectable {
-    readonly [TypeId]: typeof TypeId
-    readonly _tag: string
+    readonly [TypeId]: typeof TypeId;
+    readonly _tag: string;
   }
 }
 
@@ -117,10 +117,10 @@ export declare namespace Part {
  * @since 4.0.0
  */
 export interface Field extends Part.Proto {
-  readonly _tag: "Field"
-  readonly key: string
-  readonly contentType: string
-  readonly value: string
+  readonly _tag: "Field";
+  readonly key: string;
+  readonly contentType: string;
+  readonly value: string;
 }
 
 /**
@@ -129,7 +129,8 @@ export interface Field extends Part.Proto {
  * @category guards
  * @since 4.0.0
  */
-export const isPart = (u: unknown): u is Part => Predicate.hasProperty(u, TypeId)
+export const isPart = (u: unknown): u is Part =>
+  Predicate.hasProperty(u, TypeId);
 
 /**
  * Returns `true` when a value is a multipart text `Field`.
@@ -137,7 +138,8 @@ export const isPart = (u: unknown): u is Part => Predicate.hasProperty(u, TypeId
  * @category guards
  * @since 4.0.0
  */
-export const isField = (u: unknown): u is Field => isPart(u) && u._tag === "Field"
+export const isField = (u: unknown): u is Field =>
+  isPart(u) && u._tag === "Field";
 
 /**
  * Multipart file part.
@@ -151,12 +153,12 @@ export const isField = (u: unknown): u is Field => isPart(u) && u._tag === "Fiel
  * @since 4.0.0
  */
 export interface File extends Part.Proto {
-  readonly _tag: "File"
-  readonly key: string
-  readonly name: string
-  readonly contentType: string
-  readonly content: Stream.Stream<Uint8Array, MultipartError>
-  readonly contentEffect: Effect.Effect<Uint8Array, MultipartError>
+  readonly _tag: "File";
+  readonly key: string;
+  readonly name: string;
+  readonly contentType: string;
+  readonly content: Stream.Stream<Uint8Array, MultipartError>;
+  readonly contentEffect: Effect.Effect<Uint8Array, MultipartError>;
 }
 
 /**
@@ -165,7 +167,7 @@ export interface File extends Part.Proto {
  * @category guards
  * @since 4.0.0
  */
-export const isFile = (u: unknown): u is File => isPart(u) && u._tag === "File"
+export const isFile = (u: unknown): u is File => isPart(u) && u._tag === "File";
 
 /**
  * Multipart file part that has been written to the filesystem.
@@ -179,11 +181,11 @@ export const isFile = (u: unknown): u is File => isPart(u) && u._tag === "File"
  * @since 4.0.0
  */
 export interface PersistedFile extends Part.Proto {
-  readonly _tag: "PersistedFile"
-  readonly key: string
-  readonly name: string
-  readonly contentType: string
-  readonly path: string
+  readonly _tag: "PersistedFile";
+  readonly key: string;
+  readonly name: string;
+  readonly contentType: string;
+  readonly path: string;
 }
 
 /**
@@ -193,7 +195,7 @@ export interface PersistedFile extends Part.Proto {
  * @since 4.0.0
  */
 export const isPersistedFile = (u: unknown): u is PersistedFile =>
-  Predicate.hasProperty(u, TypeId) && Predicate.isTagged(u, "PersistedFile")
+  Predicate.hasProperty(u, TypeId) && Predicate.isTagged(u, "PersistedFile");
 
 /**
  * Record representation of persisted multipart data.
@@ -207,10 +209,13 @@ export const isPersistedFile = (u: unknown): u is PersistedFile =>
  * @since 4.0.0
  */
 export interface Persisted {
-  readonly [key: string]: ReadonlyArray<PersistedFile> | ReadonlyArray<string> | string
+  readonly [key: string]:
+    | ReadonlyArray<PersistedFile>
+    | ReadonlyArray<string>
+    | string;
 }
 
-const MultipartErrorTypeId = "~effect/http/Multipart/MultipartError"
+const MultipartErrorTypeId = "~effect/http/Multipart/MultipartError";
 
 /**
  * Error reason carried by a `MultipartError`.
@@ -224,8 +229,14 @@ const MultipartErrorTypeId = "~effect/http/Multipart/MultipartError"
  * @since 4.0.0
  */
 export class MultipartErrorReason extends Data.Error<{
-  readonly _tag: "FileTooLarge" | "FieldTooLarge" | "BodyTooLarge" | "TooManyParts" | "InternalError" | "Parse"
-  readonly cause?: unknown
+  readonly _tag:
+    | "FileTooLarge"
+    | "FieldTooLarge"
+    | "BodyTooLarge"
+    | "TooManyParts"
+    | "InternalError"
+    | "Parse";
+  readonly cause?: unknown;
 }> {}
 
 /**
@@ -239,15 +250,20 @@ export class MultipartErrorReason extends Data.Error<{
  * @since 4.0.0
  */
 export class MultipartError extends Data.TaggedError("MultipartError")<{
-  readonly reason: MultipartErrorReason
+  readonly reason: MultipartErrorReason;
 }> {
   /**
    * Creates a multipart error from a reason tag and optional cause.
    *
    * @since 4.0.0
    */
-  static fromReason(reason: MultipartErrorReason["_tag"], cause?: unknown): MultipartError {
-    return new MultipartError({ reason: new MultipartErrorReason({ _tag: reason, cause }) })
+  static fromReason(
+    reason: MultipartErrorReason["_tag"],
+    cause?: unknown
+  ): MultipartError {
+    return new MultipartError({
+      reason: new MultipartErrorReason({ _tag: reason, cause }),
+    });
   }
 
   /**
@@ -255,7 +271,7 @@ export class MultipartError extends Data.TaggedError("MultipartError")<{
    *
    * @since 4.0.0
    */
-  readonly [MultipartErrorTypeId] = MultipartErrorTypeId
+  readonly [MultipartErrorTypeId] = MultipartErrorTypeId;
 
   /**
    * Uses the concrete multipart error reason as the public message.
@@ -263,7 +279,7 @@ export class MultipartError extends Data.TaggedError("MultipartError")<{
    * @since 4.0.0
    */
   override get message(): string {
-    return this.reason._tag
+    return this.reason._tag;
   }
 }
 
@@ -290,12 +306,12 @@ export const PersistedFileSchema: PersistedFileSchema = Schema.declare(
   isPersistedFile,
   {
     typeConstructor: {
-      _tag: "effect/http/PersistedFile"
+      _tag: "effect/http/PersistedFile",
     },
     generation: {
       runtime: `Multipart.PersistedFileSchema`,
       Type: `Multipart.PersistedFile`,
-      importDeclaration: `import * as Multipart from "effect/unstable/http/Multipart"`
+      importDeclaration: `import * as Multipart from "effect/unstable/http/Multipart"`,
     },
     expected: "PersistedFile",
     toCodecJson: () =>
@@ -304,20 +320,21 @@ export const PersistedFileSchema: PersistedFileSchema = Schema.declare(
           key: Schema.String,
           name: Schema.String,
           contentType: Schema.String.annotate({ contentEncoding: "binary" }),
-          path: Schema.String
+          path: Schema.String,
         }),
         SchemaTransformation.transform({
-          decode: ({ contentType, key, name, path }) => new PersistedFileImpl(key, name, contentType, path),
+          decode: ({ contentType, key, name, path }) =>
+            new PersistedFileImpl(key, name, contentType, path),
           encode: (file) => ({
             key: file.key,
             name: file.name,
             contentType: file.contentType,
-            path: file.path
-          })
+            path: file.path,
+          }),
         })
-      )
+      ),
   }
-)
+);
 
 /**
  * Schema for an array of persisted multipart files.
@@ -325,7 +342,8 @@ export const PersistedFileSchema: PersistedFileSchema = Schema.declare(
  * @category schemas
  * @since 4.0.0
  */
-export const FilesSchema: Schema.$Array<PersistedFileSchema> = Schema.Array(PersistedFileSchema)
+export const FilesSchema: Schema.$Array<PersistedFileSchema> =
+  Schema.Array(PersistedFileSchema);
 
 /**
  * Schema for exactly one persisted multipart file.
@@ -338,18 +356,18 @@ export const FilesSchema: Schema.$Array<PersistedFileSchema> = Schema.Array(Pers
  * @category schemas
  * @since 4.0.0
  */
-export const SingleFileSchema: Schema.decodeTo<PersistedFileSchema, Schema.$Array<PersistedFileSchema>> = FilesSchema
-  .check(
-    Schema.isLengthBetween(1, 1)
-  ).pipe(
-    Schema.decodeTo(
-      PersistedFileSchema,
-      SchemaTransformation.transform({
-        decode: ([file]) => file,
-        encode: (file) => [file]
-      })
-    )
+export const SingleFileSchema: Schema.decodeTo<
+  PersistedFileSchema,
+  Schema.$Array<PersistedFileSchema>
+> = FilesSchema.check(Schema.isLengthBetween(1, 1)).pipe(
+  Schema.decodeTo(
+    PersistedFileSchema,
+    SchemaTransformation.transform({
+      decode: ([file]) => file,
+      encode: (file) => [file],
+    })
   )
+);
 
 /**
  * Creates a decoder for persisted multipart data using the supplied schema.
@@ -364,8 +382,11 @@ export const SingleFileSchema: Schema.decodeTo<PersistedFileSchema, Schema.$Arra
  */
 export const schemaPersisted = <A, I extends Partial<Persisted>, RD, RE>(
   schema: Schema.Codec<A, I, RD, RE>
-): (input: unknown, options?: ParseOptions) => Effect.Effect<A, Schema.SchemaError, RD> =>
-  Schema.decodeUnknownEffect(schema)
+): ((
+  input: unknown,
+  options?: ParseOptions
+) => Effect.Effect<A, Schema.SchemaError, RD>) =>
+  Schema.decodeUnknownEffect(schema);
 
 /**
  * Creates a decoder for a JSON-encoded field in persisted multipart data.
@@ -378,22 +399,34 @@ export const schemaPersisted = <A, I extends Partial<Persisted>, RD, RE>(
  * @category schemas
  * @since 4.0.0
  */
-export const schemaJson = <A, I, RD, RE>(schema: Schema.Codec<A, I, RD, RE>, options?: ParseOptions | undefined): {
+export const schemaJson = <A, I, RD, RE>(
+  schema: Schema.Codec<A, I, RD, RE>,
+  options?: ParseOptions | undefined
+): {
   (
     field: string
-  ): (persisted: Persisted) => Effect.Effect<A, Schema.SchemaError, RD>
+  ): (persisted: Persisted) => Effect.Effect<A, Schema.SchemaError, RD>;
   (
     persisted: Persisted,
     field: string
-  ): Effect.Effect<A, Schema.SchemaError, RD>
+  ): Effect.Effect<A, Schema.SchemaError, RD>;
 } => {
-  const fromJson = Schema.fromJsonString(schema)
-  return dual(2, (persisted: Persisted, field: string): Effect.Effect<A, Schema.SchemaError, RD> =>
-    Effect.map(
-      Schema.decodeUnknownEffect(Schema.Struct({ [field]: fromJson }))(persisted, options),
-      (_) => _[field]
-    ))
-}
+  const fromJson = Schema.fromJsonString(schema);
+  return dual(
+    2,
+    (
+      persisted: Persisted,
+      field: string
+    ): Effect.Effect<A, Schema.SchemaError, RD> =>
+      Effect.map(
+        Schema.decodeUnknownEffect(Schema.Struct({ [field]: fromJson }))(
+          persisted,
+          options
+        ),
+        (_) => _[field]
+      )
+  );
+};
 
 /**
  * Builds the low-level multipart parser configuration from request headers and
@@ -411,19 +444,24 @@ export const makeConfig = (
   headers: Record<string, string>
 ): Effect.Effect<MP.BaseConfig> =>
   Effect.withFiber((fiber) => {
-    const mimeTypes = Context.get(fiber.context, FieldMimeTypes)
+    const mimeTypes = Context.get(fiber.context, FieldMimeTypes);
     return Effect.succeed<MP.BaseConfig>({
       headers,
       maxParts: fiber.getRef(MaxParts),
       maxFieldSize: Number(fiber.getRef(MaxFieldSize)),
       maxPartSize: UndefinedOr.map(fiber.getRef(MaxFileSize), Number),
-      maxTotalSize: UndefinedOr.map(fiber.getRef(IncomingMessage.MaxBodySize), Number),
-      isFile: mimeTypes.length === 0 ? undefined : (info: MP.PartInfo): boolean =>
-        !mimeTypes.some(
-          (_) => info.contentType.includes(_)
-        ) && MP.defaultIsFile(info)
-    })
-  })
+      maxTotalSize: UndefinedOr.map(
+        fiber.getRef(IncomingMessage.MaxBodySize),
+        Number
+      ),
+      isFile:
+        mimeTypes.length === 0
+          ? undefined
+          : (info: MP.PartInfo): boolean =>
+              !mimeTypes.some((_) => info.contentType.includes(_)) &&
+              MP.defaultIsFile(info),
+    });
+  });
 
 /**
  * Creates a channel that parses multipart byte chunks into multipart parts.
@@ -437,7 +475,9 @@ export const makeConfig = (
  * @category Parsers
  * @since 4.0.0
  */
-export const makeChannel = <IE>(headers: Record<string, string>): Channel.Channel<
+export const makeChannel = <IE>(
+  headers: Record<string, string>
+): Channel.Channel<
   Arr.NonEmptyReadonlyArray<Part>,
   MultipartError | IE,
   void,
@@ -447,124 +487,134 @@ export const makeChannel = <IE>(headers: Record<string, string>): Channel.Channe
 > =>
   Channel.fromTransform((upstream) =>
     Effect.map(makeConfig(headers), (config) => {
-      let partsBuffer: Array<Part> = []
-      let exit = Option.none<Exit.Exit<never, IE | MultipartError | Cause.Done>>()
+      let partsBuffer: Array<Part> = [];
+      let exit =
+        Option.none<Exit.Exit<never, IE | MultipartError | Cause.Done>>();
 
       const parser = MP.make({
         ...config,
         onField(info, value) {
-          partsBuffer.push(new FieldImpl(info.name, info.contentType, MP.decodeField(info, value)))
+          partsBuffer.push(
+            new FieldImpl(
+              info.name,
+              info.contentType,
+              MP.decodeField(info, value)
+            )
+          );
         },
         onFile(info) {
-          let chunks: Array<Uint8Array> = []
-          let finished = false
+          let chunks: Array<Uint8Array> = [];
+          let finished = false;
           const pullChunks = Channel.fromPull(
-            Effect.succeed(Effect.suspend(function loop(): Pull.Pull<Arr.NonEmptyReadonlyArray<Uint8Array>> {
-              if (!Arr.isReadonlyArrayNonEmpty(chunks)) {
-                return finished ? Cause.done() : Effect.flatMap(pump, loop)
-              }
-              const chunk = chunks
-              chunks = []
-              return Effect.succeed(chunk)
-            }))
-          )
-          partsBuffer.push(new FileImpl(info, pullChunks))
-          return function(chunk) {
+            Effect.succeed(
+              Effect.suspend(function loop(): Pull.Pull<
+                Arr.NonEmptyReadonlyArray<Uint8Array>
+              > {
+                if (!Arr.isReadonlyArrayNonEmpty(chunks)) {
+                  return finished ? Cause.done() : Effect.flatMap(pump, loop);
+                }
+                const chunk = chunks;
+                chunks = [];
+                return Effect.succeed(chunk);
+              })
+            )
+          );
+          partsBuffer.push(new FileImpl(info, pullChunks));
+          return function (chunk) {
             if (chunk === null) {
-              finished = true
+              finished = true;
             } else {
-              chunks.push(chunk)
+              chunks.push(chunk);
             }
-          }
+          };
         },
         onError(error_) {
-          exit = Option.some(Exit.fail(convertError(error_)))
+          exit = Option.some(Exit.fail(convertError(error_)));
         },
         onDone() {
-          exit = Option.some(Exit.fail(Cause.Done()))
-        }
-      })
+          exit = Option.some(Exit.fail(Cause.Done()));
+        },
+      });
 
       const pump = upstream.pipe(
         Effect.flatMap((chunk) => {
           for (let i = 0; i < chunk.length; i++) {
-            parser.write(chunk[i])
+            parser.write(chunk[i]);
           }
-          return Effect.void
+          return Effect.void;
         }),
         Effect.catchCause((cause) => {
           if (Pull.isDoneCause(cause)) {
-            parser.end()
+            parser.end();
           } else {
-            exit = Option.some(Exit.failCause(cause)) as any
+            exit = Option.some(Exit.failCause(cause)) as any;
           }
-          return Effect.void
+          return Effect.void;
         })
-      )
+      );
 
       return pump.pipe(
-        Effect.flatMap(function loop(): Pull.Pull<Arr.NonEmptyReadonlyArray<Part>, IE | MultipartError> {
+        Effect.flatMap(function loop(): Pull.Pull<
+          Arr.NonEmptyReadonlyArray<Part>,
+          IE | MultipartError
+        > {
           if (!Arr.isReadonlyArrayNonEmpty(partsBuffer)) {
             if (Option.isSome(exit)) {
-              return exit.value
+              return exit.value;
             }
-            return Effect.flatMap(pump, loop)
+            return Effect.flatMap(pump, loop);
           }
-          const parts = partsBuffer
-          partsBuffer = []
-          return Effect.succeed(parts)
+          const parts = partsBuffer;
+          partsBuffer = [];
+          return Effect.succeed(parts);
         })
-      )
+      );
     })
-  )
+  );
 
 function convertError(cause: MP.MultipartError): MultipartError {
   switch (cause._tag) {
     case "ReachedLimit": {
       switch (cause.limit) {
         case "MaxParts": {
-          return MultipartError.fromReason("TooManyParts", cause)
+          return MultipartError.fromReason("TooManyParts", cause);
         }
         case "MaxFieldSize": {
-          return MultipartError.fromReason("FieldTooLarge", cause)
+          return MultipartError.fromReason("FieldTooLarge", cause);
         }
         case "MaxPartSize": {
-          return MultipartError.fromReason("FileTooLarge", cause)
+          return MultipartError.fromReason("FileTooLarge", cause);
         }
         case "MaxTotalSize": {
-          return MultipartError.fromReason("BodyTooLarge", cause)
+          return MultipartError.fromReason("BodyTooLarge", cause);
         }
       }
     }
     default: {
-      return MultipartError.fromReason("Parse", cause)
+      return MultipartError.fromReason("Parse", cause);
     }
   }
 }
 
 abstract class PartBase extends Inspectable.Class {
-  readonly [TypeId]: typeof TypeId
+  readonly [TypeId]: typeof TypeId;
   constructor() {
-    super()
-    this[TypeId] = TypeId
+    super();
+    this[TypeId] = TypeId;
   }
 }
 
 class FieldImpl extends PartBase implements Field {
-  readonly _tag = "Field"
-  readonly key: string
-  readonly contentType: string
-  readonly value: string
+  readonly _tag = "Field";
+  readonly key: string;
+  readonly contentType: string;
+  readonly value: string;
 
-  constructor(
-    key: string,
-    contentType: string,
-    value: string
-  ) {
-    super()
-    this.key = key
-    this.contentType = contentType
-    this.value = value
+  constructor(key: string, contentType: string, value: string) {
+    super();
+    this.key = key;
+    this.contentType = contentType;
+    this.value = value;
   }
 
   toJSON(): unknown {
@@ -573,32 +623,34 @@ class FieldImpl extends PartBase implements Field {
       _tag: "Field",
       key: this.key,
       contentType: this.contentType,
-      value: this.value
-    }
+      value: this.value,
+    };
   }
 }
 
 class FileImpl extends PartBase implements File {
-  readonly _tag = "File"
-  readonly key: string
-  readonly name: string
-  readonly contentType: string
-  readonly content: Stream.Stream<Uint8Array, MultipartError>
-  readonly contentEffect: Effect.Effect<Uint8Array, MultipartError>
+  readonly _tag = "File";
+  readonly key: string;
+  readonly name: string;
+  readonly contentType: string;
+  readonly content: Stream.Stream<Uint8Array, MultipartError>;
+  readonly contentEffect: Effect.Effect<Uint8Array, MultipartError>;
 
   constructor(
     info: MP.PartInfo,
     channel: Channel.Channel<Arr.NonEmptyReadonlyArray<Uint8Array>>
   ) {
-    super()
-    this.key = info.name
-    this.name = info.filename ?? info.name
-    this.contentType = info.contentType
-    this.content = Stream.fromChannel(channel)
+    super();
+    this.key = info.name;
+    this.name = info.filename ?? info.name;
+    this.contentType = info.contentType;
+    this.content = Stream.fromChannel(channel);
     this.contentEffect = channel.pipe(
       collectUint8Array,
-      Effect.mapError((cause) => MultipartError.fromReason("InternalError", cause))
-    )
+      Effect.mapError((cause) =>
+        MultipartError.fromReason("InternalError", cause)
+      )
+    );
   }
 
   toJSON(): unknown {
@@ -607,20 +659,17 @@ class FileImpl extends PartBase implements File {
       _tag: "File",
       key: this.key,
       name: this.name,
-      contentType: this.contentType
-    }
+      contentType: this.contentType,
+    };
   }
 }
 
 const defaultWriteFile = (path: string, file: File) =>
-  Effect.flatMap(
-    FileSystem.FileSystem,
-    (fs) =>
-      Effect.mapError(
-        Stream.run(file.content, fs.sink(path)),
-        (cause) => MultipartError.fromReason("InternalError", cause)
-      )
-  )
+  Effect.flatMap(FileSystem.FileSystem, (fs) =>
+    Effect.mapError(Stream.run(file.content, fs.sink(path)), (cause) =>
+      MultipartError.fromReason("InternalError", cause)
+    )
+  );
 
 /**
  * Runs a channel of byte chunks and collects all output into a single
@@ -634,19 +683,30 @@ const defaultWriteFile = (path: string, file: File) =>
  * @since 4.0.0
  */
 export const collectUint8Array = <OE, OD, R>(
-  self: Channel.Channel<Arr.NonEmptyReadonlyArray<Uint8Array>, OE, OD, unknown, unknown, unknown, R>
+  self: Channel.Channel<
+    Arr.NonEmptyReadonlyArray<Uint8Array>,
+    OE,
+    OD,
+    unknown,
+    unknown,
+    unknown,
+    R
+  >
 ): Effect.Effect<Uint8Array<ArrayBuffer>, OE, R> =>
   Channel.runFold(self, constant(new Uint8Array(0)), (accumulator, chunk) => {
-    const totalLength = chunk.reduce((sum, element) => sum + element.length, accumulator.length)
-    const newAccumulator = new Uint8Array(totalLength)
-    newAccumulator.set(accumulator, 0)
-    let offset = accumulator.length
+    const totalLength = chunk.reduce(
+      (sum, element) => sum + element.length,
+      accumulator.length
+    );
+    const newAccumulator = new Uint8Array(totalLength);
+    newAccumulator.set(accumulator, 0);
+    let offset = accumulator.length;
     for (const element of chunk) {
-      newAccumulator.set(element, offset)
-      offset += element.length
+      newAccumulator.set(element, offset);
+      offset += element.length;
     }
-    return newAccumulator
-  })
+    return newAccumulator;
+  });
 
 /**
  * Persists a stream of multipart parts into a record.
@@ -666,63 +726,67 @@ export const collectUint8Array = <OE, OD, R>(
 export const toPersisted = (
   stream: Stream.Stream<Part, MultipartError>,
   writeFile = defaultWriteFile
-): Effect.Effect<Persisted, MultipartError, FileSystem.FileSystem | Path.Path | Scope.Scope> =>
-  Effect.gen(function*() {
-    const fs = yield* FileSystem.FileSystem
-    const path_ = yield* Path.Path
-    const dir = yield* fs.makeTempDirectoryScoped()
-    const persisted: Record<string, Array<PersistedFile> | Array<string> | string> = Object.create(null)
+): Effect.Effect<
+  Persisted,
+  MultipartError,
+  FileSystem.FileSystem | Path.Path | Scope.Scope
+> =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path_ = yield* Path.Path;
+    const dir = yield* fs.makeTempDirectoryScoped();
+    const persisted: Record<
+      string,
+      Array<PersistedFile> | Array<string> | string
+    > = Object.create(null);
     yield* Stream.runForEach(stream, (part) => {
       if (part._tag === "Field") {
         if (!(part.key in persisted)) {
-          persisted[part.key] = part.value
+          persisted[part.key] = part.value;
         } else if (typeof persisted[part.key] === "string") {
-          persisted[part.key] = [persisted[part.key] as string, part.value]
+          persisted[part.key] = [persisted[part.key] as string, part.value];
         } else {
-          ;(persisted[part.key] as Array<string>).push(part.value)
+          (persisted[part.key] as Array<string>).push(part.value);
         }
-        return Effect.void
+        return Effect.void;
       } else if (part.name === "") {
-        return Effect.void
+        return Effect.void;
       }
-      const file = part
-      const path = path_.join(dir, path_.basename(file.name).slice(-128))
+      const file = part;
+      const path = path_.join(dir, path_.basename(file.name).slice(-128));
       const filePart = new PersistedFileImpl(
         file.key,
         file.name,
         file.contentType,
         path
-      )
+      );
       if (Array.isArray(persisted[part.key])) {
-        ;(persisted[part.key] as Array<PersistedFile>).push(filePart)
+        (persisted[part.key] as Array<PersistedFile>).push(filePart);
       } else {
-        persisted[part.key] = [filePart]
+        persisted[part.key] = [filePart];
       }
-      return writeFile(path, file)
-    })
-    return persisted
+      return writeFile(path, file);
+    });
+    return persisted;
   }).pipe(
-    Effect.catchTag("PlatformError", (cause) => Effect.fail(MultipartError.fromReason("InternalError", cause)))
-  )
+    Effect.catchTag("PlatformError", (cause) =>
+      Effect.fail(MultipartError.fromReason("InternalError", cause))
+    )
+  );
 
 class PersistedFileImpl extends PartBase implements PersistedFile {
-  readonly _tag = "PersistedFile"
-  readonly key: string
-  readonly name: string
-  readonly contentType: string
-  readonly path: string
+  readonly _tag = "PersistedFile";
+  readonly key: string;
+  readonly name: string;
+  readonly contentType: string;
+  readonly path: string;
 
-  constructor(
-    key: string,
-    name: string,
-    contentType: string,
-    path: string
-  ) {
-    super()
-    this.key = key
-    this.name = name
-    this.contentType = contentType
-    this.path = path
+  constructor(key: string, name: string, contentType: string, path: string) {
+    super();
+    this.key = key;
+    this.name = name;
+    this.contentType = contentType;
+    this.path = path;
   }
 
   toJSON(): unknown {
@@ -732,8 +796,8 @@ class PersistedFileImpl extends PartBase implements PersistedFile {
       key: this.key,
       name: this.name,
       contentType: this.contentType,
-      path: this.path
-    }
+      path: this.path,
+    };
   }
 }
 
@@ -749,30 +813,36 @@ class PersistedFileImpl extends PartBase implements PersistedFile {
  * @since 4.0.0
  */
 export const limitsServices = (options: {
-  readonly maxParts?: number | undefined
-  readonly maxFieldSize?: FileSystem.SizeInput | undefined
-  readonly maxFileSize?: FileSystem.SizeInput | undefined
-  readonly maxTotalSize?: FileSystem.SizeInput | undefined
-  readonly fieldMimeTypes?: ReadonlyArray<string> | undefined
+  readonly maxParts?: number | undefined;
+  readonly maxFieldSize?: FileSystem.SizeInput | undefined;
+  readonly maxFileSize?: FileSystem.SizeInput | undefined;
+  readonly maxTotalSize?: FileSystem.SizeInput | undefined;
+  readonly fieldMimeTypes?: ReadonlyArray<string> | undefined;
 }): Context.Context<never> => {
-  const map = new Map<string, unknown>()
+  const map = new Map<string, unknown>();
   if (options.maxParts !== undefined) {
-    map.set(MaxParts.key, options.maxParts)
+    map.set(MaxParts.key, options.maxParts);
   }
   if (options.maxFieldSize !== undefined) {
-    map.set(MaxFieldSize.key, FileSystem.Size(options.maxFieldSize))
+    map.set(MaxFieldSize.key, FileSystem.Size(options.maxFieldSize));
   }
   if (options.maxFileSize !== undefined) {
-    map.set(MaxFileSize.key, UndefinedOr.map(options.maxFileSize, FileSystem.Size))
+    map.set(
+      MaxFileSize.key,
+      UndefinedOr.map(options.maxFileSize, FileSystem.Size)
+    );
   }
   if (options.maxTotalSize !== undefined) {
-    map.set(IncomingMessage.MaxBodySize.key, UndefinedOr.map(options.maxTotalSize, FileSystem.Size))
+    map.set(
+      IncomingMessage.MaxBodySize.key,
+      UndefinedOr.map(options.maxTotalSize, FileSystem.Size)
+    );
   }
   if (options.fieldMimeTypes !== undefined) {
-    map.set(FieldMimeTypes.key, options.fieldMimeTypes)
+    map.set(FieldMimeTypes.key, options.fieldMimeTypes);
   }
-  return Context.makeUnsafe(map)
-}
+  return Context.makeUnsafe(map);
+};
 
 /**
  * Namespace containing multipart parser limit option types.
@@ -792,12 +862,12 @@ export declare namespace withLimits {
    * @since 4.0.0
    */
   export type Options = {
-    readonly maxParts?: number | undefined
-    readonly maxFieldSize?: FileSystem.SizeInput | undefined
-    readonly maxFileSize?: FileSystem.SizeInput | undefined
-    readonly maxTotalSize?: FileSystem.SizeInput | undefined
-    readonly fieldMimeTypes?: ReadonlyArray<string> | undefined
-  }
+    readonly maxParts?: number | undefined;
+    readonly maxFieldSize?: FileSystem.SizeInput | undefined;
+    readonly maxFileSize?: FileSystem.SizeInput | undefined;
+    readonly maxTotalSize?: FileSystem.SizeInput | undefined;
+    readonly fieldMimeTypes?: ReadonlyArray<string> | undefined;
+  };
 }
 
 /**
@@ -810,9 +880,12 @@ export declare namespace withLimits {
  * @category references
  * @since 4.0.0
  */
-export const MaxParts = Context.Reference<number | undefined>("effect/http/Multipart/MaxParts", {
-  defaultValue: () => undefined
-})
+export const MaxParts = Context.Reference<number | undefined>(
+  "effect/http/Multipart/MaxParts",
+  {
+    defaultValue: () => undefined,
+  }
+);
 
 /**
  * Context reference for the maximum size of a multipart field value.
@@ -824,9 +897,12 @@ export const MaxParts = Context.Reference<number | undefined>("effect/http/Multi
  * @category references
  * @since 4.0.0
  */
-export const MaxFieldSize = Context.Reference<FileSystem.SizeInput>("effect/http/Multipart/MaxFieldSize", {
-  defaultValue: constant(FileSystem.Size(10 * 1024 * 1024))
-})
+export const MaxFieldSize = Context.Reference<FileSystem.SizeInput>(
+  "effect/http/Multipart/MaxFieldSize",
+  {
+    defaultValue: constant(FileSystem.Size(10 * 1024 * 1024)),
+  }
+);
 
 /**
  * Context reference for the maximum size of a multipart file part.
@@ -841,7 +917,7 @@ export const MaxFieldSize = Context.Reference<FileSystem.SizeInput>("effect/http
 export const MaxFileSize = Context.Reference<FileSystem.SizeInput | undefined>(
   "effect/http/Multipart/MaxFileSize",
   { defaultValue: () => undefined }
-)
+);
 
 /**
  * Context reference for MIME type fragments that should be parsed as multipart
@@ -854,6 +930,9 @@ export const MaxFileSize = Context.Reference<FileSystem.SizeInput | undefined>(
  * @category references
  * @since 4.0.0
  */
-export const FieldMimeTypes = Context.Reference<ReadonlyArray<string>>("effect/http/Multipart/FieldMimeTypes", {
-  defaultValue: constant(["application/json"])
-})
+export const FieldMimeTypes = Context.Reference<ReadonlyArray<string>>(
+  "effect/http/Multipart/FieldMimeTypes",
+  {
+    defaultValue: constant(["application/json"]),
+  }
+);

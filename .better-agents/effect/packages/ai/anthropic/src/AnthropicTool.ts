@@ -56,9 +56,10 @@
  *
  * @since 4.0.0
  */
-import * as Schema from "effect/Schema"
-import * as Tool from "effect/unstable/ai/Tool"
-import * as Generated from "./Generated.ts"
+import * as Schema from "effect/Schema";
+import * as Tool from "effect/unstable/ai/Tool";
+
+import * as Generated from "./Generated.ts";
 
 /**
  * Union of all Anthropic provider-defined tool definitions exported by this module.
@@ -93,7 +94,7 @@ export type AnthropicTool =
   | ReturnType<typeof ToolSearchRegex_20251119>
   | ReturnType<typeof ToolSearchBM25_20251119>
   | ReturnType<typeof WebFetch_20250910>
-  | ReturnType<typeof WebSearch_20250305>
+  | ReturnType<typeof WebSearch_20250305>;
 
 // =============================================================================
 // Bash
@@ -125,9 +126,9 @@ export const Bash_20241022 = Tool.providerDefined({
   success: Schema.String,
   parameters: Schema.Struct({
     command: Schema.String,
-    restart: Schema.optional(Schema.Boolean)
-  })
-})
+    restart: Schema.optional(Schema.Boolean),
+  }),
+});
 
 /**
  * Defines the Anthropic Bash tool (2025-01-24 version).
@@ -155,9 +156,9 @@ export const Bash_20250124 = Tool.providerDefined({
   success: Schema.String,
   parameters: Schema.Struct({
     command: Schema.String,
-    restart: Schema.optional(Schema.Boolean)
-  })
-})
+    restart: Schema.optional(Schema.Boolean),
+  }),
+});
 
 // =============================================================================
 // Code Execution
@@ -185,15 +186,16 @@ export const CodeExecutionProgrammaticToolCall = Schema.Struct({
   /**
    * The code to execute.
    */
-  code: Schema.String
-})
+  code: Schema.String,
+});
 /**
  * Input payload for a programmatic code execution tool call, including the source code to execute.
  *
  * @category Code Execution
  * @since 4.0.0
  */
-export type CodeExecutionProgrammaticToolCall = typeof CodeExecutionProgrammaticToolCall.Type
+export type CodeExecutionProgrammaticToolCall =
+  typeof CodeExecutionProgrammaticToolCall.Type;
 
 /**
  * Schema for the `bash_code_execution` input variant of Anthropic Code Execution.
@@ -218,8 +220,8 @@ export const CodeExecutionBashCommand = Schema.Struct({
   /**
    * The bash command to execute.
    */
-  command: Schema.String
-})
+  command: Schema.String,
+});
 /**
  * Input payload for a bash command routed through the Anthropic code execution tool.
  *
@@ -243,7 +245,7 @@ export const CodeExecutionBashCommand = Schema.Struct({
  * @category Code Execution
  * @since 4.0.0
  */
-export type CodeExecutionBashCommand = typeof CodeExecutionBashCommand.Type
+export type CodeExecutionBashCommand = typeof CodeExecutionBashCommand.Type;
 
 /**
  * Schema for a code execution text editor request that views a file by path.
@@ -270,8 +272,8 @@ export const CodeExecutionTextEditorView = Schema.Struct({
   /**
    * Path to the file to view.
    */
-  path: Schema.String
-})
+  path: Schema.String,
+});
 /**
  * Input payload for the `view` command of Anthropic's text editor code execution tool.
  *
@@ -297,7 +299,8 @@ export const CodeExecutionTextEditorView = Schema.Struct({
  * @category Code Execution
  * @since 4.0.0
  */
-export type CodeExecutionTextEditorView = typeof CodeExecutionTextEditorView.Type
+export type CodeExecutionTextEditorView =
+  typeof CodeExecutionTextEditorView.Type;
 
 /**
  * Schema for a text editor code execution request that creates a file at a path.
@@ -330,15 +333,16 @@ export const CodeExecutionTextEditorCreate = Schema.Struct({
   /**
    * The content to write to the new file.
    */
-  file_text: Schema.optional(Schema.NullOr(Schema.String))
-})
+  file_text: Schema.optional(Schema.NullOr(Schema.String)),
+});
 /**
  * Input payload for creating a file through the text editor code execution tool, optionally including initial file text.
  *
  * @category Code Execution
  * @since 4.0.0
  */
-export type CodeExecutionTextEditorCreate = typeof CodeExecutionTextEditorCreate.Type
+export type CodeExecutionTextEditorCreate =
+  typeof CodeExecutionTextEditorCreate.Type;
 
 /**
  * Schema for a code execution text editor request that replaces one exact string in a file.
@@ -373,23 +377,24 @@ export const CodeExecutionTextEditorStrReplace = Schema.Struct({
   /**
    * The replacement text.
    */
-  new_str: Schema.String
-})
+  new_str: Schema.String,
+});
 /**
  * Input payload for replacing text in a file through the text editor code execution tool.
  *
  * @category Code Execution
  * @since 4.0.0
  */
-export type CodeExecutionTextEditorStrReplace = typeof CodeExecutionTextEditorStrReplace.Type
+export type CodeExecutionTextEditorStrReplace =
+  typeof CodeExecutionTextEditorStrReplace.Type;
 
 const CodeExecution_20250522_Parameters = Schema.Union([
   CodeExecutionProgrammaticToolCall,
   CodeExecutionBashCommand,
   CodeExecutionTextEditorView,
   CodeExecutionTextEditorCreate,
-  CodeExecutionTextEditorStrReplace
-])
+  CodeExecutionTextEditorStrReplace,
+]);
 
 // -----------------------------------------------------------------------------
 // Code Execution 20250825 Parameters
@@ -412,8 +417,8 @@ export const CodeExecution_20250825_Parameters = Schema.Struct({
   /**
    * The code to execute.
    */
-  code: Schema.String
-})
+  code: Schema.String,
+});
 /**
  * Input payload for the 2025-08-25 Anthropic code execution tool.
  *
@@ -432,7 +437,8 @@ export const CodeExecution_20250825_Parameters = Schema.Struct({
  * @category Code Execution
  * @since 4.0.0
  */
-export type CodeExecution_20250825_Parameters = typeof CodeExecution_20250825_Parameters.Type
+export type CodeExecution_20250825_Parameters =
+  typeof CodeExecution_20250825_Parameters.Type;
 
 // -----------------------------------------------------------------------------
 // Code Execution Tool Definitions
@@ -463,8 +469,8 @@ export const CodeExecution_20250522 = Tool.providerDefined({
   providerName: "code_execution",
   parameters: CodeExecution_20250522_Parameters,
   success: Generated.BetaResponseCodeExecutionResultBlock,
-  failure: Generated.BetaResponseCodeExecutionToolResultError
-})
+  failure: Generated.BetaResponseCodeExecutionToolResultError,
+});
 
 /**
  * Defines the Anthropic Code Execution tool (2025-08-25 version).
@@ -495,14 +501,14 @@ export const CodeExecution_20250825 = Tool.providerDefined({
     Generated.BetaResponseBashCodeExecutionResultBlock,
     Generated.BetaResponseTextEditorCodeExecutionViewResultBlock,
     Generated.BetaResponseTextEditorCodeExecutionCreateResultBlock,
-    Generated.BetaResponseTextEditorCodeExecutionStrReplaceResultBlock
+    Generated.BetaResponseTextEditorCodeExecutionStrReplaceResultBlock,
   ]),
   failure: Schema.Union([
     Generated.BetaResponseCodeExecutionToolResultError,
     Generated.BetaResponseBashCodeExecutionToolResultError,
-    Generated.BetaResponseTextEditorCodeExecutionToolResultError
-  ])
-})
+    Generated.BetaResponseTextEditorCodeExecutionToolResultError,
+  ]),
+});
 
 // =============================================================================
 // Computer Use
@@ -532,14 +538,14 @@ export const CodeExecution_20250825 = Tool.providerDefined({
  * @category computer use
  * @since 4.0.0
  */
-export const Coordinate = Schema.Tuple([Schema.Number, Schema.Number])
+export const Coordinate = Schema.Tuple([Schema.Number, Schema.Number]);
 /**
  * An `[x, y]` screen coordinate in pixels.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type Coordinate = typeof Coordinate.Type
+export type Coordinate = typeof Coordinate.Type;
 
 /**
  * Schema for an `[x1, y1, x2, y2]` screen region in pixels.
@@ -561,14 +567,19 @@ export type Coordinate = typeof Coordinate.Type
  * @category computer use
  * @since 4.0.0
  */
-export const Region = Schema.Tuple([Schema.Number, Schema.Number, Schema.Number, Schema.Number])
+export const Region = Schema.Tuple([
+  Schema.Number,
+  Schema.Number,
+  Schema.Number,
+  Schema.Number,
+]);
 /**
  * An `[x1, y1, x2, y2]` screen region in pixels, from top-left to bottom-right.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type Region = typeof Region.Type
+export type Region = typeof Region.Type;
 
 /**
  * Schema for scroll direction literals: `"up"`, `"down"`, `"left"`, or `"right"`.
@@ -578,14 +589,14 @@ export type Region = typeof Region.Type
  * @category computer use
  * @since 4.0.0
  */
-export const ScrollDirection = Schema.Literals(["up", "down", "left", "right"])
+export const ScrollDirection = Schema.Literals(["up", "down", "left", "right"]);
 /**
  * Direction used by computer-use scroll actions: `"up"`, `"down"`, `"left"`, or `"right"`.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ScrollDirection = typeof ScrollDirection.Type
+export type ScrollDirection = typeof ScrollDirection.Type;
 
 /**
  * Schema for modifier key literals.
@@ -597,7 +608,7 @@ export type ScrollDirection = typeof ScrollDirection.Type
  * @category computer use
  * @since 4.0.0
  */
-export const ModifierKey = Schema.Literals(["alt", "ctrl", "meta", "shift"])
+export const ModifierKey = Schema.Literals(["alt", "ctrl", "meta", "shift"]);
 /**
  * Modifier key literals.
  *
@@ -608,7 +619,7 @@ export const ModifierKey = Schema.Literals(["alt", "ctrl", "meta", "shift"])
  * @category computer use
  * @since 4.0.0
  */
-export type ModifierKey = typeof ModifierKey.Type
+export type ModifierKey = typeof ModifierKey.Type;
 
 // -----------------------------------------------------------------------------
 // ComputerUse_20241022_Args
@@ -630,13 +641,13 @@ const ComputerUse_20241022_Args = Schema.Struct({
    * specified, the tool will be provided a display number in the tool
    * definition.
    */
-  displayNumber: Schema.optional(Schema.Number)
-})
+  displayNumber: Schema.optional(Schema.Number),
+});
 
 const ComputerUse_20251124_Args = Schema.Struct({
   ...ComputerUse_20241022_Args.fields,
-  enableZoom: Schema.optional(Schema.Boolean)
-})
+  enableZoom: Schema.optional(Schema.Boolean),
+});
 
 // -----------------------------------------------------------------------------
 // Computer Use 20241022 Actions
@@ -662,8 +673,8 @@ export const ComputerUseKeyAction = Schema.Struct({
   /**
    * The key to press.
    */
-  text: Schema.String
-})
+  text: Schema.String,
+});
 /**
  * Computer-use action payload for pressing a key or key combination.
  *
@@ -686,7 +697,7 @@ export const ComputerUseKeyAction = Schema.Struct({
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseKeyAction = typeof ComputerUseKeyAction.Type
+export type ComputerUseKeyAction = typeof ComputerUseKeyAction.Type;
 
 /**
  * Schema for a computer-use action that performs a left click.
@@ -720,15 +731,15 @@ export const ComputerUseLeftClickAction = Schema.Struct({
    * The `[x, y]` coordinate on the screen to left click (defaults to the current
    * mouse position if omitted).
    */
-  coordinate: Schema.optional(Coordinate)
-})
+  coordinate: Schema.optional(Coordinate),
+});
 /**
  * Computer-use action payload for performing a left click, optionally at a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseLeftClickAction = typeof ComputerUseLeftClickAction.Type
+export type ComputerUseLeftClickAction = typeof ComputerUseLeftClickAction.Type;
 
 /**
  * Schema for a computer-use action that moves the mouse cursor to a required
@@ -758,15 +769,15 @@ export const ComputerUseMouseMoveAction = Schema.Struct({
   /**
    * The `[x, y]` coordinate on the screen to move to.
    */
-  coordinate: Coordinate
-})
+  coordinate: Coordinate,
+});
 /**
  * Computer-use action payload for moving the mouse cursor to a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseMouseMoveAction = typeof ComputerUseMouseMoveAction.Type
+export type ComputerUseMouseMoveAction = typeof ComputerUseMouseMoveAction.Type;
 
 /**
  * Schema for a computer-use action that requests a screenshot of the current display.
@@ -787,15 +798,16 @@ export type ComputerUseMouseMoveAction = typeof ComputerUseMouseMoveAction.Type
  * @since 4.0.0
  */
 export const ComputerUseScreenshotAction = Schema.Struct({
-  action: Schema.Literal("screenshot")
-})
+  action: Schema.Literal("screenshot"),
+});
 /**
  * Computer-use action payload for capturing the current display.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseScreenshotAction = typeof ComputerUseScreenshotAction.Type
+export type ComputerUseScreenshotAction =
+  typeof ComputerUseScreenshotAction.Type;
 
 /**
  * Schema for a computer-use action that enters text.
@@ -820,8 +832,8 @@ export const TypeAction = Schema.Struct({
   /**
    * The text to type.
    */
-  text: Schema.String
-})
+  text: Schema.String,
+});
 /**
  * Computer-use action payload for typing a text string.
  *
@@ -833,15 +845,15 @@ export const TypeAction = Schema.Struct({
  * @category computer use
  * @since 4.0.0
  */
-export type TypeAction = typeof TypeAction.Type
+export type TypeAction = typeof TypeAction.Type;
 
 const ComputerUse_20241022_Actions = Schema.Union([
   ComputerUseKeyAction,
   ComputerUseLeftClickAction,
   ComputerUseMouseMoveAction,
   ComputerUseScreenshotAction,
-  TypeAction
-])
+  TypeAction,
+]);
 
 // -----------------------------------------------------------------------------
 // Computer Use 20250124 Actions
@@ -878,15 +890,16 @@ export const ComputerUseDoubleClickAction = Schema.Struct({
    * The coordinate to double click (defaults to the current mouse position if
    * omitted).
    */
-  coordinate: Schema.optional(Coordinate)
-})
+  coordinate: Schema.optional(Coordinate),
+});
 /**
  * Computer-use action payload for performing a double click, optionally at a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseDoubleClickAction = typeof ComputerUseDoubleClickAction.Type
+export type ComputerUseDoubleClickAction =
+  typeof ComputerUseDoubleClickAction.Type;
 
 /**
  * Keeps a key pressed for a specified duration during computer-use execution.
@@ -922,8 +935,8 @@ export const ComputerUseHoldKeyAction = Schema.Struct({
   /**
    * The number of seconds to hold the key.
    */
-  duration: Schema.Number
-})
+  duration: Schema.Number,
+});
 /**
  * Computer-use action payload for holding a key for a specified duration.
  *
@@ -941,7 +954,7 @@ export const ComputerUseHoldKeyAction = Schema.Struct({
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseHoldKeyAction = typeof ComputerUseHoldKeyAction.Type
+export type ComputerUseHoldKeyAction = typeof ComputerUseHoldKeyAction.Type;
 
 /**
  * Schema for a computer-use action that drags with the left mouse button.
@@ -977,15 +990,16 @@ export const ComputerUseLeftClickDragAction = Schema.Struct({
   /**
    * The `[x, y]` coordinate to drag to.
    */
-  coordinate: Coordinate
-})
+  coordinate: Coordinate,
+});
 /**
  * Computer-use action payload for dragging from a start coordinate to an end coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseLeftClickDragAction = typeof ComputerUseLeftClickDragAction.Type
+export type ComputerUseLeftClickDragAction =
+  typeof ComputerUseLeftClickDragAction.Type;
 
 /**
  * Starts a left mouse button press without releasing it.
@@ -1004,15 +1018,16 @@ export const ComputerUseLeftMouseDownAction = Schema.Struct({
    * The coordinate at which the left mouse button should be held down (defaults
    * to the current mouse position if omitted).
    */
-  coordinate: Schema.optional(Coordinate)
-})
+  coordinate: Schema.optional(Coordinate),
+});
 /**
  * Computer-use action payload for pressing and holding the left mouse button, optionally at a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseLeftMouseDownAction = typeof ComputerUseLeftMouseDownAction.Type
+export type ComputerUseLeftMouseDownAction =
+  typeof ComputerUseLeftMouseDownAction.Type;
 
 /**
  * Releases the left mouse button.
@@ -1031,15 +1046,16 @@ export const ComputerUseLeftMouseUpAction = Schema.Struct({
    * The coordinate at which the left mouse button should be released (defaults
    * to the current mouse position if omitted).
    */
-  coordinate: Schema.optional(Coordinate)
-})
+  coordinate: Schema.optional(Coordinate),
+});
 /**
  * Computer-use action payload for releasing the left mouse button, optionally at a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseLeftMouseUpAction = typeof ComputerUseLeftMouseUpAction.Type
+export type ComputerUseLeftMouseUpAction =
+  typeof ComputerUseLeftMouseUpAction.Type;
 
 /**
  * Schema for a computer-use action that performs a middle click.
@@ -1072,15 +1088,16 @@ export const ComputerUseMiddleClickAction = Schema.Struct({
    * The coordinate to middle click (defaults to the current mouse position if
    * omitted).
    */
-  coordinate: Schema.optional(Coordinate)
-})
+  coordinate: Schema.optional(Coordinate),
+});
 /**
  * Computer-use action payload for performing a middle click, optionally at a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseMiddleClickAction = typeof ComputerUseMiddleClickAction.Type
+export type ComputerUseMiddleClickAction =
+  typeof ComputerUseMiddleClickAction.Type;
 
 /**
  * Schema for a computer-use action that performs a right click, optionally at a
@@ -1109,15 +1126,16 @@ export const ComputerUseRightClickAction = Schema.Struct({
    * The coordinate to right click (defaults to the current mouse position if
    * omitted).
    */
-  coordinate: Schema.optional(Coordinate)
-})
+  coordinate: Schema.optional(Coordinate),
+});
 /**
  * Computer-use action payload for performing a right click, optionally at a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseRightClickAction = typeof ComputerUseRightClickAction.Type
+export type ComputerUseRightClickAction =
+  typeof ComputerUseRightClickAction.Type;
 
 /**
  * Schema for a computer-use scroll action.
@@ -1156,15 +1174,15 @@ export const ComputerUseScrollAction = Schema.Struct({
   /**
    * The amount to scroll (in pixels or scroll units).
    */
-  scroll_amount: Schema.Number
-})
+  scroll_amount: Schema.Number,
+});
 /**
  * Computer-use action payload for scrolling by a specified amount in a specified direction, optionally from a coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseScrollAction = typeof ComputerUseScrollAction.Type
+export type ComputerUseScrollAction = typeof ComputerUseScrollAction.Type;
 
 /**
  * Schema for a computer-use triple-click action.
@@ -1197,15 +1215,16 @@ export const ComputerUseTripleClickAction = Schema.Struct({
    * The coordinate to triple click (defaults to the current mouse position if
    * omitted).
    */
-  coordinate: Schema.optional(Coordinate)
-})
+  coordinate: Schema.optional(Coordinate),
+});
 /**
  * Computer-use action payload for performing a triple click, optionally at a specific coordinate.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseTripleClickAction = typeof ComputerUseTripleClickAction.Type
+export type ComputerUseTripleClickAction =
+  typeof ComputerUseTripleClickAction.Type;
 
 /**
  * Schema for a computer-use wait action.
@@ -1236,15 +1255,15 @@ export const ComputerUseWaitAction = Schema.Struct({
   /**
    * The number of seconds to wait.
    */
-  duration: Schema.Number
-})
+  duration: Schema.Number,
+});
 /**
  * Computer-use action payload for pausing for a specified duration.
  *
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseWaitAction = typeof ComputerUseWaitAction.Type
+export type ComputerUseWaitAction = typeof ComputerUseWaitAction.Type;
 
 const ComputerUse_20250124_Actions = Schema.Union([
   ...ComputerUse_20241022_Actions.members,
@@ -1257,8 +1276,8 @@ const ComputerUse_20250124_Actions = Schema.Union([
   ComputerUseRightClickAction,
   ComputerUseScrollAction,
   ComputerUseTripleClickAction,
-  ComputerUseWaitAction
-])
+  ComputerUseWaitAction,
+]);
 
 // -----------------------------------------------------------------------------
 // Computer Use 20251124 Actions
@@ -1293,8 +1312,8 @@ export const ComputerUseZoomAction = Schema.Struct({
    * Region to zoom into, defined as `[x1, y1, x2, y2]` coordinates where
    * `(x1, y1)` is the top-left corner and `(x2, y2)` is the bottom-right corner.
    */
-  region: Region
-})
+  region: Region,
+});
 /**
  * Computer-use action payload for zooming into a specific screen region.
  *
@@ -1307,12 +1326,12 @@ export const ComputerUseZoomAction = Schema.Struct({
  * @category computer use
  * @since 4.0.0
  */
-export type ComputerUseZoomAction = typeof ComputerUseZoomAction.Type
+export type ComputerUseZoomAction = typeof ComputerUseZoomAction.Type;
 
 const ComputerUse_20251124_Actions = Schema.Union([
   ...ComputerUse_20250124_Actions.members,
-  ComputerUseZoomAction
-])
+  ComputerUseZoomAction,
+]);
 
 // -----------------------------------------------------------------------------
 // Computer Use Tool Definitions
@@ -1336,8 +1355,8 @@ export const ComputerUse_20241022 = Tool.providerDefined({
   requiresHandler: true,
   args: ComputerUse_20241022_Args,
   parameters: ComputerUse_20241022_Actions,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 /**
  * Defines the computer-use tool for Claude 4 models and Claude Sonnet 3.7.
@@ -1367,8 +1386,8 @@ export const ComputerUse_20250124 = Tool.providerDefined({
   requiresHandler: true,
   args: ComputerUse_20241022_Args,
   parameters: ComputerUse_20250124_Actions,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 /**
  * Defines the computer-use tool for Claude Opus 4.5 only.
@@ -1401,8 +1420,8 @@ export const ComputerUse_20251124 = Tool.providerDefined({
   requiresHandler: true,
   args: ComputerUse_20251124_Args,
   parameters: ComputerUse_20251124_Actions,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 // =============================================================================
 // Memory
@@ -1432,7 +1451,7 @@ export const ComputerUse_20251124 = Tool.providerDefined({
  * @category memory
  * @since 4.0.0
  */
-export const ViewRange = Schema.Tuple([Schema.Number, Schema.Number])
+export const ViewRange = Schema.Tuple([Schema.Number, Schema.Number]);
 /**
  * A `[start, end]` 1-indexed line range for viewing file contents, using `-1` as the end value to read through the end of the file.
  *
@@ -1443,7 +1462,7 @@ export const ViewRange = Schema.Tuple([Schema.Number, Schema.Number])
  * @category memory
  * @since 4.0.0
  */
-export type ViewRange = typeof ViewRange.Type
+export type ViewRange = typeof ViewRange.Type;
 
 // -----------------------------------------------------------------------------
 // Memory 20250818 Commands
@@ -1464,15 +1483,15 @@ export const MemoryCreateCommand = Schema.Struct({
   /**
    * The path to the file that should be created.
    */
-  path: Schema.String
-})
+  path: Schema.String,
+});
 /**
  * Memory tool command payload for creating a new file at a path.
  *
  * @category memory
  * @since 4.0.0
  */
-export type MemoryCreateCommand = typeof MemoryCreateCommand.Type
+export type MemoryCreateCommand = typeof MemoryCreateCommand.Type;
 
 /**
  * Schema for a memory command that deletes a file or directory.
@@ -1485,15 +1504,15 @@ export const MemoryDeleteCommand = Schema.Struct({
   /**
    * The path to the file or directory to delete.
    */
-  path: Schema.String
-})
+  path: Schema.String,
+});
 /**
  * Memory tool command payload for deleting a file or directory at a path.
  *
  * @category memory
  * @since 4.0.0
  */
-export type MemoryDeleteCommand = typeof MemoryDeleteCommand.Type
+export type MemoryDeleteCommand = typeof MemoryDeleteCommand.Type;
 
 /**
  * Schema for the memory `insert` command.
@@ -1526,15 +1545,15 @@ export const MemoryInsertCommand = Schema.Struct({
   /**
    * The text to insert.
    */
-  insert_text: Schema.String
-})
+  insert_text: Schema.String,
+});
 /**
  * Memory tool command payload for inserting text at a specific line in a file.
  *
  * @category memory
  * @since 4.0.0
  */
-export type MemoryInsertCommand = typeof MemoryInsertCommand.Type
+export type MemoryInsertCommand = typeof MemoryInsertCommand.Type;
 
 /**
  * Schema for the memory command that renames or moves a file or directory.
@@ -1556,15 +1575,15 @@ export const MemoryRenameCommand = Schema.Struct({
   /**
    * The new path to the file or directory.
    */
-  new_path: Schema.String
-})
+  new_path: Schema.String,
+});
 /**
  * Memory tool command payload for renaming or moving a file or directory.
  *
  * @category memory
  * @since 4.0.0
  */
-export type MemoryRenameCommand = typeof MemoryRenameCommand.Type
+export type MemoryRenameCommand = typeof MemoryRenameCommand.Type;
 
 /**
  * Schema for the memory `str_replace` command.
@@ -1597,15 +1616,15 @@ export const MemoryStrReplaceCommand = Schema.Struct({
   /**
    * The replacement text.
    */
-  new_str: Schema.String
-})
+  new_str: Schema.String,
+});
 /**
  * Memory tool command payload for replacing text in a file.
  *
  * @category memory
  * @since 4.0.0
  */
-export type MemoryStrReplaceCommand = typeof MemoryStrReplaceCommand.Type
+export type MemoryStrReplaceCommand = typeof MemoryStrReplaceCommand.Type;
 
 /**
  * Shows directory contents or file contents with optional line ranges.
@@ -1627,15 +1646,15 @@ export const MemoryViewCommand = Schema.Struct({
   /**
    * The specific lines to view.
    */
-  view_range: Schema.optional(ViewRange)
-})
+  view_range: Schema.optional(ViewRange),
+});
 /**
  * Memory tool command payload for viewing a file or directory, optionally with a file line range.
  *
  * @category memory
  * @since 4.0.0
  */
-export type MemoryViewCommand = typeof MemoryViewCommand.Type
+export type MemoryViewCommand = typeof MemoryViewCommand.Type;
 
 const Memory_20250818_Commands = Schema.Union([
   MemoryCreateCommand,
@@ -1643,8 +1662,8 @@ const Memory_20250818_Commands = Schema.Union([
   MemoryInsertCommand,
   MemoryRenameCommand,
   MemoryStrReplaceCommand,
-  MemoryViewCommand
-])
+  MemoryViewCommand,
+]);
 
 // -----------------------------------------------------------------------------
 // Memory Tool Definitions
@@ -1666,8 +1685,8 @@ export const Memory_20250818 = Tool.providerDefined({
   customName: "AnthropicMemory",
   providerName: "memory",
   parameters: Memory_20250818_Commands,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 // =============================================================================
 // Text Editor
@@ -1707,8 +1726,8 @@ export const TextEditorViewCommand = Schema.Struct({
    * Optional line range to view (only applies to files, not directories).
    * Lines are 1-indexed. Use -1 for end to read to end of file.
    */
-  view_range: Schema.optional(ViewRange)
-})
+  view_range: Schema.optional(ViewRange),
+});
 /**
  * Text editor command payload for viewing file contents or listing directory contents.
  *
@@ -1720,7 +1739,7 @@ export const TextEditorViewCommand = Schema.Struct({
  * @category text editor
  * @since 4.0.0
  */
-export type TextEditorViewCommand = typeof TextEditorViewCommand.Type
+export type TextEditorViewCommand = typeof TextEditorViewCommand.Type;
 
 /**
  * Create a new file with specified content.
@@ -1751,8 +1770,8 @@ export const TextEditorCreateCommand = Schema.Struct({
   /**
    * The content to write to the new file.
    */
-  file_text: Schema.String
-})
+  file_text: Schema.String,
+});
 /**
  * Text editor command payload for creating a new file with the specified content.
  *
@@ -1768,7 +1787,7 @@ export const TextEditorCreateCommand = Schema.Struct({
  * @category text editor
  * @since 4.0.0
  */
-export type TextEditorCreateCommand = typeof TextEditorCreateCommand.Type
+export type TextEditorCreateCommand = typeof TextEditorCreateCommand.Type;
 
 /**
  * Replaces a specific string in a file with a new string.
@@ -1807,8 +1826,8 @@ export const TextEditorStrReplaceCommand = Schema.Struct({
   /**
    * The string to replace old_str with (can be empty to delete).
    */
-  new_str: Schema.String
-})
+  new_str: Schema.String,
+});
 /**
  * Text editor command payload for replacing one exact, unique string in a file.
  *
@@ -1825,7 +1844,8 @@ export const TextEditorStrReplaceCommand = Schema.Struct({
  * @category text editor
  * @since 4.0.0
  */
-export type TextEditorStrReplaceCommand = typeof TextEditorStrReplaceCommand.Type
+export type TextEditorStrReplaceCommand =
+  typeof TextEditorStrReplaceCommand.Type;
 
 /**
  * Inserts text at a specific line number in a file.
@@ -1851,15 +1871,15 @@ export const TextEditorInsertCommand = Schema.Struct({
   /**
    * The text to insert.
    */
-  new_str: Schema.String
-})
+  new_str: Schema.String,
+});
 /**
  * Text editor command payload for inserting text after a specific line number in a file.
  *
  * @category text editor
  * @since 4.0.0
  */
-export type TextEditorInsertCommand = typeof TextEditorInsertCommand.Type
+export type TextEditorInsertCommand = typeof TextEditorInsertCommand.Type;
 
 /**
  * Undoes the last edit made to a file.
@@ -1883,8 +1903,8 @@ export const TextEditorUndoEditCommand = Schema.Struct({
   /**
    * Path to the file to undo the last edit on.
    */
-  path: Schema.String
-})
+  path: Schema.String,
+});
 /**
  * Text editor command payload for undoing the most recent edit to a file.
  *
@@ -1896,22 +1916,22 @@ export const TextEditorUndoEditCommand = Schema.Struct({
  * @category text editor
  * @since 4.0.0
  */
-export type TextEditorUndoEditCommand = typeof TextEditorUndoEditCommand.Type
+export type TextEditorUndoEditCommand = typeof TextEditorUndoEditCommand.Type;
 
 const TextEditor_StrReplaceEditor_Commands = Schema.Union([
   TextEditorViewCommand,
   TextEditorCreateCommand,
   TextEditorStrReplaceCommand,
   TextEditorInsertCommand,
-  TextEditorUndoEditCommand
-])
+  TextEditorUndoEditCommand,
+]);
 
 const TextEditor_StrReplaceBasedEdit_Commands = Schema.Union([
   TextEditorViewCommand,
   TextEditorCreateCommand,
   TextEditorStrReplaceCommand,
-  TextEditorInsertCommand
-])
+  TextEditorInsertCommand,
+]);
 
 // -----------------------------------------------------------------------------
 // Text Editor Args
@@ -1922,8 +1942,8 @@ const TextEditor_StrReplaceBasedEdit_Args = Schema.Struct({
    * Maximum number of characters to return when viewing large files.
    * When a file exceeds this limit, it will be truncated.
    */
-  max_characters: Schema.optional(Schema.Number)
-})
+  max_characters: Schema.optional(Schema.Number),
+});
 
 // -----------------------------------------------------------------------------
 // Text Editor Tool Definitions
@@ -1954,8 +1974,8 @@ export const TextEditor_20241022 = Tool.providerDefined({
   providerName: "str_replace_editor",
   requiresHandler: true,
   parameters: TextEditor_StrReplaceEditor_Commands,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 /**
  * Defines the text editor tool for deprecated Claude Sonnet 3.7.
@@ -1982,8 +2002,8 @@ export const TextEditor_20250124 = Tool.providerDefined({
   providerName: "str_replace_editor",
   requiresHandler: true,
   parameters: TextEditor_StrReplaceEditor_Commands,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 /**
  * Defines the text editor tool for Claude 4 models using Anthropic's `str_replace_based_edit_tool`.
@@ -2014,8 +2034,8 @@ export const TextEditor_20250429 = Tool.providerDefined({
   requiresHandler: true,
   args: TextEditor_StrReplaceBasedEdit_Args,
   parameters: TextEditor_StrReplaceBasedEdit_Commands,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 /**
  * Defines the text editor tool for Claude 4 models.
@@ -2039,8 +2059,8 @@ export const TextEditor_20250728 = Tool.providerDefined({
   requiresHandler: true,
   args: TextEditor_StrReplaceBasedEdit_Args,
   parameters: TextEditor_StrReplaceBasedEdit_Commands,
-  success: Schema.String
-})
+  success: Schema.String,
+});
 
 // =============================================================================
 // Web Search
@@ -2089,8 +2109,8 @@ export const WebSearchUserLocation = Schema.Struct({
   /**
    * IANA timezone identifier.
    */
-  timezone: Schema.optional(Schema.String)
-})
+  timezone: Schema.optional(Schema.String),
+});
 
 // -----------------------------------------------------------------------------
 // Web Search Args
@@ -2139,8 +2159,8 @@ export const WebSearch_20250305_Args = Schema.Struct({
   /**
    * User location for localizing search results.
    */
-  userLocation: Schema.optional(WebSearchUserLocation)
-})
+  userLocation: Schema.optional(WebSearchUserLocation),
+});
 /**
  * Configuration arguments for the Anthropic web search tool, including usage limits, domain filters, and optional user location.
  *
@@ -2151,7 +2171,7 @@ export const WebSearch_20250305_Args = Schema.Struct({
  * @category Web Search
  * @since 4.0.0
  */
-export type WebSearch_20250305_Args = typeof WebSearch_20250305_Args.Type
+export type WebSearch_20250305_Args = typeof WebSearch_20250305_Args.Type;
 
 // -----------------------------------------------------------------------------
 // Web Search Parameters
@@ -2174,8 +2194,8 @@ export const WebSearchParameters = Schema.Struct({
   /**
    * The search query generated by Claude.
    */
-  query: Schema.String
-})
+  query: Schema.String,
+});
 /**
  * Type of the parameters Claude supplies when invoking the Anthropic web search tool.
  *
@@ -2188,7 +2208,7 @@ export const WebSearchParameters = Schema.Struct({
  * @category Web Search
  * @since 4.0.0
  */
-export type WebSearchParameters = typeof WebSearchParameters.Type
+export type WebSearchParameters = typeof WebSearchParameters.Type;
 
 // -----------------------------------------------------------------------------
 // Web Search Tool Definitions
@@ -2219,8 +2239,8 @@ export const WebSearch_20250305 = Tool.providerDefined({
   args: WebSearch_20250305_Args,
   parameters: WebSearchParameters,
   success: Schema.Array(Generated.BetaResponseWebSearchResultBlock),
-  failure: Generated.BetaResponseWebSearchToolResultError
-})
+  failure: Generated.BetaResponseWebSearchToolResultError,
+});
 
 // =============================================================================
 // Web Fetch
@@ -2251,8 +2271,8 @@ export const WebFetchCitationsConfig = Schema.Struct({
   /**
    * Enable citations for fetched content.
    */
-  enabled: Schema.Boolean
-})
+  enabled: Schema.Boolean,
+});
 /**
  * Configuration payload for enabling or disabling citations on web fetch results.
  *
@@ -2271,7 +2291,7 @@ export const WebFetchCitationsConfig = Schema.Struct({
  * @category Web Fetch
  * @since 4.0.0
  */
-export type WebFetchCitationsConfig = typeof WebFetchCitationsConfig.Type
+export type WebFetchCitationsConfig = typeof WebFetchCitationsConfig.Type;
 
 // -----------------------------------------------------------------------------
 // Web Fetch Args
@@ -2326,8 +2346,8 @@ export const WebFetch_20250910_Args = Schema.Struct({
   /**
    * Maximum content length in tokens.
    */
-  maxContentTokens: Schema.optional(Schema.Number)
-})
+  maxContentTokens: Schema.optional(Schema.Number),
+});
 /**
  * Configuration arguments for the Anthropic web fetch tool, including usage limits, domain filters, citation settings, and token limits.
  *
@@ -2345,7 +2365,7 @@ export const WebFetch_20250910_Args = Schema.Struct({
  * @category Web Fetch
  * @since 4.0.0
  */
-export type WebFetch_20250910_Args = typeof WebFetch_20250910_Args.Type
+export type WebFetch_20250910_Args = typeof WebFetch_20250910_Args.Type;
 
 // -----------------------------------------------------------------------------
 // Web Fetch Parameters
@@ -2378,8 +2398,8 @@ export const WebFetchParameters = Schema.Struct({
    * URL to fetch. Must be a URL provided by the user or from prior search/fetch
    * results. Maximum URL length: 250 characters.
    */
-  url: Schema.String
-})
+  url: Schema.String,
+});
 /**
  * Type of the parameters Claude supplies when invoking the Anthropic web fetch tool.
  *
@@ -2400,7 +2420,7 @@ export const WebFetchParameters = Schema.Struct({
  * @category Web Fetch
  * @since 4.0.0
  */
-export type WebFetchParameters = typeof WebFetchParameters.Type
+export type WebFetchParameters = typeof WebFetchParameters.Type;
 
 // -----------------------------------------------------------------------------
 // Web Fetch Tool Definitions
@@ -2432,8 +2452,8 @@ export const WebFetch_20250910 = Tool.providerDefined({
   args: WebFetch_20250910_Args,
   parameters: WebFetchParameters,
   success: Generated.BetaResponseWebFetchResultBlock,
-  failure: Generated.BetaResponseWebFetchToolResultError
-})
+  failure: Generated.BetaResponseWebFetchToolResultError,
+});
 
 // =============================================================================
 // Tool Search
@@ -2458,8 +2478,8 @@ export const ToolSearchRegexParameters = Schema.Struct({
   /**
    * Python regex pattern to search for tools.
    */
-  query: Schema.String
-})
+  query: Schema.String,
+});
 /**
  * Type of the parameters Claude supplies when invoking regex-based Anthropic tool search.
  *
@@ -2471,7 +2491,7 @@ export const ToolSearchRegexParameters = Schema.Struct({
  * @category tool search
  * @since 4.0.0
  */
-export type ToolSearchRegexParameters = typeof ToolSearchRegexParameters.Type
+export type ToolSearchRegexParameters = typeof ToolSearchRegexParameters.Type;
 
 /**
  * Defines input parameters for BM25/natural language tool search.
@@ -2495,15 +2515,15 @@ export const ToolSearchBM25Parameters = Schema.Struct({
   /**
    * Natural language query to search for tools.
    */
-  query: Schema.String
-})
+  query: Schema.String,
+});
 /**
  * Type of the parameters Claude supplies when invoking BM25 natural-language Anthropic tool search.
  *
  * @category tool search
  * @since 4.0.0
  */
-export type ToolSearchBM25Parameters = typeof ToolSearchBM25Parameters.Type
+export type ToolSearchBM25Parameters = typeof ToolSearchBM25Parameters.Type;
 
 // -----------------------------------------------------------------------------
 // Tool Search Tool Definitions
@@ -2528,8 +2548,8 @@ export const ToolSearchRegex_20251119 = Tool.providerDefined({
   providerName: "tool_search_tool_regex",
   parameters: ToolSearchRegexParameters,
   success: Schema.Array(Generated.BetaRequestToolReferenceBlock),
-  failure: Generated.BetaResponseToolSearchToolResultError
-})
+  failure: Generated.BetaResponseToolSearchToolResultError,
+});
 
 /**
  * Defines BM25/natural language tool search for Claude models.
@@ -2557,5 +2577,5 @@ export const ToolSearchBM25_20251119 = Tool.providerDefined({
   providerName: "tool_search_tool_bm25",
   parameters: ToolSearchBM25Parameters,
   success: Schema.Array(Generated.BetaRequestToolReferenceBlock),
-  failure: Generated.BetaResponseToolSearchToolResultError
-})
+  failure: Generated.BetaResponseToolSearchToolResultError,
+});

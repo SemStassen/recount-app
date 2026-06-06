@@ -71,22 +71,22 @@
  *
  * @since 4.0.0
  */
-import type { Path, SourceError } from "./ConfigProvider.ts"
-import * as ConfigProvider from "./ConfigProvider.ts"
-import * as Effect from "./Effect.ts"
-import * as Effectable from "./Effectable.ts"
-import { dual } from "./Function.ts"
-import * as LogLevel_ from "./LogLevel.ts"
-import * as Option from "./Option.ts"
-import * as Predicate from "./Predicate.ts"
-import * as Rec from "./Record.ts"
-import * as Schema from "./Schema.ts"
-import * as SchemaAST from "./SchemaAST.ts"
-import * as SchemaIssue from "./SchemaIssue.ts"
-import * as SchemaParser from "./SchemaParser.ts"
-import * as SchemaTransformation from "./SchemaTransformation.ts"
+import type { Path, SourceError } from "./ConfigProvider.ts";
+import * as ConfigProvider from "./ConfigProvider.ts";
+import * as Effect from "./Effect.ts";
+import * as Effectable from "./Effectable.ts";
+import { dual } from "./Function.ts";
+import * as LogLevel_ from "./LogLevel.ts";
+import * as Option from "./Option.ts";
+import * as Predicate from "./Predicate.ts";
+import * as Rec from "./Record.ts";
+import * as Schema from "./Schema.ts";
+import * as SchemaAST from "./SchemaAST.ts";
+import * as SchemaIssue from "./SchemaIssue.ts";
+import * as SchemaParser from "./SchemaParser.ts";
+import * as SchemaTransformation from "./SchemaTransformation.ts";
 
-const TypeId = "~effect/Config"
+const TypeId = "~effect/Config";
 
 /**
  * Returns `true` if `u` is a `Config` instance.
@@ -108,7 +108,8 @@ const TypeId = "~effect/Config"
  * @category guards
  * @since 2.0.0
  */
-export const isConfig = (u: unknown): u is Config<unknown> => Predicate.hasProperty(u, TypeId)
+export const isConfig = (u: unknown): u is Config<unknown> =>
+  Predicate.hasProperty(u, TypeId);
 
 /**
  * Represents the error type produced when config loading or validation fails.
@@ -131,17 +132,17 @@ export const isConfig = (u: unknown): u is Config<unknown> => Predicate.hasPrope
  * @since 4.0.0
  */
 export class ConfigError {
-  readonly _tag = "ConfigError"
-  readonly name: string = "ConfigError"
-  readonly cause: SourceError | Schema.SchemaError
+  readonly _tag = "ConfigError";
+  readonly name: string = "ConfigError";
+  readonly cause: SourceError | Schema.SchemaError;
   constructor(cause: SourceError | Schema.SchemaError) {
-    this.cause = cause
+    this.cause = cause;
   }
   get message() {
-    return this.cause.toString()
+    return this.cause.toString();
   }
   toString() {
-    return `ConfigError(${this.message})`
+    return `ConfigError(${this.message})`;
   }
 }
 
@@ -169,24 +170,26 @@ export class ConfigError {
  * @since 2.0.0
  */
 export interface Config<out T> extends Effect.Effect<T, ConfigError> {
-  readonly [TypeId]: typeof TypeId
-  readonly parse: (provider: ConfigProvider.ConfigProvider) => Effect.Effect<T, ConfigError>
+  readonly [TypeId]: typeof TypeId;
+  readonly parse: (
+    provider: ConfigProvider.ConfigProvider
+  ) => Effect.Effect<T, ConfigError>;
 }
 
 const Proto = {
   ...Effectable.Prototype<Config<any>>({
     label: "Config",
     evaluate(fiber) {
-      return this.parse(fiber.getRef(ConfigProvider.ConfigProvider))
-    }
+      return this.parse(fiber.getRef(ConfigProvider.ConfigProvider));
+    },
   }),
   [TypeId]: TypeId,
   toJSON(this: Config<unknown>) {
     return {
-      _id: "Config"
-    }
-  }
-}
+      _id: "Config",
+    };
+  },
+};
 
 /**
  * Creates a `Config` from a raw parsing function.
@@ -224,11 +227,13 @@ const Proto = {
  * @since 4.0.0
  */
 export function make<T>(
-  parse: (provider: ConfigProvider.ConfigProvider) => Effect.Effect<T, ConfigError>
+  parse: (
+    provider: ConfigProvider.ConfigProvider
+  ) => Effect.Effect<T, ConfigError>
 ): Config<T> {
-  const self = Object.create(Proto)
-  self.parse = parse
-  return self
+  const self = Object.create(Proto);
+  self.parse = parse;
+  return self;
 }
 
 /**
@@ -262,11 +267,11 @@ export function make<T>(
  * @since 2.0.0
  */
 export const map: {
-  <A, B>(f: (a: A) => B): (self: Config<A>) => Config<B>
-  <A, B>(self: Config<A>, f: (a: A) => B): Config<B>
+  <A, B>(f: (a: A) => B): (self: Config<A>) => Config<B>;
+  <A, B>(self: Config<A>, f: (a: A) => B): Config<B>;
 } = dual(2, <A, B>(self: Config<A>, f: (a: A) => B): Config<B> => {
-  return make((provider) => Effect.map(self.parse(provider), f))
-})
+  return make((provider) => Effect.map(self.parse(provider), f));
+});
 
 /**
  * Transforms the parsed value with a function that may fail.
@@ -296,11 +301,22 @@ export const map: {
  * @since 2.0.0
  */
 export const mapOrFail: {
-  <A, B>(f: (a: A) => Effect.Effect<B, ConfigError>): (self: Config<A>) => Config<B>
-  <A, B>(self: Config<A>, f: (a: A) => Effect.Effect<B, ConfigError>): Config<B>
-} = dual(2, <A, B>(self: Config<A>, f: (a: A) => Effect.Effect<B, ConfigError>): Config<B> => {
-  return make((provider) => Effect.flatMap(self.parse(provider), f))
-})
+  <A, B>(
+    f: (a: A) => Effect.Effect<B, ConfigError>
+  ): (self: Config<A>) => Config<B>;
+  <A, B>(
+    self: Config<A>,
+    f: (a: A) => Effect.Effect<B, ConfigError>
+  ): Config<B>;
+} = dual(
+  2,
+  <A, B>(
+    self: Config<A>,
+    f: (a: A) => Effect.Effect<B, ConfigError>
+  ): Config<B> => {
+    return make((provider) => Effect.flatMap(self.parse(provider), f));
+  }
+);
 
 /**
  * Provides a fallback config when parsing fails with a `ConfigError`.
@@ -334,11 +350,24 @@ export const mapOrFail: {
  * @since 2.0.0
  */
 export const orElse: {
-  <A2>(that: (error: ConfigError) => Config<A2>): <A>(self: Config<A>) => Config<A2 | A>
-  <A, A2>(self: Config<A>, that: (error: ConfigError) => Config<A2>): Config<A | A2>
-} = dual(2, <A, A2>(self: Config<A>, that: (error: ConfigError) => Config<A2>): Config<A | A2> => {
-  return make((provider) => Effect.catch(self.parse(provider), (error) => that(error).parse(provider)))
-})
+  <A2>(
+    that: (error: ConfigError) => Config<A2>
+  ): <A>(self: Config<A>) => Config<A2 | A>;
+  <A, A2>(
+    self: Config<A>,
+    that: (error: ConfigError) => Config<A2>
+  ): Config<A | A2>;
+} = dual(
+  2,
+  <A, A2>(
+    self: Config<A>,
+    that: (error: ConfigError) => Config<A2>
+  ): Config<A | A2> => {
+    return make((provider) =>
+      Effect.catch(self.parse(provider), (error) => that(error).parse(provider))
+    );
+  }
+);
 
 /**
  * Combines multiple configs into a single config that parses all of them.
@@ -370,53 +399,67 @@ export const orElse: {
  * @category combinators
  * @since 2.0.0
  */
-export function all<const Arg extends Iterable<Config<any>> | Record<string, Config<any>>>(
+export function all<
+  const Arg extends Iterable<Config<any>> | Record<string, Config<any>>,
+>(
   arg: Arg
 ): Config<
-  [Arg] extends [ReadonlyArray<Config<any>>] ? {
-      -readonly [K in keyof Arg]: [Arg[K]] extends [Config<infer A>] ? A : never
-    }
-    : [Arg] extends [Iterable<Config<infer A>>] ? Array<A>
-    : [Arg] extends [Record<string, Config<any>>] ? {
-        -readonly [K in keyof Arg]: [Arg[K]] extends [Config<infer A>] ? A : never
+  [Arg] extends [ReadonlyArray<Config<any>>]
+    ? {
+        -readonly [K in keyof Arg]: [Arg[K]] extends [Config<infer A>]
+          ? A
+          : never;
       }
-    : never
+    : [Arg] extends [Iterable<Config<infer A>>]
+      ? Array<A>
+      : [Arg] extends [Record<string, Config<any>>]
+        ? {
+            -readonly [K in keyof Arg]: [Arg[K]] extends [Config<infer A>]
+              ? A
+              : never;
+          }
+        : never
 > {
-  const configs: Array<Config<any>> | Record<string, Config<any>> = Array.isArray(arg)
-    ? arg
-    : Symbol.iterator in arg
-    ? [...arg as any]
-    : arg
+  const configs: Array<Config<any>> | Record<string, Config<any>> =
+    Array.isArray(arg) ? arg : Symbol.iterator in arg ? [...(arg as any)] : arg;
   if (Array.isArray(configs)) {
-    return make((provider) => Effect.all(configs.map((config) => config.parse(provider)))) as any
+    return make((provider) =>
+      Effect.all(configs.map((config) => config.parse(provider)))
+    ) as any;
   } else {
-    return make((provider) => Effect.all(Rec.map(configs, (config) => config.parse(provider)))) as any
+    return make((provider) =>
+      Effect.all(Rec.map(configs, (config) => config.parse(provider)))
+    ) as any;
   }
 }
 
 function isMissingDataOnly(issue: SchemaIssue.Issue): boolean {
   switch (issue._tag) {
     case "MissingKey":
-      return true
+      return true;
     case "InvalidType":
     case "InvalidValue":
-      return Option.isNone(issue.actual) || (Option.isSome(issue.actual) && issue.actual.value === undefined)
+      return (
+        Option.isNone(issue.actual) ||
+        (Option.isSome(issue.actual) && issue.actual.value === undefined)
+      );
     case "OneOf":
-      return issue.actual === undefined
+      return issue.actual === undefined;
     case "Encoding":
-      return Option.isNone(issue.actual) || (Option.isSome(issue.actual) && issue.actual.value === undefined)
+      return Option.isNone(issue.actual) ||
+        (Option.isSome(issue.actual) && issue.actual.value === undefined)
         ? true
-        : isMissingDataOnly(issue.issue)
+        : isMissingDataOnly(issue.issue);
     case "Pointer":
     case "Filter":
-      return isMissingDataOnly(issue.issue)
+      return isMissingDataOnly(issue.issue);
     case "UnexpectedKey":
-      return false
+      return false;
     case "Forbidden":
-      return false
+      return false;
     case "Composite":
     case "AnyOf":
-      return issue.issues.every(isMissingDataOnly)
+      return issue.issues.every(isMissingDataOnly);
   }
 }
 
@@ -456,19 +499,22 @@ function isMissingDataOnly(issue: SchemaIssue.Issue): boolean {
  * @since 2.0.0
  */
 export const withDefault: {
-  <const A2>(defaultValue: A2): <A>(self: Config<A>) => Config<A2 | A>
-  <A, const A2>(self: Config<A>, defaultValue: A2): Config<A | A2>
-} = dual(2, <A, const A2>(self: Config<A>, defaultValue: A2): Config<A | A2> => {
-  return orElse(self, (err) => {
-    if (Schema.isSchemaError(err.cause)) {
-      const issue = err.cause.issue
-      if (isMissingDataOnly(issue)) {
-        return succeed(defaultValue)
+  <const A2>(defaultValue: A2): <A>(self: Config<A>) => Config<A2 | A>;
+  <A, const A2>(self: Config<A>, defaultValue: A2): Config<A | A2>;
+} = dual(
+  2,
+  <A, const A2>(self: Config<A>, defaultValue: A2): Config<A | A2> => {
+    return orElse(self, (err) => {
+      if (Schema.isSchemaError(err.cause)) {
+        const issue = err.cause.issue;
+        if (isMissingDataOnly(issue)) {
+          return succeed(defaultValue);
+        }
       }
-    }
-    return fail(err.cause)
-  })
-})
+      return fail(err.cause);
+    });
+  }
+);
 
 /**
  * Makes a config optional: returns `Some(value)` on success and `None` when
@@ -500,7 +546,7 @@ export const withDefault: {
  * @since 2.0.0
  */
 export const option = <A>(self: Config<A>): Config<Option.Option<A>> =>
-  self.pipe(map(Option.some), withDefault(Option.none()))
+  self.pipe(map(Option.some), withDefault(Option.none()));
 
 /**
  * Extracts the successfully parsed value type from a `Config`.
@@ -516,7 +562,7 @@ export const option = <A>(self: Config<A>): Config<Option.Option<A>> =>
  * @category utility types
  * @since 2.5.0
  */
-export type Success<T> = [T] extends [Config<infer A>] ? A : never
+export type Success<T> = [T] extends [Config<infer A>] ? A : never;
 
 /**
  * Utility type that recursively replaces primitives with `Config` in a nested
@@ -536,15 +582,19 @@ export type Success<T> = [T] extends [Config<infer A>] ? A : never
  * @category Wrap
  * @since 2.0.0
  */
-export type Wrap<A> = [NonNullable<A>] extends [infer T] ? [IsPlainObject<T>] extends [true] ?
-      | { readonly [K in keyof A]: Wrap<A[K]> }
-      | Config<A>
-  : Config<A>
-  : Config<A>
+export type Wrap<A> = [NonNullable<A>] extends [infer T]
+  ? [IsPlainObject<T>] extends [true]
+    ? { readonly [K in keyof A]: Wrap<A[K]> } | Config<A>
+    : Config<A>
+  : Config<A>;
 
 type IsPlainObject<A> = [A] extends [Record<string, any>]
-  ? [keyof A] extends [never] ? false : [keyof A] extends [string] ? true : false
-  : false
+  ? [keyof A] extends [never]
+    ? false
+    : [keyof A] extends [string]
+      ? true
+      : false
+  : false;
 
 /**
  * Constructs a `Config<T>` from a value matching `Wrap<T>`.
@@ -578,15 +628,17 @@ type IsPlainObject<A> = [A] extends [Record<string, any>]
  * @since 2.0.0
  */
 export const unwrap = <T>(wrapped: Wrap<T>): Config<T> => {
-  if (isConfig(wrapped)) return wrapped
+  if (isConfig(wrapped)) return wrapped;
   return make((provider) => {
-    const entries = Object.entries(wrapped)
+    const entries = Object.entries(wrapped);
     const configs = entries.map(([key, config]) =>
-      unwrap(config as any).parse(provider).pipe(Effect.map((value) => [key, value] as const))
-    )
-    return Effect.all(configs).pipe(Effect.map(Object.fromEntries))
-  })
-}
+      unwrap(config as any)
+        .parse(provider)
+        .pipe(Effect.map((value) => [key, value] as const))
+    );
+    return Effect.all(configs).pipe(Effect.map(Object.fromEntries));
+  });
+};
 
 // -----------------------------------------------------------------------------
 // schema
@@ -595,94 +647,94 @@ export const unwrap = <T>(wrapped: Wrap<T>): Config<T> => {
 const dump: (
   provider: ConfigProvider.ConfigProvider,
   path: Path
-) => Effect.Effect<Schema.StringTree, SourceError> = Effect.fnUntraced(function*(
-  provider,
-  path
-) {
-  const stat = yield* provider.load(path)
-  if (stat === undefined) return undefined
-  switch (stat._tag) {
-    case "Value":
-      return stat.value
-    case "Record": {
-      if (stat.value !== undefined) return stat.value
-      const out: Record<string, Schema.StringTree> = {}
-      for (const key of stat.keys) {
-        const child = yield* dump(provider, [...path, key])
-        if (child !== undefined) out[key] = child
+) => Effect.Effect<Schema.StringTree, SourceError> = Effect.fnUntraced(
+  function* (provider, path) {
+    const stat = yield* provider.load(path);
+    if (stat === undefined) return undefined;
+    switch (stat._tag) {
+      case "Value":
+        return stat.value;
+      case "Record": {
+        if (stat.value !== undefined) return stat.value;
+        const out: Record<string, Schema.StringTree> = {};
+        for (const key of stat.keys) {
+          const child = yield* dump(provider, [...path, key]);
+          if (child !== undefined) out[key] = child;
+        }
+        return out;
       }
-      return out
-    }
-    case "Array": {
-      if (stat.value !== undefined) return stat.value
-      const out: Array<Schema.StringTree> = []
-      for (let i = 0; i < stat.length; i++) {
-        out.push(yield* dump(provider, [...path, i]))
+      case "Array": {
+        if (stat.value !== undefined) return stat.value;
+        const out: Array<Schema.StringTree> = [];
+        for (let i = 0; i < stat.length; i++) {
+          out.push(yield* dump(provider, [...path, i]));
+        }
+        return out;
       }
-      return out
     }
   }
-})
+);
 
 const recur: (
   ast: SchemaAST.AST,
   provider: ConfigProvider.ConfigProvider,
   path: Path
-) => Effect.Effect<Schema.StringTree, Schema.SchemaError | SourceError> = Effect.fnUntraced(
-  function*(ast, provider, path) {
+) => Effect.Effect<Schema.StringTree, Schema.SchemaError | SourceError> =
+  Effect.fnUntraced(function* (ast, provider, path) {
     switch (ast._tag) {
       case "Objects": {
-        const out: Record<string, Schema.StringTree> = {}
+        const out: Record<string, Schema.StringTree> = {};
         for (const ps of ast.propertySignatures) {
-          const name = ps.name
+          const name = ps.name;
           if (typeof name === "string") {
-            const value = yield* recur(ps.type, provider, [...path, name])
-            if (value !== undefined) out[name] = value
+            const value = yield* recur(ps.type, provider, [...path, name]);
+            if (value !== undefined) out[name] = value;
           }
         }
         if (ast.indexSignatures.length > 0) {
-          const stat = yield* provider.load(path)
+          const stat = yield* provider.load(path);
           if (stat && stat._tag === "Record") {
             for (const is of ast.indexSignatures) {
-              const matches = SchemaParser._is(is.parameter)
+              const matches = SchemaParser._is(is.parameter);
               for (const key of stat.keys) {
                 if (!Object.hasOwn(out, key) && matches(key)) {
-                  const value = yield* recur(is.type, provider, [...path, key])
-                  if (value !== undefined) out[key] = value
+                  const value = yield* recur(is.type, provider, [...path, key]);
+                  if (value !== undefined) out[key] = value;
                 }
               }
             }
           }
         }
-        return out
+        return out;
       }
       case "Arrays": {
-        const stat = yield* provider.load(path)
-        if (stat && stat._tag === "Value") return stat.value
-        const out: Array<Schema.StringTree> = []
+        const stat = yield* provider.load(path);
+        if (stat && stat._tag === "Value") return stat.value;
+        const out: Array<Schema.StringTree> = [];
         for (let i = 0; i < ast.elements.length; i++) {
-          out.push(yield* recur(ast.elements[i], provider, [...path, i]))
+          out.push(yield* recur(ast.elements[i], provider, [...path, i]));
         }
-        return out
+        return out;
       }
       case "Union":
         // Let downstream decoding decide; dump can return a string, object, or array.
-        return yield* dump(provider, path)
+        return yield* dump(provider, path);
       case "Suspend":
-        return yield* recur(ast.thunk(), provider, path)
+        return yield* recur(ast.thunk(), provider, path);
       default: {
         // Base primitives / string-like encoded nodes.
-        const stat = yield* provider.load(path)
-        if (stat === undefined) return undefined
-        if (stat._tag === "Value") return stat.value
-        if (stat._tag === "Record" && stat.value !== undefined) return stat.value
-        if (stat._tag === "Array" && stat.value !== undefined) return stat.value
+        const stat = yield* provider.load(path);
+        if (stat === undefined) return undefined;
+        if (stat._tag === "Value") return stat.value;
+        if (stat._tag === "Record" && stat.value !== undefined)
+          return stat.value;
+        if (stat._tag === "Array" && stat.value !== undefined)
+          return stat.value;
         // Container without a co-located value cannot satisfy a scalar request.
-        return undefined
+        return undefined;
       }
     }
-  }
-)
+  });
 
 /**
  * Creates a `Config<T>` from a `Schema.Codec`.
@@ -729,31 +781,39 @@ const recur: (
  * @category schemas
  * @since 4.0.0
  */
-export function schema<T, E>(codec: Schema.Codec<T, E>, path?: string | ConfigProvider.Path): Config<T> {
-  const codecStringTree = Schema.toCodecStringTree(codec)
-  const decodeUnknownEffect = SchemaParser.decodeUnknownEffect(codecStringTree)
-  const codecStringTreeEncoded = SchemaAST.toEncoded(codecStringTree.ast)
-  const defaultPath = typeof path === "string" ? [path] : path ?? []
+export function schema<T, E>(
+  codec: Schema.Codec<T, E>,
+  path?: string | ConfigProvider.Path
+): Config<T> {
+  const codecStringTree = Schema.toCodecStringTree(codec);
+  const decodeUnknownEffect = SchemaParser.decodeUnknownEffect(codecStringTree);
+  const codecStringTreeEncoded = SchemaAST.toEncoded(codecStringTree.ast);
+  const defaultPath = typeof path === "string" ? [path] : (path ?? []);
   return make((provider) => {
-    const path = provider.prefix ? [...provider.prefix, ...defaultPath] : defaultPath
+    const path = provider.prefix
+      ? [...provider.prefix, ...defaultPath]
+      : defaultPath;
     return recur(codecStringTreeEncoded, provider, defaultPath).pipe(
       Effect.flatMapEager((tree) =>
         decodeUnknownEffect(tree).pipe(
-          Effect.mapErrorEager((issue) =>
-            new Schema.SchemaError(path.length > 0 ? new SchemaIssue.Pointer(path, issue) : issue)
+          Effect.mapErrorEager(
+            (issue) =>
+              new Schema.SchemaError(
+                path.length > 0 ? new SchemaIssue.Pointer(path, issue) : issue
+              )
           )
         )
       ),
       Effect.mapErrorEager((cause) => new ConfigError(cause))
-    )
-  })
+    );
+  });
 }
 
 /** @internal */
-export const TrueValues = Schema.Literals(["true", "yes", "on", "1", "y"])
+export const TrueValues = Schema.Literals(["true", "yes", "on", "1", "y"]);
 
 /** @internal */
-export const FalseValues = Schema.Literals(["false", "no", "off", "0", "n"])
+export const FalseValues = Schema.Literals(["false", "no", "off", "0", "n"]);
 
 /**
  * Schema for boolean values encoded as strings.
@@ -773,15 +833,23 @@ export const FalseValues = Schema.Literals(["false", "no", "off", "0", "n"])
  * @category schemas
  * @since 4.0.0
  */
-export const Boolean = Schema.Literals([...TrueValues.literals, ...FalseValues.literals]).pipe(
+export const Boolean = Schema.Literals([
+  ...TrueValues.literals,
+  ...FalseValues.literals,
+]).pipe(
   Schema.decodeTo(
     Schema.Boolean,
     SchemaTransformation.transform({
-      decode: (value) => value === "true" || value === "yes" || value === "on" || value === "1" || value === "y",
-      encode: (value) => value ? "true" : "false"
+      decode: (value) =>
+        value === "true" ||
+        value === "yes" ||
+        value === "on" ||
+        value === "1" ||
+        value === "y",
+      encode: (value) => (value ? "true" : "false"),
     })
   )
-)
+);
 
 /**
  * Schema for port numbers (integers in 1–65535).
@@ -796,7 +864,9 @@ export const Boolean = Schema.Literals([...TrueValues.literals, ...FalseValues.l
  * @category schemas
  * @since 4.0.0
  */
-export const Port = Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 65535 }))
+export const Port = Schema.Int.check(
+  Schema.isBetween({ minimum: 1, maximum: 65535 })
+);
 
 /**
  * Schema for `LogLevel` string literals.
@@ -816,7 +886,7 @@ export const Port = Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 655
  * @category schemas
  * @since 4.0.0
  */
-export const LogLevel = Schema.Literals(LogLevel_.values)
+export const LogLevel = Schema.Literals(LogLevel_.values);
 
 /**
  * Schema for key-value record types that can also be parsed from
@@ -859,21 +929,25 @@ export const LogLevel = Schema.Literals(LogLevel_.values)
  * @category schemas
  * @since 4.0.0
  */
-export const Record = <K extends Schema.Record.Key, V extends Schema.Top>(key: K, value: V, options?: {
-  readonly separator?: string | undefined
-  readonly keyValueSeparator?: string | undefined
-}) => {
-  const record = Schema.Record(key, value)
+export const Record = <K extends Schema.Record.Key, V extends Schema.Top>(
+  key: K,
+  value: V,
+  options?: {
+    readonly separator?: string | undefined;
+    readonly keyValueSeparator?: string | undefined;
+  }
+) => {
+  const record = Schema.Record(key, value);
   const recordString = Schema.String.pipe(
     Schema.decodeTo(
       Schema.Record(Schema.String, Schema.String),
       SchemaTransformation.splitKeyValue(options)
     ),
     Schema.decodeTo(record)
-  )
+  );
 
-  return Schema.Union([record, recordString])
-}
+  return Schema.Union([record, recordString]);
+};
 
 // -----------------------------------------------------------------------------
 // constructors
@@ -891,7 +965,7 @@ export const Record = <K extends Schema.Record.Key, V extends Schema.Top>(key: K
  * @since 2.0.0
  */
 export function fail(err: SourceError | Schema.SchemaError) {
-  return make(() => Effect.fail(new ConfigError(err)))
+  return make(() => Effect.fail(new ConfigError(err)));
 }
 
 /**
@@ -917,7 +991,7 @@ export function fail(err: SourceError | Schema.SchemaError) {
  * @since 2.0.0
  */
 export function succeed<T>(value: T) {
-  return make(() => Effect.succeed(value))
+  return make(() => Effect.succeed(value));
 }
 
 /**
@@ -949,7 +1023,7 @@ export function succeed<T>(value: T) {
  * @since 2.0.0
  */
 export function string(name?: string) {
-  return schema(Schema.String, name)
+  return schema(Schema.String, name);
 }
 
 /**
@@ -970,7 +1044,7 @@ export function string(name?: string) {
  * @since 3.7.0
  */
 export function nonEmptyString(name?: string) {
-  return schema(Schema.NonEmptyString, name)
+  return schema(Schema.NonEmptyString, name);
 }
 
 /**
@@ -992,7 +1066,7 @@ export function nonEmptyString(name?: string) {
  * @since 2.0.0
  */
 export function number(name?: string) {
-  return schema(Schema.Number, name)
+  return schema(Schema.Number, name);
 }
 
 /**
@@ -1013,7 +1087,7 @@ export function number(name?: string) {
  * @since 4.0.0
  */
 export function finite(name?: string) {
-  return schema(Schema.Finite, name)
+  return schema(Schema.Finite, name);
 }
 
 /**
@@ -1034,7 +1108,7 @@ export function finite(name?: string) {
  * @since 4.0.0
  */
 export function int(name?: string) {
-  return schema(Schema.Int, name)
+  return schema(Schema.Int, name);
 }
 
 /**
@@ -1060,8 +1134,11 @@ export function int(name?: string) {
  * @category constructors
  * @since 2.0.0
  */
-export function literal<L extends SchemaAST.LiteralValue>(literal: L, name?: string) {
-  return schema(Schema.Literal(literal), name)
+export function literal<L extends SchemaAST.LiteralValue>(
+  literal: L,
+  name?: string
+) {
+  return schema(Schema.Literal(literal), name);
 }
 
 /**
@@ -1088,8 +1165,11 @@ export function literal<L extends SchemaAST.LiteralValue>(literal: L, name?: str
  * @category constructors
  * @since 4.0.0
  */
-export function literals<const L extends ReadonlyArray<SchemaAST.LiteralValue>>(literals: L, name?: string) {
-  return schema(Schema.Literals(literals), name)
+export function literals<const L extends ReadonlyArray<SchemaAST.LiteralValue>>(
+  literals: L,
+  name?: string
+) {
+  return schema(Schema.Literals(literals), name);
 }
 
 /**
@@ -1135,7 +1215,7 @@ export function literals<const L extends ReadonlyArray<SchemaAST.LiteralValue>>(
  * @since 2.0.0
  */
 export function boolean(name?: string) {
-  return schema(Boolean, name)
+  return schema(Boolean, name);
 }
 
 /**
@@ -1181,7 +1261,7 @@ export function boolean(name?: string) {
  * @since 2.5.0
  */
 export function duration(name?: string) {
-  return schema(Schema.DurationFromString, name)
+  return schema(Schema.DurationFromString, name);
 }
 
 /**
@@ -1224,7 +1304,7 @@ export function duration(name?: string) {
  * @since 3.16.0
  */
 export function port(name?: string) {
-  return schema(Port, name)
+  return schema(Port, name);
 }
 
 /**
@@ -1269,7 +1349,7 @@ export function port(name?: string) {
  * @since 2.0.0
  */
 export function logLevel(name?: string) {
-  return schema(LogLevel, name)
+  return schema(LogLevel, name);
 }
 
 /**
@@ -1313,7 +1393,7 @@ export function logLevel(name?: string) {
  * @since 2.0.0
  */
 export function redacted(name?: string) {
-  return schema(Schema.Redacted(Schema.String), name)
+  return schema(Schema.Redacted(Schema.String), name);
 }
 
 /**
@@ -1373,7 +1453,7 @@ export function redacted(name?: string) {
  * @since 3.11.0
  */
 export function url(name?: string) {
-  return schema(Schema.URL, name)
+  return schema(Schema.URL, name);
 }
 
 /**
@@ -1407,7 +1487,7 @@ export function url(name?: string) {
  * @since 2.0.0
  */
 export function date(name?: string) {
-  return schema(Schema.DateValid, name)
+  return schema(Schema.DateValid, name);
 }
 
 /**
@@ -1463,9 +1543,10 @@ export function date(name?: string) {
  * @since 2.0.0
  */
 export const nested: {
-  (name: string): <A>(self: Config<A>) => Config<A>
-  <A>(self: Config<A>, name: string): Config<A>
+  (name: string): <A>(self: Config<A>) => Config<A>;
+  <A>(self: Config<A>, name: string): Config<A>;
 } = dual(
   2,
-  <A>(self: Config<A>, name: string): Config<A> => make((provider) => self.parse(ConfigProvider.nested(provider, name)))
-)
+  <A>(self: Config<A>, name: string): Config<A> =>
+    make((provider) => self.parse(ConfigProvider.nested(provider, name)))
+);

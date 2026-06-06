@@ -30,17 +30,17 @@
  *
  * @since 4.0.0
  */
-import type * as Cause from "./Cause.ts"
-import * as Context from "./Context.ts"
-import type * as Effect from "./Effect.ts"
-import type * as Option from "./Option.ts"
-import type { PlatformError } from "./PlatformError.ts"
-import * as Predicate from "./Predicate.ts"
-import type * as Queue from "./Queue.ts"
-import * as Schema from "./Schema.ts"
-import type * as Scope from "./Scope.ts"
+import type * as Cause from "./Cause.ts";
+import * as Context from "./Context.ts";
+import type * as Effect from "./Effect.ts";
+import type * as Option from "./Option.ts";
+import type { PlatformError } from "./PlatformError.ts";
+import * as Predicate from "./Predicate.ts";
+import type * as Queue from "./Queue.ts";
+import * as Schema from "./Schema.ts";
+import type * as Scope from "./Scope.ts";
 
-const TypeId = "~effect/platform/Terminal"
+const TypeId = "~effect/platform/Terminal";
 
 /**
  * A `Terminal` represents a command-line interface which can read input from a
@@ -50,29 +50,33 @@ const TypeId = "~effect/platform/Terminal"
  * @since 4.0.0
  */
 export interface Terminal {
-  readonly [TypeId]: typeof TypeId
+  readonly [TypeId]: typeof TypeId;
 
   /**
    * The number of columns available on the platform's terminal interface.
    */
-  readonly columns: Effect.Effect<number>
+  readonly columns: Effect.Effect<number>;
   /**
    * The number of rows available on the platform's terminal interface.
    */
 
-  readonly rows: Effect.Effect<number>
+  readonly rows: Effect.Effect<number>;
   /**
    * Reads input events from the default standard input.
    */
-  readonly readInput: Effect.Effect<Queue.Dequeue<UserInput, Cause.Done>, never, Scope.Scope>
+  readonly readInput: Effect.Effect<
+    Queue.Dequeue<UserInput, Cause.Done>,
+    never,
+    Scope.Scope
+  >;
   /**
    * Reads a single line from the default standard input.
    */
-  readonly readLine: Effect.Effect<string, QuitError>
+  readonly readLine: Effect.Effect<string, QuitError>;
   /**
    * Displays text to the default standard output.
    */
-  readonly display: (text: string) => Effect.Effect<void, PlatformError>
+  readonly display: (text: string) => Effect.Effect<void, PlatformError>;
 }
 
 /**
@@ -86,19 +90,19 @@ export interface Key {
   /**
    * The name of the key being pressed.
    */
-  readonly name: string
+  readonly name: string;
   /**
    * If set to `true`, then the user is also holding down the `Ctrl` key.
    */
-  readonly ctrl: boolean
+  readonly ctrl: boolean;
   /**
    * If set to `true`, then the user is also holding down the `Meta` key.
    */
-  readonly meta: boolean
+  readonly meta: boolean;
   /**
    * If set to `true`, then the user is also holding down the `Shift` key.
    */
-  readonly shift: boolean
+  readonly shift: boolean;
 }
 
 /**
@@ -119,14 +123,14 @@ export interface UserInput {
   /**
    * The character read from the user (if any).
    */
-  readonly input: Option.Option<string>
+  readonly input: Option.Option<string>;
   /**
    * The key that the user pressed.
    */
-  readonly key: Key
+  readonly key: Key;
 }
 
-const QuitErrorTypeId = "effect/platform/Terminal/QuitError"
+const QuitErrorTypeId = "effect/platform/Terminal/QuitError";
 
 /**
  * Represents an error that occurs when a user attempts to
@@ -143,14 +147,14 @@ const QuitErrorTypeId = "effect/platform/Terminal/QuitError"
  * @since 4.0.0
  */
 export class QuitError extends Schema.ErrorClass<QuitError>("QuitError")({
-  _tag: Schema.tag("QuitError")
+  _tag: Schema.tag("QuitError"),
 }) {
   /**
    * Marks this value as a terminal quit error for runtime guards.
    *
    * @since 4.0.0
    */
-  readonly [QuitErrorTypeId] = QuitErrorTypeId
+  readonly [QuitErrorTypeId] = QuitErrorTypeId;
 }
 
 /**
@@ -171,7 +175,8 @@ export class QuitError extends Schema.ErrorClass<QuitError>("QuitError")({
  * @category guards
  * @since 4.0.0
  */
-export const isQuitError = (u: unknown): u is QuitError => Predicate.hasProperty(u, QuitErrorTypeId)
+export const isQuitError = (u: unknown): u is QuitError =>
+  Predicate.hasProperty(u, QuitErrorTypeId);
 
 /**
  * Service tag for command-line input and output services.
@@ -184,7 +189,9 @@ export const isQuitError = (u: unknown): u is QuitError => Predicate.hasProperty
  * @category services
  * @since 4.0.0
  */
-export const Terminal: Context.Service<Terminal, Terminal> = Context.Service("effect/platform/Terminal")
+export const Terminal: Context.Service<Terminal, Terminal> = Context.Service(
+  "effect/platform/Terminal"
+);
 
 /**
  * Creates a `Terminal` service implementation.
@@ -204,6 +211,5 @@ export const Terminal: Context.Service<Terminal, Terminal> = Context.Service("ef
  * @category constructors
  * @since 4.0.0
  */
-export const make = (
-  impl: Omit<Terminal, typeof TypeId>
-): Terminal => Terminal.of({ ...impl, [TypeId]: TypeId })
+export const make = (impl: Omit<Terminal, typeof TypeId>): Terminal =>
+  Terminal.of({ ...impl, [TypeId]: TypeId });

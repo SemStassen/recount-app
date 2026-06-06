@@ -6,4 +6,4 @@
  * @category re-exports
  * @since 4.0.0
  */
-export * from "multipasta/HeadersParser"
+export * from "multipasta/HeadersParser";

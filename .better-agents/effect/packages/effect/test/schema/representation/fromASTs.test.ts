@@ -1,26 +1,39 @@
-import { Array as Arr, Option, Predicate, Schema, SchemaGetter, SchemaRepresentation } from "effect"
-import { describe, it } from "vitest"
-import { deepStrictEqual } from "../../utils/assert.ts"
+import {
+  Array as Arr,
+  Option,
+  Predicate,
+  Schema,
+  SchemaGetter,
+  SchemaRepresentation,
+} from "effect";
+import { describe, it } from "vitest";
+
+import { deepStrictEqual } from "../../utils/assert.ts";
 
 describe("fromASTs", () => {
-  function assertFromASTs(schemas: readonly [Schema.Top, ...Array<Schema.Top>], expected: {
-    readonly representations: readonly [
-      SchemaRepresentation.Representation,
-      ...Array<SchemaRepresentation.Representation>
-    ]
-    readonly references?: SchemaRepresentation.References
-  }) {
-    const document = SchemaRepresentation.fromASTs(Arr.map(schemas, (s) => s.ast))
+  function assertFromASTs(
+    schemas: readonly [Schema.Top, ...Array<Schema.Top>],
+    expected: {
+      readonly representations: readonly [
+        SchemaRepresentation.Representation,
+        ...Array<SchemaRepresentation.Representation>,
+      ];
+      readonly references?: SchemaRepresentation.References;
+    }
+  ) {
+    const document = SchemaRepresentation.fromASTs(
+      Arr.map(schemas, (s) => s.ast)
+    );
     deepStrictEqual(document, {
       representations: expected.representations,
-      references: expected.references ?? {}
-    })
+      references: expected.references ?? {},
+    });
   }
 
   it("should handle multiple schemas", () => {
-    const A = Schema.String.annotate({ identifier: "id", description: "a" })
-    const B = Schema.String.annotate({ identifier: "id", description: "b" })
-    const C = Schema.Tuple([A, B])
+    const A = Schema.String.annotate({ identifier: "id", description: "a" });
+    const B = Schema.String.annotate({ identifier: "id", description: "b" });
+    const C = Schema.Tuple([A, B]);
     assertFromASTs([A, B, C], {
       representations: [
         { _tag: "Reference", $ref: "id" },
@@ -30,43 +43,46 @@ describe("fromASTs", () => {
           elements: [
             {
               isOptional: false,
-              type: { _tag: "Reference", $ref: "id" }
+              type: { _tag: "Reference", $ref: "id" },
             },
             {
               isOptional: false,
-              type: { _tag: "Reference", $ref: "id1" }
-            }
+              type: { _tag: "Reference", $ref: "id1" },
+            },
           ],
           rest: [],
-          checks: []
-        }
+          checks: [],
+        },
       ],
       references: {
         id: {
           _tag: "String",
           checks: [],
-          annotations: { identifier: "id", description: "a" }
+          annotations: { identifier: "id", description: "a" },
         },
         id1: {
           _tag: "String",
           checks: [],
-          annotations: { identifier: "id", description: "b" }
-        }
-      }
-    })
-  })
-})
+          annotations: { identifier: "id", description: "b" },
+        },
+      },
+    });
+  });
+});
 
 describe("fromAST", () => {
-  function assertFromAST(schema: Schema.Top, expected: {
-    readonly representation: SchemaRepresentation.Representation
-    readonly references?: SchemaRepresentation.References
-  }) {
-    const document = SchemaRepresentation.fromAST(schema.ast)
+  function assertFromAST(
+    schema: Schema.Top,
+    expected: {
+      readonly representation: SchemaRepresentation.Representation;
+      readonly references?: SchemaRepresentation.References;
+    }
+  ) {
+    const document = SchemaRepresentation.fromAST(schema.ast);
     deepStrictEqual(document, {
       representation: expected.representation,
-      references: expected.references ?? {}
-    })
+      references: expected.references ?? {},
+    });
   }
 
   describe("String", () => {
@@ -74,31 +90,31 @@ describe("fromAST", () => {
       assertFromAST(Schema.String, {
         representation: {
           _tag: "String",
-          checks: []
-        }
-      })
-    })
+          checks: [],
+        },
+      });
+    });
 
     it("String & brand", () => {
       assertFromAST(Schema.String.pipe(Schema.brand("a")), {
         representation: {
           _tag: "String",
           checks: [],
-          annotations: { brands: ["a"] }
-        }
-      })
-    })
+          annotations: { brands: ["a"] },
+        },
+      });
+    });
 
     it("String & brand & brand", () => {
       assertFromAST(Schema.String.pipe(Schema.brand("a"), Schema.brand("b")), {
         representation: {
           _tag: "String",
           checks: [],
-          annotations: { brands: ["a", "b"] }
-        }
-      })
-    })
-  })
+          annotations: { brands: ["a", "b"] },
+        },
+      });
+    });
+  });
 
   it("URL", () => {
     assertFromAST(Schema.URL, {
@@ -109,21 +125,21 @@ describe("fromAST", () => {
           typeConstructor: { _tag: "URL" },
           generation: {
             runtime: "Schema.URL",
-            Type: "globalThis.URL"
-          }
+            Type: "globalThis.URL",
+          },
         },
         checks: [],
         typeParameters: [],
         encodedSchema: {
           _tag: "String",
           annotations: {
-            expected: "a string that will be decoded as a URL"
+            expected: "a string that will be decoded as a URL",
           },
-          checks: []
-        }
-      }
-    })
-  })
+          checks: [],
+        },
+      },
+    });
+  });
 
   it("RegExp", () => {
     assertFromAST(Schema.RegExp, {
@@ -134,8 +150,8 @@ describe("fromAST", () => {
           typeConstructor: { _tag: "RegExp" },
           generation: {
             runtime: "Schema.RegExp",
-            Type: "globalThis.RegExp"
-          }
+            Type: "globalThis.RegExp",
+          },
         },
         checks: [],
         typeParameters: [],
@@ -146,21 +162,21 @@ describe("fromAST", () => {
               name: "source",
               type: { _tag: "String", checks: [] },
               isOptional: false,
-              isMutable: false
+              isMutable: false,
             },
             {
               name: "flags",
               type: { _tag: "String", checks: [] },
               isOptional: false,
-              isMutable: false
-            }
+              isMutable: false,
+            },
           ],
           indexSignatures: [],
-          checks: []
-        }
-      }
-    })
-  })
+          checks: [],
+        },
+      },
+    });
+  });
 
   it("URLSearchParams", () => {
     assertFromAST(Schema.URLSearchParams, {
@@ -171,21 +187,21 @@ describe("fromAST", () => {
           typeConstructor: { _tag: "URLSearchParams" },
           generation: {
             runtime: "Schema.URLSearchParams",
-            Type: "globalThis.URLSearchParams"
-          }
+            Type: "globalThis.URLSearchParams",
+          },
         },
         checks: [],
         typeParameters: [],
         encodedSchema: {
           _tag: "String",
           annotations: {
-            expected: "a query string that will be decoded as URLSearchParams"
+            expected: "a query string that will be decoded as URLSearchParams",
           },
-          checks: []
-        }
-      }
-    })
-  })
+          checks: [],
+        },
+      },
+    });
+  });
 
   it("Option(Number)", () => {
     assertFromAST(Schema.Option(Schema.Number), {
@@ -197,13 +213,11 @@ describe("fromAST", () => {
           generation: {
             runtime: "Schema.Option(?)",
             Type: "Option.Option<?>",
-            importDeclaration: `import * as Option from "effect/Option"`
-          }
+            importDeclaration: `import * as Option from "effect/Option"`,
+          },
         },
         checks: [],
-        typeParameters: [
-          { _tag: "Number", checks: [] }
-        ],
+        typeParameters: [{ _tag: "Number", checks: [] }],
         encodedSchema: {
           _tag: "Union",
           types: [
@@ -214,17 +228,17 @@ describe("fromAST", () => {
                   name: "_tag",
                   type: { _tag: "Literal", literal: "Some" },
                   isOptional: false,
-                  isMutable: false
+                  isMutable: false,
                 },
                 {
                   name: "value",
                   type: { _tag: "Number", checks: [] },
                   isOptional: false,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
+              checks: [],
             },
             {
               _tag: "Objects",
@@ -233,25 +247,28 @@ describe("fromAST", () => {
                   name: "_tag",
                   type: { _tag: "Literal", literal: "None" },
                   isOptional: false,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
-            }
+              checks: [],
+            },
           ],
-          mode: "anyOf"
-        }
-      }
-    })
-  })
+          mode: "anyOf",
+        },
+      },
+    });
+  });
 
   describe("Record", () => {
     describe("checks", () => {
       it("isPropertyNames", () => {
         assertFromAST(
-          Schema.Record(Schema.String, Schema.Number)
-            .check(Schema.isPropertyNames(Schema.String.check(Schema.isPattern(/^[A-Z]/)))),
+          Schema.Record(Schema.String, Schema.Number).check(
+            Schema.isPropertyNames(
+              Schema.String.check(Schema.isPattern(/^[A-Z]/))
+            )
+          ),
           {
             representation: {
               _tag: "Objects",
@@ -259,8 +276,8 @@ describe("fromAST", () => {
               indexSignatures: [
                 {
                   parameter: { _tag: "String", checks: [] },
-                  type: { _tag: "Number", checks: [] }
-                }
+                  type: { _tag: "Number", checks: [] },
+                },
               ],
               checks: [
                 {
@@ -272,27 +289,35 @@ describe("fromAST", () => {
                       checks: [
                         {
                           _tag: "Filter",
-                          meta: { _tag: "isPattern", regExp: new RegExp("^[A-Z]") },
-                          annotations: { expected: "a string matching the RegExp ^[A-Z]" }
-                        }
-                      ]
-                    }
+                          meta: {
+                            _tag: "isPattern",
+                            regExp: new RegExp("^[A-Z]"),
+                          },
+                          annotations: {
+                            expected: "a string matching the RegExp ^[A-Z]",
+                          },
+                        },
+                      ],
+                    },
                   },
-                  annotations: { expected: "an object with property names matching the schema" }
-                }
-              ]
+                  annotations: {
+                    expected:
+                      "an object with property names matching the schema",
+                  },
+                },
+              ],
             },
-            references: {}
+            references: {},
           }
-        )
-      })
-    })
-  })
+        );
+      });
+    });
+  });
 
   describe("Class", () => {
     it("Class", () => {
       class A extends Schema.Class<A>("A")({
-        a: Schema.String
+        a: Schema.String,
       }) {}
       assertFromAST(A, {
         representation: { _tag: "Reference", $ref: "A" },
@@ -304,22 +329,22 @@ describe("fromAST", () => {
                 name: "a",
                 type: {
                   _tag: "String",
-                  checks: []
+                  checks: [],
                 },
                 isOptional: false,
-                isMutable: false
-              }
+                isMutable: false,
+              },
             ],
             indexSignatures: [],
-            checks: []
-          }
-        }
-      })
-    })
+            checks: [],
+          },
+        },
+      });
+    });
 
     it("toType(Class)", () => {
       class A extends Schema.Class<A>("A")({
-        a: Schema.String
+        a: Schema.String,
       }) {}
       assertFromAST(Schema.toType(A), {
         representation: { _tag: "Reference", $ref: "A" },
@@ -327,13 +352,11 @@ describe("fromAST", () => {
           A: {
             _tag: "Declaration",
             annotations: {
-              identifier: "A"
+              identifier: "A",
             },
             checks: [],
-            typeParameters: [
-              { _tag: "Reference", $ref: "A1" }
-            ],
-            encodedSchema: { _tag: "Reference", $ref: "A1" }
+            typeParameters: [{ _tag: "Reference", $ref: "A1" }],
+            encodedSchema: { _tag: "Reference", $ref: "A1" },
           },
           A1: {
             _tag: "Objects",
@@ -342,22 +365,22 @@ describe("fromAST", () => {
                 name: "a",
                 type: {
                   _tag: "String",
-                  checks: []
+                  checks: [],
                 },
                 isOptional: false,
-                isMutable: false
-              }
+                isMutable: false,
+              },
             ],
             indexSignatures: [],
-            checks: []
-          }
-        }
-      })
-    })
+            checks: [],
+          },
+        },
+      });
+    });
 
     it("the type side and the class used together", () => {
       class A extends Schema.Class<A>("A")({
-        a: Schema.String
+        a: Schema.String,
       }) {}
       assertFromAST(Schema.Tuple([Schema.toType(A), A]), {
         representation: {
@@ -365,25 +388,23 @@ describe("fromAST", () => {
           elements: [
             {
               isOptional: false,
-              type: { _tag: "Reference", $ref: "A" }
+              type: { _tag: "Reference", $ref: "A" },
             },
             {
               isOptional: false,
-              type: { _tag: "Reference", $ref: "A1" }
-            }
+              type: { _tag: "Reference", $ref: "A1" },
+            },
           ],
           rest: [],
-          checks: []
+          checks: [],
         },
         references: {
           A: {
             _tag: "Declaration",
             annotations: { identifier: "A" },
             checks: [],
-            typeParameters: [
-              { _tag: "Reference", $ref: "A1" }
-            ],
-            encodedSchema: { _tag: "Reference", $ref: "A1" }
+            typeParameters: [{ _tag: "Reference", $ref: "A1" }],
+            encodedSchema: { _tag: "Reference", $ref: "A1" },
           },
           A1: {
             _tag: "Objects",
@@ -392,54 +413,54 @@ describe("fromAST", () => {
                 name: "a",
                 type: {
                   _tag: "String",
-                  checks: []
+                  checks: [],
                 },
                 isOptional: false,
-                isMutable: false
-              }
+                isMutable: false,
+              },
             ],
             indexSignatures: [],
-            checks: []
-          }
-        }
-      })
-    })
-  })
+            checks: [],
+          },
+        },
+      });
+    });
+  });
 
   describe("reference handling", () => {
     it("using a schema with an identifier twice should point to the identifier as a reference", () => {
-      const S = Schema.String.annotate({ identifier: "id" })
+      const S = Schema.String.annotate({ identifier: "id" });
       assertFromAST(Schema.Tuple([S, S]), {
         representation: {
           _tag: "Arrays",
           elements: [
             {
               isOptional: false,
-              type: { _tag: "Reference", $ref: "id" }
+              type: { _tag: "Reference", $ref: "id" },
             },
             {
               isOptional: false,
-              type: { _tag: "Reference", $ref: "id" }
-            }
+              type: { _tag: "Reference", $ref: "id" },
+            },
           ],
           rest: [],
-          checks: []
+          checks: [],
         },
         references: {
           id: {
             _tag: "String",
             checks: [],
-            annotations: { identifier: "id" }
-          }
-        }
-      })
-    })
+            annotations: { identifier: "id" },
+          },
+        },
+      });
+    });
 
     it("should handle duplicate identifiers on different schemas with different representations", () => {
       assertFromAST(
         Schema.Union([
           Schema.String.annotate({ identifier: "id", description: "a" }),
-          Schema.String.annotate({ identifier: "id", description: "b" })
+          Schema.String.annotate({ identifier: "id", description: "b" }),
         ]),
         {
           representation: {
@@ -447,27 +468,27 @@ describe("fromAST", () => {
             mode: "anyOf",
             types: [
               { _tag: "Reference", $ref: "id" },
-              { _tag: "Reference", $ref: "id1" }
-            ]
+              { _tag: "Reference", $ref: "id1" },
+            ],
           },
           references: {
             id: {
               _tag: "String",
               checks: [],
-              annotations: { identifier: "id", description: "a" }
+              annotations: { identifier: "id", description: "a" },
             },
             id1: {
               _tag: "String",
               checks: [],
-              annotations: { identifier: "id", description: "b" }
-            }
-          }
+              annotations: { identifier: "id", description: "b" },
+            },
+          },
         }
-      )
-    })
+      );
+    });
 
     it("should handle duplicate identifiers on different schemas with the same representation", () => {
-      const X = Schema.String.annotate({ title: "X", identifier: "X" })
+      const X = Schema.String.annotate({ title: "X", identifier: "X" });
       assertFromAST(
         Schema.Struct({
           a: X,
@@ -476,10 +497,14 @@ describe("fromAST", () => {
           d: Schema.optionalKey(Schema.NullOr(X)),
           e: Schema.NullOr(X).pipe(
             Schema.encodeTo(Schema.optionalKey(X), {
-              decode: SchemaGetter.transformOptional(Option.orElseSome(() => null)),
-              encode: SchemaGetter.transformOptional(Option.filter(Predicate.isNotNull))
+              decode: SchemaGetter.transformOptional(
+                Option.orElseSome(() => null)
+              ),
+              encode: SchemaGetter.transformOptional(
+                Option.filter(Predicate.isNotNull)
+              ),
             })
-          )
+          ),
         }),
         {
           representation: {
@@ -489,82 +514,79 @@ describe("fromAST", () => {
                 name: "a",
                 type: { _tag: "Reference", $ref: "X" },
                 isOptional: false,
-                isMutable: false
+                isMutable: false,
               },
               {
                 name: "b",
                 type: {
                   _tag: "Union",
                   mode: "anyOf",
-                  types: [
-                    { _tag: "Reference", $ref: "X" },
-                    { _tag: "Null" }
-                  ]
+                  types: [{ _tag: "Reference", $ref: "X" }, { _tag: "Null" }],
                 },
                 isOptional: false,
-                isMutable: false
+                isMutable: false,
               },
               {
                 name: "c",
                 type: { _tag: "Reference", $ref: "X" },
                 isOptional: true,
-                isMutable: false
+                isMutable: false,
               },
               {
                 name: "d",
                 type: {
                   _tag: "Union",
                   mode: "anyOf",
-                  types: [
-                    { _tag: "Reference", $ref: "X" },
-                    { _tag: "Null" }
-                  ]
+                  types: [{ _tag: "Reference", $ref: "X" }, { _tag: "Null" }],
                 },
                 isOptional: true,
-                isMutable: false
+                isMutable: false,
               },
               {
                 name: "e",
                 type: { _tag: "Reference", $ref: "X" },
                 isOptional: true,
-                isMutable: false
-              }
+                isMutable: false,
+              },
             ],
             indexSignatures: [],
-            checks: []
+            checks: [],
           },
           references: {
             X: {
               _tag: "String",
               checks: [],
-              annotations: { identifier: "X", title: "X" }
-            }
-          }
+              annotations: { identifier: "X", title: "X" },
+            },
+          },
         }
-      )
-    })
+      );
+    });
 
     describe("suspend", () => {
       it("non-recursive", () => {
-        assertFromAST(Schema.suspend(() => Schema.String), {
-          representation: {
-            _tag: "Suspend",
-            checks: [],
-            thunk: {
-              _tag: "String",
-              checks: []
-            }
+        assertFromAST(
+          Schema.suspend(() => Schema.String),
+          {
+            representation: {
+              _tag: "Suspend",
+              checks: [],
+              thunk: {
+                _tag: "String",
+                checks: [],
+              },
+            },
           }
-        })
-      })
+        );
+      });
 
       it("no identifier annotation", () => {
         type A = {
-          readonly a?: A
-        }
+          readonly a?: A;
+        };
         const A = Schema.Struct({
-          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A))
-        })
+          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A)),
+        });
 
         assertFromAST(A, {
           representation: { _tag: "Reference", $ref: "Objects_" },
@@ -577,26 +599,26 @@ describe("fromAST", () => {
                   type: {
                     _tag: "Suspend",
                     checks: [],
-                    thunk: { _tag: "Reference", $ref: "Objects_" }
+                    thunk: { _tag: "Reference", $ref: "Objects_" },
                   },
                   isOptional: true,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
-            }
-          }
-        })
-      })
+              checks: [],
+            },
+          },
+        });
+      });
 
       it("outer identifier annotation", () => {
         type A = {
-          readonly a?: A
-        }
+          readonly a?: A;
+        };
         const A = Schema.Struct({
-          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A))
-        }).annotate({ identifier: "A" }) // outer identifier annotation
+          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A)),
+        }).annotate({ identifier: "A" }); // outer identifier annotation
 
         assertFromAST(A, {
           representation: { _tag: "Reference", $ref: "A" },
@@ -610,26 +632,30 @@ describe("fromAST", () => {
                   type: {
                     _tag: "Suspend",
                     checks: [],
-                    thunk: { _tag: "Reference", $ref: "A" }
+                    thunk: { _tag: "Reference", $ref: "A" },
                   },
                   isOptional: true,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
-            }
-          }
-        })
-      })
+              checks: [],
+            },
+          },
+        });
+      });
 
       it("inner identifier annotation", () => {
         type A = {
-          readonly a?: A
-        }
+          readonly a?: A;
+        };
         const A = Schema.Struct({
-          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A.annotate({ identifier: "A" })))
-        })
+          a: Schema.optionalKey(
+            Schema.suspend(
+              (): Schema.Codec<A> => A.annotate({ identifier: "A" })
+            )
+          ),
+        });
 
         assertFromAST(A, {
           representation: {
@@ -639,11 +665,11 @@ describe("fromAST", () => {
                 name: "a",
                 type: { _tag: "Reference", $ref: "Suspend_" },
                 isOptional: true,
-                isMutable: false
-              }
+                isMutable: false,
+              },
             ],
             indexSignatures: [],
-            checks: []
+            checks: [],
           },
           references: {
             A: {
@@ -654,28 +680,32 @@ describe("fromAST", () => {
                   name: "a",
                   type: { _tag: "Reference", $ref: "Suspend_" },
                   isOptional: true,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
+              checks: [],
             },
             Suspend_: {
               _tag: "Suspend",
               checks: [],
-              thunk: { _tag: "Reference", $ref: "A" }
-            }
-          }
-        })
-      })
+              thunk: { _tag: "Reference", $ref: "A" },
+            },
+          },
+        });
+      });
 
       it("suspend identifier annotation", () => {
         type A = {
-          readonly a?: A
-        }
+          readonly a?: A;
+        };
         const A = Schema.Struct({
-          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A).annotate({ identifier: "A" }))
-        })
+          a: Schema.optionalKey(
+            Schema.suspend((): Schema.Codec<A> => A).annotate({
+              identifier: "A",
+            })
+          ),
+        });
 
         assertFromAST(A, {
           representation: { _tag: "Reference", $ref: "Objects_" },
@@ -684,7 +714,7 @@ describe("fromAST", () => {
               _tag: "Suspend",
               annotations: { identifier: "A" },
               checks: [],
-              thunk: { _tag: "Reference", $ref: "Objects_" }
+              thunk: { _tag: "Reference", $ref: "Objects_" },
             },
             Objects_: {
               _tag: "Objects",
@@ -693,47 +723,47 @@ describe("fromAST", () => {
                   name: "a",
                   type: { _tag: "Reference", $ref: "A" },
                   isOptional: true,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
-            }
-          }
-        })
-      })
+              checks: [],
+            },
+          },
+        });
+      });
 
       it("duplicate identifiers", () => {
         type A = {
-          readonly a?: A
-        }
+          readonly a?: A;
+        };
         const A = Schema.Struct({
-          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A))
-        }).annotate({ identifier: "A" })
+          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A> => A)),
+        }).annotate({ identifier: "A" });
 
         type A1 = {
-          readonly a?: A1
-        }
+          readonly a?: A1;
+        };
         const A1 = Schema.Struct({
-          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A1> => A1))
-        }).annotate({ identifier: "A" })
+          a: Schema.optionalKey(Schema.suspend((): Schema.Codec<A1> => A1)),
+        }).annotate({ identifier: "A" });
 
-        const schema = Schema.Tuple([A, A1])
+        const schema = Schema.Tuple([A, A1]);
         assertFromAST(schema, {
           representation: {
             _tag: "Arrays",
             elements: [
               {
                 isOptional: false,
-                type: { _tag: "Reference", $ref: "A" }
+                type: { _tag: "Reference", $ref: "A" },
               },
               {
                 isOptional: false,
-                type: { _tag: "Reference", $ref: "A1" }
-              }
+                type: { _tag: "Reference", $ref: "A1" },
+              },
             ],
             rest: [],
-            checks: []
+            checks: [],
           },
           references: {
             A: {
@@ -745,14 +775,14 @@ describe("fromAST", () => {
                   type: {
                     _tag: "Suspend",
                     checks: [],
-                    thunk: { _tag: "Reference", $ref: "A" }
+                    thunk: { _tag: "Reference", $ref: "A" },
                   },
                   isOptional: true,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
+              checks: [],
             },
             A1: {
               _tag: "Objects",
@@ -763,24 +793,24 @@ describe("fromAST", () => {
                   type: {
                     _tag: "Suspend",
                     checks: [],
-                    thunk: { _tag: "Reference", $ref: "A1" }
+                    thunk: { _tag: "Reference", $ref: "A1" },
                   },
                   isOptional: true,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
-            }
-          }
-        })
-      })
-    })
+              checks: [],
+            },
+          },
+        });
+      });
+    });
 
     describe("transformation schemas with identifiers", () => {
       it("Class", () => {
         class A extends Schema.Class<A>("A")({
-          a: Schema.String
+          a: Schema.String,
         }) {}
         assertFromAST(Schema.Tuple([A, A]), {
           representation: {
@@ -788,15 +818,15 @@ describe("fromAST", () => {
             elements: [
               {
                 isOptional: false,
-                type: { _tag: "Reference", $ref: "A" }
+                type: { _tag: "Reference", $ref: "A" },
               },
               {
                 isOptional: false,
-                type: { _tag: "Reference", $ref: "A" }
-              }
+                type: { _tag: "Reference", $ref: "A" },
+              },
             ],
             rest: [],
-            checks: []
+            checks: [],
           },
           references: {
             A: {
@@ -806,15 +836,15 @@ describe("fromAST", () => {
                   name: "a",
                   type: { _tag: "String", checks: [] },
                   isOptional: false,
-                  isMutable: false
-                }
+                  isMutable: false,
+                },
               ],
               indexSignatures: [],
-              checks: []
-            }
-          }
-        })
-      })
-    })
-  })
-})
+              checks: [],
+            },
+          },
+        });
+      });
+    });
+  });
+});

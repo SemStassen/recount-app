@@ -1,22 +1,17 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.6.4/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "Effect-TS/effect-smol" }],
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "Effect-TS/effect-smol" }
+  ],
   "commit": false,
   "linked": [],
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "scratchpad",
-    "scripts"
-  ],
+  "ignore": ["scratchpad", "scripts"],
   "privatePackages": false,
-  "fixed": [
-    [
-      "effect",
-      "@effect/*"
-    ]
-  ],
+  "fixed": [["effect", "@effect/*"]],
   "snapshot": {
     "useCalculatedVersion": false,
     "prereleaseTemplate": "{tag}-{commit}"

@@ -30,27 +30,31 @@
  *
  * @since 4.0.0
  */
-import { layerClientProtocol, layerSocketServer } from "@effect/platform-node-shared/NodeClusterSocket"
-import type { ConfigError } from "effect/Config"
-import * as Effect from "effect/Effect"
-import * as FileSystem from "effect/FileSystem"
-import * as Layer from "effect/Layer"
-import * as K8sHttpClient from "effect/unstable/cluster/K8sHttpClient"
-import * as MessageStorage from "effect/unstable/cluster/MessageStorage"
-import * as RunnerHealth from "effect/unstable/cluster/RunnerHealth"
-import * as Runners from "effect/unstable/cluster/Runners"
-import * as RunnerStorage from "effect/unstable/cluster/RunnerStorage"
-import type { Sharding } from "effect/unstable/cluster/Sharding"
-import * as ShardingConfig from "effect/unstable/cluster/ShardingConfig"
-import * as SocketRunner from "effect/unstable/cluster/SocketRunner"
-import * as SqlMessageStorage from "effect/unstable/cluster/SqlMessageStorage"
-import * as SqlRunnerStorage from "effect/unstable/cluster/SqlRunnerStorage"
-import * as RpcSerialization from "effect/unstable/rpc/RpcSerialization"
-import type * as SocketServer from "effect/unstable/socket/SocketServer"
-import type { SqlClient } from "effect/unstable/sql/SqlClient"
-import * as NodeFileSystem from "./NodeFileSystem.ts"
-import * as NodeHttpClient from "./NodeHttpClient.ts"
-import * as Undici from "./Undici.ts"
+import {
+  layerClientProtocol,
+  layerSocketServer,
+} from "@effect/platform-node-shared/NodeClusterSocket";
+import type { ConfigError } from "effect/Config";
+import * as Effect from "effect/Effect";
+import * as FileSystem from "effect/FileSystem";
+import * as Layer from "effect/Layer";
+import * as K8sHttpClient from "effect/unstable/cluster/K8sHttpClient";
+import * as MessageStorage from "effect/unstable/cluster/MessageStorage";
+import * as RunnerHealth from "effect/unstable/cluster/RunnerHealth";
+import * as Runners from "effect/unstable/cluster/Runners";
+import * as RunnerStorage from "effect/unstable/cluster/RunnerStorage";
+import type { Sharding } from "effect/unstable/cluster/Sharding";
+import * as ShardingConfig from "effect/unstable/cluster/ShardingConfig";
+import * as SocketRunner from "effect/unstable/cluster/SocketRunner";
+import * as SqlMessageStorage from "effect/unstable/cluster/SqlMessageStorage";
+import * as SqlRunnerStorage from "effect/unstable/cluster/SqlRunnerStorage";
+import * as RpcSerialization from "effect/unstable/rpc/RpcSerialization";
+import type * as SocketServer from "effect/unstable/socket/SocketServer";
+import type { SqlClient } from "effect/unstable/sql/SqlClient";
+
+import * as NodeFileSystem from "./NodeFileSystem.ts";
+import * as NodeHttpClient from "./NodeHttpClient.ts";
+import * as Undici from "./Undici.ts";
 
 export {
   /**
@@ -68,8 +72,8 @@ export {
    * @category re-exports
    * @since 4.0.0
    */
-  layerSocketServer
-}
+  layerSocketServer,
+};
 
 /**
  * Builds the Node cluster socket sharding layer, configuring RPC
@@ -81,50 +85,63 @@ export {
  */
 export const layer = <
   const ClientOnly extends boolean = false,
-  const Storage extends "local" | "sql" | "byo" = never
->(
-  options?: {
-    readonly serialization?: "msgpack" | "ndjson" | undefined
-    readonly clientOnly?: ClientOnly | undefined
-    readonly storage?: Storage | undefined
-    readonly runnerHealth?: "ping" | "k8s" | undefined
-    readonly runnerHealthK8s?: {
-      readonly namespace?: string | undefined
-      readonly labelSelector?: string | undefined
-    } | undefined
-    readonly shardingConfig?: Partial<ShardingConfig.ShardingConfig["Service"]> | undefined
-  }
-): ClientOnly extends true ? Layer.Layer<
-    Sharding | Runners.Runners | ("byo" extends Storage ? never : MessageStorage.MessageStorage),
-    ConfigError,
-    "local" extends Storage ? never
-      : "byo" extends Storage ? (MessageStorage.MessageStorage | RunnerStorage.RunnerStorage)
-      : SqlClient
-  > :
-  Layer.Layer<
-    Sharding | Runners.Runners | ("byo" extends Storage ? never : MessageStorage.MessageStorage),
-    SocketServer.SocketServerError | ConfigError,
-    "local" extends Storage ? never
-      : "byo" extends Storage ? (MessageStorage.MessageStorage | RunnerStorage.RunnerStorage)
-      : SqlClient
-  > =>
-{
+  const Storage extends "local" | "sql" | "byo" = never,
+>(options?: {
+  readonly serialization?: "msgpack" | "ndjson" | undefined;
+  readonly clientOnly?: ClientOnly | undefined;
+  readonly storage?: Storage | undefined;
+  readonly runnerHealth?: "ping" | "k8s" | undefined;
+  readonly runnerHealthK8s?:
+    | {
+        readonly namespace?: string | undefined;
+        readonly labelSelector?: string | undefined;
+      }
+    | undefined;
+  readonly shardingConfig?:
+    | Partial<ShardingConfig.ShardingConfig["Service"]>
+    | undefined;
+}): ClientOnly extends true
+  ? Layer.Layer<
+      | Sharding
+      | Runners.Runners
+      | ("byo" extends Storage ? never : MessageStorage.MessageStorage),
+      ConfigError,
+      "local" extends Storage
+        ? never
+        : "byo" extends Storage
+          ? MessageStorage.MessageStorage | RunnerStorage.RunnerStorage
+          : SqlClient
+    >
+  : Layer.Layer<
+      | Sharding
+      | Runners.Runners
+      | ("byo" extends Storage ? never : MessageStorage.MessageStorage),
+      SocketServer.SocketServerError | ConfigError,
+      "local" extends Storage
+        ? never
+        : "byo" extends Storage
+          ? MessageStorage.MessageStorage | RunnerStorage.RunnerStorage
+          : SqlClient
+    > => {
   const layer: Layer.Layer<any, any, any> = options?.clientOnly
-    // client only
-    ? Layer.provide(SocketRunner.layerClientOnly, layerClientProtocol)
-    // with server
-    : Layer.provide(SocketRunner.layer, [layerSocketServer, layerClientProtocol])
+    ? // client only
+      Layer.provide(SocketRunner.layerClientOnly, layerClientProtocol)
+    : // with server
+      Layer.provide(SocketRunner.layer, [
+        layerSocketServer,
+        layerClientProtocol,
+      ]);
 
   const runnerHealth: Layer.Layer<any, any, any> = options?.clientOnly
-    ? Layer.empty as any
+    ? (Layer.empty as any)
     : options?.runnerHealth === "k8s"
-    ? RunnerHealth.layerK8s(options.runnerHealthK8s).pipe(
-      Layer.provide(layerK8sHttpClient)
-    )
-    : RunnerHealth.layerPing.pipe(
-      Layer.provide(Runners.layerRpc),
-      Layer.provide(layerClientProtocol)
-    )
+      ? RunnerHealth.layerK8s(options.runnerHealthK8s).pipe(
+          Layer.provide(layerK8sHttpClient)
+        )
+      : RunnerHealth.layerPing.pipe(
+          Layer.provide(Runners.layerRpc),
+          Layer.provide(layerClientProtocol)
+        );
 
   return layer.pipe(
     Layer.provide(runnerHealth),
@@ -132,22 +149,24 @@ export const layer = <
       options?.storage === "local"
         ? MessageStorage.layerNoop
         : options?.storage === "byo"
-        ? Layer.empty
-        : Layer.orDie(SqlMessageStorage.layer)
+          ? Layer.empty
+          : Layer.orDie(SqlMessageStorage.layer)
     ),
     Layer.provide(
       options?.storage === "local"
         ? RunnerStorage.layerMemory
         : options?.storage === "byo"
-        ? Layer.empty
-        : Layer.orDie(SqlRunnerStorage.layer)
+          ? Layer.empty
+          : Layer.orDie(SqlRunnerStorage.layer)
     ),
     Layer.provide(ShardingConfig.layerFromEnv(options?.shardingConfig)),
     Layer.provide(
-      options?.serialization === "ndjson" ? RpcSerialization.layerNdjson : RpcSerialization.layerMsgPack
+      options?.serialization === "ndjson"
+        ? RpcSerialization.layerNdjson
+        : RpcSerialization.layerMsgPack
     )
-  ) as any
-}
+  ) as any;
+};
 
 /**
  * Provides an Undici dispatcher for Kubernetes API calls, using the service
@@ -157,30 +176,30 @@ export const layer = <
  * @category layers
  * @since 4.0.0
  */
-export const layerDispatcherK8s: Layer.Layer<NodeHttpClient.Dispatcher> = Layer.effect(NodeHttpClient.Dispatcher)(
-  Effect.gen(function*() {
-    const fs = yield* FileSystem.FileSystem
-    const caCertOption = yield* fs.readFileString("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt").pipe(
-      Effect.option
-    )
-    if (caCertOption._tag === "Some") {
-      return yield* Effect.acquireRelease(
-        Effect.sync(() =>
-          new Undici.Agent({
-            connect: {
-              ca: caCertOption.value
-            }
-          })
-        ),
-        (agent) => Effect.promise(() => agent.destroy())
-      )
-    }
+export const layerDispatcherK8s: Layer.Layer<NodeHttpClient.Dispatcher> =
+  Layer.effect(NodeHttpClient.Dispatcher)(
+    Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      const caCertOption = yield* fs
+        .readFileString("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+        .pipe(Effect.option);
+      if (caCertOption._tag === "Some") {
+        return yield* Effect.acquireRelease(
+          Effect.sync(
+            () =>
+              new Undici.Agent({
+                connect: {
+                  ca: caCertOption.value,
+                },
+              })
+          ),
+          (agent) => Effect.promise(() => agent.destroy())
+        );
+      }
 
-    return yield* NodeHttpClient.makeDispatcher
-  })
-).pipe(
-  Layer.provide(NodeFileSystem.layer)
-)
+      return yield* NodeHttpClient.makeDispatcher;
+    })
+  ).pipe(Layer.provide(NodeFileSystem.layer));
 
 /**
  * Provides a `K8sHttpClient` backed by the Undici HTTP client and the
@@ -189,8 +208,9 @@ export const layerDispatcherK8s: Layer.Layer<NodeHttpClient.Dispatcher> = Layer.
  * @category layers
  * @since 4.0.0
  */
-export const layerK8sHttpClient: Layer.Layer<K8sHttpClient.K8sHttpClient> = K8sHttpClient.layer.pipe(
-  Layer.provide(Layer.fresh(NodeHttpClient.layerUndiciNoDispatcher)),
-  Layer.provide(layerDispatcherK8s),
-  Layer.provide(NodeFileSystem.layer)
-)
+export const layerK8sHttpClient: Layer.Layer<K8sHttpClient.K8sHttpClient> =
+  K8sHttpClient.layer.pipe(
+    Layer.provide(Layer.fresh(NodeHttpClient.layerUndiciNoDispatcher)),
+    Layer.provide(layerDispatcherK8s),
+    Layer.provide(NodeFileSystem.layer)
+  );

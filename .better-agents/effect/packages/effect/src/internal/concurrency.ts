@@ -1,7 +1,7 @@
-import type { Effect } from "../Effect.ts"
-import { CurrentConcurrency } from "../References.ts"
-import type { Concurrency } from "../Types.ts"
-import * as effect from "./effect.ts"
+import type { Effect } from "../Effect.ts";
+import { CurrentConcurrency } from "../References.ts";
+import type { Concurrency } from "../Types.ts";
+import * as effect from "./effect.ts";
 
 /** @internal */
 export const match = <A, E, R>(
@@ -12,20 +12,21 @@ export const match = <A, E, R>(
 ): Effect<A, E, R> => {
   switch (concurrency) {
     case undefined:
-      return sequential()
+      return sequential();
     case "unbounded":
-      return unbounded()
+      return unbounded();
     case "inherit":
       return effect.flatMap(CurrentConcurrency, (concurrency) =>
         concurrency === "unbounded"
           ? unbounded()
           : concurrency > 1
-          ? bounded(concurrency)
-          : sequential())
+            ? bounded(concurrency)
+            : sequential()
+      );
     default:
-      return concurrency > 1 ? bounded(concurrency) : sequential()
+      return concurrency > 1 ? bounded(concurrency) : sequential();
   }
-}
+};
 
 /** @internal */
 export const matchSimple = <A, E, R>(
@@ -35,18 +36,16 @@ export const matchSimple = <A, E, R>(
 ): Effect<A, E, R> => {
   switch (concurrency) {
     case undefined:
-      return sequential()
+      return sequential();
     case "unbounded":
-      return concurrent()
+      return concurrent();
     case "inherit":
-      return effect.flatMap(
-        CurrentConcurrency,
-        (concurrency) =>
-          concurrency === "unbounded" || concurrency > 1
-            ? concurrent()
-            : sequential()
-      )
+      return effect.flatMap(CurrentConcurrency, (concurrency) =>
+        concurrency === "unbounded" || concurrency > 1
+          ? concurrent()
+          : sequential()
+      );
     default:
-      return concurrency > 1 ? concurrent() : sequential()
+      return concurrency > 1 ? concurrent() : sequential();
   }
-}
+};

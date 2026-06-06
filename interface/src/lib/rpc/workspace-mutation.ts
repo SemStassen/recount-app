@@ -6,15 +6,18 @@ import type { Atom } from "effect/unstable/reactivity";
 
 import { BackendAtomRpcClient } from "./atom-client";
 
-type WorkspaceMutationName = Parameters<typeof BackendAtomRpcClient.mutation>[0];
+type WorkspaceMutationName = Parameters<
+  typeof BackendAtomRpcClient.mutation
+>[0];
 
-type PromiseExit<T> = T extends Atom.AtomResultFn<infer Arg, infer A, infer E>
-  ? (request: Arg) => Promise<Exit.Exit<A, E>>
-  : never;
+type PromiseExit<T> =
+  T extends Atom.AtomResultFn<infer Arg, infer A, infer E>
+    ? (request: Arg) => Promise<Exit.Exit<A, E>>
+    : never;
 
-export function useWorkspaceMutation<
-  const Name extends WorkspaceMutationName,
->(name: Name) {
+export function useWorkspaceMutation<const Name extends WorkspaceMutationName>(
+  name: Name
+) {
   const { workspace } = useRouteContext({ from: "/_app/$workspaceSlug" });
   const mutation = BackendAtomRpcClient.mutation(name);
   const command = useAtomSet(mutation, {

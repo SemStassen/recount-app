@@ -61,20 +61,20 @@
  *
  * @since 4.0.0
  */
-import * as Data from "../../Data.ts"
-import * as Duration from "../../Duration.ts"
-import { dual } from "../../Function.ts"
-import * as Inspectable from "../../Inspectable.ts"
-import * as Option from "../../Option.ts"
-import { type Pipeable, pipeArguments } from "../../Pipeable.ts"
-import * as Predicate from "../../Predicate.ts"
-import * as Record from "../../Record.ts"
-import * as Result from "../../Result.ts"
-import * as Schema from "../../Schema.ts"
-import * as SchemaTransformation from "../../SchemaTransformation.ts"
-import type * as Types from "../../Types.ts"
+import * as Data from "../../Data.ts";
+import * as Duration from "../../Duration.ts";
+import { dual } from "../../Function.ts";
+import * as Inspectable from "../../Inspectable.ts";
+import * as Option from "../../Option.ts";
+import { type Pipeable, pipeArguments } from "../../Pipeable.ts";
+import * as Predicate from "../../Predicate.ts";
+import * as Record from "../../Record.ts";
+import * as Result from "../../Result.ts";
+import * as Schema from "../../Schema.ts";
+import * as SchemaTransformation from "../../SchemaTransformation.ts";
+import type * as Types from "../../Types.ts";
 
-const TypeId = "~effect/http/Cookies"
+const TypeId = "~effect/http/Cookies";
 
 /**
  * Returns `true` when a value is a `Cookies` collection.
@@ -82,7 +82,8 @@ const TypeId = "~effect/http/Cookies"
  * @category refinements
  * @since 4.0.0
  */
-export const isCookies = (u: unknown): u is Cookies => Predicate.hasProperty(u, TypeId)
+export const isCookies = (u: unknown): u is Cookies =>
+  Predicate.hasProperty(u, TypeId);
 
 /**
  * Immutable collection of HTTP cookies keyed by cookie name.
@@ -91,8 +92,8 @@ export const isCookies = (u: unknown): u is Cookies => Predicate.hasProperty(u, 
  * @since 4.0.0
  */
 export interface Cookies extends Pipeable, Inspectable.Inspectable {
-  readonly [TypeId]: typeof TypeId
-  readonly cookies: Record.ReadonlyRecord<string, Cookie>
+  readonly [TypeId]: typeof TypeId;
+  readonly cookies: Record.ReadonlyRecord<string, Cookie>;
 }
 
 /**
@@ -101,7 +102,10 @@ export interface Cookies extends Pipeable, Inspectable.Inspectable {
  * @category schemas
  * @since 4.0.0
  */
-export interface CookiesSchema extends Schema.declare<Cookies, Record.ReadonlyRecord<string, Cookie>> {}
+export interface CookiesSchema extends Schema.declare<
+  Cookies,
+  Record.ReadonlyRecord<string, Cookie>
+> {}
 
 /**
  * Schema for `Cookies` collections.
@@ -114,39 +118,36 @@ export interface CookiesSchema extends Schema.declare<Cookies, Record.ReadonlyRe
  * @category schemas
  * @since 4.0.0
  */
-export const CookiesSchema: CookiesSchema = Schema.declare(
-  isCookies,
-  {
-    typeConstructor: {
-      _tag: "effect/http/Cookies"
-    },
-    generation: {
-      runtime: `Cookies.CookiesSchema`,
-      Type: `Cookies.Cookies`,
-      Encoded: `typeof Cookies.CookiesSchema["Encoded"]`,
-      importDeclaration: `import * as Cookies from "effect/unstable/http/Cookies"`
-    },
-    expected: "Cookies",
-    toCodecJson: () =>
-      Schema.link<Cookies>()(
-        Schema.Array(Schema.String),
-        SchemaTransformation.transform({
-          decode: (input) => fromSetCookie(input),
-          encode: (cookies) => toSetCookieHeaders(cookies)
-        })
-      ),
-    toCodecIso: () =>
-      Schema.link<Cookies>()(
-        Schema.Record(Schema.String, CookieSchema),
-        SchemaTransformation.transform({
-          decode: (input) => fromReadonlyRecord(input),
-          encode: (cookies) => cookies.cookies
-        })
-      )
-  }
-)
+export const CookiesSchema: CookiesSchema = Schema.declare(isCookies, {
+  typeConstructor: {
+    _tag: "effect/http/Cookies",
+  },
+  generation: {
+    runtime: `Cookies.CookiesSchema`,
+    Type: `Cookies.Cookies`,
+    Encoded: `typeof Cookies.CookiesSchema["Encoded"]`,
+    importDeclaration: `import * as Cookies from "effect/unstable/http/Cookies"`,
+  },
+  expected: "Cookies",
+  toCodecJson: () =>
+    Schema.link<Cookies>()(
+      Schema.Array(Schema.String),
+      SchemaTransformation.transform({
+        decode: (input) => fromSetCookie(input),
+        encode: (cookies) => toSetCookieHeaders(cookies),
+      })
+    ),
+  toCodecIso: () =>
+    Schema.link<Cookies>()(
+      Schema.Record(Schema.String, CookieSchema),
+      SchemaTransformation.transform({
+        decode: (input) => fromReadonlyRecord(input),
+        encode: (cookies) => cookies.cookies,
+      })
+    ),
+});
 
-const CookieTypeId = "~effect/http/Cookies/Cookie"
+const CookieTypeId = "~effect/http/Cookies/Cookie";
 
 /**
  * HTTP cookie value with its decoded value, encoded value, and optional cookie
@@ -156,21 +157,23 @@ const CookieTypeId = "~effect/http/Cookies/Cookie"
  * @since 4.0.0
  */
 export interface Cookie extends Inspectable.Inspectable {
-  readonly [CookieTypeId]: typeof CookieTypeId
-  readonly name: string
-  readonly value: string
-  readonly valueEncoded: string
-  readonly options?: {
-    readonly domain?: string | undefined
-    readonly expires?: Date | undefined
-    readonly maxAge?: Duration.Input | undefined
-    readonly path?: string | undefined
-    readonly priority?: "low" | "medium" | "high" | undefined
-    readonly httpOnly?: boolean | undefined
-    readonly secure?: boolean | undefined
-    readonly partitioned?: boolean | undefined
-    readonly sameSite?: "lax" | "strict" | "none" | undefined
-  } | undefined
+  readonly [CookieTypeId]: typeof CookieTypeId;
+  readonly name: string;
+  readonly value: string;
+  readonly valueEncoded: string;
+  readonly options?:
+    | {
+        readonly domain?: string | undefined;
+        readonly expires?: Date | undefined;
+        readonly maxAge?: Duration.Input | undefined;
+        readonly path?: string | undefined;
+        readonly priority?: "low" | "medium" | "high" | undefined;
+        readonly httpOnly?: boolean | undefined;
+        readonly secure?: boolean | undefined;
+        readonly partitioned?: boolean | undefined;
+        readonly sameSite?: "lax" | "strict" | "none" | undefined;
+      }
+    | undefined;
 }
 
 /**
@@ -179,7 +182,8 @@ export interface Cookie extends Inspectable.Inspectable {
  * @category guards
  * @since 4.0.0
  */
-export const isCookie = (u: unknown): u is Cookie => Predicate.hasProperty(u, CookieTypeId)
+export const isCookie = (u: unknown): u is Cookie =>
+  Predicate.hasProperty(u, CookieTypeId);
 
 /**
  * Schema interface for validating `Cookie` values.
@@ -195,22 +199,19 @@ export interface CookieSchema extends Schema.declare<Cookie> {}
  * @category schemas
  * @since 4.0.0
  */
-export const CookieSchema: CookieSchema = Schema.declare(
-  isCookie,
-  {
-    typeConstructor: {
-      _tag: "effect/http/Cookie"
-    },
-    generation: {
-      runtime: `Cookies.CookieSchema`,
-      Type: `Cookies.Cookie`,
-      importDeclaration: `import * as Cookie from "effect/unstable/http/Cookies"`
-    },
-    expected: "Cookie"
-  }
-)
+export const CookieSchema: CookieSchema = Schema.declare(isCookie, {
+  typeConstructor: {
+    _tag: "effect/http/Cookie",
+  },
+  generation: {
+    runtime: `Cookies.CookieSchema`,
+    Type: `Cookies.Cookie`,
+    importDeclaration: `import * as Cookie from "effect/unstable/http/Cookies"`,
+  },
+  expected: "Cookie",
+});
 
-const CookieErrorTypeId = "~effect/http/Cookies/CookieError"
+const CookieErrorTypeId = "~effect/http/Cookies/CookieError";
 
 /**
  * Error reason describing why cookie construction failed, such as invalid name,
@@ -225,8 +226,8 @@ export class CookiesErrorReason extends Data.Error<{
     | "InvalidCookieValue"
     | "InvalidCookieDomain"
     | "InvalidCookiePath"
-    | "CookieInfinityMaxAge"
-  readonly cause?: unknown
+    | "CookieInfinityMaxAge";
+  readonly cause?: unknown;
 }> {}
 
 /**
@@ -240,15 +241,20 @@ export class CookiesErrorReason extends Data.Error<{
  * @since 4.0.0
  */
 export class CookiesError extends Data.TaggedError("CookieError")<{
-  readonly reason: CookiesErrorReason
+  readonly reason: CookiesErrorReason;
 }> {
   /**
    * Creates a cookie error from a reason tag and optional cause.
    *
    * @since 4.0.0
    */
-  static fromReason(reason: CookiesError["reason"]["_tag"], cause?: unknown): CookiesError {
-    return new CookiesError({ reason: new CookiesErrorReason({ _tag: reason, cause }) })
+  static fromReason(
+    reason: CookiesError["reason"]["_tag"],
+    cause?: unknown
+  ): CookiesError {
+    return new CookiesError({
+      reason: new CookiesErrorReason({ _tag: reason, cause }),
+    });
   }
 
   /**
@@ -256,7 +262,7 @@ export class CookiesError extends Data.TaggedError("CookieError")<{
    *
    * @since 4.0.0
    */
-  readonly [CookieErrorTypeId] = CookieErrorTypeId
+  readonly [CookieErrorTypeId] = CookieErrorTypeId;
 
   /**
    * Uses the concrete cookie error reason as the public message.
@@ -264,7 +270,7 @@ export class CookiesError extends Data.TaggedError("CookieError")<{
    * @since 4.0.0
    */
   override get message() {
-    return this.reason._tag
+    return this.reason._tag;
   }
 }
 
@@ -274,13 +280,13 @@ const Proto: Omit<Cookies, "cookies"> = {
   toJSON(this: Cookies) {
     return {
       _id: "effect/Cookies",
-      cookies: Record.map(this.cookies, (cookie) => cookie.toJSON())
-    }
+      cookies: Record.map(this.cookies, (cookie) => cookie.toJSON()),
+    };
   },
   pipe() {
-    return pipeArguments(this, arguments)
-  }
-}
+    return pipeArguments(this, arguments);
+  },
+};
 
 /**
  * Creates a `Cookies` collection from an existing readonly record of cookies keyed by cookie name.
@@ -288,11 +294,13 @@ const Proto: Omit<Cookies, "cookies"> = {
  * @category constructors
  * @since 4.0.0
  */
-export const fromReadonlyRecord = (cookies: Record.ReadonlyRecord<string, Cookie>): Cookies => {
-  const self = Object.create(Proto)
-  self.cookies = cookies
-  return self
-}
+export const fromReadonlyRecord = (
+  cookies: Record.ReadonlyRecord<string, Cookie>
+): Cookies => {
+  const self = Object.create(Proto);
+  self.cookies = cookies;
+  return self;
+};
 
 /**
  * Create a Cookies object from an Iterable
@@ -301,12 +309,12 @@ export const fromReadonlyRecord = (cookies: Record.ReadonlyRecord<string, Cookie
  * @since 4.0.0
  */
 export const fromIterable = (cookies: Iterable<Cookie>): Cookies => {
-  const record: Record<string, Cookie> = {}
+  const record: Record<string, Cookie> = {};
   for (const cookie of cookies) {
-    record[cookie.name] = cookie
+    record[cookie.name] = cookie;
   }
-  return fromReadonlyRecord(record)
-}
+  return fromReadonlyRecord(record);
+};
 
 /**
  * Create a Cookies object from a set of Set-Cookie headers
@@ -315,137 +323,141 @@ export const fromIterable = (cookies: Iterable<Cookie>): Cookies => {
  * @since 4.0.0
  */
 export const fromSetCookie = (headers: Iterable<string> | string): Cookies => {
-  const arrayHeaders = typeof headers === "string" ? [headers] : headers
-  const cookies: Array<Cookie> = []
+  const arrayHeaders = typeof headers === "string" ? [headers] : headers;
+  const cookies: Array<Cookie> = [];
   for (const header of arrayHeaders) {
-    const cookie = parseSetCookie(header.trim())
+    const cookie = parseSetCookie(header.trim());
     if (cookie) {
-      cookies.push(cookie)
+      cookies.push(cookie);
     }
   }
 
-  return fromIterable(cookies)
-}
+  return fromIterable(cookies);
+};
 
 function parseSetCookie(header: string): Cookie | undefined {
-  const parts = header.split(";").map((_) => _.trim()).filter((_) => _ !== "")
+  const parts = header
+    .split(";")
+    .map((_) => _.trim())
+    .filter((_) => _ !== "");
   if (parts.length === 0) {
-    return undefined
+    return undefined;
   }
 
-  const firstEqual = parts[0].indexOf("=")
+  const firstEqual = parts[0].indexOf("=");
   if (firstEqual === -1) {
-    return undefined
+    return undefined;
   }
-  const name = parts[0].slice(0, firstEqual)
+  const name = parts[0].slice(0, firstEqual);
   if (!fieldContentRegExp.test(name)) {
-    return undefined
+    return undefined;
   }
 
-  const valueEncoded = parts[0].slice(firstEqual + 1)
-  const value = tryDecodeURIComponent(valueEncoded)
+  const valueEncoded = parts[0].slice(firstEqual + 1);
+  const value = tryDecodeURIComponent(valueEncoded);
 
   if (parts.length === 1) {
     return Object.assign(Object.create(CookieProto), {
       name,
       value,
-      valueEncoded
-    })
+      valueEncoded,
+    });
   }
 
-  const options: Types.Mutable<Cookie["options"]> = {}
+  const options: Types.Mutable<Cookie["options"]> = {};
 
   for (let i = 1; i < parts.length; i++) {
-    const part = parts[i]
-    const equalIndex = part.indexOf("=")
-    const key = equalIndex === -1 ? part : part.slice(0, equalIndex).trim()
-    const value = equalIndex === -1 ? undefined : part.slice(equalIndex + 1).trim()
+    const part = parts[i];
+    const equalIndex = part.indexOf("=");
+    const key = equalIndex === -1 ? part : part.slice(0, equalIndex).trim();
+    const value =
+      equalIndex === -1 ? undefined : part.slice(equalIndex + 1).trim();
 
     switch (key.toLowerCase()) {
       case "domain": {
         if (value === undefined) {
-          break
+          break;
         }
-        const domain = value.trim().replace(/^\./, "")
+        const domain = value.trim().replace(/^\./, "");
         if (domain) {
-          options.domain = domain
+          options.domain = domain;
         }
-        break
+        break;
       }
       case "expires": {
         if (value === undefined) {
-          break
+          break;
         }
-        const date = new Date(value)
+        const date = new Date(value);
         if (!isNaN(date.getTime())) {
-          options.expires = date
+          options.expires = date;
         }
-        break
+        break;
       }
       case "max-age": {
         if (value === undefined) {
-          break
+          break;
         }
-        const maxAge = parseInt(value, 10)
+        const maxAge = parseInt(value, 10);
         if (!isNaN(maxAge)) {
-          options.maxAge = Duration.seconds(maxAge)
+          options.maxAge = Duration.seconds(maxAge);
         }
-        break
+        break;
       }
       case "path": {
         if (value === undefined) {
-          break
+          break;
         }
         if (value[0] === "/") {
-          options.path = value
+          options.path = value;
         }
-        break
+        break;
       }
       case "priority": {
         if (value === undefined) {
-          break
+          break;
         }
         switch (value.toLowerCase()) {
           case "low":
-            options.priority = "low"
-            break
+            options.priority = "low";
+            break;
           case "medium":
-            options.priority = "medium"
-            break
+            options.priority = "medium";
+            break;
           case "high":
-            options.priority = "high"
-            break
+            options.priority = "high";
+            break;
         }
-        break
+        break;
       }
       case "httponly": {
-        options.httpOnly = true
-        break
+        options.httpOnly = true;
+        break;
       }
       case "secure": {
-        options.secure = true
-        break
+        options.secure = true;
+        break;
       }
       case "partitioned": {
-        options.partitioned = true
-        break
+        options.partitioned = true;
+        break;
       }
       case "samesite": {
         if (value === undefined) {
-          break
+          break;
         }
         switch (value.toLowerCase()) {
           case "lax":
-            options.sameSite = "lax"
-            break
+            options.sameSite = "lax";
+            break;
           case "strict":
-            options.sameSite = "strict"
-            break
+            options.sameSite = "strict";
+            break;
           case "none":
-            options.sameSite = "none"
-            break
+            options.sameSite = "none";
+            break;
         }
-        break
+        break;
       }
     }
   }
@@ -454,8 +466,8 @@ function parseSetCookie(header: string): Cookie | undefined {
     name,
     value,
     valueEncoded,
-    options: Object.keys(options).length > 0 ? options : undefined
-  })
+    options: Object.keys(options).length > 0 ? options : undefined,
+  });
 }
 
 /**
@@ -464,7 +476,7 @@ function parseSetCookie(header: string): Cookie | undefined {
  * @category constructors
  * @since 4.0.0
  */
-export const empty: Cookies = fromIterable([])
+export const empty: Cookies = fromIterable([]);
 
 /**
  * Returns `true` when the `Cookies` collection contains no cookies.
@@ -472,10 +484,11 @@ export const empty: Cookies = fromIterable([])
  * @category refinements
  * @since 4.0.0
  */
-export const isEmpty = (self: Cookies): boolean => Record.isEmptyRecord(self.cookies)
+export const isEmpty = (self: Cookies): boolean =>
+  Record.isEmptyRecord(self.cookies);
 
 // oxlint-disable-next-line no-control-regex
-const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/
+const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
 
 const CookieProto = {
   [CookieTypeId]: CookieTypeId,
@@ -485,10 +498,10 @@ const CookieProto = {
       _id: "effect/Cookies/Cookie",
       name: this.name,
       value: this.value,
-      options: this.options
-    }
-  }
-}
+      options: this.options,
+    };
+  },
+};
 
 /**
  * Creates a cookie, validating the name, encoded value, domain, path, and finite `maxAge`.
@@ -506,33 +519,41 @@ export function makeCookie(
   options?: Cookie["options"] | undefined
 ): Result.Result<Cookie, CookiesError> {
   if (!fieldContentRegExp.test(name)) {
-    return Result.fail(CookiesError.fromReason("InvalidCookieName"))
+    return Result.fail(CookiesError.fromReason("InvalidCookieName"));
   }
-  const encodedValue = encodeURIComponent(value)
+  const encodedValue = encodeURIComponent(value);
   if (encodedValue && !fieldContentRegExp.test(encodedValue)) {
-    return Result.fail(CookiesError.fromReason("InvalidCookieValue"))
+    return Result.fail(CookiesError.fromReason("InvalidCookieValue"));
   }
 
   if (options !== undefined) {
-    if (options.domain !== undefined && !fieldContentRegExp.test(options.domain)) {
-      return Result.fail(CookiesError.fromReason("InvalidCookieDomain"))
+    if (
+      options.domain !== undefined &&
+      !fieldContentRegExp.test(options.domain)
+    ) {
+      return Result.fail(CookiesError.fromReason("InvalidCookieDomain"));
     }
 
     if (options.path !== undefined && !fieldContentRegExp.test(options.path)) {
-      return Result.fail(CookiesError.fromReason("InvalidCookiePath"))
+      return Result.fail(CookiesError.fromReason("InvalidCookiePath"));
     }
 
-    if (options.maxAge !== undefined && !Duration.isFinite(Duration.fromInputUnsafe(options.maxAge))) {
-      return Result.fail(CookiesError.fromReason("CookieInfinityMaxAge"))
+    if (
+      options.maxAge !== undefined &&
+      !Duration.isFinite(Duration.fromInputUnsafe(options.maxAge))
+    ) {
+      return Result.fail(CookiesError.fromReason("CookieInfinityMaxAge"));
     }
   }
 
-  return Result.succeed(Object.assign(Object.create(CookieProto), {
-    name,
-    value,
-    valueEncoded: encodedValue,
-    options
-  }))
+  return Result.succeed(
+    Object.assign(Object.create(CookieProto), {
+      name,
+      value,
+      valueEncoded: encodedValue,
+      options,
+    })
+  );
 }
 
 /**
@@ -545,7 +566,7 @@ export const makeCookieUnsafe = (
   name: string,
   value: string,
   options?: Cookie["options"] | undefined
-): Cookie => Result.getOrThrow(makeCookie(name, value, options))
+): Cookie => Result.getOrThrow(makeCookie(name, value, options));
 
 /**
  * Adds a cookie to a Cookies object
@@ -554,17 +575,11 @@ export const makeCookieUnsafe = (
  * @since 4.0.0
  */
 export const setCookie: {
-  (cookie: Cookie): (self: Cookies) => Cookies
-  (self: Cookies, cookie: Cookie): Cookies
-} = dual(
-  2,
-  (self: Cookies, cookie: Cookie) =>
-    fromReadonlyRecord(Record.set(
-      self.cookies,
-      cookie.name,
-      cookie
-    ))
-)
+  (cookie: Cookie): (self: Cookies) => Cookies;
+  (self: Cookies, cookie: Cookie): Cookies;
+} = dual(2, (self: Cookies, cookie: Cookie) =>
+  fromReadonlyRecord(Record.set(self.cookies, cookie.name, cookie))
+);
 
 /**
  * Adds multiple cookies to a Cookies object
@@ -573,15 +588,15 @@ export const setCookie: {
  * @since 4.0.0
  */
 export const setAllCookie: {
-  (cookies: Iterable<Cookie>): (self: Cookies) => Cookies
-  (self: Cookies, cookies: Iterable<Cookie>): Cookies
+  (cookies: Iterable<Cookie>): (self: Cookies) => Cookies;
+  (self: Cookies, cookies: Iterable<Cookie>): Cookies;
 } = dual(2, (self: Cookies, cookies: Iterable<Cookie>) => {
-  const record = { ...self.cookies }
+  const record = { ...self.cookies };
   for (const cookie of cookies) {
-    record[cookie.name] = cookie
+    record[cookie.name] = cookie;
   }
-  return fromReadonlyRecord(record)
-})
+  return fromReadonlyRecord(record);
+});
 
 /**
  * Combines two Cookies objects, removing duplicates from the first
@@ -590,13 +605,14 @@ export const setAllCookie: {
  * @since 4.0.0
  */
 export const merge: {
-  (that: Cookies): (self: Cookies) => Cookies
-  (self: Cookies, that: Cookies): Cookies
+  (that: Cookies): (self: Cookies) => Cookies;
+  (self: Cookies, that: Cookies): Cookies;
 } = dual(2, (self: Cookies, that: Cookies) =>
   fromReadonlyRecord({
     ...self.cookies,
-    ...that.cookies
-  }))
+    ...that.cookies,
+  })
+);
 
 /**
  * Removes a cookie by name
@@ -605,9 +621,11 @@ export const merge: {
  * @since 4.0.0
  */
 export const remove: {
-  (name: string): (self: Cookies) => Cookies
-  (self: Cookies, name: string): Cookies
-} = dual(2, (self: Cookies, name: string) => fromReadonlyRecord(Record.remove(self.cookies, name)))
+  (name: string): (self: Cookies) => Cookies;
+  (self: Cookies, name: string): Cookies;
+} = dual(2, (self: Cookies, name: string) =>
+  fromReadonlyRecord(Record.remove(self.cookies, name))
+);
 
 /**
  * Gets a cookie from a Cookies object safely.
@@ -616,12 +634,13 @@ export const remove: {
  * @since 4.0.0
  */
 export const get: {
-  (name: string): (self: Cookies) => Option.Option<Cookie>
-  (self: Cookies, name: string): Option.Option<Cookie>
+  (name: string): (self: Cookies) => Option.Option<Cookie>;
+  (self: Cookies, name: string): Option.Option<Cookie>;
 } = dual(
   (args) => isCookies(args[0]),
-  (self: Cookies, name: string): Option.Option<Cookie> => Option.fromUndefinedOr(self.cookies[name])
-)
+  (self: Cookies, name: string): Option.Option<Cookie> =>
+    Option.fromUndefinedOr(self.cookies[name])
+);
 
 /**
  * Gets the decoded value of a cookie by name safely.
@@ -634,12 +653,13 @@ export const get: {
  * @since 4.0.0
  */
 export const getValue: {
-  (name: string): (self: Cookies) => Option.Option<string>
-  (self: Cookies, name: string): Option.Option<string>
+  (name: string): (self: Cookies) => Option.Option<string>;
+  (self: Cookies, name: string): Option.Option<string>;
 } = dual(
   (args) => isCookies(args[0]),
-  (self: Cookies, name: string): Option.Option<string> => Option.map(get(self, name), (cookie) => cookie.value)
-)
+  (self: Cookies, name: string): Option.Option<string> =>
+    Option.map(get(self, name), (cookie) => cookie.value)
+);
 
 /**
  * Creates and adds a cookie safely by name and value.
@@ -656,21 +676,20 @@ export const set: {
     name: string,
     value: string,
     options?: Cookie["options"]
-  ): (self: Cookies) => Result.Result<Cookies, CookiesError>
+  ): (self: Cookies) => Result.Result<Cookies, CookiesError>;
   (
     self: Cookies,
     name: string,
     value: string,
     options?: Cookie["options"]
-  ): Result.Result<Cookies, CookiesError>
+  ): Result.Result<Cookies, CookiesError>;
 } = dual(
   (args) => isCookies(args[0]),
   (self: Cookies, name: string, value: string, options?: Cookie["options"]) =>
-    Result.map(
-      makeCookie(name, value, options),
-      (cookie) => fromReadonlyRecord(Record.set(self.cookies, name, cookie))
+    Result.map(makeCookie(name, value, options), (cookie) =>
+      fromReadonlyRecord(Record.set(self.cookies, name, cookie))
     )
-)
+);
 
 /**
  * Creates and adds a cookie by name and value, throwing if the cookie fields are invalid.
@@ -683,22 +702,20 @@ export const setUnsafe: {
     name: string,
     value: string,
     options?: Cookie["options"]
-  ): (self: Cookies) => Cookies
+  ): (self: Cookies) => Cookies;
   (
     self: Cookies,
     name: string,
     value: string,
     options?: Cookie["options"]
-  ): Cookies
+  ): Cookies;
 } = dual(
   (args) => isCookies(args[0]),
   (self: Cookies, name: string, value: string, options?: Cookie["options"]) =>
-    fromReadonlyRecord(Record.set(
-      self.cookies,
-      name,
-      makeCookieUnsafe(name, value, options)
-    ))
-)
+    fromReadonlyRecord(
+      Record.set(self.cookies, name, makeCookieUnsafe(name, value, options))
+    )
+);
 
 /**
  * Adds an expired cookie safely with an empty value, `Max-Age=0`, and an epoch `Expires` value.
@@ -714,12 +731,12 @@ export const expireCookie: {
   (
     name: string,
     options?: Omit<NonNullable<Cookie["options"]>, "expires" | "maxAge">
-  ): (self: Cookies) => Result.Result<Cookies, CookiesError>
+  ): (self: Cookies) => Result.Result<Cookies, CookiesError>;
   (
     self: Cookies,
     name: string,
     options?: Omit<NonNullable<Cookie["options"]>, "expires" | "maxAge">
-  ): Result.Result<Cookies, CookiesError>
+  ): Result.Result<Cookies, CookiesError>;
 } = dual(
   (args) => isCookies(args[0]),
   (
@@ -730,9 +747,9 @@ export const expireCookie: {
     set(self, name, "", {
       ...options,
       maxAge: 0,
-      expires: new Date(0)
+      expires: new Date(0),
     })
-)
+);
 
 /**
  * Adds an expired cookie to a Cookies object, throwing an error if invalid
@@ -744,12 +761,12 @@ export const expireCookieUnsafe: {
   (
     name: string,
     options?: Omit<NonNullable<Cookie["options"]>, "expires" | "maxAge">
-  ): (self: Cookies) => Cookies
+  ): (self: Cookies) => Cookies;
   (
     self: Cookies,
     name: string,
     options?: Omit<NonNullable<Cookie["options"]>, "expires" | "maxAge">
-  ): Cookies
+  ): Cookies;
 } = dual(
   (args) => isCookies(args[0]),
   (
@@ -760,9 +777,9 @@ export const expireCookieUnsafe: {
     setUnsafe(self, name, "", {
       ...options,
       maxAge: 0,
-      expires: new Date(0)
+      expires: new Date(0),
     })
-)
+);
 
 /**
  * Creates and adds multiple cookies safely from name/value/options tuples.
@@ -776,29 +793,35 @@ export const expireCookieUnsafe: {
  */
 export const setAll: {
   (
-    cookies: Iterable<readonly [name: string, value: string, options?: Cookie["options"]]>
-  ): (self: Cookies) => Result.Result<Cookies, CookiesError>
+    cookies: Iterable<
+      readonly [name: string, value: string, options?: Cookie["options"]]
+    >
+  ): (self: Cookies) => Result.Result<Cookies, CookiesError>;
   (
     self: Cookies,
-    cookies: Iterable<readonly [name: string, value: string, options?: Cookie["options"]]>
-  ): Result.Result<Cookies, CookiesError>
+    cookies: Iterable<
+      readonly [name: string, value: string, options?: Cookie["options"]]
+    >
+  ): Result.Result<Cookies, CookiesError>;
 } = dual(
   2,
   (
     self: Cookies,
-    cookies: Iterable<readonly [name: string, value: string, options?: Cookie["options"]]>
+    cookies: Iterable<
+      readonly [name: string, value: string, options?: Cookie["options"]]
+    >
   ): Result.Result<Cookies, CookiesError> => {
-    const record: Record<string, Cookie> = { ...self.cookies }
+    const record: Record<string, Cookie> = { ...self.cookies };
     for (const [name, value, options] of cookies) {
-      const result = makeCookie(name, value, options)
+      const result = makeCookie(name, value, options);
       if (Result.isFailure(result)) {
-        return result as Result.Failure<never, CookiesError>
+        return result as Result.Failure<never, CookiesError>;
       }
-      record[name] = result.success
+      record[name] = result.success;
     }
-    return Result.succeed(fromReadonlyRecord(record))
+    return Result.succeed(fromReadonlyRecord(record));
   }
-)
+);
 
 /**
  * Adds multiple cookies to a Cookies object, throwing an error if invalid
@@ -807,15 +830,26 @@ export const setAll: {
  * @since 4.0.0
  */
 export const setAllUnsafe: {
-  (cookies: Iterable<readonly [name: string, value: string, options?: Cookie["options"]]>): (self: Cookies) => Cookies
-  (self: Cookies, cookies: Iterable<readonly [name: string, value: string, options?: Cookie["options"]]>): Cookies
+  (
+    cookies: Iterable<
+      readonly [name: string, value: string, options?: Cookie["options"]]
+    >
+  ): (self: Cookies) => Cookies;
+  (
+    self: Cookies,
+    cookies: Iterable<
+      readonly [name: string, value: string, options?: Cookie["options"]]
+    >
+  ): Cookies;
 } = dual(
   2,
   (
     self: Cookies,
-    cookies: Iterable<readonly [name: string, value: string, options?: Cookie["options"]]>
+    cookies: Iterable<
+      readonly [name: string, value: string, options?: Cookie["options"]]
+    >
   ): Cookies => Result.getOrThrow(setAll(self, cookies))
-)
+);
 
 /**
  * Serializes a cookie into a string.
@@ -828,73 +862,73 @@ export const setAllUnsafe: {
  * @since 4.0.0
  */
 export function serializeCookie(self: Cookie): string {
-  let str = self.name + "=" + self.valueEncoded
+  let str = self.name + "=" + self.valueEncoded;
 
   if (self.options === undefined) {
-    return str
+    return str;
   }
-  const options = self.options
+  const options = self.options;
 
   if (options.maxAge !== undefined) {
-    const maxAge = Duration.toSeconds(Duration.fromInputUnsafe(options.maxAge))
-    str += "; Max-Age=" + Math.trunc(maxAge)
+    const maxAge = Duration.toSeconds(Duration.fromInputUnsafe(options.maxAge));
+    str += "; Max-Age=" + Math.trunc(maxAge);
   }
 
   if (options.domain !== undefined) {
-    str += "; Domain=" + options.domain
+    str += "; Domain=" + options.domain;
   }
 
   if (options.path !== undefined) {
-    str += "; Path=" + options.path
+    str += "; Path=" + options.path;
   }
 
   if (options.priority !== undefined) {
     switch (options.priority) {
       case "low":
-        str += "; Priority=Low"
-        break
+        str += "; Priority=Low";
+        break;
       case "medium":
-        str += "; Priority=Medium"
-        break
+        str += "; Priority=Medium";
+        break;
       case "high":
-        str += "; Priority=High"
-        break
+        str += "; Priority=High";
+        break;
     }
   }
 
   if (options.expires !== undefined) {
-    str += "; Expires=" + options.expires.toUTCString()
+    str += "; Expires=" + options.expires.toUTCString();
   }
 
   if (options.httpOnly) {
-    str += "; HttpOnly"
+    str += "; HttpOnly";
   }
 
   if (options.secure) {
-    str += "; Secure"
+    str += "; Secure";
   }
 
   // Draft implementation to support Chrome from 2024-Q1 forward.
   // See https://datatracker.ietf.org/doc/html/draft-cutler-httpbis-partitioned-cookies#section-2.1
   if (options.partitioned) {
-    str += "; Partitioned"
+    str += "; Partitioned";
   }
 
   if (options.sameSite !== undefined) {
     switch (options.sameSite) {
       case "lax":
-        str += "; SameSite=Lax"
-        break
+        str += "; SameSite=Lax";
+        break;
       case "strict":
-        str += "; SameSite=Strict"
-        break
+        str += "; SameSite=Strict";
+        break;
       case "none":
-        str += "; SameSite=None"
-        break
+        str += "; SameSite=None";
+        break;
     }
   }
 
-  return str
+  return str;
 }
 
 /**
@@ -904,7 +938,9 @@ export function serializeCookie(self: Cookie): string {
  * @since 4.0.0
  */
 export const toCookieHeader = (self: Cookies): string =>
-  Object.values(self.cookies).map((cookie) => `${cookie.name}=${cookie.valueEncoded}`).join("; ")
+  Object.values(self.cookies)
+    .map((cookie) => `${cookie.name}=${cookie.valueEncoded}`)
+    .join("; ");
 
 /**
  * Converts a `Cookies` collection to a record of decoded cookie values keyed by cookie name.
@@ -913,14 +949,14 @@ export const toCookieHeader = (self: Cookies): string =>
  * @since 4.0.0
  */
 export const toRecord = (self: Cookies): Record<string, string> => {
-  const record: Record<string, string> = {}
-  const cookies = Object.values(self.cookies)
+  const record: Record<string, string> = {};
+  const cookies = Object.values(self.cookies);
   for (let index = 0; index < cookies.length; index++) {
-    const cookie = cookies[index]
-    record[cookie.name] = cookie.value
+    const cookie = cookies[index];
+    record[cookie.name] = cookie.value;
   }
-  return record
-}
+  return record;
+};
 
 /**
  * Schema for transforming `Cookies` into records of decoded string values keyed
@@ -934,10 +970,15 @@ export const schemaRecord = CookiesSchema.pipe(
     Schema.Record(Schema.String, Schema.String),
     SchemaTransformation.transform({
       decode: toRecord,
-      encode: (self) => fromIterable(Object.entries(self).map(([name, value]) => makeCookieUnsafe(name, value)))
+      encode: (self) =>
+        fromIterable(
+          Object.entries(self).map(([name, value]) =>
+            makeCookieUnsafe(name, value)
+          )
+        ),
     })
   )
-)
+);
 
 /**
  * Serializes a `Cookies` collection into an array of `Set-Cookie` header values.
@@ -945,7 +986,8 @@ export const schemaRecord = CookiesSchema.pipe(
  * @category encoding
  * @since 4.0.0
  */
-export const toSetCookieHeaders = (self: Cookies): Array<string> => Object.values(self.cookies).map(serializeCookie)
+export const toSetCookieHeaders = (self: Cookies): Array<string> =>
+  Object.values(self.cookies).map(serializeCookie);
 
 /**
  * Parses a cookie header into a record of key-value pairs
@@ -958,47 +1000,48 @@ export const toSetCookieHeaders = (self: Cookies): Array<string> => Object.value
  * @since 4.0.0
  */
 export function parseHeader(header: string): Record<string, string> {
-  const result: Record<string, string> = {}
+  const result: Record<string, string> = {};
 
-  const strLen = header.length
-  let pos = 0
-  let terminatorPos = 0
+  const strLen = header.length;
+  let pos = 0;
+  let terminatorPos = 0;
 
   while (true) {
-    if (terminatorPos === strLen) break
-    terminatorPos = header.indexOf(";", pos)
-    if (terminatorPos === -1) terminatorPos = strLen // This is the last pair
+    if (terminatorPos === strLen) break;
+    terminatorPos = header.indexOf(";", pos);
+    if (terminatorPos === -1) terminatorPos = strLen; // This is the last pair
 
-    let eqIdx = header.indexOf("=", pos)
-    if (eqIdx === -1) break // No key-value pairs left
+    let eqIdx = header.indexOf("=", pos);
+    if (eqIdx === -1) break; // No key-value pairs left
     if (eqIdx > terminatorPos) {
       // Malformed key-value pair
-      pos = terminatorPos + 1
-      continue
+      pos = terminatorPos + 1;
+      continue;
     }
 
-    const key = header.substring(pos, eqIdx++).trim()
+    const key = header.substring(pos, eqIdx++).trim();
     if (result[key] === undefined) {
-      const val = header.charCodeAt(eqIdx) === 0x22
-        ? header.substring(eqIdx + 1, terminatorPos - 1).trim()
-        : header.substring(eqIdx, terminatorPos).trim()
+      const val =
+        header.charCodeAt(eqIdx) === 0x22
+          ? header.substring(eqIdx + 1, terminatorPos - 1).trim()
+          : header.substring(eqIdx, terminatorPos).trim();
 
       result[key] = !(val.indexOf("%") === -1)
         ? tryDecodeURIComponent(val)
-        : val
+        : val;
     }
 
-    pos = terminatorPos + 1
+    pos = terminatorPos + 1;
   }
 
-  return result
+  return result;
 }
 
 const tryDecodeURIComponent = (str: string): string => {
   try {
-    return decodeURIComponent(str)
+    return decodeURIComponent(str);
     // oxlint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_) {
-    return str
+    return str;
   }
-}
+};

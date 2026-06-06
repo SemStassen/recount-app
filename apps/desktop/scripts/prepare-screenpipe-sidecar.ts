@@ -1,7 +1,7 @@
 import { chmod, copyFile, mkdir } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
@@ -32,14 +32,14 @@ const binaryExtension = process.platform === "win32" ? ".exe" : "";
 const sourcePath = join(
   dirname(packageJsonPath),
   "bin",
-  `screenpipe${binaryExtension}`,
+  `screenpipe${binaryExtension}`
 );
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const binariesDir = join(scriptDir, "..", "src-tauri", "binaries");
 const destinationPath = join(
   binariesDir,
-  `screenpipe-${targetTriple}${binaryExtension}`,
+  `screenpipe-${targetTriple}${binaryExtension}`
 );
 
 await mkdir(binariesDir, { recursive: true });

@@ -41,29 +41,35 @@
  *
  * @since 2.0.0
  */
-import type { NonEmptyArray, NonEmptyReadonlyArray } from "./Array.ts"
-import type * as Cause from "./Cause.ts"
-import type * as Channel from "./Channel.ts"
-import * as Context from "./Context.ts"
-import * as Deferred from "./Deferred.ts"
-import type { Effect } from "./Effect.ts"
-import type * as Exit from "./Exit.ts"
-import type { LazyArg } from "./Function.ts"
-import { constant, constTrue, constUndefined, dual, identity } from "./Function.ts"
-import * as core from "./internal/core.ts"
-import * as internalEffect from "./internal/effect.ts"
-import type { ErrorWithStackTraceLimit } from "./internal/tracer.ts"
-import * as internalTracer from "./internal/tracer.ts"
-import { type Pipeable, pipeArguments } from "./Pipeable.ts"
-import { hasProperty } from "./Predicate.ts"
-import { CurrentStackFrame } from "./References.ts"
-import * as Scope from "./Scope.ts"
-import type * as Stream from "./Stream.ts"
-import * as Tracer from "./Tracer.ts"
-import type * as Types from "./Types.ts"
-import type * as Unify from "./Unify.ts"
+import type { NonEmptyArray, NonEmptyReadonlyArray } from "./Array.ts";
+import type * as Cause from "./Cause.ts";
+import type * as Channel from "./Channel.ts";
+import * as Context from "./Context.ts";
+import * as Deferred from "./Deferred.ts";
+import type { Effect } from "./Effect.ts";
+import type * as Exit from "./Exit.ts";
+import type { LazyArg } from "./Function.ts";
+import {
+  constant,
+  constTrue,
+  constUndefined,
+  dual,
+  identity,
+} from "./Function.ts";
+import * as core from "./internal/core.ts";
+import * as internalEffect from "./internal/effect.ts";
+import type { ErrorWithStackTraceLimit } from "./internal/tracer.ts";
+import * as internalTracer from "./internal/tracer.ts";
+import { type Pipeable, pipeArguments } from "./Pipeable.ts";
+import { hasProperty } from "./Predicate.ts";
+import { CurrentStackFrame } from "./References.ts";
+import * as Scope from "./Scope.ts";
+import type * as Stream from "./Stream.ts";
+import * as Tracer from "./Tracer.ts";
+import type * as Types from "./Types.ts";
+import type * as Unify from "./Unify.ts";
 
-const TypeId = "~effect/Layer"
+const TypeId = "~effect/Layer";
 
 /**
  * A `Layer` describes how to build one or more services for dependency injection.
@@ -83,12 +89,16 @@ const TypeId = "~effect/Layer"
  * @category models
  * @since 2.0.0
  */
-export interface Layer<in ROut, out E = never, out RIn = never> extends Variance<ROut, E, RIn>, Pipeable {
+export interface Layer<in ROut, out E = never, out RIn = never>
+  extends Variance<ROut, E, RIn>, Pipeable {
   /** @internal */
-  build(memoMap: MemoMap, scope: Scope.Scope): Effect<Context.Context<ROut>, E, RIn>
-  [Unify.typeSymbol]?: unknown
-  [Unify.unifySymbol]?: LayerUnify<this>
-  [Unify.ignoreSymbol]?: LayerUnifyIgnore
+  build(
+    memoMap: MemoMap,
+    scope: Scope.Scope
+  ): Effect<Context.Context<ROut>, E, RIn>;
+  [Unify.typeSymbol]?: unknown;
+  [Unify.unifySymbol]?: LayerUnify<this>;
+  [Unify.ignoreSymbol]?: LayerUnifyIgnore;
 }
 
 /**
@@ -104,12 +114,13 @@ export interface Layer<in ROut, out E = never, out RIn = never> extends Variance
  * @since 4.0.0
  */
 export interface LayerUnify<A extends { [Unify.typeSymbol]?: any }> {
-  Layer?: () => A[Unify.typeSymbol] extends Layer<any, any, any> | infer _ ? Layer<
-      Success<Extract<A[Unify.typeSymbol], Any>>,
-      Error<Extract<A[Unify.typeSymbol], Any>>,
-      Services<Extract<A[Unify.typeSymbol], Any>>
-    >
-    : never
+  Layer?: () => A[Unify.typeSymbol] extends Layer<any, any, any> | (infer _)
+    ? Layer<
+        Success<Extract<A[Unify.typeSymbol], Any>>,
+        Error<Extract<A[Unify.typeSymbol], Any>>,
+        Services<Extract<A[Unify.typeSymbol], Any>>
+      >
+    : never;
 }
 
 /**
@@ -129,10 +140,10 @@ export interface LayerUnifyIgnore {}
  */
 export interface Variance<in ROut, out E, out RIn> {
   readonly [TypeId]: {
-    readonly _ROut: Types.Contravariant<ROut>
-    readonly _E: Types.Covariant<E>
-    readonly _RIn: Types.Covariant<RIn>
-  }
+    readonly _ROut: Types.Contravariant<ROut>;
+    readonly _E: Types.Covariant<E>;
+    readonly _RIn: Types.Covariant<RIn>;
+  };
 }
 /**
  * A type-level constraint for working with any `Layer` type.
@@ -158,10 +169,10 @@ export interface Variance<in ROut, out E, out RIn> {
  */
 export interface Any {
   readonly [TypeId]: {
-    readonly _ROut: any
-    readonly _E: any
-    readonly _RIn: any
-  }
+    readonly _ROut: any;
+    readonly _E: any;
+    readonly _RIn: any;
+  };
 }
 /**
  * Extracts the service requirements (`RIn`) from a `Layer` type.
@@ -178,8 +189,10 @@ export interface Any {
  * @since 4.0.0
  */
 export type Services<T extends Any> = T extends infer L
-  ? L extends Layer<infer _ROut, infer _E, infer _RIn> ? _RIn : never
-  : never
+  ? L extends Layer<infer _ROut, infer _E, infer _RIn>
+    ? _RIn
+    : never
+  : never;
 /**
  * Extracts the error type (`E`) from a `Layer` type.
  *
@@ -194,7 +207,8 @@ export type Services<T extends Any> = T extends infer L
  * @category utility types
  * @since 2.0.0
  */
-export type Error<T extends Any> = T extends Layer<infer _ROut, infer _E, infer _RIn> ? _E : never
+export type Error<T extends Any> =
+  T extends Layer<infer _ROut, infer _E, infer _RIn> ? _E : never;
 /**
  * Extracts the service output type (`ROut`) from a `Layer` type.
  *
@@ -209,9 +223,10 @@ export type Error<T extends Any> = T extends Layer<infer _ROut, infer _E, infer 
  * @category utility types
  * @since 2.0.0
  */
-export type Success<T extends Any> = T extends Layer<infer _ROut, infer _E, infer _RIn> ? _ROut : never
+export type Success<T extends Any> =
+  T extends Layer<infer _ROut, infer _E, infer _RIn> ? _ROut : never;
 
-const MemoMapTypeId = "~effect/Layer/MemoMap"
+const MemoMapTypeId = "~effect/Layer/MemoMap";
 
 /**
  * A `MemoMap` is used to memoize layer construction and ensure sharing of
@@ -249,34 +264,39 @@ const MemoMapTypeId = "~effect/Layer/MemoMap"
  * @since 2.0.0
  */
 export interface MemoMap {
-  readonly [MemoMapTypeId]: typeof MemoMapTypeId
+  readonly [MemoMapTypeId]: typeof MemoMapTypeId;
   readonly get: <RIn, E, ROut>(
     layer: Layer<ROut, E, RIn>,
     scope: Scope.Scope
-  ) => Effect<Context.Context<ROut>, E, RIn> | undefined
+  ) => Effect<Context.Context<ROut>, E, RIn> | undefined;
   readonly getOrElseMemoize: <RIn, E, ROut>(
     layer: Layer<ROut, E, RIn>,
     scope: Scope.Scope,
-    build: (memoMap: MemoMap, scope: Scope.Scope) => Effect<Context.Context<ROut>, E, RIn>
-  ) => Effect<Context.Context<ROut>, E, RIn>
+    build: (
+      memoMap: MemoMap,
+      scope: Scope.Scope
+    ) => Effect<Context.Context<ROut>, E, RIn>
+  ) => Effect<Context.Context<ROut>, E, RIn>;
 }
 
 type MemoMapEntry = {
-  observers: number
-  effect: Effect<Context.Context<any>, any>
-  readonly finalizer: (exit: Exit.Exit<unknown, unknown>) => Effect<void>
-}
+  observers: number;
+  effect: Effect<Context.Context<any>, any>;
+  readonly finalizer: (exit: Exit.Exit<unknown, unknown>) => Effect<void>;
+};
 
 const memoMapReuse = <RIn, E, ROut>(
   entry: MemoMapEntry,
   scope: Scope.Scope
 ): Effect<Context.Context<ROut>, E, RIn> => {
-  entry.observers++
+  entry.observers++;
   return internalEffect.andThen(
-    internalEffect.scopeAddFinalizerExit(scope, (exit) => entry.finalizer(exit)),
+    internalEffect.scopeAddFinalizerExit(scope, (exit) =>
+      entry.finalizer(exit)
+    ),
     entry.effect
-  )
-}
+  );
+};
 
 /**
  * Returns `true` if the specified value is a `Layer`, `false` otherwise.
@@ -302,18 +322,19 @@ const memoMapReuse = <RIn, E, ROut>(
  * @category getters
  * @since 2.0.0
  */
-export const isLayer = (u: unknown): u is Layer<unknown, unknown, unknown> => hasProperty(u, TypeId)
+export const isLayer = (u: unknown): u is Layer<unknown, unknown, unknown> =>
+  hasProperty(u, TypeId);
 
 const LayerProto = {
   [TypeId]: {
     _ROut: identity,
     _E: identity,
-    _RIn: identity
+    _RIn: identity,
   },
   pipe() {
-    return pipeArguments(this, arguments)
-  }
-}
+    return pipeArguments(this, arguments);
+  },
+};
 
 const fromBuildUnsafe = <ROut, E, RIn>(
   build: (
@@ -321,10 +342,10 @@ const fromBuildUnsafe = <ROut, E, RIn>(
     scope: Scope.Scope
   ) => Effect<Context.Context<ROut>, E, RIn>
 ): Layer<ROut, E, RIn> => {
-  const self = Object.create(LayerProto)
-  self.build = build
-  return self
-}
+  const self = Object.create(LayerProto);
+  self.build = build;
+  return self;
+};
 
 /**
  * Constructs a `Layer` from a function that uses a `MemoMap` and `Scope` to
@@ -363,12 +384,13 @@ export const fromBuild = <ROut, E, RIn>(
   ) => Effect<Context.Context<ROut>, E, RIn>
 ): Layer<ROut, E, RIn> =>
   fromBuildUnsafe((memoMap: MemoMap, scope: Scope.Scope) => {
-    const layerScope = Scope.forkUnsafe(scope)
-    return internalEffect.onExit(
-      build(memoMap, layerScope),
-      (exit) => exit._tag === "Failure" ? Scope.close(layerScope, exit) : internalEffect.void
-    )
-  })
+    const layerScope = Scope.forkUnsafe(scope);
+    return internalEffect.onExit(build(memoMap, layerScope), (exit) =>
+      exit._tag === "Failure"
+        ? Scope.close(layerScope, exit)
+        : internalEffect.void
+    );
+  });
 
 /**
  * Constructs a `Layer` from a function that uses a `MemoMap` and `Scope` to
@@ -406,75 +428,83 @@ export const fromBuildMemo = <ROut, E, RIn>(
     scope: Scope.Scope
   ) => Effect<Context.Context<ROut>, E, RIn>
 ): Layer<ROut, E, RIn> => {
-  const self: Layer<ROut, E, RIn> = fromBuild((memoMap, scope) => memoMap.getOrElseMemoize(self, scope, build))
-  return self
-}
+  const self: Layer<ROut, E, RIn> = fromBuild((memoMap, scope) =>
+    memoMap.getOrElseMemoize(self, scope, build)
+  );
+  return self;
+};
 
 const memoMapBuild = <RIn, E, ROut>(
   memoMap: MemoMapImpl,
   layer: Layer<ROut, E, RIn>,
   scope: Scope.Scope,
-  build: (memoMap: MemoMap, scope: Scope.Scope) => Effect<Context.Context<ROut>, E, RIn>
+  build: (
+    memoMap: MemoMap,
+    scope: Scope.Scope
+  ) => Effect<Context.Context<ROut>, E, RIn>
 ): Effect<Context.Context<ROut>, E, RIn> => {
-  const layerScope = Scope.makeUnsafe()
-  const deferred = Deferred.makeUnsafe<Context.Context<ROut>, E>()
+  const layerScope = Scope.makeUnsafe();
+  const deferred = Deferred.makeUnsafe<Context.Context<ROut>, E>();
   const entry: MemoMapEntry = {
     observers: 1,
     effect: Deferred.await(deferred),
     finalizer: (exit: Exit.Exit<unknown, unknown>) =>
       internalEffect.suspend(() => {
-        entry.observers--
+        entry.observers--;
         if (entry.observers === 0) {
-          memoMap.map.delete(layer)
-          return Scope.close(layerScope, exit)
+          memoMap.map.delete(layer);
+          return Scope.close(layerScope, exit);
         }
-        return internalEffect.void
-      })
-  }
-  memoMap.map.set(layer, entry)
+        return internalEffect.void;
+      }),
+  };
+  memoMap.map.set(layer, entry);
   return internalEffect.scopeAddFinalizerExit(scope, entry.finalizer).pipe(
     internalEffect.flatMap(() => build(memoMap, layerScope)),
     internalEffect.onExit((exit) => {
-      entry.effect = exit
-      return Deferred.done(deferred, exit)
+      entry.effect = exit;
+      return Deferred.done(deferred, exit);
     })
-  )
-}
+  );
+};
 
 class MemoMapImpl implements MemoMap {
   get [MemoMapTypeId](): typeof MemoMapTypeId {
-    return MemoMapTypeId
+    return MemoMapTypeId;
   }
 
-  readonly parent: MemoMap | undefined
+  readonly parent: MemoMap | undefined;
 
   constructor(parent?: MemoMap) {
-    this.parent = parent
+    this.parent = parent;
   }
 
-  readonly map = new Map<Layer<any, any, any>, MemoMapEntry>()
+  readonly map = new Map<Layer<any, any, any>, MemoMapEntry>();
 
   get<RIn, E, ROut>(
     layer: Layer<ROut, E, RIn>,
     scope: Scope.Scope
   ): Effect<Context.Context<ROut>, E, RIn> | undefined {
-    const local = this.map.get(layer)
+    const local = this.map.get(layer);
     if (local) {
-      return memoMapReuse(local, scope)
+      return memoMapReuse(local, scope);
     }
-    return this.parent?.get(layer, scope)
+    return this.parent?.get(layer, scope);
   }
 
   getOrElseMemoize<RIn, E, ROut>(
     layer: Layer<ROut, E, RIn>,
     scope: Scope.Scope,
-    build: (memoMap: MemoMap, scope: Scope.Scope) => Effect<Context.Context<ROut>, E, RIn>
+    build: (
+      memoMap: MemoMap,
+      scope: Scope.Scope
+    ) => Effect<Context.Context<ROut>, E, RIn>
   ): Effect<Context.Context<ROut>, E, RIn> {
-    const existing = this.get(layer, scope)
+    const existing = this.get(layer, scope);
     if (existing) {
-      return existing
+      return existing;
     }
-    return memoMapBuild(this, layer, scope, build)
+    return memoMapBuild(this, layer, scope, build);
   }
 }
 
@@ -507,7 +537,7 @@ class MemoMapImpl implements MemoMap {
  * @category memo map
  * @since 4.0.0
  */
-export const makeMemoMapUnsafe = (): MemoMap => new MemoMapImpl()
+export const makeMemoMapUnsafe = (): MemoMap => new MemoMapImpl();
 
 /**
  * Constructs a child `MemoMap` synchronously, allowing it to reuse layers
@@ -526,7 +556,8 @@ export const makeMemoMapUnsafe = (): MemoMap => new MemoMapImpl()
  * @category memo map
  * @since 4.0.0
  */
-export const forkMemoMapUnsafe = (parent: MemoMap): MemoMap => new MemoMapImpl(parent)
+export const forkMemoMapUnsafe = (parent: MemoMap): MemoMap =>
+  new MemoMapImpl(parent);
 
 /**
  * Constructs a `MemoMap` effectfully so it can be used to build additional layers.
@@ -557,7 +588,8 @@ export const forkMemoMapUnsafe = (parent: MemoMap): MemoMap => new MemoMapImpl(p
  * @category memo map
  * @since 2.0.0
  */
-export const makeMemoMap: Effect<MemoMap> = internalEffect.sync(makeMemoMapUnsafe)
+export const makeMemoMap: Effect<MemoMap> =
+  internalEffect.sync(makeMemoMapUnsafe);
 
 /**
  * Constructs a child `MemoMap` effectfully, allowing it to reuse layers already
@@ -576,7 +608,8 @@ export const makeMemoMap: Effect<MemoMap> = internalEffect.sync(makeMemoMapUnsaf
  * @category memo map
  * @since 4.0.0
  */
-export const forkMemoMap = (parent: MemoMap): Effect<MemoMap> => internalEffect.sync(() => forkMemoMapUnsafe(parent))
+export const forkMemoMap = (parent: MemoMap): Effect<MemoMap> =>
+  internalEffect.sync(() => forkMemoMapUnsafe(parent));
 
 /**
  * Context service for the current `MemoMap` used in layer construction.
@@ -596,11 +629,11 @@ export const forkMemoMap = (parent: MemoMap): Effect<MemoMap> => internalEffect.
  * @category models
  * @since 3.13.0
  */
-export class CurrentMemoMap extends Context.Service<CurrentMemoMap, MemoMap>()("effect/Layer/CurrentMemoMap") {
-  static getOrCreate: <Services>(self: Context.Context<Services>) => MemoMap = Context.getOrElse(
-    this,
-    makeMemoMapUnsafe
-  )
+export class CurrentMemoMap extends Context.Service<CurrentMemoMap, MemoMap>()(
+  "effect/Layer/CurrentMemoMap"
+) {
+  static getOrCreate: <Services>(self: Context.Context<Services>) => MemoMap =
+    Context.getOrElse(this, makeMemoMapUnsafe);
 }
 
 /**
@@ -655,22 +688,30 @@ export const buildWithMemoMap: {
   (
     memoMap: MemoMap,
     scope: Scope.Scope
-  ): <RIn, E, ROut>(self: Layer<ROut, E, RIn>) => Effect<Context.Context<ROut>, E, RIn>
+  ): <RIn, E, ROut>(
+    self: Layer<ROut, E, RIn>
+  ) => Effect<Context.Context<ROut>, E, RIn>;
   <RIn, E, ROut>(
     self: Layer<ROut, E, RIn>,
     memoMap: MemoMap,
     scope: Scope.Scope
-  ): Effect<Context.Context<ROut>, E, RIn>
-} = dual(3, <RIn, E, ROut>(
-  self: Layer<ROut, E, RIn>,
-  memoMap: MemoMap,
-  scope: Scope.Scope
-): Effect<Context.Context<ROut>, E, RIn> =>
-  internalEffect.provideService(
-    internalEffect.map(self.build(memoMap, scope), Context.add(CurrentMemoMap, memoMap)),
-    CurrentMemoMap,
-    memoMap
-  ))
+  ): Effect<Context.Context<ROut>, E, RIn>;
+} = dual(
+  3,
+  <RIn, E, ROut>(
+    self: Layer<ROut, E, RIn>,
+    memoMap: MemoMap,
+    scope: Scope.Scope
+  ): Effect<Context.Context<ROut>, E, RIn> =>
+    internalEffect.provideService(
+      internalEffect.map(
+        self.build(memoMap, scope),
+        Context.add(CurrentMemoMap, memoMap)
+      ),
+      CurrentMemoMap,
+      memoMap
+    )
+);
 
 /**
  * Builds a layer into a scoped value.
@@ -712,7 +753,7 @@ export const build = <RIn, E, ROut>(
       CurrentMemoMap.getOrCreate(fiber.context),
       Context.getUnsafe(fiber.context, Scope.Scope)
     )
-  )
+  );
 
 /**
  * Builds a layer using an explicit scope.
@@ -762,19 +803,25 @@ export const build = <RIn, E, ROut>(
  * @since 2.0.0
  */
 export const buildWithScope: {
-  (scope: Scope.Scope): <RIn, E, ROut>(self: Layer<ROut, E, RIn>) => Effect<Context.Context<ROut>, E, RIn>
-  <RIn, E, ROut>(self: Layer<ROut, E, RIn>, scope: Scope.Scope): Effect<Context.Context<ROut>, E, RIn>
-} = dual(2, <RIn, E, ROut>(
-  self: Layer<ROut, E, RIn>,
-  scope: Scope.Scope
-): Effect<Context.Context<ROut>, E, RIn> =>
-  core.withFiber((fiber) =>
-    buildWithMemoMap(
-      self,
-      CurrentMemoMap.getOrCreate(fiber.context),
-      scope
+  (
+    scope: Scope.Scope
+  ): <RIn, E, ROut>(
+    self: Layer<ROut, E, RIn>
+  ) => Effect<Context.Context<ROut>, E, RIn>;
+  <RIn, E, ROut>(
+    self: Layer<ROut, E, RIn>,
+    scope: Scope.Scope
+  ): Effect<Context.Context<ROut>, E, RIn>;
+} = dual(
+  2,
+  <RIn, E, ROut>(
+    self: Layer<ROut, E, RIn>,
+    scope: Scope.Scope
+  ): Effect<Context.Context<ROut>, E, RIn> =>
+    core.withFiber((fiber) =>
+      buildWithMemoMap(self, CurrentMemoMap.getOrCreate(fiber.context), scope)
     )
-  ))
+);
 
 /**
  * Constructs a layer that provides a single service from an already available
@@ -805,14 +852,15 @@ export const buildWithScope: {
  * @since 2.0.0
  */
 export const succeed: {
-  <I, S>(service: Context.Key<I, S>): (resource: S) => Layer<I>
-  <I, S>(service: Context.Key<I, S>, resource: Types.NoInfer<S>): Layer<I>
-} = function() {
+  <I, S>(service: Context.Key<I, S>): (resource: S) => Layer<I>;
+  <I, S>(service: Context.Key<I, S>, resource: Types.NoInfer<S>): Layer<I>;
+} = function () {
   if (arguments.length === 1) {
-    return (resource: any) => succeedContext(Context.make(arguments[0], resource))
+    return (resource: any) =>
+      succeedContext(Context.make(arguments[0], resource));
   }
-  return succeedContext(Context.make(arguments[0], arguments[1]))
-} as any
+  return succeedContext(Context.make(arguments[0], arguments[1]));
+} as any;
 
 /**
  * Constructs a layer that provides all services in an already available
@@ -858,7 +906,7 @@ export const succeed: {
  * @since 2.0.0
  */
 export const succeedContext = <A>(context: Context.Context<A>): Layer<A> =>
-  fromBuildUnsafe(constant(internalEffect.succeed(context)))
+  fromBuildUnsafe(constant(internalEffect.succeed(context)));
 
 /**
  * An empty layer that provides no services, cannot fail, has no requirements,
@@ -885,7 +933,7 @@ export const succeedContext = <A>(context: Context.Context<A>): Layer<A> =>
  * @category constructors
  * @since 2.0.0
  */
-export const empty: Layer<never> = succeedContext(Context.empty())
+export const empty: Layer<never> = succeedContext(Context.empty());
 
 /**
  * Constructs a layer lazily that provides a single service.
@@ -920,14 +968,18 @@ export const empty: Layer<never> = succeedContext(Context.empty())
  * @since 2.0.0
  */
 export const sync: {
-  <I, S>(service: Context.Key<I, S>): (evaluate: LazyArg<S>) => Layer<I>
-  <I, S>(service: Context.Key<I, S>, evaluate: LazyArg<Types.NoInfer<S>>): Layer<I>
-} = function() {
+  <I, S>(service: Context.Key<I, S>): (evaluate: LazyArg<S>) => Layer<I>;
+  <I, S>(
+    service: Context.Key<I, S>,
+    evaluate: LazyArg<Types.NoInfer<S>>
+  ): Layer<I>;
+} = function () {
   if (arguments.length === 1) {
-    return (evaluate: LazyArg<any>) => syncContext(() => Context.make(arguments[0], evaluate()))
+    return (evaluate: LazyArg<any>) =>
+      syncContext(() => Context.make(arguments[0], evaluate()));
   }
-  return syncContext(() => Context.make(arguments[0], arguments[1]()))
-} as any
+  return syncContext(() => Context.make(arguments[0], arguments[1]()));
+} as any;
 
 /**
  * Constructs a layer lazily that provides all services in a `Context`.
@@ -964,8 +1016,9 @@ export const sync: {
  * @category constructors
  * @since 2.0.0
  */
-export const syncContext = <A>(evaluate: LazyArg<Context.Context<A>>): Layer<A> =>
-  fromBuildMemo(constant(internalEffect.sync(evaluate)))
+export const syncContext = <A>(
+  evaluate: LazyArg<Context.Context<A>>
+): Layer<A> => fromBuildMemo(constant(internalEffect.sync(evaluate)));
 
 /**
  * Constructs a layer from an effect that produces a single service.
@@ -1004,25 +1057,27 @@ export const syncContext = <A>(evaluate: LazyArg<Context.Context<A>>): Layer<A> 
  * @since 2.0.0
  */
 export const effect: {
-  <I, S>(service: Context.Key<I, S>): <E, R>(
-    effect: Effect<S, E, R>
-  ) => Layer<I, E, Exclude<R, Scope.Scope>>
+  <I, S>(
+    service: Context.Key<I, S>
+  ): <E, R>(effect: Effect<S, E, R>) => Layer<I, E, Exclude<R, Scope.Scope>>;
   <I, S, E, R>(
     service: Context.Key<I, S>,
     effect: Effect<Types.NoInfer<S>, E, R>
-  ): Layer<I, E, Exclude<R, Scope.Scope>>
-} = function() {
+  ): Layer<I, E, Exclude<R, Scope.Scope>>;
+} = function () {
   if (arguments.length === 1) {
-    return (effect: any) => effectImpl(arguments[0], effect)
+    return (effect: any) => effectImpl(arguments[0], effect);
   }
-  return effectImpl(arguments[0], arguments[1])
-} as any
+  return effectImpl(arguments[0], arguments[1]);
+} as any;
 
 const effectImpl = <I, S, E, R>(
   service: Context.Key<I, S>,
   effect: Effect<S, E, R>
 ): Layer<I, E, Exclude<R, Scope.Scope>> =>
-  effectContext(internalEffect.map(effect, (value) => Context.make(service, value)))
+  effectContext(
+    internalEffect.map(effect, (value) => Context.make(service, value))
+  );
 
 /**
  * Constructs a layer from an effect that produces all services in a `Context`.
@@ -1062,7 +1117,8 @@ const effectImpl = <I, S, E, R>(
  */
 export const effectContext = <A, E, R>(
   effect: Effect<Context.Context<A>, E, R>
-): Layer<A, E, Exclude<R, Scope.Scope>> => fromBuildMemo((_, scope) => Scope.provide(effect, scope))
+): Layer<A, E, Exclude<R, Scope.Scope>> =>
+  fromBuildMemo((_, scope) => Scope.provide(effect, scope));
 
 /**
  * Constructs a layer from an effect, discarding its value and providing no
@@ -1090,8 +1146,10 @@ export const effectContext = <A, E, R>(
  * @category constructors
  * @since 2.0.0
  */
-export const effectDiscard = <X, E, R>(effect: Effect<X, E, R>): Layer<never, E, Exclude<R, Scope.Scope>> =>
-  effectContext(internalEffect.as(effect, Context.empty()))
+export const effectDiscard = <X, E, R>(
+  effect: Effect<X, E, R>
+): Layer<never, E, Exclude<R, Scope.Scope>> =>
+  effectContext(internalEffect.as(effect, Context.empty()));
 
 /**
  * Constructs a layer lazily using the specified factory.
@@ -1120,8 +1178,12 @@ export const effectDiscard = <X, E, R>(effect: Effect<X, E, R>): Layer<never, E,
  * @category constructors
  * @since 2.0.0
  */
-export const suspend = <A, E, R>(evaluate: LazyArg<Layer<A, E, R>>): Layer<A, E, R> =>
-  fromBuildMemo((memoMap, scope) => internalEffect.suspend(() => evaluate().build(memoMap, scope)))
+export const suspend = <A, E, R>(
+  evaluate: LazyArg<Layer<A, E, R>>
+): Layer<A, E, R> =>
+  fromBuildMemo((memoMap, scope) =>
+    internalEffect.suspend(() => evaluate().build(memoMap, scope))
+  );
 
 /**
  * Unwraps a `Layer` from an `Effect`, flattening the nested structure.
@@ -1158,11 +1220,13 @@ export const suspend = <A, E, R>(evaluate: LazyArg<Layer<A, E, R>>): Layer<A, E,
 export const unwrap = <A, E1, R1, E, R>(
   self: Effect<Layer<A, E1, R1>, E, R>
 ): Layer<A, E | E1, R1 | Exclude<R, Scope.Scope>> => {
-  const service = Context.Service<Layer<A, E1, R1>>("effect/Layer/unwrap")
-  return flatMap(effect(service)(self), Context.get(service))
-}
+  const service = Context.Service<Layer<A, E1, R1>>("effect/Layer/unwrap");
+  return flatMap(effect(service)(self), Context.get(service));
+};
 
-const mergeAllEffect = <Layers extends [Layer<never, any, any>, ...Array<Layer<never, any, any>>]>(
+const mergeAllEffect = <
+  Layers extends [Layer<never, any, any>, ...Array<Layer<never, any, any>>],
+>(
   layers: Layers,
   memoMap: MemoMap,
   scope: Scope.Scope
@@ -1171,13 +1235,20 @@ const mergeAllEffect = <Layers extends [Layer<never, any, any>, ...Array<Layer<n
   { [k in keyof Layers]: Error<Layers[k]> }[number],
   { [k in keyof Layers]: Services<Layers[k]> }[number]
 > => {
-  const parentScope = Scope.forkUnsafe(scope, "parallel")
-  return internalEffect.forEach(layers, (layer) => layer.build(memoMap, Scope.forkUnsafe(parentScope, "sequential")), {
-    concurrency: layers.length
-  }).pipe(
-    internalEffect.map((context) => Context.mergeAll(...(context as any)))
-  )
-}
+  const parentScope = Scope.forkUnsafe(scope, "parallel");
+  return internalEffect
+    .forEach(
+      layers,
+      (layer) =>
+        layer.build(memoMap, Scope.forkUnsafe(parentScope, "sequential")),
+      {
+        concurrency: layers.length,
+      }
+    )
+    .pipe(
+      internalEffect.map((context) => Context.mergeAll(...(context as any)))
+    );
+};
 
 /**
  * Combines all the provided layers concurrently, creating a new layer with
@@ -1223,13 +1294,15 @@ const mergeAllEffect = <Layers extends [Layer<never, any, any>, ...Array<Layer<n
  * @category zipping
  * @since 2.0.0
  */
-export const mergeAll = <Layers extends [Layer<never, any, any>, ...Array<Layer<never, any, any>>]>(
+export const mergeAll = <
+  Layers extends [Layer<never, any, any>, ...Array<Layer<never, any, any>>],
+>(
   ...layers: Layers
 ): Layer<
   Success<Layers[number]>,
   Error<Layers[number]>,
   Services<Layers[number]>
-> => fromBuild((memoMap, scope) => mergeAllEffect(layers, memoMap, scope))
+> => fromBuild((memoMap, scope) => mergeAllEffect(layers, memoMap, scope));
 
 /**
  * Merges this layer with another layer concurrently, producing a new layer with
@@ -1277,7 +1350,9 @@ export const mergeAll = <Layers extends [Layer<never, any, any>, ...Array<Layer<
 export const merge: {
   <RIn, E, ROut>(
     that: Layer<ROut, E, RIn>
-  ): <RIn2, E2, ROut2>(self: Layer<ROut2, E2, RIn2>) => Layer<ROut | ROut2, E | E2, RIn | RIn2>
+  ): <RIn2, E2, ROut2>(
+    self: Layer<ROut2, E2, RIn2>
+  ) => Layer<ROut | ROut2, E | E2, RIn | RIn2>;
   <const Layers extends [Any, ...Array<Any>]>(
     that: Layers
   ): <A, E, R>(
@@ -1285,26 +1360,27 @@ export const merge: {
   ) => Layer<
     A | Success<Layers[number]>,
     E | Error<Layers[number]>,
-    | Services<Layers[number]>
-    | R
-  >
+    Services<Layers[number]> | R
+  >;
   <RIn2, E2, ROut2, RIn, E, ROut>(
     self: Layer<ROut2, E2, RIn2>,
     that: Layer<ROut, E, RIn>
-  ): Layer<ROut | ROut2, E | E2, RIn | RIn2>
+  ): Layer<ROut | ROut2, E | E2, RIn | RIn2>;
   <A, E, R, const Layers extends [Any, ...Array<Any>]>(
     self: Layer<A, E, R>,
     that: Layers
   ): Layer<
     A | Success<Layers[number]>,
     E | Error<Layers[number]>,
-    | Services<Layers[number]>
-    | R
-  >
-} = dual(2, (
-  self: Layer<any, any, any>,
-  that: Layer<any, any, any> | ReadonlyArray<Layer<any, any, any>>
-) => mergeAll(self, ...(Array.isArray(that) ? that : [that])))
+    Services<Layers[number]> | R
+  >;
+} = dual(
+  2,
+  (
+    self: Layer<any, any, any>,
+    that: Layer<any, any, any> | ReadonlyArray<Layer<any, any, any>>
+  ) => mergeAll(self, ...(Array.isArray(that) ? that : [that]))
+);
 
 const provideWith = (
   self: Layer<any, any, any>,
@@ -1317,7 +1393,11 @@ const provideWith = (
   fromBuild((memoMap, scope) =>
     internalEffect.flatMap(
       Array.isArray(that)
-        ? mergeAllEffect(that as NonEmptyArray<Layer<any, any, any>>, memoMap, scope)
+        ? mergeAllEffect(
+            that as NonEmptyArray<Layer<any, any, any>>,
+            memoMap,
+            scope
+          )
         : (that as Layer<any, any, any>).build(memoMap, scope),
       (context) =>
         self.build(memoMap, scope).pipe(
@@ -1325,7 +1405,7 @@ const provideWith = (
           internalEffect.map((merged) => f(merged, context))
         )
     )
-  )
+  );
 
 /**
  * Feeds the output services of the dependency layer into the requirements of
@@ -1407,7 +1487,9 @@ const provideWith = (
 export const provide: {
   <RIn, E, ROut>(
     that: Layer<ROut, E, RIn>
-  ): <RIn2, E2, ROut2>(self: Layer<ROut2, E2, RIn2>) => Layer<ROut2, E | E2, RIn | Exclude<RIn2, ROut>>
+  ): <RIn2, E2, ROut2>(
+    self: Layer<ROut2, E2, RIn2>
+  ) => Layer<ROut2, E | E2, RIn | Exclude<RIn2, ROut>>;
   <const Layers extends [Any, ...Array<Any>]>(
     that: Layers
   ): <A, E, R>(
@@ -1415,26 +1497,27 @@ export const provide: {
   ) => Layer<
     A,
     E | Error<Layers[number]>,
-    | Services<Layers[number]>
-    | Exclude<R, Success<Layers[number]>>
-  >
+    Services<Layers[number]> | Exclude<R, Success<Layers[number]>>
+  >;
   <RIn2, E2, ROut2, RIn, E, ROut>(
     self: Layer<ROut2, E2, RIn2>,
     that: Layer<ROut, E, RIn>
-  ): Layer<ROut2, E | E2, RIn | Exclude<RIn2, ROut>>
+  ): Layer<ROut2, E | E2, RIn | Exclude<RIn2, ROut>>;
   <A, E, R, const Layers extends [Any, ...Array<Any>]>(
     self: Layer<A, E, R>,
     that: Layers
   ): Layer<
     A,
     E | Error<Layers[number]>,
-    | Services<Layers[number]>
-    | Exclude<R, Success<Layers[number]>>
-  >
-} = dual(2, (
-  self: Layer<any, any, any>,
-  that: Layer<any, any, any> | ReadonlyArray<Layer<any, any, any>>
-) => provideWith(self, that, identity))
+    Services<Layers[number]> | Exclude<R, Success<Layers[number]>>
+  >;
+} = dual(
+  2,
+  (
+    self: Layer<any, any, any>,
+    that: Layer<any, any, any> | ReadonlyArray<Layer<any, any, any>>
+  ) => provideWith(self, that, identity)
+);
 
 /**
  * Feeds the output services of the dependency layer into the requirements of
@@ -1522,7 +1605,9 @@ export const provide: {
 export const provideMerge: {
   <RIn, E, ROut>(
     that: Layer<ROut, E, RIn>
-  ): <RIn2, E2, ROut2>(self: Layer<ROut2, E2, RIn2>) => Layer<ROut | ROut2, E | E2, RIn | Exclude<RIn2, ROut>>
+  ): <RIn2, E2, ROut2>(
+    self: Layer<ROut2, E2, RIn2>
+  ) => Layer<ROut | ROut2, E | E2, RIn | Exclude<RIn2, ROut>>;
   <const Layers extends [Any, ...Array<Any>]>(
     that: Layers
   ): <A, E, R>(
@@ -1530,31 +1615,27 @@ export const provideMerge: {
   ) => Layer<
     A | Success<Layers[number]>,
     E | Error<Layers[number]>,
-    | Services<Layers[number]>
-    | Exclude<R, Success<Layers[number]>>
-  >
+    Services<Layers[number]> | Exclude<R, Success<Layers[number]>>
+  >;
   <RIn2, E2, ROut2, RIn, E, ROut>(
     self: Layer<ROut2, E2, RIn2>,
     that: Layer<ROut, E, RIn>
-  ): Layer<ROut | ROut2, E | E2, RIn | Exclude<RIn2, ROut>>
+  ): Layer<ROut | ROut2, E | E2, RIn | Exclude<RIn2, ROut>>;
   <A, E, R, const Layers extends [Any, ...Array<Any>]>(
     self: Layer<A, E, R>,
     that: Layers
   ): Layer<
     A | Success<Layers[number]>,
     E | Error<Layers[number]>,
-    | Services<Layers[number]>
-    | Exclude<R, Success<Layers[number]>>
-  >
-} = dual(2, (
-  self: Layer<any, any, any>,
-  that: Layer<any, any, any> | ReadonlyArray<Layer<any, any, any>>
-) =>
-  provideWith(
-    self,
-    that,
-    (self, that) => Context.merge(that, self)
-  ))
+    Services<Layers[number]> | Exclude<R, Success<Layers[number]>>
+  >;
+} = dual(
+  2,
+  (
+    self: Layer<any, any, any>,
+    that: Layer<any, any, any> | ReadonlyArray<Layer<any, any, any>>
+  ) => provideWith(self, that, (self, that) => Context.merge(that, self))
+);
 
 /**
  * Constructs a layer dynamically based on the output of this layer.
@@ -1630,21 +1711,23 @@ export const provideMerge: {
 export const flatMap: {
   <A, A2, E2, R2>(
     f: (context: Context.Context<A>) => Layer<A2, E2, R2>
-  ): <E, R>(self: Layer<A, E, R>) => Layer<A2, E2 | E, R2 | R>
+  ): <E, R>(self: Layer<A, E, R>) => Layer<A2, E2 | E, R2 | R>;
   <A, E, R, A2, E2, R2>(
     self: Layer<A, E, R>,
     f: (context: Context.Context<A>) => Layer<A2, E2, R2>
-  ): Layer<A2, E | E2, R | R2>
-} = dual(2, <A, E, R, A2, E2, R2>(
-  self: Layer<A, E, R>,
-  f: (context: Context.Context<A>) => Layer<A2, E2, R2>
-): Layer<A2, E | E2, R | R2> =>
-  fromBuild((memoMap, scope) =>
-    internalEffect.flatMap(
-      self.build(memoMap, scope),
-      (context) => f(context).build(memoMap, scope)
+  ): Layer<A2, E | E2, R | R2>;
+} = dual(
+  2,
+  <A, E, R, A2, E2, R2>(
+    self: Layer<A, E, R>,
+    f: (context: Context.Context<A>) => Layer<A2, E2, R2>
+  ): Layer<A2, E | E2, R | R2> =>
+    fromBuild((memoMap, scope) =>
+      internalEffect.flatMap(self.build(memoMap, scope), (context) =>
+        f(context).build(memoMap, scope)
+      )
     )
-  ))
+);
 
 /**
  * Performs the specified effect if this layer succeeds.
@@ -1669,21 +1752,28 @@ export const flatMap: {
 export const tap: {
   <ROut, XR extends ROut, RIn2, E2, X>(
     f: (context: Context.Context<XR>) => Effect<X, E2, RIn2>
-  ): <RIn, E>(self: Layer<ROut, E, RIn>) => Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>
+  ): <RIn, E>(
+    self: Layer<ROut, E, RIn>
+  ) => Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>;
   <RIn, E, ROut, XR extends ROut, RIn2, E2, X>(
     self: Layer<ROut, E, RIn>,
     f: (context: Context.Context<XR>) => Effect<X, E2, RIn2>
-  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>
-} = dual(2, <RIn, E, ROut, XR extends ROut, RIn2, E2, X>(
-  self: Layer<ROut, E, RIn>,
-  f: (context: Context.Context<XR>) => Effect<X, E2, RIn2>
-): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>> =>
-  fromBuild((memoMap, scope) =>
-    internalEffect.flatMap(
-      self.build(memoMap, scope),
-      (context) => Scope.provide(internalEffect.as(f(context as Context.Context<XR>), context), scope)
+  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>;
+} = dual(
+  2,
+  <RIn, E, ROut, XR extends ROut, RIn2, E2, X>(
+    self: Layer<ROut, E, RIn>,
+    f: (context: Context.Context<XR>) => Effect<X, E2, RIn2>
+  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>> =>
+    fromBuild((memoMap, scope) =>
+      internalEffect.flatMap(self.build(memoMap, scope), (context) =>
+        Scope.provide(
+          internalEffect.as(f(context as Context.Context<XR>), context),
+          scope
+        )
+      )
     )
-  ))
+);
 
 /**
  * Performs the specified effect if this layer fails.
@@ -1708,21 +1798,28 @@ export const tap: {
 export const tapError: {
   <E, XE extends E, RIn2, E2, X>(
     f: (e: XE) => Effect<X, E2, RIn2>
-  ): <RIn, ROut>(self: Layer<ROut, E, RIn>) => Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>
+  ): <RIn, ROut>(
+    self: Layer<ROut, E, RIn>
+  ) => Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>;
   <RIn, E, XE extends E, ROut, RIn2, E2, X>(
     self: Layer<ROut, E, RIn>,
     f: (e: XE) => Effect<X, E2, RIn2>
-  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>
-} = dual(2, <RIn, E, XE extends E, ROut, RIn2, E2, X>(
-  self: Layer<ROut, E, RIn>,
-  f: (e: XE) => Effect<X, E2, RIn2>
-): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>> =>
-  fromBuild((memoMap, scope) =>
-    internalEffect.catch_(
-      self.build(memoMap, scope),
-      (error) => Scope.provide(internalEffect.andThen(f(error as XE), internalEffect.fail(error)), scope)
+  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>;
+} = dual(
+  2,
+  <RIn, E, XE extends E, ROut, RIn2, E2, X>(
+    self: Layer<ROut, E, RIn>,
+    f: (e: XE) => Effect<X, E2, RIn2>
+  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>> =>
+    fromBuild((memoMap, scope) =>
+      internalEffect.catch_(self.build(memoMap, scope), (error) =>
+        Scope.provide(
+          internalEffect.andThen(f(error as XE), internalEffect.fail(error)),
+          scope
+        )
+      )
     )
-  ))
+);
 
 /**
  * Performs the specified effect when this layer fails with any cause.
@@ -1748,22 +1845,31 @@ export const tapError: {
 export const tapCause: {
   <E, XE extends E, RIn2, E2, X>(
     f: (cause: Cause.Cause<XE>) => Effect<X, E2, RIn2>
-  ): <RIn, ROut>(self: Layer<ROut, E, RIn>) => Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>
+  ): <RIn, ROut>(
+    self: Layer<ROut, E, RIn>
+  ) => Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>;
   <RIn, E, XE extends E, ROut, RIn2, E2, X>(
     self: Layer<ROut, E, RIn>,
     f: (cause: Cause.Cause<XE>) => Effect<X, E2, RIn2>
-  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>
-} = dual(2, <RIn, E, XE extends E, ROut, RIn2, E2, X>(
-  self: Layer<ROut, E, RIn>,
-  f: (cause: Cause.Cause<XE>) => Effect<X, E2, RIn2>
-): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>> =>
-  fromBuild((memoMap, scope) =>
-    internalEffect.catchCause(
-      self.build(memoMap, scope),
-      (cause) =>
-        Scope.provide(internalEffect.andThen(f(cause as Cause.Cause<XE>), internalEffect.failCause(cause)), scope)
+  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>>;
+} = dual(
+  2,
+  <RIn, E, XE extends E, ROut, RIn2, E2, X>(
+    self: Layer<ROut, E, RIn>,
+    f: (cause: Cause.Cause<XE>) => Effect<X, E2, RIn2>
+  ): Layer<ROut, E | E2, RIn | Exclude<RIn2, Scope.Scope>> =>
+    fromBuild((memoMap, scope) =>
+      internalEffect.catchCause(self.build(memoMap, scope), (cause) =>
+        Scope.provide(
+          internalEffect.andThen(
+            f(cause as Cause.Cause<XE>),
+            internalEffect.failCause(cause)
+          ),
+          scope
+        )
+      )
     )
-  ))
+);
 
 /**
  * Converts layer construction failures into defects, removing them from the
@@ -1812,26 +1918,33 @@ export const tapCause: {
  * @since 2.0.0
  */
 export const orDie = <A, E, R>(self: Layer<A, E, R>): Layer<A, never, R> =>
-  fromBuildUnsafe((memoMap, scope) => internalEffect.orDie(self.build(memoMap, scope)))
+  fromBuildUnsafe((memoMap, scope) =>
+    internalEffect.orDie(self.build(memoMap, scope))
+  );
 
 const catch_: {
   <E, RIn2, E2, ROut2>(
     onError: (error: E) => Layer<ROut2, E2, RIn2>
-  ): <RIn, ROut>(self: Layer<ROut, E, RIn>) => Layer<ROut & ROut2, E2, RIn2 | RIn>
+  ): <RIn, ROut>(
+    self: Layer<ROut, E, RIn>
+  ) => Layer<ROut & ROut2, E2, RIn2 | RIn>;
   <RIn, E, ROut, RIn2, E2, ROut2>(
     self: Layer<ROut, E, RIn>,
     onError: (error: E) => Layer<ROut2, E2, RIn2>
-  ): Layer<ROut & ROut2, E2, RIn | RIn2>
-} = dual(2, <RIn, E, ROut, RIn2, E2, ROut2>(
-  self: Layer<ROut, E, RIn>,
-  onError: (error: E) => Layer<ROut2, E2, RIn2>
-): Layer<ROut & ROut2, E2, RIn | RIn2> =>
-  fromBuildUnsafe((memoMap, scope) =>
-    internalEffect.catch_(
-      self.build(memoMap, scope),
-      (e) => onError(e).build(memoMap, scope)
-    ) as any
-  ))
+  ): Layer<ROut & ROut2, E2, RIn | RIn2>;
+} = dual(
+  2,
+  <RIn, E, ROut, RIn2, E2, ROut2>(
+    self: Layer<ROut, E, RIn>,
+    onError: (error: E) => Layer<ROut2, E2, RIn2>
+  ): Layer<ROut & ROut2, E2, RIn | RIn2> =>
+    fromBuildUnsafe(
+      (memoMap, scope) =>
+        internalEffect.catch_(self.build(memoMap, scope), (e) =>
+          onError(e).build(memoMap, scope)
+        ) as any
+    )
+);
 
 export {
   /**
@@ -1848,8 +1961,8 @@ export {
    * @category error handling
    * @since 4.0.0
    */
-  catch_ as catch
-}
+  catch_ as catch,
+};
 
 /**
  * Recovers from specific tagged errors.
@@ -1884,18 +1997,31 @@ export {
  * @since 4.0.0
  */
 export const catchTag: {
-  <const K extends Types.Tags<E> | NonEmptyReadonlyArray<Types.Tags<E>>, E, RIn2, E2, ROut2>(
+  <
+    const K extends Types.Tags<E> | NonEmptyReadonlyArray<Types.Tags<E>>,
+    E,
+    RIn2,
+    E2,
+    ROut2,
+  >(
     k: K,
     f: (
-      e: Types.ExtractTag<Types.NoInfer<E>, K extends NonEmptyReadonlyArray<string> ? K[number] : K>
+      e: Types.ExtractTag<
+        Types.NoInfer<E>,
+        K extends NonEmptyReadonlyArray<string> ? K[number] : K
+      >
     ) => Layer<ROut2, E2, RIn2>
   ): <RIn, ROut>(
     self: Layer<ROut, E, RIn>
   ) => Layer<
     ROut & ROut2,
-    E2 | Types.ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>,
+    | E2
+    | Types.ExcludeTag<
+        E,
+        K extends NonEmptyReadonlyArray<string> ? K[number] : K
+      >,
     RIn2 | RIn
-  >
+  >;
   <
     RIn,
     E,
@@ -1903,36 +2029,60 @@ export const catchTag: {
     const K extends Types.Tags<E> | NonEmptyReadonlyArray<Types.Tags<E>>,
     RIn2,
     E2,
-    ROut2
+    ROut2,
   >(
     self: Layer<ROut, E, RIn>,
     k: K,
-    f: (e: Types.ExtractTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>) => Layer<ROut2, E2, RIn2>
+    f: (
+      e: Types.ExtractTag<
+        E,
+        K extends NonEmptyReadonlyArray<string> ? K[number] : K
+      >
+    ) => Layer<ROut2, E2, RIn2>
   ): Layer<
     ROut & ROut2,
-    E2 | Types.ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>,
+    | E2
+    | Types.ExcludeTag<
+        E,
+        K extends NonEmptyReadonlyArray<string> ? K[number] : K
+      >,
     RIn | RIn2
-  >
-} = dual(3, <
-  RIn,
-  E,
-  ROut,
-  const K extends Types.Tags<E> | NonEmptyReadonlyArray<Types.Tags<E>>,
-  RIn2,
-  E2,
-  ROut2
->(
-  self: Layer<ROut, E, RIn>,
-  k: K,
-  f: (e: Types.ExtractTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>) => Layer<ROut2, E2, RIn2>
-): Layer<ROut & ROut2, E2 | Types.ExcludeTag<E, K extends NonEmptyReadonlyArray<string> ? K[number] : K>, RIn | RIn2> =>
-  fromBuildUnsafe((memoMap, scope) =>
-    internalEffect.catchTag(
-      self.build(memoMap, scope),
-      k,
-      (error) => f(error).build(memoMap, scope)
-    ) as any
-  ))
+  >;
+} = dual(
+  3,
+  <
+    RIn,
+    E,
+    ROut,
+    const K extends Types.Tags<E> | NonEmptyReadonlyArray<Types.Tags<E>>,
+    RIn2,
+    E2,
+    ROut2,
+  >(
+    self: Layer<ROut, E, RIn>,
+    k: K,
+    f: (
+      e: Types.ExtractTag<
+        E,
+        K extends NonEmptyReadonlyArray<string> ? K[number] : K
+      >
+    ) => Layer<ROut2, E2, RIn2>
+  ): Layer<
+    ROut & ROut2,
+    | E2
+    | Types.ExcludeTag<
+        E,
+        K extends NonEmptyReadonlyArray<string> ? K[number] : K
+      >,
+    RIn | RIn2
+  > =>
+    fromBuildUnsafe(
+      (memoMap, scope) =>
+        internalEffect.catchTag(self.build(memoMap, scope), k, (error) =>
+          f(error).build(memoMap, scope)
+        ) as any
+    )
+);
 
 /**
  * Recovers from any failure cause by switching to another layer.
@@ -1994,21 +2144,26 @@ export const catchTag: {
 export const catchCause: {
   <E, RIn2, E2, ROut2>(
     onError: (cause: Cause.Cause<E>) => Layer<ROut2, E2, RIn2>
-  ): <RIn, ROut>(self: Layer<ROut, E, RIn>) => Layer<ROut & ROut2, E2, RIn2 | RIn>
+  ): <RIn, ROut>(
+    self: Layer<ROut, E, RIn>
+  ) => Layer<ROut & ROut2, E2, RIn2 | RIn>;
   <RIn, E, ROut, RIn2, E2, ROut22>(
     self: Layer<ROut, E, RIn>,
     onError: (cause: Cause.Cause<E>) => Layer<ROut22, E2, RIn2>
-  ): Layer<ROut & ROut22, E2, RIn | RIn2>
-} = dual(2, <RIn, E, ROut, RIn2, E2, ROut2>(
-  self: Layer<ROut, E, RIn>,
-  onError: (cause: Cause.Cause<E>) => Layer<ROut2, E2, RIn2>
-): Layer<ROut & ROut2, E2, RIn | RIn2> =>
-  fromBuildUnsafe((memoMap, scope) =>
-    internalEffect.catchCause(
-      self.build(memoMap, scope),
-      (cause) => onError(cause).build(memoMap, scope)
-    ) as any
-  ))
+  ): Layer<ROut & ROut22, E2, RIn | RIn2>;
+} = dual(
+  2,
+  <RIn, E, ROut, RIn2, E2, ROut2>(
+    self: Layer<ROut, E, RIn>,
+    onError: (cause: Cause.Cause<E>) => Layer<ROut2, E2, RIn2>
+  ): Layer<ROut & ROut2, E2, RIn | RIn2> =>
+    fromBuildUnsafe(
+      (memoMap, scope) =>
+        internalEffect.catchCause(self.build(memoMap, scope), (cause) =>
+          onError(cause).build(memoMap, scope)
+        ) as any
+    )
+);
 
 /**
  * Updates a service in the context with a new implementation.
@@ -2032,20 +2187,21 @@ export const updateService: {
   <I, A>(
     service: Context.Key<I, A>,
     f: (a: Types.NoInfer<A>) => A
-  ): <A1, E1, R1>(layer: Layer<A1, E1, R1>) => Layer<A1, E1, I | R1>
+  ): <A1, E1, R1>(layer: Layer<A1, E1, R1>) => Layer<A1, E1, I | R1>;
   <A1, E1, R1, I, A>(
     layer: Layer<A1, E1, R1>,
     service: Context.Key<I, A>,
     f: (a: Types.NoInfer<A>) => A
-  ): Layer<A1, E1, I | R1>
+  ): Layer<A1, E1, I | R1>;
 } = dual(
   3,
   <A1, E1, R1, I, A>(
     layer: Layer<A1, E1, R1>,
     service: Context.Key<I, A>,
     f: (a: Types.NoInfer<A>) => A
-  ): Layer<A1, E1, I | R1> => provide(layer, effect(service, internalEffect.map(service, f)))
-)
+  ): Layer<A1, E1, I | R1> =>
+    provide(layer, effect(service, internalEffect.map(service, f)))
+);
 
 /**
  * Creates a fresh version of this layer that will not be shared.
@@ -2130,7 +2286,7 @@ export const updateService: {
  * @since 2.0.0
  */
 export const fresh = <A, E, R>(self: Layer<A, E, R>): Layer<A, E, R> =>
-  fromBuildUnsafe((_, scope) => self.build(makeMemoMapUnsafe(), scope))
+  fromBuildUnsafe((_, scope) => self.build(makeMemoMapUnsafe(), scope));
 
 /**
  * Builds this layer and keeps it alive until the returned effect is interrupted.
@@ -2196,8 +2352,12 @@ export const fresh = <A, E, R>(self: Layer<A, E, R>): Layer<A, E, R> =>
  * @category converting
  * @since 2.0.0
  */
-export const launch = <RIn, E, ROut>(self: Layer<ROut, E, RIn>): Effect<never, E, RIn> =>
-  internalEffect.scoped(internalEffect.andThen(build(self), internalEffect.never))
+export const launch = <RIn, E, ROut>(
+  self: Layer<ROut, E, RIn>
+): Effect<never, E, RIn> =>
+  internalEffect.scoped(
+    internalEffect.andThen(build(self), internalEffect.never)
+  );
 
 /**
  * A utility type for creating partial mocks of services in testing.
@@ -2220,13 +2380,12 @@ export const launch = <RIn, E, ROut>(self: Layer<ROut, E, RIn>): Effect<never, E
  * @since 3.17.0
  */
 export type PartialEffectful<A extends object> = Types.Simplify<
-  & {
-    [K in keyof A as A[K] extends AnyEffectOrStream ? K : never]?: A[K]
+  {
+    [K in keyof A as A[K] extends AnyEffectOrStream ? K : never]?: A[K];
+  } & {
+    [K in keyof A as A[K] extends AnyEffectOrStream ? never : K]: A[K];
   }
-  & {
-    [K in keyof A as A[K] extends AnyEffectOrStream ? never : K]: A[K]
-  }
->
+>;
 
 type AnyEffectOrStream =
   | Effect<any, any, any>
@@ -2234,7 +2393,7 @@ type AnyEffectOrStream =
   | Channel.Channel<any, any, any, any, any, any, any>
   | ((...args: any) => Effect<any, any, any>)
   | ((...args: any) => Stream.Stream<any, any, any>)
-  | ((...args: any) => Channel.Channel<any, any, any, any, any, any, any>)
+  | ((...args: any) => Channel.Channel<any, any, any, any, any, any, any>);
 
 /**
  * Creates a mock layer for testing purposes. You can provide a partial
@@ -2292,32 +2451,42 @@ type AnyEffectOrStream =
  * @since 3.17.0
  */
 export const mock: {
-  <I, S extends object>(service: Context.Key<I, S>): (implementation: PartialEffectful<S>) => Layer<I>
-  <I, S extends object>(service: Context.Key<I, S>, implementation: Types.NoInfer<PartialEffectful<S>>): Layer<I>
-} = function() {
+  <I, S extends object>(
+    service: Context.Key<I, S>
+  ): (implementation: PartialEffectful<S>) => Layer<I>;
+  <I, S extends object>(
+    service: Context.Key<I, S>,
+    implementation: Types.NoInfer<PartialEffectful<S>>
+  ): Layer<I>;
+} = function () {
   if (arguments.length === 1) {
-    return (implementation: any) => mockImpl(arguments[0], implementation)
+    return (implementation: any) => mockImpl(arguments[0], implementation);
   }
-  return mockImpl(arguments[0], arguments[1])
-} as any
+  return mockImpl(arguments[0], arguments[1]);
+} as any;
 
-const mockImpl = <I, S extends object>(service: Context.Key<I, S>, implementation: PartialEffectful<S>): Layer<I> =>
+const mockImpl = <I, S extends object>(
+  service: Context.Key<I, S>,
+  implementation: PartialEffectful<S>
+): Layer<I> =>
   succeed(service)(
-    new Proxy({ ...implementation as object } as S, {
+    new Proxy({ ...(implementation as object) } as S, {
       get(target, prop, _receiver) {
         if (prop in target) {
-          return target[prop as keyof S]
+          return target[prop as keyof S];
         }
-        const prevLimit = (Error as ErrorWithStackTraceLimit).stackTraceLimit
-        ;(Error as ErrorWithStackTraceLimit).stackTraceLimit = 2
-        const error = new Error(`${service.key}: Unimplemented method "${prop.toString()}"`)
-        ;(Error as ErrorWithStackTraceLimit).stackTraceLimit = prevLimit
-        error.name = "UnimplementedError"
-        return makeUnimplemented(error)
+        const prevLimit = (Error as ErrorWithStackTraceLimit).stackTraceLimit;
+        (Error as ErrorWithStackTraceLimit).stackTraceLimit = 2;
+        const error = new Error(
+          `${service.key}: Unimplemented method "${prop.toString()}"`
+        );
+        (Error as ErrorWithStackTraceLimit).stackTraceLimit = prevLimit;
+        error.name = "UnimplementedError";
+        return makeUnimplemented(error);
       },
-      has: constTrue
+      has: constTrue,
     })
-  )
+  );
 
 const makeUnimplemented = (error: globalThis.Error) => {
   const dead = Object.assign(internalEffect.die(error), {
@@ -2326,23 +2495,23 @@ const makeUnimplemented = (error: globalThis.Error) => {
       [ChannelTypeId]: ChannelTypeId,
       transform: () => internalEffect.succeed(dead),
       pipe() {
-        return pipeArguments(this, arguments)
-      }
+        return pipeArguments(this, arguments);
+      },
     },
     [ChannelTypeId]: ChannelTypeId,
-    transform: () => internalEffect.succeed(dead)
-  })
+    transform: () => internalEffect.succeed(dead),
+  });
   function unimplemented() {
-    return dead
+    return dead;
   }
   // @effect-diagnostics-next-line floatingEffect:off
-  Object.assign(unimplemented, dead)
-  Object.setPrototypeOf(unimplemented, Object.getPrototypeOf(dead))
-  return unimplemented
-}
+  Object.assign(unimplemented, dead);
+  Object.setPrototypeOf(unimplemented, Object.getPrototypeOf(dead));
+  return unimplemented;
+};
 
-const StreamTypeId: Stream.TypeId = "~effect/Stream"
-const ChannelTypeId: Channel.TypeId = "~effect/Channel"
+const StreamTypeId: Stream.TypeId = "~effect/Stream";
+const ChannelTypeId: Channel.TypeId = "~effect/Channel";
 
 // -----------------------------------------------------------------------------
 // Type constraints
@@ -2380,7 +2549,11 @@ const ChannelTypeId: Channel.TypeId = "~effect/Channel"
  * @since 4.0.0
  */
 export const satisfiesSuccessType =
-  <ROut>() => <ROut2 extends ROut, E, RIn>(layer: Layer<ROut2, E, RIn>): Layer<ROut2, E, RIn> => layer
+  <ROut>() =>
+  <ROut2 extends ROut, E, RIn>(
+    layer: Layer<ROut2, E, RIn>
+  ): Layer<ROut2, E, RIn> =>
+    layer;
 
 /**
  * Ensures that a layer's error type extends a given type `E`.
@@ -2415,7 +2588,11 @@ export const satisfiesSuccessType =
  * @since 4.0.0
  */
 export const satisfiesErrorType =
-  <E>() => <ROut, E2 extends E, RIn>(layer: Layer<ROut, E2, RIn>): Layer<ROut, E2, RIn> => layer
+  <E>() =>
+  <ROut, E2 extends E, RIn>(
+    layer: Layer<ROut, E2, RIn>
+  ): Layer<ROut, E2, RIn> =>
+    layer;
 
 /**
  * Ensures that a layer's requirements type extends a given type `R`.
@@ -2449,7 +2626,11 @@ export const satisfiesErrorType =
  * @since 4.0.0
  */
 export const satisfiesServicesType =
-  <RIn>() => <ROut, E, RIn2 extends RIn>(layer: Layer<ROut, E, RIn2>): Layer<ROut, E, RIn2> => layer
+  <RIn>() =>
+  <ROut, E, RIn2 extends RIn>(
+    layer: Layer<ROut, E, RIn2>
+  ): Layer<ROut, E, RIn2> =>
+    layer;
 
 // -----------------------------------------------------------------------------
 // Tracing
@@ -2483,7 +2664,7 @@ export interface SpanOptions extends Tracer.SpanOptions {
    */
   readonly onEnd?:
     | ((span: Tracer.Span, exit: Exit.Exit<unknown, unknown>) => Effect<void>)
-    | undefined
+    | undefined;
 }
 
 /**
@@ -2541,17 +2722,18 @@ export const span = (
   name: string,
   options?: SpanOptions
 ): Layer<Tracer.ParentSpan> => {
-  options = internalTracer.addSpanStackTrace(options)
+  options = internalTracer.addSpanStackTrace(options);
   return effect(
     Tracer.ParentSpan,
     options?.onEnd
       ? internalEffect.tap(
-        internalEffect.makeSpanScoped(name, options),
-        (span) => internalEffect.addFinalizer((exit) => options.onEnd!(span, exit))
-      )
+          internalEffect.makeSpanScoped(name, options),
+          (span) =>
+            internalEffect.addFinalizer((exit) => options.onEnd!(span, exit))
+        )
       : internalEffect.makeSpanScoped(name, options)
-  )
-}
+  );
+};
 
 /**
  * Constructs a layer that provides an existing span as the current parent span.
@@ -2594,7 +2776,7 @@ export const span = (
  * @since 2.0.0
  */
 export const parentSpan = (span: Tracer.AnySpan): Layer<Tracer.ParentSpan> =>
-  succeedContext(Tracer.ParentSpan.context(span))
+  succeedContext(Tracer.ParentSpan.context(span));
 
 /**
  * Wraps a `Layer` with a new tracing span, making all operations in the layer
@@ -2662,43 +2844,51 @@ export const withSpan: {
     options?: SpanOptions
   ): <A, E, R>(
     self: Layer<A, E, R>
-  ) => Layer<A, E, Exclude<R, Tracer.ParentSpan>>
+  ) => Layer<A, E, Exclude<R, Tracer.ParentSpan>>;
   <A, E, R>(
     self: Layer<A, E, R>,
     name: string,
     options?: SpanOptions
-  ): Layer<A, E, Exclude<R, Tracer.ParentSpan>>
-} = function() {
-  const dataFirst = typeof arguments[0] !== "string"
-  const name = dataFirst ? arguments[1] : arguments[0]
-  const options = internalTracer.addSpanStackTrace(dataFirst ? arguments[2] : arguments[1]) as SpanOptions
+  ): Layer<A, E, Exclude<R, Tracer.ParentSpan>>;
+} = function () {
+  const dataFirst = typeof arguments[0] !== "string";
+  const name = dataFirst ? arguments[1] : arguments[0];
+  const options = internalTracer.addSpanStackTrace(
+    dataFirst ? arguments[2] : arguments[1]
+  ) as SpanOptions;
   if (dataFirst) {
-    const self = arguments[0]
+    const self = arguments[0];
     return unwrap(
       internalEffect.map(
         options?.onEnd !== undefined
           ? internalEffect.tap(
-            internalEffect.makeSpanScoped(name, options),
-            (span) => internalEffect.addFinalizer((exit) => options.onEnd!(span, exit))
-          )
+              internalEffect.makeSpanScoped(name, options),
+              (span) =>
+                internalEffect.addFinalizer((exit) =>
+                  options.onEnd!(span, exit)
+                )
+            )
           : internalEffect.makeSpanScoped(name, options),
         (span) => withParentSpan(self, span)
       )
-    )
+    );
   }
   return (self: Layer<any, any, any>) =>
     unwrap(
       internalEffect.map(
         options?.onEnd !== undefined
           ? internalEffect.tap(
-            internalEffect.makeSpanScoped(name, options),
-            (span) => internalEffect.addFinalizer((exit) => options.onEnd!(span, exit))
-          )
+              internalEffect.makeSpanScoped(name, options),
+              (span) =>
+                internalEffect.addFinalizer((exit) =>
+                  options.onEnd!(span, exit)
+                )
+            )
           : internalEffect.makeSpanScoped(name, options),
         (span) => withParentSpan(self, span)
       )
-    )
-} as any
+    );
+} as any;
 
 /**
  * Wraps a layer so spans created during its construction use the supplied span
@@ -2773,33 +2963,41 @@ export const withParentSpan: {
     options?: Tracer.TraceOptions
   ): <A, E, R>(
     self: Layer<A, E, R>
-  ) => Layer<A, E, Exclude<R, Tracer.ParentSpan>>
+  ) => Layer<A, E, Exclude<R, Tracer.ParentSpan>>;
   <A, E, R>(
     self: Layer<A, E, R>,
     span: Tracer.AnySpan,
     options?: Tracer.TraceOptions
-  ): Layer<A, E, Exclude<R, Tracer.ParentSpan>>
-} = function() {
-  const dataFirst = isLayer(arguments[0])
-  const span: Tracer.AnySpan = dataFirst ? arguments[1] : arguments[0]
-  let options = dataFirst ? arguments[2] : arguments[1]
-  let provideStackFrame: <A, E, R>(self: Layer<A, E, R>) => Layer<A, E, R> = identity
+  ): Layer<A, E, Exclude<R, Tracer.ParentSpan>>;
+} = function () {
+  const dataFirst = isLayer(arguments[0]);
+  const span: Tracer.AnySpan = dataFirst ? arguments[1] : arguments[0];
+  let options = dataFirst ? arguments[2] : arguments[1];
+  let provideStackFrame: <A, E, R>(self: Layer<A, E, R>) => Layer<A, E, R> =
+    identity;
   if (span._tag === "Span") {
-    options = internalTracer.addSpanStackTrace(options)
-    provideStackFrame = provideSpanStackFrame(span.name, options?.captureStackTrace)
+    options = internalTracer.addSpanStackTrace(options);
+    provideStackFrame = provideSpanStackFrame(
+      span.name,
+      options?.captureStackTrace
+    );
   }
-  const parentSpanLayer = parentSpan(span)
+  const parentSpanLayer = parentSpan(span);
   if (dataFirst) {
-    return provide(provideStackFrame(arguments[0]), parentSpanLayer)
+    return provide(provideStackFrame(arguments[0]), parentSpanLayer);
   }
-  return (self: Layer<any, any, any>) => provide(provideStackFrame(self), parentSpanLayer)
-} as any
+  return (self: Layer<any, any, any>) =>
+    provide(provideStackFrame(self), parentSpanLayer);
+} as any;
 
-const provideSpanStackFrame = (name: string, stack: (() => string | undefined) | undefined) => {
-  stack = typeof stack === "function" ? stack : constUndefined
+const provideSpanStackFrame = (
+  name: string,
+  stack: (() => string | undefined) | undefined
+) => {
+  stack = typeof stack === "function" ? stack : constUndefined;
   return updateService(CurrentStackFrame, (parent) => ({
     name,
     stack,
-    parent
-  }))
-}
+    parent,
+  }));
+};

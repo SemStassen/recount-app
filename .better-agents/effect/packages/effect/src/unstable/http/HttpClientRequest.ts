@@ -40,28 +40,28 @@
  *
  * @since 4.0.0
  */
-import * as Context from "../../Context.ts"
-import * as Effect from "../../Effect.ts"
-import type * as FileSystem from "../../FileSystem.ts"
-import { dual } from "../../Function.ts"
-import * as Inspectable from "../../Inspectable.ts"
-import { stringOrRedacted } from "../../internal/redacted.ts"
-import * as Option from "../../Option.ts"
-import { type Pipeable, pipeArguments } from "../../Pipeable.ts"
-import type * as PlatformError from "../../PlatformError.ts"
-import { hasProperty } from "../../Predicate.ts"
-import { redact } from "../../Redactable.ts"
-import type * as Redacted from "../../Redacted.ts"
-import * as Result from "../../Result.ts"
-import type * as Schema from "../../Schema.ts"
-import type { ParseOptions } from "../../SchemaAST.ts"
-import * as Stream from "../../Stream.ts"
-import * as Headers from "./Headers.ts"
-import * as HttpBody from "./HttpBody.ts"
-import { hasBody, type HttpMethod } from "./HttpMethod.ts"
-import * as UrlParams from "./UrlParams.ts"
+import * as Context from "../../Context.ts";
+import * as Effect from "../../Effect.ts";
+import type * as FileSystem from "../../FileSystem.ts";
+import { dual } from "../../Function.ts";
+import * as Inspectable from "../../Inspectable.ts";
+import { stringOrRedacted } from "../../internal/redacted.ts";
+import * as Option from "../../Option.ts";
+import { type Pipeable, pipeArguments } from "../../Pipeable.ts";
+import type * as PlatformError from "../../PlatformError.ts";
+import { hasProperty } from "../../Predicate.ts";
+import { redact } from "../../Redactable.ts";
+import type * as Redacted from "../../Redacted.ts";
+import * as Result from "../../Result.ts";
+import type * as Schema from "../../Schema.ts";
+import type { ParseOptions } from "../../SchemaAST.ts";
+import * as Stream from "../../Stream.ts";
+import * as Headers from "./Headers.ts";
+import * as HttpBody from "./HttpBody.ts";
+import { hasBody, type HttpMethod } from "./HttpMethod.ts";
+import * as UrlParams from "./UrlParams.ts";
 
-const TypeId = "~effect/http/HttpClientRequest"
+const TypeId = "~effect/http/HttpClientRequest";
 
 /**
  * Returns `true` when a value is an `HttpClientRequest`.
@@ -69,7 +69,8 @@ const TypeId = "~effect/http/HttpClientRequest"
  * @category guards
  * @since 4.0.0
  */
-export const isHttpClientRequest = (u: unknown): u is HttpClientRequest => hasProperty(u, TypeId)
+export const isHttpClientRequest = (u: unknown): u is HttpClientRequest =>
+  hasProperty(u, TypeId);
 
 /**
  * Immutable model of an outgoing HTTP client request, including its method, URL components, headers, and body.
@@ -78,13 +79,13 @@ export const isHttpClientRequest = (u: unknown): u is HttpClientRequest => hasPr
  * @since 4.0.0
  */
 export interface HttpClientRequest extends Inspectable.Inspectable, Pipeable {
-  readonly [TypeId]: typeof TypeId
-  readonly method: HttpMethod
-  readonly url: string
-  readonly urlParams: UrlParams.UrlParams
-  readonly hash: Option.Option<string>
-  readonly headers: Headers.Headers
-  readonly body: HttpBody.HttpBody
+  readonly [TypeId]: typeof TypeId;
+  readonly method: HttpMethod;
+  readonly url: string;
+  readonly urlParams: UrlParams.UrlParams;
+  readonly hash: Option.Option<string>;
+  readonly headers: Headers.Headers;
+  readonly body: HttpBody.HttpBody;
 }
 
 /**
@@ -94,14 +95,14 @@ export interface HttpClientRequest extends Inspectable.Inspectable, Pipeable {
  * @since 4.0.0
  */
 export interface Options {
-  readonly method?: HttpMethod | undefined
-  readonly url?: string | URL | undefined
-  readonly urlParams?: UrlParams.Input | undefined
-  readonly hash?: string | undefined
-  readonly headers?: Headers.Input | undefined
-  readonly body?: HttpBody.HttpBody | undefined
-  readonly accept?: string | undefined
-  readonly acceptJson?: boolean | undefined
+  readonly method?: HttpMethod | undefined;
+  readonly url?: string | URL | undefined;
+  readonly urlParams?: UrlParams.Input | undefined;
+  readonly hash?: string | undefined;
+  readonly headers?: Headers.Input | undefined;
+  readonly body?: HttpBody.HttpBody | undefined;
+  readonly accept?: string | undefined;
+  readonly acceptJson?: boolean | undefined;
 }
 
 /**
@@ -130,13 +131,13 @@ const Proto = {
       urlParams: this.urlParams,
       hash: this.hash,
       headers: redact(this.headers),
-      body: this.body.toJSON()
-    }
+      body: this.body.toJSON(),
+    };
   },
   pipe() {
-    return pipeArguments(this, arguments)
-  }
-}
+    return pipeArguments(this, arguments);
+  },
+};
 
 /**
  * Constructs an `HttpClientRequest` from fully normalized request components.
@@ -152,14 +153,14 @@ export function makeWith(
   headers: Headers.Headers,
   body: HttpBody.HttpBody
 ): HttpClientRequest {
-  const self = Object.create(Proto)
-  self.method = method
-  self.url = url
-  self.urlParams = urlParams
-  self.hash = hash
-  self.headers = headers
-  self.body = body
-  return self
+  const self = Object.create(Proto);
+  self.method = method;
+  self.url = url;
+  self.urlParams = urlParams;
+  self.hash = hash;
+  self.headers = headers;
+  self.body = body;
+  return self;
 }
 
 /**
@@ -175,7 +176,7 @@ export const empty: HttpClientRequest = makeWith(
   Option.none(),
   Headers.empty,
   HttpBody.empty
-)
+);
 
 /**
  * Creates a request constructor for the specified HTTP method.
@@ -183,18 +184,14 @@ export const empty: HttpClientRequest = makeWith(
  * @category constructors
  * @since 4.0.0
  */
-export const make = <M extends HttpMethod>(
-  method: M
-) =>
-(
-  url: string | URL,
-  options?: Options.NoUrl | undefined
-): HttpClientRequest =>
-  modify(empty, {
-    method,
-    url,
-    ...(options ?? undefined)
-  })
+export const make =
+  <M extends HttpMethod>(method: M) =>
+  (url: string | URL, options?: Options.NoUrl | undefined): HttpClientRequest =>
+    modify(empty, {
+      method,
+      url,
+      ...(options ?? undefined),
+    });
 
 /**
  * Creates a `GET` request for the specified URL.
@@ -202,7 +199,10 @@ export const make = <M extends HttpMethod>(
  * @category constructors
  * @since 4.0.0
  */
-export const get: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("GET")
+export const get: (
+  url: string | URL,
+  options?: Options.NoUrl
+) => HttpClientRequest = make("GET");
 
 /**
  * Creates a `POST` request for the specified URL.
@@ -210,7 +210,10 @@ export const get: (url: string | URL, options?: Options.NoUrl) => HttpClientRequ
  * @category constructors
  * @since 4.0.0
  */
-export const post: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("POST")
+export const post: (
+  url: string | URL,
+  options?: Options.NoUrl
+) => HttpClientRequest = make("POST");
 
 /**
  * Creates a `PATCH` request for the specified URL.
@@ -218,7 +221,10 @@ export const post: (url: string | URL, options?: Options.NoUrl) => HttpClientReq
  * @category constructors
  * @since 4.0.0
  */
-export const patch: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("PATCH")
+export const patch: (
+  url: string | URL,
+  options?: Options.NoUrl
+) => HttpClientRequest = make("PATCH");
 
 /**
  * Creates a `PUT` request for the specified URL.
@@ -226,9 +232,13 @@ export const patch: (url: string | URL, options?: Options.NoUrl) => HttpClientRe
  * @category constructors
  * @since 4.0.0
  */
-export const put: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("PUT")
+export const put: (
+  url: string | URL,
+  options?: Options.NoUrl
+) => HttpClientRequest = make("PUT");
 
-const del: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("DELETE")
+const del: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest =
+  make("DELETE");
 
 export {
   /**
@@ -237,8 +247,8 @@ export {
    * @category constructors
    * @since 4.0.0
    */
-  del as delete
-}
+  del as delete,
+};
 
 /**
  * Creates a `HEAD` request for the specified URL.
@@ -246,7 +256,10 @@ export {
  * @category constructors
  * @since 4.0.0
  */
-export const head: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("HEAD")
+export const head: (
+  url: string | URL,
+  options?: Options.NoUrl
+) => HttpClientRequest = make("HEAD");
 
 /**
  * Creates an `OPTIONS` request for the specified URL.
@@ -254,7 +267,10 @@ export const head: (url: string | URL, options?: Options.NoUrl) => HttpClientReq
  * @category constructors
  * @since 4.0.0
  */
-export const options: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("OPTIONS")
+export const options: (
+  url: string | URL,
+  options?: Options.NoUrl
+) => HttpClientRequest = make("OPTIONS");
 
 /**
  * Creates a `TRACE` request for the specified URL.
@@ -262,7 +278,10 @@ export const options: (url: string | URL, options?: Options.NoUrl) => HttpClient
  * @category constructors
  * @since 4.0.0
  */
-export const trace: (url: string | URL, options?: Options.NoUrl) => HttpClientRequest = make("TRACE")
+export const trace: (
+  url: string | URL,
+  options?: Options.NoUrl
+) => HttpClientRequest = make("TRACE");
 
 /**
  * Applies request options to an `HttpClientRequest`, returning a new request.
@@ -271,38 +290,38 @@ export const trace: (url: string | URL, options?: Options.NoUrl) => HttpClientRe
  * @since 4.0.0
  */
 export const modify: {
-  (options: Options): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, options: Options): HttpClientRequest
+  (options: Options): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, options: Options): HttpClientRequest;
 } = dual(2, (self: HttpClientRequest, options: Options): HttpClientRequest => {
-  let result = self
+  let result = self;
 
   if (options.method) {
-    result = setMethod(result, options.method)
+    result = setMethod(result, options.method);
   }
   if (options.url) {
-    result = setUrl(result, options.url)
+    result = setUrl(result, options.url);
   }
   if (options.headers) {
-    result = setHeaders(result, options.headers)
+    result = setHeaders(result, options.headers);
   }
   if (options.urlParams) {
-    result = setUrlParams(result, options.urlParams)
+    result = setUrlParams(result, options.urlParams);
   }
   if (options.hash) {
-    result = setHash(result, options.hash)
+    result = setHash(result, options.hash);
   }
   if (options.body) {
-    result = setBody(result, options.body)
+    result = setBody(result, options.body);
   }
   if (options.accept) {
-    result = accept(result, options.accept)
+    result = accept(result, options.accept);
   }
   if (options.acceptJson) {
-    result = acceptJson(result)
+    result = acceptJson(result);
   }
 
-  return result
-})
+  return result;
+});
 
 /**
  * Sets the HTTP method on a request, returning a new request.
@@ -311,13 +330,20 @@ export const modify: {
  * @since 4.0.0
  */
 export const setMethod: {
-  (method: HttpMethod): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, method: HttpMethod): HttpClientRequest
+  (method: HttpMethod): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, method: HttpMethod): HttpClientRequest;
 } = dual(
   2,
   (self: HttpClientRequest, method: HttpMethod): HttpClientRequest =>
-    makeWith(method, self.url, self.urlParams, self.hash, self.headers, self.body)
-)
+    makeWith(
+      method,
+      self.url,
+      self.urlParams,
+      self.hash,
+      self.headers,
+      self.body
+    )
+);
 
 /**
  * Sets a single request header, replacing any existing value for that header.
@@ -326,17 +352,20 @@ export const setMethod: {
  * @since 4.0.0
  */
 export const setHeader: {
-  (key: string, value: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, key: string, value: string): HttpClientRequest
-} = dual(3, (self: HttpClientRequest, key: string, value: string): HttpClientRequest =>
-  makeWith(
-    self.method,
-    self.url,
-    self.urlParams,
-    self.hash,
-    Headers.set(self.headers, key, value),
-    self.body
-  ))
+  (key: string, value: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, key: string, value: string): HttpClientRequest;
+} = dual(
+  3,
+  (self: HttpClientRequest, key: string, value: string): HttpClientRequest =>
+    makeWith(
+      self.method,
+      self.url,
+      self.urlParams,
+      self.hash,
+      Headers.set(self.headers, key, value),
+      self.body
+    )
+);
 
 /**
  * Sets multiple request headers from an input collection, replacing existing values with matching names.
@@ -345,17 +374,20 @@ export const setHeader: {
  * @since 4.0.0
  */
 export const setHeaders: {
-  (input: Headers.Input): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, input: Headers.Input): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, input: Headers.Input): HttpClientRequest =>
-  makeWith(
-    self.method,
-    self.url,
-    self.urlParams,
-    self.hash,
-    Headers.setAll(self.headers, input),
-    self.body
-  ))
+  (input: Headers.Input): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, input: Headers.Input): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, input: Headers.Input): HttpClientRequest =>
+    makeWith(
+      self.method,
+      self.url,
+      self.urlParams,
+      self.hash,
+      Headers.setAll(self.headers, input),
+      self.body
+    )
+);
 
 /**
  * Sets the `Authorization` header using HTTP Basic authentication credentials.
@@ -367,12 +399,12 @@ export const basicAuth: {
   (
     username: string | Redacted.Redacted,
     password: string | Redacted.Redacted
-  ): (self: HttpClientRequest) => HttpClientRequest
+  ): (self: HttpClientRequest) => HttpClientRequest;
   (
     self: HttpClientRequest,
     username: string | Redacted.Redacted,
     password: string | Redacted.Redacted
-  ): HttpClientRequest
+  ): HttpClientRequest;
 } = dual(
   3,
   (
@@ -380,8 +412,12 @@ export const basicAuth: {
     username: string | Redacted.Redacted,
     password: string | Redacted.Redacted
   ): HttpClientRequest =>
-    setHeader(self, "Authorization", `Basic ${btoa(`${stringOrRedacted(username)}:${stringOrRedacted(password)}`)}`)
-)
+    setHeader(
+      self,
+      "Authorization",
+      `Basic ${btoa(`${stringOrRedacted(username)}:${stringOrRedacted(password)}`)}`
+    )
+);
 
 /**
  * Sets the `Authorization` header using a bearer token.
@@ -390,13 +426,21 @@ export const basicAuth: {
  * @since 4.0.0
  */
 export const bearerToken: {
-  (token: string | Redacted.Redacted): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, token: string | Redacted.Redacted): HttpClientRequest
+  (
+    token: string | Redacted.Redacted
+  ): (self: HttpClientRequest) => HttpClientRequest;
+  (
+    self: HttpClientRequest,
+    token: string | Redacted.Redacted
+  ): HttpClientRequest;
 } = dual(
   2,
-  (self: HttpClientRequest, token: string | Redacted.Redacted): HttpClientRequest =>
+  (
+    self: HttpClientRequest,
+    token: string | Redacted.Redacted
+  ): HttpClientRequest =>
     setHeader(self, "Authorization", `Bearer ${stringOrRedacted(token)}`)
-)
+);
 
 /**
  * Sets the `Accept` header to the specified media type.
@@ -405,9 +449,13 @@ export const bearerToken: {
  * @since 4.0.0
  */
 export const accept: {
-  (mediaType: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, mediaType: string): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, mediaType: string): HttpClientRequest => setHeader(self, "Accept", mediaType))
+  (mediaType: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, mediaType: string): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, mediaType: string): HttpClientRequest =>
+    setHeader(self, "Accept", mediaType)
+);
 
 /**
  * Sets the `Accept` header to `application/json`.
@@ -415,7 +463,8 @@ export const accept: {
  * @category combinators
  * @since 4.0.0
  */
-export const acceptJson: (self: HttpClientRequest) => HttpClientRequest = accept("application/json")
+export const acceptJson: (self: HttpClientRequest) => HttpClientRequest =
+  accept("application/json");
 
 /**
  * Sets the request URL. When given a `URL`, its search parameters and hash are extracted into the request's structured fields.
@@ -424,8 +473,8 @@ export const acceptJson: (self: HttpClientRequest) => HttpClientRequest = accept
  * @since 4.0.0
  */
 export const setUrl: {
-  (url: string | URL): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, url: string | URL): HttpClientRequest
+  (url: string | URL): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, url: string | URL): HttpClientRequest;
 } = dual(2, (self: HttpClientRequest, url: string | URL): HttpClientRequest => {
   if (typeof url === "string") {
     return makeWith(
@@ -435,13 +484,15 @@ export const setUrl: {
       self.hash,
       self.headers,
       self.body
-    )
+    );
   }
-  const clone = new URL(url.toString())
-  const urlParams = UrlParams.fromInput(clone.searchParams)
-  const hash = Option.fromNullishOr(clone.hash === "" ? undefined : clone.hash.slice(1))
-  clone.search = ""
-  clone.hash = ""
+  const clone = new URL(url.toString());
+  const urlParams = UrlParams.fromInput(clone.searchParams);
+  const hash = Option.fromNullishOr(
+    clone.hash === "" ? undefined : clone.hash.slice(1)
+  );
+  clone.search = "";
+  clone.hash = "";
   return makeWith(
     self.method,
     clone.toString(),
@@ -449,8 +500,8 @@ export const setUrl: {
     hash,
     self.headers,
     self.body
-  )
-})
+  );
+});
 
 /**
  * Prepends a URL segment to the request URL, inserting or trimming one slash as needed.
@@ -459,10 +510,10 @@ export const setUrl: {
  * @since 4.0.0
  */
 export const prependUrl: {
-  (path: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, path: string): HttpClientRequest
+  (path: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, path: string): HttpClientRequest;
 } = dual(2, (self: HttpClientRequest, path: string): HttpClientRequest => {
-  if (path === "") return self
+  if (path === "") return self;
   return makeWith(
     self.method,
     joinSegments(path, self.url),
@@ -470,8 +521,8 @@ export const prependUrl: {
     self.hash,
     self.headers,
     self.body
-  )
-})
+  );
+});
 
 /**
  * Appends a URL segment to the request URL, inserting or trimming one slash as needed.
@@ -480,10 +531,10 @@ export const prependUrl: {
  * @since 4.0.0
  */
 export const appendUrl: {
-  (path: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, path: string): HttpClientRequest
+  (path: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, path: string): HttpClientRequest;
 } = dual(2, (self: HttpClientRequest, path: string): HttpClientRequest => {
-  if (path === "") return self
+  if (path === "") return self;
   return makeWith(
     self.method,
     joinSegments(self.url, path),
@@ -491,20 +542,20 @@ export const appendUrl: {
     self.hash,
     self.headers,
     self.body
-  )
-})
+  );
+});
 
 const joinSegments = (first: string, second: string): string => {
-  const endsWithSlash = first.endsWith("/")
-  const startsWithSlash = second.startsWith("/")
-  const needsTrim = endsWithSlash && startsWithSlash
-  const needsSlash = !endsWithSlash && !startsWithSlash
-  return needsTrim ?
-    first + second.slice(1) :
-    needsSlash ?
-    first + "/" + second :
-    first + second
-}
+  const endsWithSlash = first.endsWith("/");
+  const startsWithSlash = second.startsWith("/");
+  const needsTrim = endsWithSlash && startsWithSlash;
+  const needsSlash = !endsWithSlash && !startsWithSlash;
+  return needsTrim
+    ? first + second.slice(1)
+    : needsSlash
+      ? first + "/" + second
+      : first + second;
+};
 
 /**
  * Updates the request URL by applying a function to the current URL string.
@@ -513,17 +564,20 @@ const joinSegments = (first: string, second: string): string => {
  * @since 4.0.0
  */
 export const updateUrl: {
-  (f: (url: string) => string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, f: (url: string) => string): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, f: (url: string) => string): HttpClientRequest =>
-  makeWith(
-    self.method,
-    f(self.url),
-    self.urlParams,
-    self.hash,
-    self.headers,
-    self.body
-  ))
+  (f: (url: string) => string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, f: (url: string) => string): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, f: (url: string) => string): HttpClientRequest =>
+    makeWith(
+      self.method,
+      f(self.url),
+      self.urlParams,
+      self.hash,
+      self.headers,
+      self.body
+    )
+);
 
 /**
  * Sets one query parameter, replacing existing values for that parameter name.
@@ -532,17 +586,20 @@ export const updateUrl: {
  * @since 4.0.0
  */
 export const setUrlParam: {
-  (key: string, value: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, key: string, value: string): HttpClientRequest
-} = dual(3, (self: HttpClientRequest, key: string, value: string): HttpClientRequest =>
-  makeWith(
-    self.method,
-    self.url,
-    UrlParams.set(self.urlParams, key, value),
-    self.hash,
-    self.headers,
-    self.body
-  ))
+  (key: string, value: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, key: string, value: string): HttpClientRequest;
+} = dual(
+  3,
+  (self: HttpClientRequest, key: string, value: string): HttpClientRequest =>
+    makeWith(
+      self.method,
+      self.url,
+      UrlParams.set(self.urlParams, key, value),
+      self.hash,
+      self.headers,
+      self.body
+    )
+);
 
 /**
  * Sets query parameters from an input collection, replacing existing values for matching names.
@@ -551,17 +608,20 @@ export const setUrlParam: {
  * @since 4.0.0
  */
 export const setUrlParams: {
-  (input: UrlParams.Input): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest =>
-  makeWith(
-    self.method,
-    self.url,
-    UrlParams.setAll(self.urlParams, input),
-    self.hash,
-    self.headers,
-    self.body
-  ))
+  (input: UrlParams.Input): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest =>
+    makeWith(
+      self.method,
+      self.url,
+      UrlParams.setAll(self.urlParams, input),
+      self.hash,
+      self.headers,
+      self.body
+    )
+);
 
 /**
  * Appends one query parameter value without removing existing values for the same name.
@@ -570,17 +630,20 @@ export const setUrlParams: {
  * @since 4.0.0
  */
 export const appendUrlParam: {
-  (key: string, value: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, key: string, value: string): HttpClientRequest
-} = dual(3, (self: HttpClientRequest, key: string, value: string): HttpClientRequest =>
-  makeWith(
-    self.method,
-    self.url,
-    UrlParams.append(self.urlParams, key, value),
-    self.hash,
-    self.headers,
-    self.body
-  ))
+  (key: string, value: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, key: string, value: string): HttpClientRequest;
+} = dual(
+  3,
+  (self: HttpClientRequest, key: string, value: string): HttpClientRequest =>
+    makeWith(
+      self.method,
+      self.url,
+      UrlParams.append(self.urlParams, key, value),
+      self.hash,
+      self.headers,
+      self.body
+    )
+);
 
 /**
  * Appends query parameters from an input collection without removing existing values for matching names.
@@ -589,17 +652,20 @@ export const appendUrlParam: {
  * @since 4.0.0
  */
 export const appendUrlParams: {
-  (input: UrlParams.Input): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest =>
-  makeWith(
-    self.method,
-    self.url,
-    UrlParams.appendAll(self.urlParams, input),
-    self.hash,
-    self.headers,
-    self.body
-  ))
+  (input: UrlParams.Input): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest =>
+    makeWith(
+      self.method,
+      self.url,
+      UrlParams.appendAll(self.urlParams, input),
+      self.hash,
+      self.headers,
+      self.body
+    )
+);
 
 /**
  * Sets the URL fragment on a request without the leading `#`.
@@ -608,17 +674,20 @@ export const appendUrlParams: {
  * @since 4.0.0
  */
 export const setHash: {
-  (hash: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, hash: string): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, hash: string): HttpClientRequest =>
-  makeWith(
-    self.method,
-    self.url,
-    self.urlParams,
-    Option.some(hash),
-    self.headers,
-    self.body
-  ))
+  (hash: string): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, hash: string): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, hash: string): HttpClientRequest =>
+    makeWith(
+      self.method,
+      self.url,
+      self.urlParams,
+      Option.some(hash),
+      self.headers,
+      self.body
+    )
+);
 
 /**
  * Removes the URL fragment from a request.
@@ -634,7 +703,7 @@ export const removeHash = (self: HttpClientRequest): HttpClientRequest =>
     Option.none(),
     self.headers,
     self.body
-  )
+  );
 
 /**
  * Sets the request body and updates `Content-Type` and `Content-Length` headers from the body metadata when available.
@@ -643,29 +712,39 @@ export const removeHash = (self: HttpClientRequest): HttpClientRequest =>
  * @since 4.0.0
  */
 export const setBody: {
-  (body: HttpBody.HttpBody): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, body: HttpBody.HttpBody): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, body: HttpBody.HttpBody): HttpClientRequest => {
-  let headers = self.headers
-  if (body._tag === "Empty" || body._tag === "FormData") {
-    headers = Headers.remove(Headers.remove(headers, "Content-Type"), "Content-length")
-  } else {
-    if (body.contentType) {
-      headers = Headers.set(headers, "content-type", body.contentType)
+  (body: HttpBody.HttpBody): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, body: HttpBody.HttpBody): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, body: HttpBody.HttpBody): HttpClientRequest => {
+    let headers = self.headers;
+    if (body._tag === "Empty" || body._tag === "FormData") {
+      headers = Headers.remove(
+        Headers.remove(headers, "Content-Type"),
+        "Content-length"
+      );
+    } else {
+      if (body.contentType) {
+        headers = Headers.set(headers, "content-type", body.contentType);
+      }
+      if (body.contentLength !== undefined) {
+        headers = Headers.set(
+          headers,
+          "content-length",
+          body.contentLength.toString()
+        );
+      }
     }
-    if (body.contentLength !== undefined) {
-      headers = Headers.set(headers, "content-length", body.contentLength.toString())
-    }
+    return makeWith(
+      self.method,
+      self.url,
+      self.urlParams,
+      self.hash,
+      headers,
+      body
+    );
   }
-  return makeWith(
-    self.method,
-    self.url,
-    self.urlParams,
-    self.hash,
-    headers,
-    body
-  )
-})
+);
 
 /**
  * Sets a `Uint8Array` request body with an optional content type.
@@ -674,13 +753,23 @@ export const setBody: {
  * @since 4.0.0
  */
 export const bodyUint8Array: {
-  (body: Uint8Array, contentType?: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, body: Uint8Array, contentType?: string): HttpClientRequest
+  (
+    body: Uint8Array,
+    contentType?: string
+  ): (self: HttpClientRequest) => HttpClientRequest;
+  (
+    self: HttpClientRequest,
+    body: Uint8Array,
+    contentType?: string
+  ): HttpClientRequest;
 } = dual(
   (args) => isHttpClientRequest(args[0]),
-  (self: HttpClientRequest, body: Uint8Array, contentType?: string): HttpClientRequest =>
-    setBody(self, HttpBody.uint8Array(body, contentType))
-)
+  (
+    self: HttpClientRequest,
+    body: Uint8Array,
+    contentType?: string
+  ): HttpClientRequest => setBody(self, HttpBody.uint8Array(body, contentType))
+);
 
 /**
  * Sets a text request body with an optional content type.
@@ -689,13 +778,23 @@ export const bodyUint8Array: {
  * @since 4.0.0
  */
 export const bodyText: {
-  (body: string, contentType?: string): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, body: string, contentType?: string): HttpClientRequest
+  (
+    body: string,
+    contentType?: string
+  ): (self: HttpClientRequest) => HttpClientRequest;
+  (
+    self: HttpClientRequest,
+    body: string,
+    contentType?: string
+  ): HttpClientRequest;
 } = dual(
   (args) => isHttpClientRequest(args[0]),
-  (self: HttpClientRequest, body: string, contentType?: string): HttpClientRequest =>
-    setBody(self, HttpBody.text(body, contentType))
-)
+  (
+    self: HttpClientRequest,
+    body: string,
+    contentType?: string
+  ): HttpClientRequest => setBody(self, HttpBody.text(body, contentType))
+);
 
 /**
  * Encodes a value as a JSON request body and sets it on the request, failing with `HttpBodyError` if encoding fails.
@@ -704,13 +803,23 @@ export const bodyText: {
  * @since 4.0.0
  */
 export const bodyJson: {
-  (body: unknown): (self: HttpClientRequest) => Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError>
-  (self: HttpClientRequest, body: unknown): Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError>
+  (
+    body: unknown
+  ): (
+    self: HttpClientRequest
+  ) => Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError>;
+  (
+    self: HttpClientRequest,
+    body: unknown
+  ): Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError>;
 } = dual(
   2,
-  (self: HttpClientRequest, body: unknown): Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError> =>
+  (
+    self: HttpClientRequest,
+    body: unknown
+  ): Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError> =>
     Effect.map(HttpBody.json(body), (body) => setBody(self, body))
-)
+);
 
 /**
  * Sets a JSON request body using unsafe JSON encoding.
@@ -728,9 +837,13 @@ export const bodyJson: {
  * @since 4.0.0
  */
 export const bodyJsonUnsafe: {
-  (body: unknown): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, body: unknown): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, body: unknown): HttpClientRequest => setBody(self, HttpBody.jsonUnsafe(body)))
+  (body: unknown): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, body: unknown): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, body: unknown): HttpClientRequest =>
+    setBody(self, HttpBody.jsonUnsafe(body))
+);
 
 /**
  * Creates a schema-based JSON body encoder that sets the encoded value on a request.
@@ -746,22 +859,33 @@ export const schemaBodyJson = <S extends Schema.Top>(
     body: S["Type"]
   ): (
     self: HttpClientRequest
-  ) => Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError, S["EncodingServices"]>
+  ) => Effect.Effect<
+    HttpClientRequest,
+    HttpBody.HttpBodyError,
+    S["EncodingServices"]
+  >;
   (
     self: HttpClientRequest,
     body: S["Type"]
-  ): Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError, S["EncodingServices"]>
+  ): Effect.Effect<
+    HttpClientRequest,
+    HttpBody.HttpBodyError,
+    S["EncodingServices"]
+  >;
 } => {
-  const encode = HttpBody.jsonSchema(schema, options)
+  const encode = HttpBody.jsonSchema(schema, options);
   return dual(
     2,
     (
       self: HttpClientRequest,
       body: unknown
-    ): Effect.Effect<HttpClientRequest, HttpBody.HttpBodyError, S["EncodingServices"]> =>
-      Effect.map(encode(body), (body) => setBody(self, body))
-  )
-}
+    ): Effect.Effect<
+      HttpClientRequest,
+      HttpBody.HttpBodyError,
+      S["EncodingServices"]
+    > => Effect.map(encode(body), (body) => setBody(self, body))
+  );
+};
 
 /**
  * Sets an `application/x-www-form-urlencoded` request body from URL parameter input.
@@ -770,13 +894,13 @@ export const schemaBodyJson = <S extends Schema.Top>(
  * @since 4.0.0
  */
 export const bodyUrlParams: {
-  (input: UrlParams.Input): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest
+  (input: UrlParams.Input): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest;
 } = dual(
   2,
   (self: HttpClientRequest, input: UrlParams.Input): HttpClientRequest =>
     setBody(self, HttpBody.urlParams(UrlParams.fromInput(input)))
-)
+);
 
 /**
  * Sets a `FormData` request body.
@@ -785,9 +909,13 @@ export const bodyUrlParams: {
  * @since 4.0.0
  */
 export const bodyFormData: {
-  (body: FormData): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, body: FormData): HttpClientRequest
-} = dual(2, (self: HttpClientRequest, body: FormData): HttpClientRequest => setBody(self, HttpBody.formData(body)))
+  (body: FormData): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, body: FormData): HttpClientRequest;
+} = dual(
+  2,
+  (self: HttpClientRequest, body: FormData): HttpClientRequest =>
+    setBody(self, HttpBody.formData(body))
+);
 
 /**
  * Creates a `FormData` request body from record-style entries and sets it on the request.
@@ -796,13 +924,17 @@ export const bodyFormData: {
  * @since 4.0.0
  */
 export const bodyFormDataRecord: {
-  (entries: HttpBody.FormDataInput): (self: HttpClientRequest) => HttpClientRequest
-  (self: HttpClientRequest, entries: HttpBody.FormDataInput): HttpClientRequest
+  (
+    entries: HttpBody.FormDataInput
+  ): (self: HttpClientRequest) => HttpClientRequest;
+  (self: HttpClientRequest, entries: HttpBody.FormDataInput): HttpClientRequest;
 } = dual(
   2,
-  (self: HttpClientRequest, entries: HttpBody.FormDataInput): HttpClientRequest =>
-    setBody(self, HttpBody.formDataRecord(entries))
-)
+  (
+    self: HttpClientRequest,
+    entries: HttpBody.FormDataInput
+  ): HttpClientRequest => setBody(self, HttpBody.formDataRecord(entries))
+);
 
 /**
  * Sets a streaming `Uint8Array` request body with optional content type and content length metadata.
@@ -813,25 +945,40 @@ export const bodyFormDataRecord: {
 export const bodyStream: {
   (
     body: Stream.Stream<Uint8Array, unknown>,
-    options?: { readonly contentType?: string | undefined; readonly contentLength?: number | undefined } | undefined
-  ): (self: HttpClientRequest) => HttpClientRequest
+    options?:
+      | {
+          readonly contentType?: string | undefined;
+          readonly contentLength?: number | undefined;
+        }
+      | undefined
+  ): (self: HttpClientRequest) => HttpClientRequest;
   (
     self: HttpClientRequest,
     body: Stream.Stream<Uint8Array, unknown>,
-    options?: { readonly contentType?: string | undefined; readonly contentLength?: number | undefined } | undefined
-  ): HttpClientRequest
+    options?:
+      | {
+          readonly contentType?: string | undefined;
+          readonly contentLength?: number | undefined;
+        }
+      | undefined
+  ): HttpClientRequest;
 } = dual(
   (args) => isHttpClientRequest(args[0]),
   (
     self: HttpClientRequest,
     body: Stream.Stream<Uint8Array, unknown>,
-    options?: { readonly contentType?: string | undefined; readonly contentLength?: number | undefined } | undefined
+    options?:
+      | {
+          readonly contentType?: string | undefined;
+          readonly contentLength?: number | undefined;
+        }
+      | undefined
   ): HttpClientRequest =>
     setBody(
       self,
       HttpBody.stream(body, options?.contentType, options?.contentLength)
     )
-)
+);
 
 /**
  * Creates a file-backed request body from a filesystem path and sets it on the request.
@@ -843,39 +990,49 @@ export const bodyFile: {
   (
     path: string,
     options?: {
-      readonly bytesToRead?: FileSystem.SizeInput | undefined
-      readonly chunkSize?: FileSystem.SizeInput | undefined
-      readonly offset?: FileSystem.SizeInput | undefined
-      readonly contentType?: string
+      readonly bytesToRead?: FileSystem.SizeInput | undefined;
+      readonly chunkSize?: FileSystem.SizeInput | undefined;
+      readonly offset?: FileSystem.SizeInput | undefined;
+      readonly contentType?: string;
     }
-  ): (self: HttpClientRequest) => Effect.Effect<HttpClientRequest, PlatformError.PlatformError, FileSystem.FileSystem>
+  ): (
+    self: HttpClientRequest
+  ) => Effect.Effect<
+    HttpClientRequest,
+    PlatformError.PlatformError,
+    FileSystem.FileSystem
+  >;
   (
     self: HttpClientRequest,
     path: string,
     options?: {
-      readonly bytesToRead?: FileSystem.SizeInput | undefined
-      readonly chunkSize?: FileSystem.SizeInput | undefined
-      readonly offset?: FileSystem.SizeInput | undefined
-      readonly contentType?: string
+      readonly bytesToRead?: FileSystem.SizeInput | undefined;
+      readonly chunkSize?: FileSystem.SizeInput | undefined;
+      readonly offset?: FileSystem.SizeInput | undefined;
+      readonly contentType?: string;
     }
-  ): Effect.Effect<HttpClientRequest, PlatformError.PlatformError, FileSystem.FileSystem>
+  ): Effect.Effect<
+    HttpClientRequest,
+    PlatformError.PlatformError,
+    FileSystem.FileSystem
+  >;
 } = dual(
   (args) => isHttpClientRequest(args[0]),
   (
     self: HttpClientRequest,
     path: string,
     options?: {
-      readonly bytesToRead?: FileSystem.SizeInput | undefined
-      readonly chunkSize?: FileSystem.SizeInput | undefined
-      readonly offset?: FileSystem.SizeInput | undefined
-      readonly contentType?: string
+      readonly bytesToRead?: FileSystem.SizeInput | undefined;
+      readonly chunkSize?: FileSystem.SizeInput | undefined;
+      readonly offset?: FileSystem.SizeInput | undefined;
+      readonly contentType?: string;
     }
-  ): Effect.Effect<HttpClientRequest, PlatformError.PlatformError, FileSystem.FileSystem> =>
-    Effect.map(
-      HttpBody.file(path, options),
-      (body) => setBody(self, body)
-    )
-)
+  ): Effect.Effect<
+    HttpClientRequest,
+    PlatformError.PlatformError,
+    FileSystem.FileSystem
+  > => Effect.map(HttpBody.file(path, options), (body) => setBody(self, body))
+);
 
 /**
  * Builds a `URL` from the request URL, query parameters, and hash, returning `Option.none()` if the URL is invalid.
@@ -884,11 +1041,15 @@ export const bodyFile: {
  * @since 4.0.0
  */
 export function toUrl(self: HttpClientRequest): Option.Option<URL> {
-  const r = UrlParams.makeUrl(self.url, self.urlParams, Option.getOrUndefined(self.hash))
+  const r = UrlParams.makeUrl(
+    self.url,
+    self.urlParams,
+    Option.getOrUndefined(self.hash)
+  );
   if (Result.isSuccess(r)) {
-    return Option.some(r.success)
+    return Option.some(r.success);
   }
-  return Option.none()
+  return Option.none();
 }
 
 /**
@@ -898,32 +1059,37 @@ export function toUrl(self: HttpClientRequest): Option.Option<URL> {
  * @since 4.0.0
  */
 export const fromWeb = (request: globalThis.Request): HttpClientRequest => {
-  const method = request.method.toUpperCase() as HttpMethod
+  const method = request.method.toUpperCase() as HttpMethod;
   return modify(empty, {
     method,
     url: new URL(request.url),
     headers: request.headers,
-    body: fromWebBody(request, method)
-  })
-}
+    body: fromWebBody(request, method),
+  });
+};
 
-const fromWebBody = (request: globalThis.Request, method: HttpMethod): HttpBody.HttpBody => {
+const fromWebBody = (
+  request: globalThis.Request,
+  method: HttpMethod
+): HttpBody.HttpBody => {
   if (!hasBody(method) || request.body === null) {
-    return HttpBody.empty
+    return HttpBody.empty;
   }
   return HttpBody.raw(request.body, {
     contentType: request.headers.get("content-type") ?? undefined,
-    contentLength: parseContentLength(request.headers.get("content-length"))
-  })
-}
+    contentLength: parseContentLength(request.headers.get("content-length")),
+  });
+};
 
-const parseContentLength = (contentLength: string | null): number | undefined => {
+const parseContentLength = (
+  contentLength: string | null
+): number | undefined => {
   if (contentLength === null) {
-    return undefined
+    return undefined;
   }
-  const parsed = Number.parseInt(contentLength, 10)
-  return Number.isNaN(parsed) ? undefined : parsed
-}
+  const parsed = Number.parseInt(contentLength, 10);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
 
 /**
  * Converts an `HttpClientRequest` safely to a Web `Request` as a `Result`, failing when the request URL is invalid.
@@ -931,56 +1097,66 @@ const parseContentLength = (contentLength: string | null): number | undefined =>
  * @category converting
  * @since 4.0.0
  */
-export const toWebResult = (self: HttpClientRequest, options?: {
-  readonly signal?: AbortSignal | undefined
-  readonly context?: Context.Context<never> | undefined
-}): Result.Result<Request, UrlParams.UrlParamsError> => {
-  const url = UrlParams.makeUrl(self.url, self.urlParams, Option.getOrUndefined(self.hash))
+export const toWebResult = (
+  self: HttpClientRequest,
+  options?: {
+    readonly signal?: AbortSignal | undefined;
+    readonly context?: Context.Context<never> | undefined;
+  }
+): Result.Result<Request, UrlParams.UrlParamsError> => {
+  const url = UrlParams.makeUrl(
+    self.url,
+    self.urlParams,
+    Option.getOrUndefined(self.hash)
+  );
   if (Result.isFailure(url)) {
-    return Result.fail(url.failure)
+    return Result.fail(url.failure);
   }
   const requestInit: RequestInit = {
     method: self.method,
-    headers: self.headers
-  }
+    headers: self.headers,
+  };
   if (options?.signal) {
-    requestInit.signal = options.signal
+    requestInit.signal = options.signal;
   }
   if (hasBody(self.method)) {
     switch (self.body._tag) {
       case "Empty": {
-        break
+        break;
       }
       case "Raw": {
-        requestInit.body = self.body.body as any
+        requestInit.body = self.body.body as any;
         if (isReadableStream(self.body.body)) {
-          ;(requestInit as any).duplex = "half"
+          (requestInit as any).duplex = "half";
         }
-        break
+        break;
       }
       case "Uint8Array": {
-        requestInit.body = self.body.body as any
-        break
+        requestInit.body = self.body.body as any;
+        break;
       }
       case "FormData": {
-        requestInit.body = self.body.formData
-        break
+        requestInit.body = self.body.formData;
+        break;
       }
       case "Stream": {
-        requestInit.body = Stream.toReadableStreamWith(self.body.stream, options?.context ?? Context.empty())
-        ;(requestInit as any).duplex = "half"
-        break
+        requestInit.body = Stream.toReadableStreamWith(
+          self.body.stream,
+          options?.context ?? Context.empty()
+        );
+        (requestInit as any).duplex = "half";
+        break;
       }
     }
   }
   return Result.try({
     try: () => new Request(url.success, requestInit),
-    catch: (cause) => new UrlParams.UrlParamsError({ cause })
-  })
-}
+    catch: (cause) => new UrlParams.UrlParamsError({ cause }),
+  });
+};
 
 const isReadableStream = (u: unknown): u is ReadableStream<Uint8Array> =>
-  typeof ReadableStream !== "undefined" && u instanceof ReadableStream
+  typeof ReadableStream !== "undefined" && u instanceof ReadableStream;
 
 /**
  * Converts an `HttpClientRequest` to a Web `Request`, failing with `UrlParamsError` when the request URL is invalid.
@@ -988,12 +1164,17 @@ const isReadableStream = (u: unknown): u is ReadableStream<Uint8Array> =>
  * @category converting
  * @since 4.0.0
  */
-export const toWeb = (self: HttpClientRequest, options?: {
-  readonly signal?: AbortSignal | undefined
-}): Effect.Effect<Request, UrlParams.UrlParamsError> =>
+export const toWeb = (
+  self: HttpClientRequest,
+  options?: {
+    readonly signal?: AbortSignal | undefined;
+  }
+): Effect.Effect<Request, UrlParams.UrlParamsError> =>
   Effect.contextWith((context) =>
-    Effect.fromResult(toWebResult(self, {
-      context: context,
-      signal: options?.signal
-    }))
-  )
+    Effect.fromResult(
+      toWebResult(self, {
+        context: context,
+        signal: options?.signal,
+      })
+    )
+  );

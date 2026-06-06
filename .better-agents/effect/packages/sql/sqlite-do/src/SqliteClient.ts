@@ -33,26 +33,26 @@
  *
  * @since 4.0.0
  */
-import type { SqlStorage } from "@cloudflare/workers-types"
-import * as Config from "effect/Config"
-import * as Context from "effect/Context"
-import * as Effect from "effect/Effect"
-import * as Fiber from "effect/Fiber"
-import { identity } from "effect/Function"
-import * as Layer from "effect/Layer"
-import * as Scope from "effect/Scope"
-import * as Semaphore from "effect/Semaphore"
-import * as Stream from "effect/Stream"
-import * as Reactivity from "effect/unstable/reactivity/Reactivity"
-import * as Client from "effect/unstable/sql/SqlClient"
-import type { Connection } from "effect/unstable/sql/SqlConnection"
-import { classifySqliteError, SqlError } from "effect/unstable/sql/SqlError"
-import * as Statement from "effect/unstable/sql/Statement"
+import type { SqlStorage } from "@cloudflare/workers-types";
+import * as Config from "effect/Config";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Fiber from "effect/Fiber";
+import { identity } from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Semaphore from "effect/Semaphore";
+import * as Stream from "effect/Stream";
+import * as Reactivity from "effect/unstable/reactivity/Reactivity";
+import * as Client from "effect/unstable/sql/SqlClient";
+import type { Connection } from "effect/unstable/sql/SqlConnection";
+import { classifySqliteError, SqlError } from "effect/unstable/sql/SqlError";
+import * as Statement from "effect/unstable/sql/Statement";
 
-const ATTR_DB_SYSTEM_NAME = "db.system.name"
+const ATTR_DB_SYSTEM_NAME = "db.system.name";
 
 const classifyError = (cause: unknown, message: string, operation: string) =>
-  classifySqliteError(cause, { message, operation })
+  classifySqliteError(cause, { message, operation });
 
 /**
  * Runtime type identifier used to mark Cloudflare Durable Object `SqliteClient` values.
@@ -60,7 +60,7 @@ const classifyError = (cause: unknown, message: string, operation: string) =>
  * @category type IDs
  * @since 4.0.0
  */
-export const TypeId: TypeId = "~@effect/sql-sqlite-do/SqliteClient"
+export const TypeId: TypeId = "~@effect/sql-sqlite-do/SqliteClient";
 
 /**
  * Type-level identifier used to mark Cloudflare Durable Object `SqliteClient` values.
@@ -68,7 +68,7 @@ export const TypeId: TypeId = "~@effect/sql-sqlite-do/SqliteClient"
  * @category type IDs
  * @since 4.0.0
  */
-export type TypeId = "~@effect/sql-sqlite-do/SqliteClient"
+export type TypeId = "~@effect/sql-sqlite-do/SqliteClient";
 
 /**
  * Cloudflare Durable Object SQLite client service, extending `SqlClient` with its configuration. `updateValues` is not supported.
@@ -77,11 +77,11 @@ export type TypeId = "~@effect/sql-sqlite-do/SqliteClient"
  * @since 4.0.0
  */
 export interface SqliteClient extends Client.SqlClient {
-  readonly [TypeId]: TypeId
-  readonly config: SqliteClientConfig
+  readonly [TypeId]: TypeId;
+  readonly config: SqliteClientConfig;
 
   /** Not supported in sqlite */
-  readonly updateValues: never
+  readonly updateValues: never;
 }
 
 /**
@@ -95,7 +95,9 @@ export interface SqliteClient extends Client.SqlClient {
  * @category services
  * @since 4.0.0
  */
-export const SqliteClient = Context.Service<SqliteClient>("@effect/sql-sqlite-do/SqliteClient")
+export const SqliteClient = Context.Service<SqliteClient>(
+  "@effect/sql-sqlite-do/SqliteClient"
+);
 
 /**
  * Configuration for a Cloudflare Durable Object SQLite client, including the `SqlStorage` handle, span attributes, and query/result name transforms.
@@ -104,11 +106,11 @@ export const SqliteClient = Context.Service<SqliteClient>("@effect/sql-sqlite-do
  * @since 4.0.0
  */
 export interface SqliteClientConfig {
-  readonly db: SqlStorage
-  readonly spanAttributes?: Record<string, unknown> | undefined
+  readonly db: SqlStorage;
+  readonly spanAttributes?: Record<string, unknown> | undefined;
 
-  readonly transformResultNames?: ((str: string) => string) | undefined
-  readonly transformQueryNames?: ((str: string) => string) | undefined
+  readonly transformResultNames?: ((str: string) => string) | undefined;
+  readonly transformQueryNames?: ((str: string) => string) | undefined;
 }
 
 /**
@@ -120,28 +122,26 @@ export interface SqliteClientConfig {
 export const make = (
   options: SqliteClientConfig
 ): Effect.Effect<SqliteClient, never, Scope.Scope | Reactivity.Reactivity> =>
-  Effect.gen(function*() {
-    const compiler = Statement.makeCompilerSqlite(options.transformQueryNames)
+  Effect.gen(function* () {
+    const compiler = Statement.makeCompilerSqlite(options.transformQueryNames);
     const transformRows = options.transformResultNames
       ? Statement.defaultTransforms(options.transformResultNames).array
-      : undefined
+      : undefined;
 
-    const makeConnection = Effect.gen(function*() {
-      const db = options.db
+    const makeConnection = Effect.gen(function* () {
+      const db = options.db;
 
-      function* runIterator(
-        sql: string,
-        params: ReadonlyArray<unknown> = []
-      ) {
-        const cursor = db.exec(sql, ...params)
-        const columns = cursor.columnNames
+      function* runIterator(sql: string, params: ReadonlyArray<unknown> = []) {
+        const cursor = db.exec(sql, ...params);
+        const columns = cursor.columnNames;
         for (const result of cursor.raw()) {
-          const obj: any = {}
+          const obj: any = {};
           for (let i = 0; i < columns.length; i++) {
-            const value = result[i]
-            obj[columns[i]] = value instanceof ArrayBuffer ? new Uint8Array(value) : value
+            const value = result[i];
+            obj[columns[i]] =
+              value instanceof ArrayBuffer ? new Uint8Array(value) : value;
           }
-          yield obj
+          yield obj;
         }
       }
 
@@ -151,8 +151,15 @@ export const make = (
       ): Effect.Effect<ReadonlyArray<any>, SqlError, never> =>
         Effect.try({
           try: () => Array.from(runIterator(sql, params)),
-          catch: (cause) => new SqlError({ reason: classifyError(cause, "Failed to execute statement", "execute") })
-        })
+          catch: (cause) =>
+            new SqlError({
+              reason: classifyError(
+                cause,
+                "Failed to execute statement",
+                "execute"
+              ),
+            }),
+        });
 
       const runValues = (
         sql: string,
@@ -162,61 +169,67 @@ export const make = (
           try: () =>
             Array.from(db.exec(sql, ...params).raw(), (row) => {
               for (let i = 0; i < row.length; i++) {
-                const value = row[i]
+                const value = row[i];
                 if (value instanceof ArrayBuffer) {
-                  row[i] = new Uint8Array(value) as any
+                  row[i] = new Uint8Array(value) as any;
                 }
               }
-              return row
+              return row;
             }),
-          catch: (cause) => new SqlError({ reason: classifyError(cause, "Failed to execute statement", "execute") })
-        })
+          catch: (cause) =>
+            new SqlError({
+              reason: classifyError(
+                cause,
+                "Failed to execute statement",
+                "execute"
+              ),
+            }),
+        });
 
       return identity<Connection>({
         execute(sql, params, transformRows) {
           return transformRows
             ? Effect.map(runStatement(sql, params), transformRows)
-            : runStatement(sql, params)
+            : runStatement(sql, params);
         },
         executeRaw(sql, params) {
-          return runStatement(sql, params)
+          return runStatement(sql, params);
         },
         executeValues(sql, params) {
-          return runValues(sql, params)
+          return runValues(sql, params);
         },
         executeUnprepared(sql, params, transformRows) {
           return transformRows
             ? Effect.map(runStatement(sql, params), transformRows)
-            : runStatement(sql, params)
+            : runStatement(sql, params);
         },
         executeStream(sql, params, transformRows) {
           return Stream.suspend(() => {
-            const iterator = runIterator(sql, params)
-            return Stream.fromIteratorSucceed(iterator, 128)
+            const iterator = runIterator(sql, params);
+            return Stream.fromIteratorSucceed(iterator, 128);
           }).pipe(
             transformRows
               ? Stream.mapArray((chunk) => transformRows(chunk) as any)
               : identity
-          )
-        }
-      })
-    })
+          );
+        },
+      });
+    });
 
-    const semaphore = yield* Semaphore.make(1)
-    const connection = yield* makeConnection
+    const semaphore = yield* Semaphore.make(1);
+    const connection = yield* makeConnection;
 
-    const acquirer = semaphore.withPermits(1)(Effect.succeed(connection))
+    const acquirer = semaphore.withPermits(1)(Effect.succeed(connection));
     const transactionAcquirer = Effect.uninterruptibleMask((restore) => {
-      const fiber = Fiber.getCurrent()!
-      const scope = Context.getUnsafe(fiber.context, Scope.Scope)
+      const fiber = Fiber.getCurrent()!;
+      const scope = Context.getUnsafe(fiber.context, Scope.Scope);
       return Effect.as(
-        Effect.tap(
-          restore(semaphore.take(1)),
-          () => Scope.addFinalizer(scope, semaphore.release(1))
+        Effect.tap(restore(semaphore.take(1)), () =>
+          Scope.addFinalizer(scope, semaphore.release(1))
         ),
         connection
-      )
-    })
+      );
+    });
 
     return Object.assign(
       (yield* Client.make({
@@ -224,17 +237,19 @@ export const make = (
         compiler,
         transactionAcquirer,
         spanAttributes: [
-          ...(options.spanAttributes ? Object.entries(options.spanAttributes) : []),
-          [ATTR_DB_SYSTEM_NAME, "sqlite"]
+          ...(options.spanAttributes
+            ? Object.entries(options.spanAttributes)
+            : []),
+          [ATTR_DB_SYSTEM_NAME, "sqlite"],
         ],
-        transformRows
+        transformRows,
       })) as SqliteClient,
       {
         [TypeId]: TypeId as TypeId,
-        config: options
+        config: options,
       }
-    )
-  })
+    );
+  });
 
 /**
  * Creates a layer from a `Config`-wrapped Durable Object SQLite client configuration, providing both `SqliteClient` and `SqlClient`.
@@ -254,7 +269,7 @@ export const layerConfig = (
         )
       )
     )
-  ).pipe(Layer.provide(Reactivity.layer))
+  ).pipe(Layer.provide(Reactivity.layer));
 
 /**
  * Creates a layer from a concrete Durable Object SQLite client configuration, providing both `SqliteClient` and `SqlClient`.
@@ -269,5 +284,6 @@ export const layer = (
     Effect.map(make(config), (client) =>
       Context.make(SqliteClient, client).pipe(
         Context.add(Client.SqlClient, client)
-      ))
-  ).pipe(Layer.provide(Reactivity.layer))
+      )
+    )
+  ).pipe(Layer.provide(Reactivity.layer));

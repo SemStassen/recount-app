@@ -68,23 +68,23 @@
  * @since 4.0.0
  */
 
-import * as Equivalence from "./Equivalence.ts"
-import type { LazyArg } from "./Function.ts"
-import { constNull, constUndefined, dual, identity } from "./Function.ts"
-import type { TypeLambda } from "./HKT.ts"
-import type { Inspectable } from "./Inspectable.ts"
-import * as doNotation from "./internal/doNotation.ts"
-import * as option_ from "./internal/option.ts"
-import * as result from "./internal/result.ts"
-import type { Option } from "./Option.ts"
-import type { Pipeable } from "./Pipeable.ts"
-import type { Predicate, Refinement } from "./Predicate.ts"
-import { isFunction } from "./Predicate.ts"
-import type { Covariant, NoInfer, NotFunction } from "./Types.ts"
-import type * as Unify from "./Unify.ts"
-import type * as Gen from "./Utils.ts"
+import * as Equivalence from "./Equivalence.ts";
+import type { LazyArg } from "./Function.ts";
+import { constNull, constUndefined, dual, identity } from "./Function.ts";
+import type { TypeLambda } from "./HKT.ts";
+import type { Inspectable } from "./Inspectable.ts";
+import * as doNotation from "./internal/doNotation.ts";
+import * as option_ from "./internal/option.ts";
+import * as result from "./internal/result.ts";
+import type { Option } from "./Option.ts";
+import type { Pipeable } from "./Pipeable.ts";
+import type { Predicate, Refinement } from "./Predicate.ts";
+import { isFunction } from "./Predicate.ts";
+import type { Covariant, NoInfer, NotFunction } from "./Types.ts";
+import type * as Unify from "./Unify.ts";
+import type * as Gen from "./Utils.ts";
 
-const TypeId = "~effect/data/Result"
+const TypeId = "~effect/data/Result";
 
 /**
  * A value that is either `Success<A, E>` or `Failure<A, E>`.
@@ -125,7 +125,7 @@ const TypeId = "~effect/data/Result"
  * @category models
  * @since 4.0.0
  */
-export type Result<A, E = never> = Success<A, E> | Failure<A, E>
+export type Result<A, E = never> = Success<A, E> | Failure<A, E>;
 
 /**
  * The failure variant of {@link Result}. Wraps an error of type `E`.
@@ -157,17 +157,17 @@ export type Result<A, E = never> = Success<A, E> | Failure<A, E>
  * @since 4.0.0
  */
 export interface Failure<out A, out E> extends Pipeable, Inspectable {
-  readonly _tag: "Failure"
-  readonly _op: "Failure"
-  readonly failure: E
+  readonly _tag: "Failure";
+  readonly _op: "Failure";
+  readonly failure: E;
   readonly [TypeId]: {
-    readonly _A: Covariant<E>
-    readonly _E: Covariant<A>
-  }
-  [Symbol.iterator](): ResultIterator<Result<A, E>>
-  [Unify.typeSymbol]?: unknown
-  [Unify.unifySymbol]?: ResultUnify<this>
-  [Unify.ignoreSymbol]?: ResultUnifyIgnore
+    readonly _A: Covariant<E>;
+    readonly _E: Covariant<A>;
+  };
+  [Symbol.iterator](): ResultIterator<Result<A, E>>;
+  [Unify.typeSymbol]?: unknown;
+  [Unify.unifySymbol]?: ResultUnify<this>;
+  [Unify.ignoreSymbol]?: ResultUnifyIgnore;
 }
 
 /**
@@ -185,9 +185,7 @@ export interface Failure<out A, out E> extends Pipeable, Inspectable {
  * @since 4.0.0
  */
 export interface ResultIterator<T extends Result<any, any>> {
-  next(
-    ...args: ReadonlyArray<any>
-  ): IteratorResult<T, Result.Success<T>>
+  next(...args: ReadonlyArray<any>): IteratorResult<T, Result.Success<T>>;
 }
 
 /**
@@ -220,17 +218,17 @@ export interface ResultIterator<T extends Result<any, any>> {
  * @since 4.0.0
  */
 export interface Success<out A, out E> extends Pipeable, Inspectable {
-  readonly _tag: "Success"
-  readonly _op: "Success"
-  readonly success: A
+  readonly _tag: "Success";
+  readonly _op: "Success";
+  readonly success: A;
   readonly [TypeId]: {
-    readonly _A: Covariant<E>
-    readonly _E: Covariant<A>
-  }
-  [Symbol.iterator](): ResultIterator<Result<A, E>>
-  [Unify.typeSymbol]?: unknown
-  [Unify.unifySymbol]?: ResultUnify<this>
-  [Unify.ignoreSymbol]?: ResultUnifyIgnore
+    readonly _A: Covariant<E>;
+    readonly _E: Covariant<A>;
+  };
+  [Symbol.iterator](): ResultIterator<Result<A, E>>;
+  [Unify.typeSymbol]?: unknown;
+  [Unify.unifySymbol]?: ResultUnify<this>;
+  [Unify.ignoreSymbol]?: ResultUnifyIgnore;
 }
 
 /**
@@ -245,7 +243,11 @@ export interface Success<out A, out E> extends Pipeable, Inspectable {
  * @since 4.0.0
  */
 export interface ResultUnify<T extends { [Unify.typeSymbol]?: any }> {
-  Result?: () => T[Unify.typeSymbol] extends Result<infer A, infer E> | infer _ ? Result<A, E> : never
+  Result?: () => T[Unify.typeSymbol] extends
+    | Result<infer A, infer E>
+    | (infer _)
+    ? Result<A, E>
+    : never;
 }
 
 /**
@@ -274,7 +276,7 @@ export interface ResultUnifyIgnore {}
  * @since 4.0.0
  */
 export interface ResultTypeLambda extends TypeLambda {
-  readonly type: Result<this["Target"], this["Out1"]>
+  readonly type: Result<this["Target"], this["Out1"]>;
 }
 
 /**
@@ -304,14 +306,22 @@ export declare namespace Result {
    * @category Type Level
    * @since 4.0.0
    */
-  export type Failure<T extends Result<any, any>> = [T] extends [Result<infer _A, infer _E>] ? _E : never
+  export type Failure<T extends Result<any, any>> = [T] extends [
+    Result<infer _A, infer _E>,
+  ]
+    ? _E
+    : never;
   /**
    * Extracts the success type `A` from `Result<A, E>`.
    *
    * @category Type Level
    * @since 4.0.0
    */
-  export type Success<T extends Result<any, any>> = [T] extends [Result<infer _A, infer _E>] ? _A : never
+  export type Success<T extends Result<any, any>> = [T] extends [
+    Result<infer _A, infer _E>,
+  ]
+    ? _A
+    : never;
 }
 
 /**
@@ -339,7 +349,7 @@ export declare namespace Result {
  * @category constructors
  * @since 4.0.0
  */
-export const succeed: <A>(right: A) => Result<A> = result.succeed
+export const succeed: <A>(right: A) => Result<A> = result.succeed;
 
 /**
  * Creates a `Result` holding a `Failure` value.
@@ -369,9 +379,9 @@ export const succeed: <A>(right: A) => Result<A> = result.succeed
  * @category constructors
  * @since 4.0.0
  */
-export const fail: <E>(left: E) => Result<never, E> = result.fail
+export const fail: <E>(left: E) => Result<never, E> = result.fail;
 
-const void_: Result<void> = succeed(void 0)
+const void_: Result<void> = succeed(void 0);
 export {
   /**
    * Provides a pre-built successful `Result` that carries `undefined`.
@@ -402,8 +412,8 @@ export {
    * @category constructors
    * @since 3.13.0
    */
-  void_ as void
-}
+  void_ as void,
+};
 
 /**
  * Provides a pre-built failed `Result` whose failure value is `undefined`.
@@ -435,7 +445,7 @@ export {
  * @category constructors
  * @since 4.0.0
  */
-export const failVoid: Result<never, void> = fail(void 0)
+export const failVoid: Result<never, void> = fail(void 0);
 
 /**
  * Converts a possibly `null` or `undefined` value into a `Result`.
@@ -471,13 +481,13 @@ export const failVoid: Result<never, void> = fail(void 0)
  * @since 4.0.0
  */
 export const fromNullishOr: {
-  <A, E>(onNullish: (a: A) => E): (self: A) => Result<NonNullable<A>, E>
-  <A, E>(self: A, onNullish: (a: A) => E): Result<NonNullable<A>, E>
+  <A, E>(onNullish: (a: A) => E): (self: A) => Result<NonNullable<A>, E>;
+  <A, E>(self: A, onNullish: (a: A) => E): Result<NonNullable<A>, E>;
 } = dual(
   2,
   <A, E>(self: A, onNullish: (a: A) => E): Result<NonNullable<A>, E> =>
     self == null ? fail(onNullish(self)) : succeed(self)
-)
+);
 
 /**
  * Converts an `Option<A>` into a `Result<A, E>`.
@@ -515,38 +525,38 @@ export const fromNullishOr: {
  * @since 2.0.0
  */
 export const fromOption: {
-  <E>(onNone: () => E): <A>(self: Option<A>) => Result<A, E>
-  <A, E>(self: Option<A>, onNone: () => E): Result<A, E>
-} = result.fromOption
+  <E>(onNone: () => E): <A>(self: Option<A>) => Result<A, E>;
+  <A, E>(self: Option<A>, onNone: () => E): Result<A, E>;
+} = result.fromOption;
 
 const try_: {
-  <A, E>(
-    options: {
-      readonly try: LazyArg<A>
-      readonly catch: (error: unknown) => E
-    }
-  ): Result<A, E>
-  <A>(evaluate: LazyArg<A>): Result<A, unknown>
+  <A, E>(options: {
+    readonly try: LazyArg<A>;
+    readonly catch: (error: unknown) => E;
+  }): Result<A, E>;
+  <A>(evaluate: LazyArg<A>): Result<A, unknown>;
 } = <A, E>(
-  evaluate: LazyArg<A> | {
-    readonly try: LazyArg<A>
-    readonly catch: (error: unknown) => E
-  }
+  evaluate:
+    | LazyArg<A>
+    | {
+        readonly try: LazyArg<A>;
+        readonly catch: (error: unknown) => E;
+      }
 ) => {
   if (isFunction(evaluate)) {
     try {
-      return succeed(evaluate())
+      return succeed(evaluate());
     } catch (e) {
-      return fail(e)
+      return fail(e);
     }
   } else {
     try {
-      return succeed(evaluate.try())
+      return succeed(evaluate.try());
     } catch (e) {
-      return fail(evaluate.catch(e))
+      return fail(evaluate.catch(e));
     }
   }
-}
+};
 
 export {
   /**
@@ -582,8 +592,8 @@ export {
    * @category constructors
    * @since 2.0.0
    */
-  try_ as try
-}
+  try_ as try,
+};
 
 /**
  * Checks whether a value is a `Result` (either `Success` or `Failure`).
@@ -614,7 +624,8 @@ export {
  * @category guards
  * @since 4.0.0
  */
-export const isResult: (input: unknown) => input is Result<unknown, unknown> = result.isResult
+export const isResult: (input: unknown) => input is Result<unknown, unknown> =
+  result.isResult;
 
 /**
  * Checks whether a `Result` is a `Failure`.
@@ -647,7 +658,8 @@ export const isResult: (input: unknown) => input is Result<unknown, unknown> = r
  * @category guards
  * @since 4.0.0
  */
-export const isFailure: <A, E>(self: Result<A, E>) => self is Failure<A, E> = result.isFailure
+export const isFailure: <A, E>(self: Result<A, E>) => self is Failure<A, E> =
+  result.isFailure;
 
 /**
  * Checks whether a `Result` is a `Success`.
@@ -680,7 +692,8 @@ export const isFailure: <A, E>(self: Result<A, E>) => self is Failure<A, E> = re
  * @category guards
  * @since 4.0.0
  */
-export const isSuccess: <A, E>(self: Result<A, E>) => self is Success<A, E> = result.isSuccess
+export const isSuccess: <A, E>(self: Result<A, E>) => self is Success<A, E> =
+  result.isSuccess;
 
 /**
  * Extracts the success value as an `Option`, discarding the failure.
@@ -713,7 +726,8 @@ export const isSuccess: <A, E>(self: Result<A, E>) => self is Success<A, E> = re
  * @category getters
  * @since 4.0.0
  */
-export const getSuccess: <A, E>(self: Result<A, E>) => Option<A> = result.getSuccess
+export const getSuccess: <A, E>(self: Result<A, E>) => Option<A> =
+  result.getSuccess;
 
 /**
  * Extracts the failure value as an `Option`, discarding the success.
@@ -746,7 +760,8 @@ export const getSuccess: <A, E>(self: Result<A, E>) => Option<A> = result.getSuc
  * @category getters
  * @since 4.0.0
  */
-export const getFailure: <A, E>(self: Result<A, E>) => Option<E> = result.getFailure
+export const getFailure: <A, E>(self: Result<A, E>) => Option<E> =
+  result.getFailure;
 
 /**
  * Creates an `Equivalence` for comparing two `Result` values.
@@ -782,10 +797,10 @@ export const makeEquivalence = <A, E>(
   failure: Equivalence.Equivalence<E>
 ): Equivalence.Equivalence<Result<A, E>> =>
   Equivalence.make((x, y) =>
-    isFailure(x) ?
-      isFailure(y) && failure(x.failure, y.failure) :
-      isSuccess(y) && success(x.success, y.success)
-  )
+    isFailure(x)
+      ? isFailure(y) && failure(x.failure, y.failure)
+      : isSuccess(y) && success(x.success, y.success)
+  );
 
 /**
  * Transforms both the success and failure channels of a `Result`.
@@ -825,20 +840,32 @@ export const makeEquivalence = <A, E>(
  */
 export const mapBoth: {
   <E, E2, A, A2>(options: {
-    readonly onFailure: (left: E) => E2
-    readonly onSuccess: (right: A) => A2
-  }): (self: Result<A, E>) => Result<A2, E2>
-  <E, A, E2, A2>(self: Result<A, E>, options: {
-    readonly onFailure: (left: E) => E2
-    readonly onSuccess: (right: A) => A2
-  }): Result<A2, E2>
+    readonly onFailure: (left: E) => E2;
+    readonly onSuccess: (right: A) => A2;
+  }): (self: Result<A, E>) => Result<A2, E2>;
+  <E, A, E2, A2>(
+    self: Result<A, E>,
+    options: {
+      readonly onFailure: (left: E) => E2;
+      readonly onSuccess: (right: A) => A2;
+    }
+  ): Result<A2, E2>;
 } = dual(
   2,
-  <E, A, E2, A2>(self: Result<A, E>, { onFailure, onSuccess }: {
-    readonly onFailure: (left: E) => E2
-    readonly onSuccess: (right: A) => A2
-  }): Result<A2, E2> => isFailure(self) ? fail(onFailure(self.failure)) : succeed(onSuccess(self.success))
-)
+  <E, A, E2, A2>(
+    self: Result<A, E>,
+    {
+      onFailure,
+      onSuccess,
+    }: {
+      readonly onFailure: (left: E) => E2;
+      readonly onSuccess: (right: A) => A2;
+    }
+  ): Result<A2, E2> =>
+    isFailure(self)
+      ? fail(onFailure(self.failure))
+      : succeed(onSuccess(self.success))
+);
 
 /**
  * Transforms the failure channel of a `Result`, leaving the success channel unchanged.
@@ -872,13 +899,13 @@ export const mapBoth: {
  * @since 4.0.0
  */
 export const mapError: {
-  <E, E2>(f: (err: E) => E2): <A>(self: Result<A, E>) => Result<A, E2>
-  <A, E, E2>(self: Result<A, E>, f: (err: E) => E2): Result<A, E2>
+  <E, E2>(f: (err: E) => E2): <A>(self: Result<A, E>) => Result<A, E2>;
+  <A, E, E2>(self: Result<A, E>, f: (err: E) => E2): Result<A, E2>;
 } = dual(
   2,
   <A, E, E2>(self: Result<A, E>, f: (err: E) => E2): Result<A, E2> =>
     isFailure(self) ? fail(f(self.failure)) : succeed(self.success)
-)
+);
 
 /**
  * Transforms the success channel of a `Result`, leaving the failure channel unchanged.
@@ -915,13 +942,13 @@ export const mapError: {
  * @since 2.0.0
  */
 export const map: {
-  <A, A2>(f: (ok: A) => A2): <E>(self: Result<A, E>) => Result<A2, E>
-  <A, E, A2>(self: Result<A, E>, f: (ok: A) => A2): Result<A2, E>
+  <A, A2>(f: (ok: A) => A2): <E>(self: Result<A, E>) => Result<A2, E>;
+  <A, E, A2>(self: Result<A, E>, f: (ok: A) => A2): Result<A2, E>;
 } = dual(
   2,
   <A, E, A2>(self: Result<A, E>, f: (ok: A) => A2): Result<A2, E> =>
     isSuccess(self) ? succeed(f(self.success)) : fail(self.failure)
-)
+);
 
 /**
  * Folds a `Result` into a single value by applying one of two functions.
@@ -962,20 +989,30 @@ export const map: {
  */
 export const match: {
   <E, B, A, C = B>(options: {
-    readonly onFailure: (error: E) => B
-    readonly onSuccess: (ok: A) => C
-  }): (self: Result<A, E>) => B | C
-  <A, E, B, C = B>(self: Result<A, E>, options: {
-    readonly onFailure: (error: E) => B
-    readonly onSuccess: (ok: A) => C
-  }): B | C
+    readonly onFailure: (error: E) => B;
+    readonly onSuccess: (ok: A) => C;
+  }): (self: Result<A, E>) => B | C;
+  <A, E, B, C = B>(
+    self: Result<A, E>,
+    options: {
+      readonly onFailure: (error: E) => B;
+      readonly onSuccess: (ok: A) => C;
+    }
+  ): B | C;
 } = dual(
   2,
-  <A, E, B, C = B>(self: Result<A, E>, { onFailure, onSuccess }: {
-    readonly onFailure: (error: E) => B
-    readonly onSuccess: (ok: A) => C
-  }): B | C => isFailure(self) ? onFailure(self.failure) : onSuccess(self.success)
-)
+  <A, E, B, C = B>(
+    self: Result<A, E>,
+    {
+      onFailure,
+      onSuccess,
+    }: {
+      readonly onFailure: (error: E) => B;
+      readonly onSuccess: (ok: A) => C;
+    }
+  ): B | C =>
+    isFailure(self) ? onFailure(self.failure) : onSuccess(self.success)
+);
 
 /**
  * Lifts a value into a `Result` based on a predicate or refinement.
@@ -1015,26 +1052,32 @@ export const match: {
  * @since 3.4.0
  */
 export const liftPredicate: {
-  <A, B extends A, E>(refinement: Refinement<A, B>, orFailWith: (a: A) => E): (a: A) => Result<B, E>
+  <A, B extends A, E>(
+    refinement: Refinement<A, B>,
+    orFailWith: (a: A) => E
+  ): (a: A) => Result<B, E>;
   <B extends A, E, A = B>(
     predicate: Predicate<A>,
     orFailWith: (a: A) => E
-  ): (a: B) => Result<B, E>
+  ): (a: B) => Result<B, E>;
   <A, E, B extends A>(
     self: A,
     refinement: Refinement<A, B>,
     orFailWith: (a: A) => E
-  ): Result<B, E>
+  ): Result<B, E>;
   <B extends A, E, A = B>(
     self: B,
     predicate: Predicate<A>,
     orFailWith: (a: A) => E
-  ): Result<B, E>
+  ): Result<B, E>;
 } = dual(
   3,
-  <A, E>(a: A, predicate: Predicate<A>, orFailWith: (a: A) => E): Result<A, E> =>
-    predicate(a) ? succeed(a) : fail(orFailWith(a))
-)
+  <A, E>(
+    a: A,
+    predicate: Predicate<A>,
+    orFailWith: (a: A) => E
+  ): Result<A, E> => (predicate(a) ? succeed(a) : fail(orFailWith(a)))
+);
 
 /**
  * Validates the success value of a `Result` using a predicate, failing with a
@@ -1079,22 +1122,30 @@ export const filterOrFail: {
   <A, B extends A, E2>(
     refinement: Refinement<NoInfer<A>, B>,
     orFailWith: (value: NoInfer<A>) => E2
-  ): <E>(self: Result<A, E>) => Result<B, E2 | E>
+  ): <E>(self: Result<A, E>) => Result<B, E2 | E>;
   <A, E2>(
     predicate: Predicate<NoInfer<A>>,
     orFailWith: (value: NoInfer<A>) => E2
-  ): <E>(self: Result<A, E>) => Result<A, E2 | E>
+  ): <E>(self: Result<A, E>) => Result<A, E2 | E>;
   <A, E, B extends A, E2>(
     self: Result<A, E>,
     refinement: Refinement<A, B>,
     orFailWith: (value: A) => E2
-  ): Result<B, E | E2>
-  <A, E, E2>(self: Result<A, E>, predicate: Predicate<A>, orFailWith: (value: A) => E2): Result<A, E | E2>
-} = dual(3, <A, E, E2>(
-  self: Result<A, E>,
-  predicate: Predicate<A>,
-  orFailWith: (value: A) => E2
-): Result<A, E | E2> => flatMap(self, (a) => predicate(a) ? succeed(a) : fail(orFailWith(a))))
+  ): Result<B, E | E2>;
+  <A, E, E2>(
+    self: Result<A, E>,
+    predicate: Predicate<A>,
+    orFailWith: (value: A) => E2
+  ): Result<A, E | E2>;
+} = dual(
+  3,
+  <A, E, E2>(
+    self: Result<A, E>,
+    predicate: Predicate<A>,
+    orFailWith: (value: A) => E2
+  ): Result<A, E | E2> =>
+    flatMap(self, (a) => (predicate(a) ? succeed(a) : fail(orFailWith(a))))
+);
 
 /**
  * Unwraps a `Result` into `A | E` by returning the inner value regardless
@@ -1124,7 +1175,10 @@ export const filterOrFail: {
  * @category getters
  * @since 2.0.0
  */
-export const merge: <A, E>(self: Result<A, E>) => E | A = match({ onFailure: identity, onSuccess: identity })
+export const merge: <A, E>(self: Result<A, E>) => E | A = match({
+  onFailure: identity,
+  onSuccess: identity,
+});
 
 /**
  * Extracts the success value, or computes a fallback from the error.
@@ -1161,13 +1215,11 @@ export const merge: <A, E>(self: Result<A, E>) => E | A = match({ onFailure: ide
  * @since 2.0.0
  */
 export const getOrElse: {
-  <E, A2>(onFailure: (err: E) => A2): <A>(self: Result<A, E>) => A2 | A
-  <A, E, A2>(self: Result<A, E>, onFailure: (err: E) => A2): A | A2
-} = dual(
-  2,
-  <A, E, A2>(self: Result<A, E>, onFailure: (err: E) => A2): A | A2 =>
-    isFailure(self) ? onFailure(self.failure) : self.success
-)
+  <E, A2>(onFailure: (err: E) => A2): <A>(self: Result<A, E>) => A2 | A;
+  <A, E, A2>(self: Result<A, E>, onFailure: (err: E) => A2): A | A2;
+} = dual(2, <A, E, A2>(self: Result<A, E>, onFailure: (err: E) => A2): A | A2 =>
+  isFailure(self) ? onFailure(self.failure) : self.success
+);
 
 /**
  * Extracts the success value, or returns `null` on failure.
@@ -1200,7 +1252,8 @@ export const getOrElse: {
  * @category getters
  * @since 2.0.0
  */
-export const getOrNull: <A, E>(self: Result<A, E>) => A | null = getOrElse(constNull)
+export const getOrNull: <A, E>(self: Result<A, E>) => A | null =
+  getOrElse(constNull);
 
 /**
  * Extracts the success value, or returns `undefined` on failure.
@@ -1233,7 +1286,8 @@ export const getOrNull: <A, E>(self: Result<A, E>) => A | null = getOrElse(const
  * @category getters
  * @since 2.0.0
  */
-export const getOrUndefined: <A, E>(self: Result<A, E>) => A | undefined = getOrElse(constUndefined)
+export const getOrUndefined: <A, E>(self: Result<A, E>) => A | undefined =
+  getOrElse(constUndefined);
 
 /**
  * Extracts the success value or throws a custom error derived from the failure.
@@ -1272,14 +1326,14 @@ export const getOrUndefined: <A, E>(self: Result<A, E>) => A | undefined = getOr
  * @since 2.0.0
  */
 export const getOrThrowWith: {
-  <E>(onFailure: (err: E) => unknown): <A>(self: Result<A, E>) => A
-  <A, E>(self: Result<A, E>, onFailure: (err: E) => unknown): A
+  <E>(onFailure: (err: E) => unknown): <A>(self: Result<A, E>) => A;
+  <A, E>(self: Result<A, E>, onFailure: (err: E) => unknown): A;
 } = dual(2, <A, E>(self: Result<A, E>, onFailure: (err: E) => unknown): A => {
   if (isSuccess(self)) {
-    return self.success
+    return self.success;
   }
-  throw onFailure(self.failure)
-})
+  throw onFailure(self.failure);
+});
 
 /**
  * Extracts the success value or throws the raw failure value `E`.
@@ -1312,7 +1366,8 @@ export const getOrThrowWith: {
  * @category getters
  * @since 2.0.0
  */
-export const getOrThrow: <A, E>(self: Result<A, E>) => A = getOrThrowWith(identity)
+export const getOrThrow: <A, E>(self: Result<A, E>) => A =
+  getOrThrowWith(identity);
 
 /**
  * Returns the original `Result` if it is a `Success`, otherwise applies
@@ -1348,13 +1403,21 @@ export const getOrThrow: <A, E>(self: Result<A, E>) => A = getOrThrowWith(identi
  * @since 2.0.0
  */
 export const orElse: {
-  <E, A2, E2>(that: (err: E) => Result<A2, E2>): <A>(self: Result<A, E>) => Result<A | A2, E2>
-  <A, E, A2, E2>(self: Result<A, E>, that: (err: E) => Result<A2, E2>): Result<A | A2, E2>
+  <E, A2, E2>(
+    that: (err: E) => Result<A2, E2>
+  ): <A>(self: Result<A, E>) => Result<A | A2, E2>;
+  <A, E, A2, E2>(
+    self: Result<A, E>,
+    that: (err: E) => Result<A2, E2>
+  ): Result<A | A2, E2>;
 } = dual(
   2,
-  <A, E, A2, E2>(self: Result<A, E>, that: (err: E) => Result<A2, E2>): Result<A | A2, E2> =>
+  <A, E, A2, E2>(
+    self: Result<A, E>,
+    that: (err: E) => Result<A2, E2>
+  ): Result<A | A2, E2> =>
     isFailure(self) ? that(self.failure) : succeed(self.success)
-)
+);
 
 /**
  * Chains a function that returns a `Result` onto a successful value.
@@ -1393,13 +1456,21 @@ export const orElse: {
  * @since 2.0.0
  */
 export const flatMap: {
-  <A, A2, E2>(f: (a: A) => Result<A2, E2>): <E>(self: Result<A, E>) => Result<A2, E | E2>
-  <A, E, A2, E2>(self: Result<A, E>, f: (a: A) => Result<A2, E2>): Result<A2, E | E2>
+  <A, A2, E2>(
+    f: (a: A) => Result<A2, E2>
+  ): <E>(self: Result<A, E>) => Result<A2, E | E2>;
+  <A, E, A2, E2>(
+    self: Result<A, E>,
+    f: (a: A) => Result<A2, E2>
+  ): Result<A2, E | E2>;
 } = dual(
   2,
-  <A, E, A2, E2>(self: Result<A, E>, f: (a: A) => Result<A2, E2>): Result<A2, E | E2> =>
+  <A, E, A2, E2>(
+    self: Result<A, E>,
+    f: (a: A) => Result<A2, E2>
+  ): Result<A2, E | E2> =>
     isFailure(self) ? fail(self.failure) : f(self.success)
-)
+);
 
 /**
  * Provides a flexible variant of {@link flatMap} that accepts multiple input shapes.
@@ -1449,14 +1520,19 @@ export const flatMap: {
  * @since 2.0.0
  */
 export const andThen: {
-  <A, A2, E2>(f: (a: A) => Result<A2, E2>): <E>(self: Result<A, E>) => Result<A2, E | E2>
-  <A2, E2>(f: Result<A2, E2>): <A, E>(self: Result<A, E>) => Result<A2, E | E2>
-  <A, A2>(f: (a: A) => A2): <E>(self: Result<A, E>) => Result<A2, E>
-  <A2>(right: NotFunction<A2>): <A, E>(self: Result<A, E>) => Result<A2, E>
-  <A, E, A2, E2>(self: Result<A, E>, f: (a: A) => Result<A2, E2>): Result<A2, E | E2>
-  <A, E, A2, E2>(self: Result<A, E>, f: Result<A2, E2>): Result<A2, E | E2>
-  <A, E, A2>(self: Result<A, E>, f: (a: A) => A2): Result<A2, E>
-  <A, E, A2>(self: Result<A, E>, f: NotFunction<A2>): Result<A2, E>
+  <A, A2, E2>(
+    f: (a: A) => Result<A2, E2>
+  ): <E>(self: Result<A, E>) => Result<A2, E | E2>;
+  <A2, E2>(f: Result<A2, E2>): <A, E>(self: Result<A, E>) => Result<A2, E | E2>;
+  <A, A2>(f: (a: A) => A2): <E>(self: Result<A, E>) => Result<A2, E>;
+  <A2>(right: NotFunction<A2>): <A, E>(self: Result<A, E>) => Result<A2, E>;
+  <A, E, A2, E2>(
+    self: Result<A, E>,
+    f: (a: A) => Result<A2, E2>
+  ): Result<A2, E | E2>;
+  <A, E, A2, E2>(self: Result<A, E>, f: Result<A2, E2>): Result<A2, E | E2>;
+  <A, E, A2>(self: Result<A, E>, f: (a: A) => A2): Result<A2, E>;
+  <A, E, A2>(self: Result<A, E>, f: NotFunction<A2>): Result<A2, E>;
 } = dual(
   2,
   <A, E, A2, E2>(
@@ -1464,10 +1540,10 @@ export const andThen: {
     f: ((a: A) => Result<A2, E2> | A2) | Result<A2, E2> | A2
   ): Result<A2, E | E2> =>
     flatMap(self, (a) => {
-      const out = isFunction(f) ? f(a) : f
-      return isResult(out) ? out : succeed(out)
+      const out = isFunction(f) ? f(a) : f;
+      return isResult(out) ? out : succeed(out);
     })
-)
+);
 
 /**
  * Collects a structure of `Result`s into a single `Result` of collected values.
@@ -1509,40 +1585,60 @@ export const andThen: {
  * @since 2.0.0
  */
 // @ts-expect-error
-export const all: <const I extends Iterable<Result<any, any>> | Record<string, Result<any, any>>>(
+export const all: <
+  const I extends Iterable<Result<any, any>> | Record<string, Result<any, any>>,
+>(
   input: I
-) => [I] extends [ReadonlyArray<Result<any, any>>] ? Result<
-    { -readonly [K in keyof I]: [I[K]] extends [Result<infer R, any>] ? R : never },
-    I[number] extends never ? never : [I[number]] extends [Result<any, infer L>] ? L : never
-  >
-  : [I] extends [Iterable<Result<infer R, infer L>>] ? Result<Array<R>, L>
-  : Result<
-    { -readonly [K in keyof I]: [I[K]] extends [Result<infer R, any>] ? R : never },
-    I[keyof I] extends never ? never : [I[keyof I]] extends [Result<any, infer L>] ? L : never
-  > = (
-    input: Iterable<Result<any, any>> | Record<string, Result<any, any>>
-  ): Result<any, any> => {
-    if (Symbol.iterator in input) {
-      const out: Array<Result<any, any>> = []
-      for (const e of input) {
-        if (isFailure(e)) {
-          return e
-        }
-        out.push(e.success)
-      }
-      return succeed(out)
-    }
-
-    const out: Record<string, any> = {}
-    for (const key of Object.keys(input)) {
-      const e = input[key]
+) => [I] extends [ReadonlyArray<Result<any, any>>]
+  ? Result<
+      {
+        -readonly [K in keyof I]: [I[K]] extends [Result<infer R, any>]
+          ? R
+          : never;
+      },
+      I[number] extends never
+        ? never
+        : [I[number]] extends [Result<any, infer L>]
+          ? L
+          : never
+    >
+  : [I] extends [Iterable<Result<infer R, infer L>>]
+    ? Result<Array<R>, L>
+    : Result<
+        {
+          -readonly [K in keyof I]: [I[K]] extends [Result<infer R, any>]
+            ? R
+            : never;
+        },
+        I[keyof I] extends never
+          ? never
+          : [I[keyof I]] extends [Result<any, infer L>]
+            ? L
+            : never
+      > = (
+  input: Iterable<Result<any, any>> | Record<string, Result<any, any>>
+): Result<any, any> => {
+  if (Symbol.iterator in input) {
+    const out: Array<Result<any, any>> = [];
+    for (const e of input) {
       if (isFailure(e)) {
-        return e
+        return e;
       }
-      out[key] = e.success
+      out.push(e.success);
     }
-    return succeed(out)
+    return succeed(out);
   }
+
+  const out: Record<string, any> = {};
+  for (const key of Object.keys(input)) {
+    const e = input[key];
+    if (isFailure(e)) {
+      return e;
+    }
+    out[key] = e.success;
+  }
+  return succeed(out);
+};
 
 /**
  * Swaps the success and failure channels of a `Result`.
@@ -1577,7 +1673,7 @@ export const all: <const I extends Iterable<Result<any, any>> | Record<string, R
  * @since 2.0.0
  */
 export const flip = <A, E>(self: Result<A, E>): Result<E, A> =>
-  isFailure(self) ? succeed(self.failure) : fail(self.success)
+  isFailure(self) ? succeed(self.failure) : fail(self.success);
 
 /**
  * Provides generator-based syntax for composing `Result` values sequentially.
@@ -1616,18 +1712,18 @@ export const flip = <A, E>(self: Result<A, E>): Result<E, A> =>
  * @since 2.0.0
  */
 export const gen: Gen.Gen<ResultTypeLambda> = (...args) => {
-  const f = args.length === 1 ? args[0] : args[1].bind(args[0])
-  const iterator = f()
-  let state: IteratorResult<any> = iterator.next()
+  const f = args.length === 1 ? args[0] : args[1].bind(args[0]);
+  const iterator = f();
+  let state: IteratorResult<any> = iterator.next();
   while (!state.done) {
-    const current = state.value
+    const current = state.value;
     if (isFailure(current)) {
-      return current
+      return current;
     }
-    state = iterator.next(current.success as never)
+    state = iterator.next(current.success as never);
   }
-  return succeed(state.value) as any
-}
+  return succeed(state.value) as any;
+};
 
 // -------------------------------------------------------------------------------------
 // do notation
@@ -1671,7 +1767,7 @@ export const gen: Gen.Gen<ResultTypeLambda> = (...args) => {
  * @category do notation
  * @since 2.0.0
  */
-export const Do: Result<{}> = succeed({})
+export const Do: Result<{}> = succeed({});
 
 /**
  * Adds a named field to the do-notation accumulator by running a `Result`-producing
@@ -1714,13 +1810,15 @@ export const bind: {
   <N extends string, A extends object, B, L2>(
     name: Exclude<N, keyof A>,
     f: (a: NoInfer<A>) => Result<B, L2>
-  ): <L1>(self: Result<A, L1>) => Result<{ [K in N | keyof A]: K extends keyof A ? A[K] : B }, L1 | L2>
+  ): <L1>(
+    self: Result<A, L1>
+  ) => Result<{ [K in N | keyof A]: K extends keyof A ? A[K] : B }, L1 | L2>;
   <A extends object, L1, N extends string, B, L2>(
     self: Result<A, L1>,
     name: Exclude<N, keyof A>,
     f: (a: NoInfer<A>) => Result<B, L2>
-  ): Result<{ [K in N | keyof A]: K extends keyof A ? A[K] : B }, L1 | L2>
-} = doNotation.bind<ResultTypeLambda>(map, flatMap)
+  ): Result<{ [K in N | keyof A]: K extends keyof A ? A[K] : B }, L1 | L2>;
+} = doNotation.bind<ResultTypeLambda>(map, flatMap);
 
 /**
  * Wraps the success value of a `Result` into a named field, producing a
@@ -1756,21 +1854,28 @@ export const bind: {
  * @since 2.0.0
  */
 export const bindTo: {
-  <N extends string>(name: N): <R, L>(self: Result<R, L>) => Result<Record<N, R>, L>
-  <R, L, N extends string>(self: Result<R, L>, name: N): Result<Record<N, R>, L>
-} = doNotation.bindTo<ResultTypeLambda>(map)
+  <N extends string>(
+    name: N
+  ): <R, L>(self: Result<R, L>) => Result<Record<N, R>, L>;
+  <R, L, N extends string>(
+    self: Result<R, L>,
+    name: N
+  ): Result<Record<N, R>, L>;
+} = doNotation.bindTo<ResultTypeLambda>(map);
 
 const let_: {
   <N extends string, R extends object, B>(
     name: Exclude<N, keyof R>,
     f: (r: NoInfer<R>) => B
-  ): <L>(self: Result<R, L>) => Result<{ [K in N | keyof R]: K extends keyof R ? R[K] : B }, L>
+  ): <L>(
+    self: Result<R, L>
+  ) => Result<{ [K in N | keyof R]: K extends keyof R ? R[K] : B }, L>;
   <R extends object, L, N extends string, B>(
     self: Result<R, L>,
     name: Exclude<N, keyof R>,
     f: (r: NoInfer<R>) => B
-  ): Result<{ [K in N | keyof R]: K extends keyof R ? R[K] : B }, L>
-} = doNotation.let_<ResultTypeLambda>(map)
+  ): Result<{ [K in N | keyof R]: K extends keyof R ? R[K] : B }, L>;
+} = doNotation.let_<ResultTypeLambda>(map);
 
 export {
   /**
@@ -1808,8 +1913,8 @@ export {
    * @category do notation
    * @since 2.0.0
    */
-  let_ as let
-}
+  let_ as let,
+};
 
 /**
  * Transforms `Option<Result<A, E>>` into `Result<Option<A>, E>`.
@@ -1847,8 +1952,8 @@ export {
 export const transposeOption = <A = never, E = never>(
   self: Option<Result<A, E>>
 ): Result<Option<A>, E> => {
-  return option_.isNone(self) ? succeedNone : map(self.value, option_.some)
-}
+  return option_.isNone(self) ? succeedNone : map(self.value, option_.some);
+};
 
 /**
  * Maps an `Option` value with a `Result`-producing function, then transposes
@@ -1895,7 +2000,9 @@ export const transposeMapOption = dual<
     self: Option<A>,
     f: (self: A) => Result<B, E>
   ) => Result<Option<B>, E>
->(2, (self, f) => option_.isNone(self) ? succeedNone : map(f(self.value), option_.some))
+>(2, (self, f) =>
+  option_.isNone(self) ? succeedNone : map(f(self.value), option_.some)
+);
 
 /**
  * Provides a pre-built `Result<Option<never>>` that succeeds with `None`.
@@ -1926,7 +2033,7 @@ export const transposeMapOption = dual<
  * @category constructors
  * @since 4.0.0
  */
-export const succeedNone = succeed(option_.none)
+export const succeedNone = succeed(option_.none);
 
 /**
  * Creates a `Result<Option<A>>` that succeeds with `Some(a)`.
@@ -1951,7 +2058,8 @@ export const succeedNone = succeed(option_.none)
  * @category constructors
  * @since 4.0.0
  */
-export const succeedSome = <A, E = never>(a: A): Result<Option<A>, E> => succeed(option_.some(a))
+export const succeedSome = <A, E = never>(a: A): Result<Option<A>, E> =>
+  succeed(option_.some(a));
 
 /**
  * Runs a side-effect on the success value without altering the `Result`.
@@ -1984,14 +2092,11 @@ export const succeedSome = <A, E = never>(a: A): Result<Option<A>, E> => succeed
  * @since 4.0.0
  */
 export const tap: {
-  <A>(f: (a: A) => void): <E>(self: Result<A, E>) => Result<A, E>
-  <A, E>(self: Result<A, E>, f: (a: A) => void): Result<A, E>
-} = dual(
-  2,
-  <A, E>(self: Result<A, E>, f: (a: A) => void): Result<A, E> => {
-    if (isSuccess(self)) {
-      f(self.success)
-    }
-    return self
+  <A>(f: (a: A) => void): <E>(self: Result<A, E>) => Result<A, E>;
+  <A, E>(self: Result<A, E>, f: (a: A) => void): Result<A, E>;
+} = dual(2, <A, E>(self: Result<A, E>, f: (a: A) => void): Result<A, E> => {
+  if (isSuccess(self)) {
+    f(self.success);
   }
-)
+  return self;
+});

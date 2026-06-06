@@ -37,15 +37,15 @@
  *
  * @since 4.0.0
  */
-import * as Context from "../../Context.ts"
-import * as Effect from "../../Effect.ts"
-import * as Layer from "../../Layer.ts"
-import * as Schema from "../../Schema.ts"
-import { Scope } from "../../Scope.ts"
-import type { Mutable, unhandled } from "../../Types.ts"
-import type { Headers } from "../http/Headers.ts"
-import type * as Rpc from "./Rpc.ts"
-import type { Request, RequestId } from "./RpcMessage.ts"
+import * as Context from "../../Context.ts";
+import * as Effect from "../../Effect.ts";
+import * as Layer from "../../Layer.ts";
+import * as Schema from "../../Schema.ts";
+import { Scope } from "../../Scope.ts";
+import type { Mutable, unhandled } from "../../Types.ts";
+import type { Headers } from "../http/Headers.ts";
+import type * as Rpc from "./Rpc.ts";
+import type { Request, RequestId } from "./RpcMessage.ts";
 
 /**
  * The literal type id used to identify RPC middleware service classes.
@@ -53,7 +53,7 @@ import type { Request, RequestId } from "./RpcMessage.ts"
  * @category type IDs
  * @since 4.0.0
  */
-export type TypeId = "~effect/rpc/RpcMiddleware"
+export type TypeId = "~effect/rpc/RpcMiddleware";
 
 /**
  * The runtime type id used to attach and inspect RPC middleware metadata.
@@ -61,7 +61,7 @@ export type TypeId = "~effect/rpc/RpcMiddleware"
  * @category type IDs
  * @since 4.0.0
  */
-export const TypeId: TypeId = "~effect/rpc/RpcMiddleware"
+export const TypeId: TypeId = "~effect/rpc/RpcMiddleware";
 
 /**
  * The server-side RPC middleware function shape, wrapping a handler effect with
@@ -75,13 +75,13 @@ export interface RpcMiddleware<Provides, E, Requires> {
   (
     effect: Effect.Effect<SuccessValue, E | unhandled, Provides>,
     options: {
-      readonly client: Rpc.ServerClient
-      readonly requestId: RequestId
-      readonly rpc: Rpc.AnyWithProps
-      readonly payload: unknown
-      readonly headers: Headers
+      readonly client: Rpc.ServerClient;
+      readonly requestId: RequestId;
+      readonly rpc: Rpc.AnyWithProps;
+      readonly payload: unknown;
+      readonly headers: Headers;
     }
-  ): Effect.Effect<SuccessValue, unhandled | E, Requires | Scope>
+  ): Effect.Effect<SuccessValue, unhandled | E, Requires | Scope>;
 }
 
 /**
@@ -92,7 +92,7 @@ export interface RpcMiddleware<Provides, E, Requires> {
  * @since 4.0.0
  */
 export interface SuccessValue {
-  readonly _: unique symbol
+  readonly _: unique symbol;
 }
 
 /**
@@ -104,10 +104,12 @@ export interface SuccessValue {
  */
 export interface RpcMiddlewareClient<E, CE, R> {
   (options: {
-    readonly rpc: Rpc.AnyWithProps
-    readonly request: Request<Rpc.Any>
-    readonly next: (request: Request<Rpc.Any>) => Effect.Effect<SuccessValue, unhandled | E>
-  }): Effect.Effect<SuccessValue, unhandled | E | CE, R>
+    readonly rpc: Rpc.AnyWithProps;
+    readonly request: Request<Rpc.Any>;
+    readonly next: (
+      request: Request<Rpc.Any>
+    ) => Effect.Effect<SuccessValue, unhandled | E>;
+  }): Effect.Effect<SuccessValue, unhandled | E | CE, R>;
 }
 
 /**
@@ -118,8 +120,8 @@ export interface RpcMiddlewareClient<E, CE, R> {
  * @since 4.0.0
  */
 export interface ForClient<Id> {
-  readonly _: unique symbol
-  readonly id: Id
+  readonly _: unique symbol;
+  readonly id: Id;
 }
 
 /**
@@ -133,13 +135,13 @@ export interface Any {
   (
     effect: Effect.Effect<SuccessValue, any, any>,
     options: {
-      readonly client: Rpc.ServerClient
-      readonly requestId: RequestId
-      readonly rpc: Rpc.AnyWithProps
-      readonly payload: unknown
-      readonly headers: Headers
+      readonly client: Rpc.ServerClient;
+      readonly requestId: RequestId;
+      readonly rpc: Rpc.AnyWithProps;
+      readonly payload: unknown;
+      readonly headers: Headers;
     }
-  ): Effect.Effect<SuccessValue, any, any>
+  ): Effect.Effect<SuccessValue, any, any>;
 }
 
 /**
@@ -151,11 +153,11 @@ export interface Any {
  */
 export interface AnyId {
   readonly [TypeId]: {
-    readonly provides: any
-    readonly requires: any
-    readonly error: Schema.Top
-    readonly clientError: any
-  }
+    readonly provides: any;
+    readonly requires: any;
+    readonly error: Schema.Top;
+    readonly clientError: any;
+  };
 }
 
 /**
@@ -172,20 +174,23 @@ export interface ServiceClass<
   E extends Schema.Top,
   ClientError,
   Requires,
-  RequiredForClient extends boolean
+  RequiredForClient extends boolean,
 > extends Context.Service<Self, RpcMiddleware<Provides, E["Type"], Requires>> {
-  new(_: never): Context.ServiceClass.Shape<Name, RpcMiddleware<Provides, E["Type"], Requires>> & {
+  new (_: never): Context.ServiceClass.Shape<
+    Name,
+    RpcMiddleware<Provides, E["Type"], Requires>
+  > & {
     readonly [TypeId]: {
-      readonly error: E
-      readonly provides: Provides
-      readonly requires: Requires
-      readonly clientError: ClientError
-    }
-  }
-  readonly [TypeId]: typeof TypeId
-  readonly error: E
-  readonly requiredForClient: RequiredForClient
-  readonly "~ClientError": ClientError
+      readonly error: E;
+      readonly provides: Provides;
+      readonly requires: Requires;
+      readonly clientError: ClientError;
+    };
+  };
+  readonly [TypeId]: typeof TypeId;
+  readonly error: E;
+  readonly requiredForClient: RequiredForClient;
+  readonly "~ClientError": ClientError;
 }
 
 /**
@@ -194,7 +199,11 @@ export interface ServiceClass<
  * @category models
  * @since 4.0.0
  */
-export type Provides<A> = A extends { readonly [TypeId]: { readonly provides: infer P } } ? P : never
+export type Provides<A> = A extends {
+  readonly [TypeId]: { readonly provides: infer P };
+}
+  ? P
+  : never;
 
 /**
  * Extracts the services required by an RPC middleware.
@@ -202,7 +211,11 @@ export type Provides<A> = A extends { readonly [TypeId]: { readonly provides: in
  * @category models
  * @since 4.0.0
  */
-export type Requires<A> = A extends { readonly [TypeId]: { readonly requires: infer R } } ? R : never
+export type Requires<A> = A extends {
+  readonly [TypeId]: { readonly requires: infer R };
+}
+  ? R
+  : never;
 
 /**
  * Applies a middleware's service transformation to an RPC environment by
@@ -211,7 +224,7 @@ export type Requires<A> = A extends { readonly [TypeId]: { readonly requires: in
  * @category models
  * @since 4.0.0
  */
-export type ApplyServices<A, R> = Exclude<R, Provides<A>> | Requires<A>
+export type ApplyServices<A, R> = Exclude<R, Provides<A>> | Requires<A>;
 
 /**
  * Extracts the error schema associated with an RPC middleware.
@@ -219,9 +232,13 @@ export type ApplyServices<A, R> = Exclude<R, Provides<A>> | Requires<A>
  * @category models
  * @since 4.0.0
  */
-export type ErrorSchema<A> = A extends { readonly [TypeId]: { readonly error: infer E } }
-  ? E extends Schema.Top ? E : never
-  : never
+export type ErrorSchema<A> = A extends {
+  readonly [TypeId]: { readonly error: infer E };
+}
+  ? E extends Schema.Top
+    ? E
+    : never
+  : never;
 
 /**
  * Extracts the decoded error type produced by an RPC middleware.
@@ -229,7 +246,7 @@ export type ErrorSchema<A> = A extends { readonly [TypeId]: { readonly error: in
  * @category models
  * @since 4.0.0
  */
-export type Error<A> = ErrorSchema<A>["Type"]
+export type Error<A> = ErrorSchema<A>["Type"];
 
 /**
  * Extracts the encoding services required by a middleware's error schema.
@@ -237,7 +254,7 @@ export type Error<A> = ErrorSchema<A>["Type"]
  * @category models
  * @since 4.0.0
  */
-export type ErrorServicesEncode<A> = ErrorSchema<A>["EncodingServices"]
+export type ErrorServicesEncode<A> = ErrorSchema<A>["EncodingServices"];
 
 /**
  * Extracts the decoding services required by a middleware's error schema.
@@ -245,7 +262,7 @@ export type ErrorServicesEncode<A> = ErrorSchema<A>["EncodingServices"]
  * @category models
  * @since 4.0.0
  */
-export type ErrorServicesDecode<A> = ErrorSchema<A>["DecodingServices"]
+export type ErrorServicesDecode<A> = ErrorSchema<A>["DecodingServices"];
 
 /**
  * An erased RPC middleware context key carrying middleware metadata.
@@ -254,10 +271,10 @@ export type ErrorServicesDecode<A> = ErrorSchema<A>["DecodingServices"]
  * @since 4.0.0
  */
 export interface AnyService extends Context.Key<any, any> {
-  readonly [TypeId]: typeof TypeId
-  readonly error: Schema.Top
-  readonly requiredForClient: boolean
-  readonly "~ClientError": any
+  readonly [TypeId]: typeof TypeId;
+  readonly error: Schema.Top;
+  readonly requiredForClient: boolean;
+  readonly "~ClientError": any;
 }
 
 /**
@@ -267,11 +284,14 @@ export interface AnyService extends Context.Key<any, any> {
  * @category models
  * @since 4.0.0
  */
-export interface AnyServiceWithProps extends Context.Key<any, RpcMiddleware<any, any, any>> {
-  readonly [TypeId]: typeof TypeId
-  readonly error: Schema.Top
-  readonly requiredForClient: boolean
-  readonly "~ClientError": any
+export interface AnyServiceWithProps extends Context.Key<
+  any,
+  RpcMiddleware<any, any, any>
+> {
+  readonly [TypeId]: typeof TypeId;
+  readonly error: Schema.Top;
+  readonly requiredForClient: boolean;
+  readonly "~ClientError": any;
 }
 
 /**
@@ -282,63 +302,69 @@ export interface AnyServiceWithProps extends Context.Key<any, RpcMiddleware<any,
  * @category constructors
  * @since 4.0.0
  */
-export const Service = <
-  Self,
-  Config extends {
-    requires?: any
-    provides?: any
-    clientError?: any
-  } = {
-    requires: never
-    provides: never
-    clientError: never
-  }
->(): <
-  const Name extends string,
-  Error extends Schema.Top = Schema.Never,
-  const RequiredForClient extends boolean = false
->(
-  id: Name,
-  options?: {
-    readonly error?: Error | undefined
-    readonly requiredForClient?: RequiredForClient | undefined
-  } | undefined
-) => ServiceClass<
-  Self,
-  Name,
-  "provides" extends keyof Config ? Config["provides"] : never,
-  Error,
-  "clientError" extends keyof Config ? Config["clientError"] : never,
-  "requires" extends keyof Config ? Config["requires"] : never,
-  RequiredForClient
-> =>
-(
-  id: string,
-  options?: {
-    readonly error?: Schema.Top | undefined
-    readonly requiredForClient?: boolean | undefined
-  }
-) => {
-  const Err = globalThis.Error as any
-  const limit = Err.stackTraceLimit
-  Err.stackTraceLimit = 2
-  const creationError = new Err()
-  Err.stackTraceLimit = limit
-
-  function ServiceClass() {}
-  const ServiceClass_ = ServiceClass as any as Mutable<AnyService>
-  Object.setPrototypeOf(ServiceClass, Object.getPrototypeOf(Context.Service<Self, any>(id)))
-  ServiceClass.key = id
-  Object.defineProperty(ServiceClass, "stack", {
-    get() {
-      return creationError.stack
+export const Service =
+  <
+    Self,
+    Config extends {
+      requires?: any;
+      provides?: any;
+      clientError?: any;
+    } = {
+      requires: never;
+      provides: never;
+      clientError: never;
+    },
+  >(): (<
+    const Name extends string,
+    Error extends Schema.Top = Schema.Never,
+    const RequiredForClient extends boolean = false,
+  >(
+    id: Name,
+    options?:
+      | {
+          readonly error?: Error | undefined;
+          readonly requiredForClient?: RequiredForClient | undefined;
+        }
+      | undefined
+  ) => ServiceClass<
+    Self,
+    Name,
+    "provides" extends keyof Config ? Config["provides"] : never,
+    Error,
+    "clientError" extends keyof Config ? Config["clientError"] : never,
+    "requires" extends keyof Config ? Config["requires"] : never,
+    RequiredForClient
+  >) =>
+  (
+    id: string,
+    options?: {
+      readonly error?: Schema.Top | undefined;
+      readonly requiredForClient?: boolean | undefined;
     }
-  })
-  ServiceClass_[TypeId] = TypeId
-  ServiceClass_.error = options?.error ?? Schema.Never
-  ServiceClass_.requiredForClient = options?.requiredForClient ?? false
-  return ServiceClass as any
-}
+  ) => {
+    const Err = globalThis.Error as any;
+    const limit = Err.stackTraceLimit;
+    Err.stackTraceLimit = 2;
+    const creationError = new Err();
+    Err.stackTraceLimit = limit;
+
+    function ServiceClass() {}
+    const ServiceClass_ = ServiceClass as any as Mutable<AnyService>;
+    Object.setPrototypeOf(
+      ServiceClass,
+      Object.getPrototypeOf(Context.Service<Self, any>(id))
+    );
+    ServiceClass.key = id;
+    Object.defineProperty(ServiceClass, "stack", {
+      get() {
+        return creationError.stack;
+      },
+    });
+    ServiceClass_[TypeId] = TypeId;
+    ServiceClass_.error = options?.error ?? Schema.Never;
+    ServiceClass_.requiredForClient = options?.requiredForClient ?? false;
+    return ServiceClass as any;
+  };
 
 /**
  * Provides the client-side implementation for an RPC middleware service,
@@ -351,22 +377,37 @@ export const Service = <
 export const layerClient = <Id extends AnyId, S, R, EX = never, RX = never>(
   tag: Context.Key<Id, S>,
   service:
-    | RpcMiddlewareClient<Id[TypeId]["error"]["Type"], Id[TypeId]["clientError"], R>
-    | Effect.Effect<RpcMiddlewareClient<Id[TypeId]["error"]["Type"], Id[TypeId]["clientError"], R>, EX, RX>
+    | RpcMiddlewareClient<
+        Id[TypeId]["error"]["Type"],
+        Id[TypeId]["clientError"],
+        R
+      >
+    | Effect.Effect<
+        RpcMiddlewareClient<
+          Id[TypeId]["error"]["Type"],
+          Id[TypeId]["clientError"],
+          R
+        >,
+        EX,
+        RX
+      >
 ): Layer.Layer<ForClient<Id>, EX, R | Exclude<RX, Scope>> =>
-  Layer.effectContext(Effect.gen(function*() {
-    const services = (yield* Effect.context<R | Scope>()).pipe(
-      Context.omit(Scope)
-    ) as Context.Context<R>
-    const middleware = Effect.isEffect(service) ? yield* service : service
-    return Context.makeUnsafe(
-      new Map([[
-        `${tag.key}/Client`,
-        (options: any) =>
-          Effect.updateContext(
-            middleware(options),
-            (requestContext) => Context.merge(services, requestContext)
-          )
-      ]])
-    )
-  }))
+  Layer.effectContext(
+    Effect.gen(function* () {
+      const services = (yield* Effect.context<R | Scope>()).pipe(
+        Context.omit(Scope)
+      ) as Context.Context<R>;
+      const middleware = Effect.isEffect(service) ? yield* service : service;
+      return Context.makeUnsafe(
+        new Map([
+          [
+            `${tag.key}/Client`,
+            (options: any) =>
+              Effect.updateContext(middleware(options), (requestContext) =>
+                Context.merge(services, requestContext)
+              ),
+          ],
+        ])
+      );
+    })
+  );

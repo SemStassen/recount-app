@@ -26,14 +26,14 @@
  *
  * @since 4.0.0
  */
-import * as Config from "../../Config.ts"
-import * as Context from "../../Context.ts"
-import * as Duration from "../../Duration.ts"
-import * as Effect from "../../Effect.ts"
-import { flow, identity } from "../../Function.ts"
-import * as Layer from "../../Layer.ts"
-import * as Schema from "../../Schema.ts"
-import * as Redis from "./Redis.ts"
+import * as Config from "../../Config.ts";
+import * as Context from "../../Context.ts";
+import * as Duration from "../../Duration.ts";
+import * as Effect from "../../Effect.ts";
+import { flow, identity } from "../../Function.ts";
+import * as Layer from "../../Layer.ts";
+import * as Schema from "../../Schema.ts";
+import * as Redis from "./Redis.ts";
 
 /**
  * Runtime type identifier for `RateLimiter` values.
@@ -41,7 +41,7 @@ import * as Redis from "./Redis.ts"
  * @category type IDs
  * @since 4.0.0
  */
-export const TypeId: TypeId = "~effect/persistence/RateLimiter"
+export const TypeId: TypeId = "~effect/persistence/RateLimiter";
 
 /**
  * Type-level identifier used to brand `RateLimiter` values.
@@ -49,7 +49,7 @@ export const TypeId: TypeId = "~effect/persistence/RateLimiter"
  * @category type IDs
  * @since 4.0.0
  */
-export type TypeId = "~effect/persistence/RateLimiter"
+export type TypeId = "~effect/persistence/RateLimiter";
 
 /**
  * Service for consuming rate-limit tokens for a key using fixed-window or
@@ -59,16 +59,16 @@ export type TypeId = "~effect/persistence/RateLimiter"
  * @since 4.0.0
  */
 export interface RateLimiter {
-  readonly [TypeId]: TypeId
+  readonly [TypeId]: TypeId;
 
   readonly consume: (options: {
-    readonly algorithm?: "fixed-window" | "token-bucket" | undefined
-    readonly onExceeded?: "delay" | "fail" | undefined
-    readonly window: Duration.Input
-    readonly limit: number
-    readonly key: string
-    readonly tokens?: number | undefined
-  }) => Effect.Effect<ConsumeResult, RateLimiterError>
+    readonly algorithm?: "fixed-window" | "token-bucket" | undefined;
+    readonly onExceeded?: "delay" | "fail" | undefined;
+    readonly window: Duration.Input;
+    readonly limit: number;
+    readonly key: string;
+    readonly tokens?: number | undefined;
+  }) => Effect.Effect<ConsumeResult, RateLimiterError>;
 }
 
 /**
@@ -82,7 +82,8 @@ export interface RateLimiter {
  * @category services
  * @since 4.0.0
  */
-export const RateLimiter: Context.Service<RateLimiter, RateLimiter> = Context.Service<RateLimiter>(TypeId)
+export const RateLimiter: Context.Service<RateLimiter, RateLimiter> =
+  Context.Service<RateLimiter>(TypeId);
 
 /**
  * Creates a `RateLimiter` from the current `RateLimiterStore`.
@@ -95,137 +96,147 @@ export const RateLimiter: Context.Service<RateLimiter, RateLimiter> = Context.Se
  * @category constructors
  * @since 4.0.0
  */
-export const make: Effect.Effect<
-  RateLimiter,
-  never,
-  RateLimiterStore
-> = Effect.gen(function*() {
-  const store = yield* RateLimiterStore
+export const make: Effect.Effect<RateLimiter, never, RateLimiterStore> =
+  Effect.gen(function* () {
+    const store = yield* RateLimiterStore;
 
-  return identity<RateLimiter>({
-    [TypeId]: TypeId,
-    consume(options) {
-      const tokens = options.tokens ?? 1
-      const onExceeded = options.onExceeded ?? "fail"
-      const algorithm = options.algorithm ?? "fixed-window"
-      const window = Duration.max(Duration.fromInputUnsafe(options.window), Duration.millis(1))
-      const windowMillis = Duration.toMillis(window)
-      const refillRate = Duration.divideUnsafe(window, options.limit)
-      const refillRateMillis = Duration.toMillis(refillRate)
+    return identity<RateLimiter>({
+      [TypeId]: TypeId,
+      consume(options) {
+        const tokens = options.tokens ?? 1;
+        const onExceeded = options.onExceeded ?? "fail";
+        const algorithm = options.algorithm ?? "fixed-window";
+        const window = Duration.max(
+          Duration.fromInputUnsafe(options.window),
+          Duration.millis(1)
+        );
+        const windowMillis = Duration.toMillis(window);
+        const refillRate = Duration.divideUnsafe(window, options.limit);
+        const refillRateMillis = Duration.toMillis(refillRate);
 
-      if (tokens > options.limit) {
-        return onExceeded === "fail"
-          ? Effect.fail(
-            new RateLimiterError({
-              reason: new RateLimitExceeded({
-                key: options.key,
-                retryAfter: window,
+        if (tokens > options.limit) {
+          return onExceeded === "fail"
+            ? Effect.fail(
+                new RateLimiterError({
+                  reason: new RateLimitExceeded({
+                    key: options.key,
+                    retryAfter: window,
+                    limit: options.limit,
+                    remaining: 0,
+                  }),
+                })
+              )
+            : Effect.succeed<ConsumeResult>({
+                delay: window,
                 limit: options.limit,
-                remaining: 0
-              })
-            })
-          )
-          : Effect.succeed<ConsumeResult>({
-            delay: window,
-            limit: options.limit,
-            remaining: 0,
-            resetAfter: window
-          })
-      }
+                remaining: 0,
+                resetAfter: window,
+              });
+        }
 
-      if (algorithm === "fixed-window") {
+        if (algorithm === "fixed-window") {
+          return Effect.flatMap(
+            store.fixedWindow({
+              key: options.key,
+              tokens,
+              refillRate,
+              limit: onExceeded === "fail" ? options.limit : undefined,
+            }),
+            ([count, ttl]) => {
+              if (onExceeded === "fail") {
+                const remaining = options.limit - count;
+                if (remaining < 0) {
+                  return Effect.fail(
+                    new RateLimiterError({
+                      reason: new RateLimitExceeded({
+                        key: options.key,
+                        retryAfter: Duration.millis(ttl),
+                        limit: options.limit,
+                        remaining: 0,
+                      }),
+                    })
+                  );
+                }
+                return Effect.succeed<ConsumeResult>({
+                  delay: Duration.zero,
+                  limit: options.limit,
+                  remaining,
+                  resetAfter: Duration.millis(ttl),
+                });
+              }
+              const ttlTotal = count * refillRateMillis;
+              const elapsed = ttlTotal - ttl;
+              const windowNumber = Math.floor((count - 1) / options.limit);
+              const remaining = windowNumber * windowMillis - elapsed;
+              const delay =
+                remaining <= 0 ? Duration.zero : Duration.millis(remaining);
+              return Effect.succeed<ConsumeResult>({
+                delay,
+                limit: options.limit,
+                remaining: options.limit - count,
+                resetAfter: Duration.times(
+                  window,
+                  Math.ceil(ttl / windowMillis)
+                ),
+              });
+            }
+          );
+        }
+
         return Effect.flatMap(
-          store.fixedWindow({
+          store.tokenBucket({
             key: options.key,
             tokens,
+            limit: options.limit,
             refillRate,
-            limit: onExceeded === "fail" ? options.limit : undefined
+            allowOverflow: onExceeded === "delay",
           }),
-          ([count, ttl]) => {
+          (remaining) => {
             if (onExceeded === "fail") {
-              const remaining = options.limit - count
               if (remaining < 0) {
                 return Effect.fail(
                   new RateLimiterError({
                     reason: new RateLimitExceeded({
                       key: options.key,
-                      retryAfter: Duration.millis(ttl),
+                      retryAfter: Duration.times(refillRate, -remaining),
                       limit: options.limit,
-                      remaining: 0
-                    })
+                      remaining: 0,
+                    }),
                   })
-                )
+                );
               }
               return Effect.succeed<ConsumeResult>({
                 delay: Duration.zero,
                 limit: options.limit,
                 remaining,
-                resetAfter: Duration.millis(ttl)
-              })
+                resetAfter: Duration.times(
+                  refillRate,
+                  options.limit - remaining
+                ),
+              });
             }
-            const ttlTotal = count * refillRateMillis
-            const elapsed = ttlTotal - ttl
-            const windowNumber = Math.floor((count - 1) / options.limit)
-            const remaining = (windowNumber * windowMillis) - elapsed
-            const delay = remaining <= 0 ? Duration.zero : Duration.millis(remaining)
-            return Effect.succeed<ConsumeResult>({
-              delay,
-              limit: options.limit,
-              remaining: options.limit - count,
-              resetAfter: Duration.times(window, Math.ceil(ttl / windowMillis))
-            })
-          }
-        )
-      }
-
-      return Effect.flatMap(
-        store.tokenBucket({
-          key: options.key,
-          tokens,
-          limit: options.limit,
-          refillRate,
-          allowOverflow: onExceeded === "delay"
-        }),
-        (remaining) => {
-          if (onExceeded === "fail") {
-            if (remaining < 0) {
-              return Effect.fail(
-                new RateLimiterError({
-                  reason: new RateLimitExceeded({
-                    key: options.key,
-                    retryAfter: Duration.times(refillRate, -remaining),
-                    limit: options.limit,
-                    remaining: 0
-                  })
-                })
-              )
+            if (remaining >= 0) {
+              return Effect.succeed<ConsumeResult>({
+                delay: Duration.zero,
+                limit: options.limit,
+                remaining,
+                resetAfter: Duration.times(
+                  refillRate,
+                  options.limit - remaining
+                ),
+              });
             }
             return Effect.succeed<ConsumeResult>({
-              delay: Duration.zero,
+              delay: Duration.times(refillRate, -remaining),
               limit: options.limit,
               remaining,
-              resetAfter: Duration.times(refillRate, options.limit - remaining)
-            })
+              resetAfter: Duration.times(refillRate, options.limit - remaining),
+            });
           }
-          if (remaining >= 0) {
-            return Effect.succeed<ConsumeResult>({
-              delay: Duration.zero,
-              limit: options.limit,
-              remaining,
-              resetAfter: Duration.times(refillRate, options.limit - remaining)
-            })
-          }
-          return Effect.succeed<ConsumeResult>({
-            delay: Duration.times(refillRate, -remaining),
-            limit: options.limit,
-            remaining,
-            resetAfter: Duration.times(refillRate, options.limit - remaining)
-          })
-        }
-      )
-    }
-  })
-})
+        );
+      },
+    });
+  });
 
 /**
  * Provides `RateLimiter` using the current `RateLimiterStore`.
@@ -233,11 +244,8 @@ export const make: Effect.Effect<
  * @category layers
  * @since 4.0.0
  */
-export const layer: Layer.Layer<
-  RateLimiter,
-  never,
-  RateLimiterStore
-> = Layer.effect(RateLimiter, make)
+export const layer: Layer.Layer<RateLimiter, never, RateLimiterStore> =
+  Layer.effect(RateLimiter, make);
 
 /**
  * Accesses a function that applies rate limiting to an effect.
@@ -269,24 +277,27 @@ export const layer: Layer.Layer<
  * @since 4.0.0
  */
 export const makeWithRateLimiter: Effect.Effect<
-  ((options: {
-    readonly algorithm?: "fixed-window" | "token-bucket" | undefined
-    readonly onExceeded?: "delay" | "fail" | undefined
-    readonly window: Duration.Input
-    readonly limit: number
-    readonly key: string
-    readonly tokens?: number | undefined
-  }) => <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E | RateLimiterError, R>),
+  (options: {
+    readonly algorithm?: "fixed-window" | "token-bucket" | undefined;
+    readonly onExceeded?: "delay" | "fail" | undefined;
+    readonly window: Duration.Input;
+    readonly limit: number;
+    readonly key: string;
+    readonly tokens?: number | undefined;
+  }) => <A, E, R>(
+    effect: Effect.Effect<A, E, R>
+  ) => Effect.Effect<A, E | RateLimiterError, R>,
   never,
   RateLimiter
 > = RateLimiter.use((limiter) =>
-  Effect.succeed((options) => (effect) =>
-    Effect.flatMap(limiter.consume(options), ({ delay }) => {
-      if (Duration.isZero(delay)) return effect
-      return Effect.delay(effect, delay)
-    })
+  Effect.succeed(
+    (options) => (effect) =>
+      Effect.flatMap(limiter.consume(options), ({ delay }) => {
+        if (Duration.isZero(delay)) return effect;
+        return Effect.delay(effect, delay);
+      })
   )
-)
+);
 
 /**
  * Accesses a function that sleeps when the rate limit is exceeded.
@@ -316,13 +327,13 @@ export const makeWithRateLimiter: Effect.Effect<
  * @since 4.0.0
  */
 export const makeSleep: Effect.Effect<
-  ((options: {
-    readonly algorithm?: "fixed-window" | "token-bucket" | undefined
-    readonly window: Duration.Input
-    readonly limit: number
-    readonly key: string
-    readonly tokens?: number | undefined
-  }) => Effect.Effect<ConsumeResult, RateLimiterError>),
+  (options: {
+    readonly algorithm?: "fixed-window" | "token-bucket" | undefined;
+    readonly window: Duration.Input;
+    readonly limit: number;
+    readonly key: string;
+    readonly tokens?: number | undefined;
+  }) => Effect.Effect<ConsumeResult, RateLimiterError>,
   never,
   RateLimiter
 > = RateLimiter.use((limiter) =>
@@ -330,15 +341,15 @@ export const makeSleep: Effect.Effect<
     Effect.flatMap(
       limiter.consume({
         ...options,
-        onExceeded: "delay"
+        onExceeded: "delay",
       }),
       (result) => {
-        if (Duration.isZero(result.delay)) return Effect.succeed(result)
-        return Effect.as(Effect.sleep(result.delay), result)
+        if (Duration.isZero(result.delay)) return Effect.succeed(result);
+        return Effect.as(Effect.sleep(result.delay), result);
       }
     )
   )
-)
+);
 
 /**
  * Runtime type identifier for `RateLimiterError`.
@@ -346,7 +357,8 @@ export const makeSleep: Effect.Effect<
  * @category type IDs
  * @since 4.0.0
  */
-export const ErrorTypeId: ErrorTypeId = "~@effect/experimental/RateLimiter/RateLimiterError"
+export const ErrorTypeId: ErrorTypeId =
+  "~@effect/experimental/RateLimiter/RateLimiterError";
 
 /**
  * Type-level identifier used to brand `RateLimiterError` values.
@@ -354,7 +366,7 @@ export const ErrorTypeId: ErrorTypeId = "~@effect/experimental/RateLimiter/RateL
  * @category type IDs
  * @since 4.0.0
  */
-export type ErrorTypeId = "~@effect/experimental/RateLimiter/RateLimiterError"
+export type ErrorTypeId = "~@effect/experimental/RateLimiter/RateLimiterError";
 
 /**
  * Error reason for a rate-limit check that exceeded the configured limit.
@@ -373,7 +385,7 @@ export class RateLimitExceeded extends Schema.ErrorClass<RateLimitExceeded>(
   retryAfter: Schema.DurationFromMillis,
   key: Schema.String,
   limit: Schema.Number,
-  remaining: Schema.Number
+  remaining: Schema.Number,
 }) {
   /**
    * Public message used when the rate limiter rejects a request.
@@ -381,7 +393,7 @@ export class RateLimitExceeded extends Schema.ErrorClass<RateLimitExceeded>(
    * @since 4.0.0
    */
   override get message(): string {
-    return `Rate limit exceeded`
+    return `Rate limit exceeded`;
   }
 }
 
@@ -396,7 +408,7 @@ export class RateLimitStoreError extends Schema.ErrorClass<RateLimitStoreError>(
 )({
   _tag: Schema.tag("RateLimitStoreError"),
   message: Schema.String,
-  cause: Schema.optional(Schema.Defect)
+  cause: Schema.optional(Schema.Defect),
 }) {}
 
 /**
@@ -405,7 +417,7 @@ export class RateLimitStoreError extends Schema.ErrorClass<RateLimitStoreError>(
  * @category errors
  * @since 4.0.0
  */
-export type RateLimiterErrorReason = RateLimitExceeded | RateLimitStoreError
+export type RateLimiterErrorReason = RateLimitExceeded | RateLimitStoreError;
 
 /**
  * Schema for all reasons that can be carried by `RateLimiterError`.
@@ -413,10 +425,9 @@ export type RateLimiterErrorReason = RateLimitExceeded | RateLimitStoreError
  * @category errors
  * @since 4.0.0
  */
-export const RateLimiterErrorReason: Schema.Union<[
-  typeof RateLimitExceeded,
-  typeof RateLimitStoreError
-]> = Schema.Union([RateLimitExceeded, RateLimitStoreError])
+export const RateLimiterErrorReason: Schema.Union<
+  [typeof RateLimitExceeded, typeof RateLimitStoreError]
+> = Schema.Union([RateLimitExceeded, RateLimitStoreError]);
 
 /**
  * Error raised by rate limiter operations, wrapping a concrete failure
@@ -425,21 +436,21 @@ export const RateLimiterErrorReason: Schema.Union<[
  * @category errors
  * @since 4.0.0
  */
-export class RateLimiterError extends Schema.ErrorClass<RateLimiterError>(ErrorTypeId)({
+export class RateLimiterError extends Schema.ErrorClass<RateLimiterError>(
+  ErrorTypeId
+)({
   _tag: Schema.tag("RateLimiterError"),
-  reason: RateLimiterErrorReason
+  reason: RateLimiterErrorReason,
 }) {
   // @effect-diagnostics-next-line overriddenSchemaConstructor:off
-  constructor(props: {
-    readonly reason: RateLimiterErrorReason
-  }) {
+  constructor(props: { readonly reason: RateLimiterErrorReason }) {
     if ("cause" in props.reason) {
       super({
         ...props,
-        cause: props.reason.cause
-      } as any)
+        cause: props.reason.cause,
+      } as any);
     } else {
-      super(props)
+      super(props);
     }
   }
 
@@ -448,10 +459,10 @@ export class RateLimiterError extends Schema.ErrorClass<RateLimiterError>(ErrorT
    *
    * @since 4.0.0
    */
-  readonly [ErrorTypeId]: ErrorTypeId = ErrorTypeId
+  readonly [ErrorTypeId]: ErrorTypeId = ErrorTypeId;
 
   override get message(): string {
-    return this.reason.message
+    return this.reason.message;
   }
 }
 
@@ -467,22 +478,22 @@ export interface ConsumeResult {
    * limiter is using the "delay" `onExceeded` strategy. It will be
    * Duration.zero if the request is allowed immediately.
    */
-  readonly delay: Duration.Duration
+  readonly delay: Duration.Duration;
 
   /**
    * The maximum number of requests allowed in the current window.
    */
-  readonly limit: number
+  readonly limit: number;
 
   /**
    * The number of remaining requests in the current window.
    */
-  readonly remaining: number
+  readonly remaining: number;
 
   /**
    * The time until the rate limit fully resets.
    */
-  readonly resetAfter: Duration.Duration
+  readonly resetAfter: Duration.Duration;
 }
 
 /**
@@ -510,11 +521,14 @@ export class RateLimiterStore extends Context.Service<
      * than the limit, but the TTL will not be updated.
      */
     readonly fixedWindow: (options: {
-      readonly key: string
-      readonly tokens: number
-      readonly refillRate: Duration.Duration
-      readonly limit: number | undefined
-    }) => Effect.Effect<readonly [count: number, ttl: number], RateLimiterError>
+      readonly key: string;
+      readonly tokens: number;
+      readonly refillRate: Duration.Duration;
+      readonly limit: number | undefined;
+    }) => Effect.Effect<
+      readonly [count: number, ttl: number],
+      RateLimiterError
+    >;
 
     /**
      * Returns the current remaining tokens for the `key` after consuming the
@@ -527,12 +541,12 @@ export class RateLimiterStore extends Context.Service<
      * real token count will not be persisted below zero.
      */
     readonly tokenBucket: (options: {
-      readonly key: string
-      readonly tokens: number
-      readonly limit: number
-      readonly refillRate: Duration.Duration
-      readonly allowOverflow: boolean
-    }) => Effect.Effect<number, RateLimiterError>
+      readonly key: string;
+      readonly tokens: number;
+      readonly limit: number;
+      readonly refillRate: Duration.Duration;
+      readonly allowOverflow: boolean;
+    }) => Effect.Effect<number, RateLimiterError>;
   }
 >()("effect/persistence/RateLimiter/RateLimiterStore") {}
 
@@ -542,58 +556,74 @@ export class RateLimiterStore extends Context.Service<
  * @category RateLimiterStore
  * @since 4.0.0
  */
-export const layerStoreMemory: Layer.Layer<
-  RateLimiterStore
-> = Layer.sync(RateLimiterStore, () => {
-  const fixedCounters = new Map<string, { count: number; expiresAt: number }>()
-  const tokenBuckets = new Map<string, { tokens: number; lastRefill: number }>()
+export const layerStoreMemory: Layer.Layer<RateLimiterStore> = Layer.sync(
+  RateLimiterStore,
+  () => {
+    const fixedCounters = new Map<
+      string,
+      { count: number; expiresAt: number }
+    >();
+    const tokenBuckets = new Map<
+      string,
+      { tokens: number; lastRefill: number }
+    >();
 
-  return RateLimiterStore.of({
-    fixedWindow: (options) =>
-      Effect.clockWith((clock) =>
-        Effect.sync(() => {
-          const refillRateMillis = Duration.toMillis(options.refillRate)
-          const now = clock.currentTimeMillisUnsafe()
-          let counter = fixedCounters.get(options.key)
-          if (!counter || counter.expiresAt <= now) {
-            counter = { count: 0, expiresAt: now }
-            fixedCounters.set(options.key, counter)
-          }
-          if (options.limit && counter.count + options.tokens > options.limit) {
-            return [counter.count + options.tokens, counter.expiresAt - now] as const
-          }
-          counter.count += options.tokens
-          counter.expiresAt += refillRateMillis * options.tokens
-          return [counter.count, counter.expiresAt - now] as const
-        })
-      ),
-    tokenBucket: (options) =>
-      Effect.clockWith((clock) =>
-        Effect.sync(() => {
-          const refillRateMillis = Duration.toMillis(options.refillRate)
-          const now = clock.currentTimeMillisUnsafe()
-          let bucket = tokenBuckets.get(options.key)
-          if (!bucket) {
-            bucket = { tokens: options.limit, lastRefill: now }
-            tokenBuckets.set(options.key, bucket)
-          } else {
-            const elapsed = now - bucket.lastRefill
-            const tokensToAdd = Math.floor(elapsed / refillRateMillis)
-            if (tokensToAdd > 0) {
-              bucket.tokens = Math.min(options.limit, bucket.tokens + tokensToAdd)
-              bucket.lastRefill += tokensToAdd * refillRateMillis
+    return RateLimiterStore.of({
+      fixedWindow: (options) =>
+        Effect.clockWith((clock) =>
+          Effect.sync(() => {
+            const refillRateMillis = Duration.toMillis(options.refillRate);
+            const now = clock.currentTimeMillisUnsafe();
+            let counter = fixedCounters.get(options.key);
+            if (!counter || counter.expiresAt <= now) {
+              counter = { count: 0, expiresAt: now };
+              fixedCounters.set(options.key, counter);
             }
-          }
+            if (
+              options.limit &&
+              counter.count + options.tokens > options.limit
+            ) {
+              return [
+                counter.count + options.tokens,
+                counter.expiresAt - now,
+              ] as const;
+            }
+            counter.count += options.tokens;
+            counter.expiresAt += refillRateMillis * options.tokens;
+            return [counter.count, counter.expiresAt - now] as const;
+          })
+        ),
+      tokenBucket: (options) =>
+        Effect.clockWith((clock) =>
+          Effect.sync(() => {
+            const refillRateMillis = Duration.toMillis(options.refillRate);
+            const now = clock.currentTimeMillisUnsafe();
+            let bucket = tokenBuckets.get(options.key);
+            if (!bucket) {
+              bucket = { tokens: options.limit, lastRefill: now };
+              tokenBuckets.set(options.key, bucket);
+            } else {
+              const elapsed = now - bucket.lastRefill;
+              const tokensToAdd = Math.floor(elapsed / refillRateMillis);
+              if (tokensToAdd > 0) {
+                bucket.tokens = Math.min(
+                  options.limit,
+                  bucket.tokens + tokensToAdd
+                );
+                bucket.lastRefill += tokensToAdd * refillRateMillis;
+              }
+            }
 
-          const newTokenCount = bucket.tokens - options.tokens
-          if (options.allowOverflow || newTokenCount >= 0) {
-            bucket.tokens = newTokenCount
-          }
-          return newTokenCount
-        })
-      )
-  })
-})
+            const newTokenCount = bucket.tokens - options.tokens;
+            if (options.allowOverflow || newTokenCount >= 0) {
+              bucket.tokens = newTokenCount;
+            }
+            return newTokenCount;
+          })
+        ),
+    });
+  }
+);
 
 /**
  * Creates a Redis-backed `RateLimiterStore` using Lua scripts and the
@@ -602,35 +632,33 @@ export const layerStoreMemory: Layer.Layer<
  * @category RateLimiterStore
  * @since 4.0.0
  */
-export const makeStoreRedis = Effect.fnUntraced(function*(
-  options?: {
-    readonly prefix?: string | undefined
-  }
-) {
-  const prefix = options?.prefix ?? "ratelimiter:"
-  const redis = yield* Redis.Redis
+export const makeStoreRedis = Effect.fnUntraced(function* (options?: {
+  readonly prefix?: string | undefined;
+}) {
+  const prefix = options?.prefix ?? "ratelimiter:";
+  const redis = yield* Redis.Redis;
 
-  const fixedWindow = redis.eval(fixedWindowScript)
-  const tokenBucket = redis.eval(tokenBucketScript)
+  const fixedWindow = redis.eval(fixedWindowScript);
+  const tokenBucket = redis.eval(tokenBucketScript);
 
   return RateLimiterStore.of({
     fixedWindow(options) {
-      const key = `${prefix}${options.key}`
-      const refillMillis = Duration.toMillis(options.refillRate)
+      const key = `${prefix}${options.key}`;
+      const refillMillis = Duration.toMillis(options.refillRate);
       return Effect.mapError(
         fixedWindow(key, options.tokens, refillMillis, options.limit),
         (cause) =>
           new RateLimiterError({
             reason: new RateLimitStoreError({
               message: `Failed to execute fixedWindow rate limiting command`,
-              cause: cause.cause
-            })
+              cause: cause.cause,
+            }),
           })
-      )
+      );
     },
     tokenBucket(options) {
-      const key = `${prefix}${options.key}`
-      const refillMillis = Duration.toMillis(options.refillRate)
+      const key = `${prefix}${options.key}`;
+      const refillMillis = Duration.toMillis(options.refillRate);
       return Effect.clockWith((clock) =>
         Effect.mapError(
           tokenBucket(
@@ -645,17 +673,22 @@ export const makeStoreRedis = Effect.fnUntraced(function*(
             new RateLimiterError({
               reason: new RateLimitStoreError({
                 message: `Failed to execute tokenBucket rate limiting command`,
-                cause
-              })
+                cause,
+              }),
             })
         )
-      )
-    }
-  })
-})
+      );
+    },
+  });
+});
 
 const fixedWindowScript = Redis.script(
-  (key: string, tokens: number, refillMillis: number, limit?: number) => [key, tokens, refillMillis, limit],
+  (key: string, tokens: number, refillMillis: number, limit?: number) => [
+    key,
+    tokens,
+    refillMillis,
+    limit,
+  ],
   {
     numberOfKeys: 1,
     lua: `
@@ -680,9 +713,9 @@ end
 local nextpttl = currentpttl + (refillms * tokens)
 redis.call("SET", key, next, "PX", nextpttl)
 return { next, nextpttl }
-`
+`,
   }
-).withReturnType<readonly [currentTokens: number, nextPttl: number]>()
+).withReturnType<readonly [currentTokens: number, nextPttl: number]>();
 
 const tokenBucketScript = Redis.script(
   (
@@ -729,9 +762,9 @@ end
 
 redis.call("SET", key, next)
 return next
-`
+`,
   }
-).withReturnType<number>()
+).withReturnType<number>();
 
 /**
  * Provides a Redis-backed `RateLimiterStore` using `makeStoreRedis`.
@@ -739,13 +772,12 @@ return next
  * @category layers
  * @since 4.0.0
  */
-export const layerStoreRedis: (
-  options?: { readonly prefix?: string | undefined }
-) => Layer.Layer<
-  RateLimiterStore,
-  never,
-  Redis.Redis
-> = flow(makeStoreRedis, Layer.effect(RateLimiterStore))
+export const layerStoreRedis: (options?: {
+  readonly prefix?: string | undefined;
+}) => Layer.Layer<RateLimiterStore, never, Redis.Redis> = flow(
+  makeStoreRedis,
+  Layer.effect(RateLimiterStore)
+);
 
 /**
  * Provides a Redis-backed `RateLimiterStore` from wrapped configuration
@@ -760,4 +792,4 @@ export const layerStoreRedisConfig = (
   Layer.effect(
     RateLimiterStore,
     Effect.flatMap(Config.unwrap(options), makeStoreRedis)
-  )
+  );

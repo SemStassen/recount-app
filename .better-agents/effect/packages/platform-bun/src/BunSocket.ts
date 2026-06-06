@@ -20,16 +20,16 @@
  *
  * @since 4.0.0
  */
-import type * as Duration from "effect/Duration"
-import type { Effect } from "effect/Effect"
-import { flow } from "effect/Function"
-import * as Layer from "effect/Layer"
-import * as Socket from "effect/unstable/socket/Socket"
+import type * as Duration from "effect/Duration";
+import type { Effect } from "effect/Effect";
+import { flow } from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Socket from "effect/unstable/socket/Socket";
 
 /**
  * @since 4.0.0
  */
-export * from "@effect/platform-node-shared/NodeSocket"
+export * from "@effect/platform-node-shared/NodeSocket";
 
 /**
  * Provides a `Socket.WebSocketConstructor` backed by Bun's global
@@ -38,11 +38,10 @@ export * from "@effect/platform-node-shared/NodeSocket"
  * @category layers
  * @since 4.0.0
  */
-export const layerWebSocketConstructor: Layer.Layer<
-  Socket.WebSocketConstructor
-> = Layer.succeed(Socket.WebSocketConstructor)(
-  (url, protocols) => new globalThis.WebSocket(url, protocols)
-)
+export const layerWebSocketConstructor: Layer.Layer<Socket.WebSocketConstructor> =
+  Layer.succeed(Socket.WebSocketConstructor)(
+    (url, protocols) => new globalThis.WebSocket(url, protocols)
+  );
 
 /**
  * Creates a `Socket.Socket` layer for a WebSocket URL using Bun's global
@@ -54,13 +53,15 @@ export const layerWebSocketConstructor: Layer.Layer<
  */
 export const layerWebSocket: (
   url: string | Effect<string>,
-  options?: {
-    readonly closeCodeIsError?: ((code: number) => boolean) | undefined
-    readonly openTimeout?: Duration.Input | undefined
-    readonly protocols?: string | Array<string> | undefined
-  } | undefined
+  options?:
+    | {
+        readonly closeCodeIsError?: ((code: number) => boolean) | undefined;
+        readonly openTimeout?: Duration.Input | undefined;
+        readonly protocols?: string | Array<string> | undefined;
+      }
+    | undefined
 ) => Layer.Layer<Socket.Socket, never, never> = flow(
   Socket.makeWebSocket,
   Layer.effect(Socket.Socket),
   Layer.provide(layerWebSocketConstructor)
-)
+);

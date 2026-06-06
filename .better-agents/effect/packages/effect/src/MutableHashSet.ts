@@ -67,15 +67,15 @@
  *
  * @since 2.0.0
  */
-import { format } from "./Formatter.ts"
-import * as Dual from "./Function.ts"
-import { type Inspectable, NodeInspectSymbol, toJson } from "./Inspectable.ts"
-import * as MutableHashMap from "./MutableHashMap.ts"
-import type { Pipeable } from "./Pipeable.ts"
-import { pipeArguments } from "./Pipeable.ts"
-import { hasProperty } from "./Predicate.ts"
+import { format } from "./Formatter.ts";
+import * as Dual from "./Function.ts";
+import { type Inspectable, NodeInspectSymbol, toJson } from "./Inspectable.ts";
+import * as MutableHashMap from "./MutableHashMap.ts";
+import type { Pipeable } from "./Pipeable.ts";
+import { pipeArguments } from "./Pipeable.ts";
+import { hasProperty } from "./Predicate.ts";
 
-const TypeId = "~effect/collections/MutableHashSet"
+const TypeId = "~effect/collections/MutableHashSet";
 
 /**
  * A mutable hash set for storing unique values with Effect structural equality
@@ -122,9 +122,10 @@ const TypeId = "~effect/collections/MutableHashSet"
  * @category models
  * @since 2.0.0
  */
-export interface MutableHashSet<out V> extends Iterable<V>, Pipeable, Inspectable {
-  readonly [TypeId]: typeof TypeId
-  readonly keyMap: MutableHashMap.MutableHashMap<V, boolean>
+export interface MutableHashSet<out V>
+  extends Iterable<V>, Pipeable, Inspectable {
+  readonly [TypeId]: typeof TypeId;
+  readonly keyMap: MutableHashMap.MutableHashMap<V, boolean>;
 }
 
 /**
@@ -147,35 +148,41 @@ export interface MutableHashSet<out V> extends Iterable<V>, Pipeable, Inspectabl
  * @category refinements
  * @since 4.0.0
  */
-export const isMutableHashSet = <V>(value: unknown): value is MutableHashSet<V> => hasProperty(value, TypeId)
+export const isMutableHashSet = <V>(
+  value: unknown
+): value is MutableHashSet<V> => hasProperty(value, TypeId);
 
 const MutableHashSetProto: Omit<MutableHashSet<unknown>, "keyMap"> = {
   [TypeId]: TypeId,
   [Symbol.iterator](this: MutableHashSet<unknown>): Iterator<unknown> {
-    return Array.from(this.keyMap).map(([_]) => _)[Symbol.iterator]()
+    return Array.from(this.keyMap)
+      .map(([_]) => _)
+      [Symbol.iterator]();
   },
   toString() {
-    return `MutableHashSet(${format(Array.from(this))})`
+    return `MutableHashSet(${format(Array.from(this))})`;
   },
   toJSON() {
     return {
       _id: "MutableHashSet",
-      values: toJson(Array.from(this))
-    }
+      values: toJson(Array.from(this)),
+    };
   },
   [NodeInspectSymbol]() {
-    return this.toJSON()
+    return this.toJSON();
   },
   pipe() {
-    return pipeArguments(this, arguments)
-  }
-}
+    return pipeArguments(this, arguments);
+  },
+};
 
-const fromHashMap = <V>(keyMap: MutableHashMap.MutableHashMap<V, boolean>): MutableHashSet<V> => {
-  const set = Object.create(MutableHashSetProto)
-  set.keyMap = keyMap
-  return set
-}
+const fromHashMap = <V>(
+  keyMap: MutableHashMap.MutableHashMap<V, boolean>
+): MutableHashSet<V> => {
+  const set = Object.create(MutableHashSetProto);
+  set.keyMap = keyMap;
+  return set;
+};
 
 /**
  * Creates an empty MutableHashSet.
@@ -211,7 +218,8 @@ const fromHashMap = <V>(keyMap: MutableHashMap.MutableHashMap<V, boolean>): Muta
  * @category constructors
  * @since 2.0.0
  */
-export const empty = <K = never>(): MutableHashSet<K> => fromHashMap(MutableHashMap.empty())
+export const empty = <K = never>(): MutableHashSet<K> =>
+  fromHashMap(MutableHashMap.empty());
 
 /**
  * Creates a MutableHashSet from an iterable collection of values.
@@ -245,7 +253,9 @@ export const empty = <K = never>(): MutableHashSet<K> => fromHashMap(MutableHash
  * @since 2.0.0
  */
 export const fromIterable = <K = never>(keys: Iterable<K>): MutableHashSet<K> =>
-  fromHashMap(MutableHashMap.fromIterable(Array.from(keys).map((k) => [k, true])))
+  fromHashMap(
+    MutableHashMap.fromIterable(Array.from(keys).map((k) => [k, true]))
+  );
 
 /**
  * Creates a MutableHashSet from a variable number of values.
@@ -280,7 +290,7 @@ export const fromIterable = <K = never>(keys: Iterable<K>): MutableHashSet<K> =>
  */
 export const make = <Keys extends ReadonlyArray<unknown>>(
   ...keys: Keys
-): MutableHashSet<Keys[number]> => fromIterable(keys)
+): MutableHashSet<Keys[number]> => fromIterable(keys);
 
 /**
  * Adds a value to the MutableHashSet, mutating the set in place.
@@ -318,12 +328,12 @@ export const make = <Keys extends ReadonlyArray<unknown>>(
  * @since 2.0.0
  */
 export const add: {
-  <V>(key: V): (self: MutableHashSet<V>) => MutableHashSet<V>
-  <V>(self: MutableHashSet<V>, key: V): MutableHashSet<V>
+  <V>(key: V): (self: MutableHashSet<V>) => MutableHashSet<V>;
+  <V>(self: MutableHashSet<V>, key: V): MutableHashSet<V>;
 } = Dual.dual<
   <V>(key: V) => (self: MutableHashSet<V>) => MutableHashSet<V>,
   <V>(self: MutableHashSet<V>, key: V) => MutableHashSet<V>
->(2, (self, key) => (MutableHashMap.set(self.keyMap, key, true), self))
+>(2, (self, key) => (MutableHashMap.set(self.keyMap, key, true), self));
 
 /**
  * Checks whether the MutableHashSet contains the specified value.
@@ -363,12 +373,12 @@ export const add: {
  * @since 2.0.0
  */
 export const has: {
-  <V>(key: V): (self: MutableHashSet<V>) => boolean
-  <V>(self: MutableHashSet<V>, key: V): boolean
+  <V>(key: V): (self: MutableHashSet<V>) => boolean;
+  <V>(self: MutableHashSet<V>, key: V): boolean;
 } = Dual.dual<
   <V>(key: V) => (self: MutableHashSet<V>) => boolean,
   <V>(self: MutableHashSet<V>, key: V) => boolean
->(2, (self, key) => MutableHashMap.has(self.keyMap, key))
+>(2, (self, key) => MutableHashMap.has(self.keyMap, key));
 
 /**
  * Removes the specified value from the MutableHashSet, mutating the set in place.
@@ -406,12 +416,12 @@ export const has: {
  * @since 2.0.0
  */
 export const remove: {
-  <V>(key: V): (self: MutableHashSet<V>) => MutableHashSet<V>
-  <V>(self: MutableHashSet<V>, key: V): MutableHashSet<V>
+  <V>(key: V): (self: MutableHashSet<V>) => MutableHashSet<V>;
+  <V>(self: MutableHashSet<V>, key: V): MutableHashSet<V>;
 } = Dual.dual<
   <V>(key: V) => (self: MutableHashSet<V>) => MutableHashSet<V>,
   <V>(self: MutableHashSet<V>, key: V) => MutableHashSet<V>
->(2, (self, key) => (MutableHashMap.remove(self.keyMap, key), self))
+>(2, (self, key) => (MutableHashMap.remove(self.keyMap, key), self));
 
 /**
  * Returns the number of unique values in the MutableHashSet.
@@ -443,7 +453,8 @@ export const remove: {
  * @category elements
  * @since 2.0.0
  */
-export const size = <V>(self: MutableHashSet<V>): number => MutableHashMap.size(self.keyMap)
+export const size = <V>(self: MutableHashSet<V>): number =>
+  MutableHashMap.size(self.keyMap);
 
 /**
  * Removes all values from the MutableHashSet, mutating the set in place.
@@ -477,4 +488,7 @@ export const size = <V>(self: MutableHashSet<V>): number => MutableHashMap.size(
  * @category mutations
  * @since 2.0.0
  */
-export const clear = <V>(self: MutableHashSet<V>): MutableHashSet<V> => (MutableHashMap.clear(self.keyMap), self)
+export const clear = <V>(self: MutableHashSet<V>): MutableHashSet<V> => (
+  MutableHashMap.clear(self.keyMap),
+  self
+);

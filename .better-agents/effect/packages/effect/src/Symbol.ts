@@ -24,7 +24,7 @@
  * @since 2.0.0
  */
 
-import * as predicate from "./Predicate.ts"
+import * as predicate from "./Predicate.ts";
 
 /**
  * Checks whether a value is a `symbol`.
@@ -45,4 +45,4 @@ import * as predicate from "./Predicate.ts"
  * @category guards
  * @since 2.0.0
  */
-export const isSymbol: (u: unknown) => u is symbol = predicate.isSymbol
+export const isSymbol: (u: unknown) => u is symbol = predicate.isSymbol;

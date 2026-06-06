@@ -44,18 +44,18 @@
  *
  * @since 2.0.0
  */
-import type * as Cause from "./Cause.ts"
-import type * as Context from "./Context.ts"
-import type * as Effect from "./Effect.ts"
-import * as Equal from "./Equal.ts"
-import type * as Exit from "./Exit.ts"
-import { dual } from "./Function.ts"
-import * as core from "./internal/core.ts"
-import * as internalEffect from "./internal/effect.ts"
-import { hasProperty } from "./Predicate.ts"
-import type * as Types from "./Types.ts"
+import type * as Cause from "./Cause.ts";
+import type * as Context from "./Context.ts";
+import type * as Effect from "./Effect.ts";
+import * as Equal from "./Equal.ts";
+import type * as Exit from "./Exit.ts";
+import { dual } from "./Function.ts";
+import * as core from "./internal/core.ts";
+import * as internalEffect from "./internal/effect.ts";
+import { hasProperty } from "./Predicate.ts";
+import type * as Types from "./Types.ts";
 
-const TypeId = "~effect/Request"
+const TypeId = "~effect/Request";
 
 /**
  * A `Request<A, E, R>` is a request from a data source for a value of type `A`
@@ -81,7 +81,11 @@ const TypeId = "~effect/Request"
  * @category models
  * @since 2.0.0
  */
-export interface Request<out A, out E = never, out R = never> extends Variance<A, E, R> {}
+export interface Request<out A, out E = never, out R = never> extends Variance<
+  A,
+  E,
+  R
+> {}
 
 /**
  * Alias for any `Request`, regardless of its success, error, or service
@@ -101,7 +105,7 @@ export interface Request<out A, out E = never, out R = never> extends Variance<A
  * @category models
  * @since 4.0.0
  */
-export type Any = Request<any, any, any>
+export type Any = Request<any, any, any>;
 
 /**
  * Variance marker carried by every `Request`.
@@ -116,10 +120,10 @@ export type Any = Request<any, any, any>
  */
 export interface Variance<out A, out E, out R> {
   readonly [TypeId]: {
-    readonly _A: Types.Covariant<A>
-    readonly _E: Types.Covariant<E>
-    readonly _R: Types.Covariant<R>
-  }
+    readonly _A: Types.Covariant<A>;
+    readonly _E: Types.Covariant<E>;
+    readonly _R: Types.Covariant<R>;
+  };
 }
 
 /**
@@ -149,8 +153,15 @@ export interface Variance<out A, out E, out R> {
  * @category models
  * @since 2.0.0
  */
-export interface Constructor<R extends Request<any, any, any>, T extends keyof R = never> {
-  (args: Types.VoidIfEmpty<Types.Simplify<Omit<R, T | keyof (Variance<any, any, any>)>>>): R
+export interface Constructor<
+  R extends Request<any, any, any>,
+  T extends keyof R = never,
+> {
+  (
+    args: Types.VoidIfEmpty<
+      Types.Simplify<Omit<R, T | keyof Variance<any, any, any>>>
+    >
+  ): R;
 }
 
 /**
@@ -172,7 +183,11 @@ export interface Constructor<R extends Request<any, any, any>, T extends keyof R
  * @category utility types
  * @since 2.0.0
  */
-export type Error<T extends Request<any, any, any>> = [T] extends [Request<infer _A, infer _E, infer _R>] ? _E : never
+export type Error<T extends Request<any, any, any>> = [T] extends [
+  Request<infer _A, infer _E, infer _R>,
+]
+  ? _E
+  : never;
 
 /**
  * A utility type to extract the value type from a `Request`.
@@ -194,8 +209,11 @@ export type Error<T extends Request<any, any, any>> = [T] extends [Request<infer
  * @category utility types
  * @since 2.0.0
  */
-export type Success<T extends Request<any, any, any>> = [T] extends [Request<infer _A, infer _E, infer _R>] ? _A
-  : never
+export type Success<T extends Request<any, any, any>> = [T] extends [
+  Request<infer _A, infer _E, infer _R>,
+]
+  ? _A
+  : never;
 
 /**
  * A utility type to extract the requirements type from a `Request`.
@@ -203,8 +221,11 @@ export type Success<T extends Request<any, any, any>> = [T] extends [Request<inf
  * @category utility types
  * @since 4.0.0
  */
-export type Services<T extends Request<any, any, any>> = [T] extends [Request<infer _A, infer _E, infer _R>] ? _R
-  : never
+export type Services<T extends Request<any, any, any>> = [T] extends [
+  Request<infer _A, infer _E, infer _R>,
+]
+  ? _R
+  : never;
 
 /**
  * A utility type to extract the result type from a `Request`.
@@ -226,8 +247,8 @@ export type Services<T extends Request<any, any, any>> = [T] extends [Request<in
  * @category utility types
  * @since 2.0.0
  */
-export type Result<T extends Request<any, any, any>> = T extends Request<infer A, infer E, infer _R> ? Exit.Exit<A, E>
-  : never
+export type Result<T extends Request<any, any, any>> =
+  T extends Request<infer A, infer E, infer _R> ? Exit.Exit<A, E> : never;
 
 const requestVariance = Equal.byReferenceUnsafe({
   /* c8 ignore next */
@@ -235,8 +256,8 @@ const requestVariance = Equal.byReferenceUnsafe({
   /* c8 ignore next */
   _A: (_: never) => _,
   /* c8 ignore next */
-  _R: (_: never) => _
-})
+  _R: (_: never) => _,
+});
 
 /**
  * Prototype used by Effect's request constructors.
@@ -253,8 +274,8 @@ const requestVariance = Equal.byReferenceUnsafe({
  */
 export const RequestPrototype: Request<any, any, any> = {
   ...core.StructuralProto,
-  [TypeId]: requestVariance
-}
+  [TypeId]: requestVariance,
+};
 
 /**
  * Checks whether a value is a `Request`.
@@ -283,7 +304,9 @@ export const RequestPrototype: Request<any, any, any> = {
  * @category guards
  * @since 2.0.0
  */
-export const isRequest = (u: unknown): u is Request<unknown, unknown, unknown> => hasProperty(u, TypeId)
+export const isRequest = (
+  u: unknown
+): u is Request<unknown, unknown, unknown> => hasProperty(u, TypeId);
 
 /**
  * Creates a constructor function for a specific Request type.
@@ -314,8 +337,10 @@ export const isRequest = (u: unknown): u is Request<unknown, unknown, unknown> =
  * @category constructors
  * @since 2.0.0
  */
-export const of = <R extends Request<any, any, any>>(): Constructor<R> => (args) =>
-  Object.assign(Object.create(RequestPrototype), args)
+export const of =
+  <R extends Request<any, any, any>>(): Constructor<R> =>
+  (args) =>
+    Object.assign(Object.create(RequestPrototype), args);
 
 /**
  * Creates a constructor function for a tagged Request type. The tag is automatically
@@ -359,15 +384,16 @@ export const of = <R extends Request<any, any, any>>(): Constructor<R> => (args)
  * @category constructors
  * @since 2.0.0
  */
-export const tagged = <R extends Request<any, any, any> & { _tag: string }>(
-  tag: R["_tag"]
-): Constructor<R, "_tag"> =>
-(args) => {
-  const request = Object.create(RequestPrototype)
-  if (args) Object.assign(request, args)
-  request._tag = tag
-  return request
-}
+export const tagged =
+  <R extends Request<any, any, any> & { _tag: string }>(
+    tag: R["_tag"]
+  ): Constructor<R, "_tag"> =>
+  (args) => {
+    const request = Object.create(RequestPrototype);
+    if (args) Object.assign(request, args);
+    request._tag = tag;
+    return request;
+  };
 
 /**
  * Defines request types with TypeScript classes.
@@ -395,18 +421,28 @@ export const tagged = <R extends Request<any, any, any> & { _tag: string }>(
  * @category constructors
  * @since 2.0.0
  */
-export const Class: new<A extends Record<string, any>, Success, Error = never, Context = never>(
-  args: Types.Equals<Omit<A, keyof Request<unknown, unknown>>, {}> extends true ? void
-    : { readonly [P in keyof A as P extends keyof Request<any, any, any> ? never : P]: A[P] }
-) => Request<Success, Error, Context> & Readonly<A> = (function() {
+export const Class: new <
+  A extends Record<string, any>,
+  Success,
+  Error = never,
+  Context = never,
+>(
+  args: Types.Equals<Omit<A, keyof Request<unknown, unknown>>, {}> extends true
+    ? void
+    : {
+        readonly [P in keyof A as P extends keyof Request<any, any, any>
+          ? never
+          : P]: A[P];
+      }
+) => Request<Success, Error, Context> & Readonly<A> = (function () {
   function Class(this: any, args: any) {
     if (args) {
-      Object.assign(this, args)
+      Object.assign(this, args);
     }
   }
-  Class.prototype = RequestPrototype
-  return Class as any
-})()
+  Class.prototype = RequestPrototype;
+  return Class as any;
+})();
 
 /**
  * Creates a class constructor for requests with a fixed `_tag` field.
@@ -435,14 +471,27 @@ export const Class: new<A extends Record<string, any>, Success, Error = never, C
  */
 export const TaggedClass = <Tag extends string>(
   tag: Tag
-): new<A extends Record<string, any>, Success, Error = never, Services = never>(
-  args: Types.Equals<Omit<A, keyof Request<unknown, unknown>>, {}> extends true ? void
-    : { readonly [P in keyof A as P extends "_tag" | keyof Request<any, any, any> ? never : P]: A[P] }
-) => Request<Success, Error, Services> & Readonly<A> & { readonly _tag: Tag } => {
+): new <
+  A extends Record<string, any>,
+  Success,
+  Error = never,
+  Services = never,
+>(
+  args: Types.Equals<Omit<A, keyof Request<unknown, unknown>>, {}> extends true
+    ? void
+    : {
+        readonly [P in keyof A as P extends
+          | "_tag"
+          | keyof Request<any, any, any>
+          ? never
+          : P]: A[P];
+      }
+) => Request<Success, Error, Services> &
+  Readonly<A> & { readonly _tag: Tag } => {
   return class TaggedClass extends Class<any, any, any> {
-    readonly _tag = tag
-  } as any
-}
+    readonly _tag = tag;
+  } as any;
+};
 
 /**
  * Completes a request entry with the provided result.
@@ -461,13 +510,13 @@ export const TaggedClass = <Tag extends string>(
  * @since 2.0.0
  */
 export const complete: {
-  <A extends Any>(result: Result<A>): (self: Entry<A>) => Effect.Effect<void>
-  <A extends Any>(self: Entry<A>, result: Result<A>): Effect.Effect<void>
+  <A extends Any>(result: Result<A>): (self: Entry<A>) => Effect.Effect<void>;
+  <A extends Any>(self: Entry<A>, result: Result<A>): Effect.Effect<void>;
 } = dual(
   2,
   <A extends Any>(self: Entry<A>, result: Result<A>): Effect.Effect<void> =>
     internalEffect.sync(() => self.completeUnsafe(result))
-)
+);
 
 /**
  * Completes a request entry with the result of an effect.
@@ -495,16 +544,24 @@ export const complete: {
  * @since 2.0.0
  */
 export const completeEffect: {
-  <A extends Any, R>(effect: Effect.Effect<Success<A>, Error<A>, R>): (self: Entry<A>) => Effect.Effect<void, never, R>
-  <A extends Any, R>(self: Entry<A>, effect: Effect.Effect<Success<A>, Error<A>, R>): Effect.Effect<void, never, R>
+  <A extends Any, R>(
+    effect: Effect.Effect<Success<A>, Error<A>, R>
+  ): (self: Entry<A>) => Effect.Effect<void, never, R>;
+  <A extends Any, R>(
+    self: Entry<A>,
+    effect: Effect.Effect<Success<A>, Error<A>, R>
+  ): Effect.Effect<void, never, R>;
 } = dual(
   2,
-  <A extends Any, R>(self: Entry<A>, effect: Effect.Effect<Success<A>, Error<A>, R>): Effect.Effect<void, never, R> =>
+  <A extends Any, R>(
+    self: Entry<A>,
+    effect: Effect.Effect<Success<A>, Error<A>, R>
+  ): Effect.Effect<void, never, R> =>
     internalEffect.matchEffect(effect, {
       onFailure: (error) => complete(self, core.exitFail(error) as any),
-      onSuccess: (value) => complete(self, core.exitSucceed(value) as any)
+      onSuccess: (value) => complete(self, core.exitSucceed(value) as any),
     })
-)
+);
 
 /**
  * Completes a request entry with a typed failure.
@@ -523,12 +580,13 @@ export const completeEffect: {
  * @since 2.0.0
  */
 export const fail: {
-  <A extends Any>(error: Error<A>): (self: Entry<A>) => Effect.Effect<void>
-  <A extends Any>(self: Entry<A>, error: Error<A>): Effect.Effect<void>
+  <A extends Any>(error: Error<A>): (self: Entry<A>) => Effect.Effect<void>;
+  <A extends Any>(self: Entry<A>, error: Error<A>): Effect.Effect<void>;
 } = dual(
   2,
-  <A extends Any>(self: Entry<A>, error: Error<A>): Effect.Effect<void> => complete(self, core.exitFail(error) as any)
-)
+  <A extends Any>(self: Entry<A>, error: Error<A>): Effect.Effect<void> =>
+    complete(self, core.exitFail(error) as any)
+);
 
 /**
  * Completes a request entry with a failure `Cause`.
@@ -547,13 +605,20 @@ export const fail: {
  * @since 2.0.0
  */
 export const failCause: {
-  <A extends Any>(cause: Cause.Cause<Error<A>>): (self: Entry<A>) => Effect.Effect<void>
-  <A extends Any>(self: Entry<A>, cause: Cause.Cause<Error<A>>): Effect.Effect<void>
+  <A extends Any>(
+    cause: Cause.Cause<Error<A>>
+  ): (self: Entry<A>) => Effect.Effect<void>;
+  <A extends Any>(
+    self: Entry<A>,
+    cause: Cause.Cause<Error<A>>
+  ): Effect.Effect<void>;
 } = dual(
   2,
-  <A extends Any>(self: Entry<A>, cause: Cause.Cause<Error<A>>): Effect.Effect<void> =>
-    complete(self, core.exitFailCause(cause) as any)
-)
+  <A extends Any>(
+    self: Entry<A>,
+    cause: Cause.Cause<Error<A>>
+  ): Effect.Effect<void> => complete(self, core.exitFailCause(cause) as any)
+);
 
 /**
  * Completes a request entry successfully with the supplied value.
@@ -572,13 +637,13 @@ export const failCause: {
  * @since 2.0.0
  */
 export const succeed: {
-  <A extends Any>(value: Success<A>): (self: Entry<A>) => Effect.Effect<void>
-  <A extends Any>(self: Entry<A>, value: Success<A>): Effect.Effect<void>
+  <A extends Any>(value: Success<A>): (self: Entry<A>) => Effect.Effect<void>;
+  <A extends Any>(self: Entry<A>, value: Success<A>): Effect.Effect<void>;
 } = dual(
   2,
   <A extends Any>(self: Entry<A>, value: Success<A>): Effect.Effect<void> =>
     complete(self, core.exitSucceed(value) as any)
-)
+);
 
 /**
  * A pending request handed to a `RequestResolver`.
@@ -593,17 +658,17 @@ export const succeed: {
  * @since 2.0.0
  */
 export interface Entry<out R> {
-  readonly request: R
+  readonly request: R;
   readonly context: Context.Context<
     [R] extends [Request<infer _A, infer _E, infer _R>] ? _R : never
-  >
-  uninterruptible: boolean
+  >;
+  uninterruptible: boolean;
   completeUnsafe(
     exit: Exit.Exit<
       [R] extends [Request<infer _A, infer _E, infer _R>] ? _A : never,
       [R] extends [Request<infer _A, infer _E, infer _R>] ? _E : never
     >
-  ): void
+  ): void;
 }
 
 /**
@@ -619,15 +684,15 @@ export interface Entry<out R> {
  * @since 2.0.0
  */
 export const makeEntry = <R>(options: {
-  readonly request: R
+  readonly request: R;
   readonly context: Context.Context<
     [R] extends [Request<infer _A, infer _E, infer _R>] ? _R : never
-  >
-  readonly uninterruptible: boolean
+  >;
+  readonly uninterruptible: boolean;
   readonly completeUnsafe: (
     exit: Exit.Exit<
       [R] extends [Request<infer _A, infer _E, infer _R>] ? _A : never,
       [R] extends [Request<infer _A, infer _E, infer _R>] ? _E : never
     >
-  ) => void
-}): Entry<R> => options
+  ) => void;
+}): Entry<R> => options;

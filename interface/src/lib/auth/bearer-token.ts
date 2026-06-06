@@ -25,7 +25,6 @@ export const storeBearerTokenFromResponse = (response: Response) => {
   if (token) {
     globalThis.localStorage?.setItem(BEARER_TOKEN_STORAGE_KEY, token);
   }
-
 };
 
 export const clearBearerToken = () => {

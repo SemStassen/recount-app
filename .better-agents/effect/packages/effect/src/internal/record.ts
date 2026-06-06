@@ -3,16 +3,20 @@
  */
 
 /** @internal */
-export function set<K extends PropertyKey, A>(self: Record<K, A>, key: K, value: A): Record<K, A> {
+export function set<K extends PropertyKey, A>(
+  self: Record<K, A>,
+  key: K,
+  value: A
+): Record<K, A> {
   if (key === "__proto__") {
     Object.defineProperty(self, key, {
       value,
       writable: true,
       enumerable: true,
-      configurable: true
-    })
+      configurable: true,
+    });
   } else {
-    self[key] = value
+    self[key] = value;
   }
-  return self
+  return self;
 }

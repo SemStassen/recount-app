@@ -23,8 +23,8 @@
  *
  * @since 4.0.0
  */
-import type { DateTime } from "../../DateTime.ts"
-import { hasProperty } from "../../Predicate.ts"
+import type { DateTime } from "../../DateTime.ts";
+import { hasProperty } from "../../Predicate.ts";
 
 /**
  * Defines the property key used by values that provide a scheduled delivery time.
@@ -37,7 +37,7 @@ import { hasProperty } from "../../Predicate.ts"
  * @category symbols
  * @since 4.0.0
  */
-export const symbol = "~effect/cluster/DeliverAt"
+export const symbol = "~effect/cluster/DeliverAt";
 
 /**
  * Interface for payloads that specify when a cluster message should be delivered
@@ -48,7 +48,7 @@ export const symbol = "~effect/cluster/DeliverAt"
  * @since 4.0.0
  */
 export interface DeliverAt {
-  [symbol](): DateTime
+  [symbol](): DateTime;
 }
 
 /**
@@ -58,7 +58,8 @@ export interface DeliverAt {
  * @category guards
  * @since 4.0.0
  */
-export const isDeliverAt = (self: unknown): self is DeliverAt => hasProperty(self, symbol)
+export const isDeliverAt = (self: unknown): self is DeliverAt =>
+  hasProperty(self, symbol);
 
 /**
  * Returns the scheduled delivery time in epoch milliseconds when the value
@@ -69,7 +70,7 @@ export const isDeliverAt = (self: unknown): self is DeliverAt => hasProperty(sel
  */
 export const toMillis = (self: unknown): number | null => {
   if (isDeliverAt(self)) {
-    return self[symbol]().epochMilliseconds
+    return self[symbol]().epochMilliseconds;
   }
-  return null
-}
+  return null;
+};

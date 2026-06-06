@@ -12,14 +12,15 @@ const WireType = {
   Varint: 0,
   Fixed64: 1,
   LengthDelimited: 2,
-  Fixed32: 5
-} as const
-type WireType = typeof WireType[keyof typeof WireType]
+  Fixed32: 5,
+} as const;
+type WireType = (typeof WireType)[keyof typeof WireType];
 
 /**
  * Encodes a field tag (field number + wire type)
  */
-const encodeTag = (fieldNumber: number, wireType: WireType): number => (fieldNumber << 3) | wireType
+const encodeTag = (fieldNumber: number, wireType: WireType): number =>
+  (fieldNumber << 3) | wireType;
 
 /**
  * Encodes a varint (variable-length integer)
@@ -27,15 +28,15 @@ const encodeTag = (fieldNumber: number, wireType: WireType): number => (fieldNum
  * @internal
  */
 export const encodeVarint = (value: number | bigint): Uint8Array => {
-  const bytes: Array<number> = []
-  let n = typeof value === "bigint" ? value : BigInt(value)
+  const bytes: Array<number> = [];
+  let n = typeof value === "bigint" ? value : BigInt(value);
   while (n > BigInt(127)) {
-    bytes.push(Number(n & BigInt(127)) | 0x80)
-    n >>= BigInt(7)
+    bytes.push(Number(n & BigInt(127)) | 0x80);
+    n >>= BigInt(7);
   }
-  bytes.push(Number(n))
-  return new Uint8Array(bytes)
-}
+  bytes.push(Number(n));
+  return new Uint8Array(bytes);
+};
 
 /**
  * Encodes a signed varint using ZigZag encoding
@@ -43,10 +44,10 @@ export const encodeVarint = (value: number | bigint): Uint8Array => {
  * @internal
  */
 export const encodeSint = (value: number | bigint): Uint8Array => {
-  const n = typeof value === "bigint" ? value : BigInt(value)
-  const zigzag = (n << BigInt(1)) ^ (n >> BigInt(63))
-  return encodeVarint(zigzag)
-}
+  const n = typeof value === "bigint" ? value : BigInt(value);
+  const zigzag = (n << BigInt(1)) ^ (n >> BigInt(63));
+  return encodeVarint(zigzag);
+};
 
 /**
  * Encodes a 64-bit fixed value (little-endian)
@@ -54,11 +55,11 @@ export const encodeSint = (value: number | bigint): Uint8Array => {
  * @internal
  */
 export const encodeFixed64 = (value: bigint): Uint8Array => {
-  const bytes = new Uint8Array(8)
-  const view = new DataView(bytes.buffer)
-  view.setBigUint64(0, value, true)
-  return bytes
-}
+  const bytes = new Uint8Array(8);
+  const view = new DataView(bytes.buffer);
+  view.setBigUint64(0, value, true);
+  return bytes;
+};
 
 /**
  * Encodes a 32-bit fixed value (little-endian)
@@ -66,11 +67,11 @@ export const encodeFixed64 = (value: bigint): Uint8Array => {
  * @internal
  */
 export const encodeFixed32 = (value: number): Uint8Array => {
-  const bytes = new Uint8Array(4)
-  const view = new DataView(bytes.buffer)
-  view.setUint32(0, value, true)
-  return bytes
-}
+  const bytes = new Uint8Array(4);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, value, true);
+  return bytes;
+};
 
 /**
  * Encodes a double (64-bit float, little-endian)
@@ -78,18 +79,19 @@ export const encodeFixed32 = (value: number): Uint8Array => {
  * @internal
  */
 export const encodeDouble = (value: number): Uint8Array => {
-  const bytes = new Uint8Array(8)
-  const view = new DataView(bytes.buffer)
-  view.setFloat64(0, value, true)
-  return bytes
-}
+  const bytes = new Uint8Array(8);
+  const view = new DataView(bytes.buffer);
+  view.setFloat64(0, value, true);
+  return bytes;
+};
 
 /**
  * Encodes a string to UTF-8 bytes
  *
  * @internal
  */
-export const encodeString = (value: string): Uint8Array => new TextEncoder().encode(value)
+export const encodeString = (value: string): Uint8Array =>
+  new TextEncoder().encode(value);
 
 /**
  * Encodes bytes as a hex string to Uint8Array
@@ -97,12 +99,12 @@ export const encodeString = (value: string): Uint8Array => new TextEncoder().enc
  * @internal
  */
 export const encodeHexBytes = (hex: string): Uint8Array => {
-  const bytes = new Uint8Array(hex.length / 2)
+  const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) {
-    bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16)
+    bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
   }
-  return bytes
-}
+  return bytes;
+};
 
 /**
  * Concatenates multiple Uint8Arrays
@@ -110,15 +112,15 @@ export const encodeHexBytes = (hex: string): Uint8Array => {
  * @internal
  */
 export const concat = (...arrays: Array<Uint8Array>): Uint8Array => {
-  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0)
-  const result = new Uint8Array(totalLength)
-  let offset = 0
+  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
   for (const arr of arrays) {
-    result.set(arr, offset)
-    offset += arr.length
+    result.set(arr, offset);
+    offset += arr.length;
   }
-  return result
-}
+  return result;
+};
 
 // Field encoders
 
@@ -127,29 +129,36 @@ export const concat = (...arrays: Array<Uint8Array>): Uint8Array => {
  *
  * @internal
  */
-export const varintField = (fieldNumber: number, value: number | bigint): Uint8Array =>
+export const varintField = (
+  fieldNumber: number,
+  value: number | bigint
+): Uint8Array =>
   concat(
     encodeVarint(encodeTag(fieldNumber, WireType.Varint)),
     encodeVarint(value)
-  )
+  );
 
 /**
  * Encodes a sint field (ZigZag encoded)
  *
  * @internal
  */
-export const sintField = (fieldNumber: number, value: number | bigint): Uint8Array =>
+export const sintField = (
+  fieldNumber: number,
+  value: number | bigint
+): Uint8Array =>
   concat(
     encodeVarint(encodeTag(fieldNumber, WireType.Varint)),
     encodeSint(value)
-  )
+  );
 
 /**
  * Encodes a bool field
  *
  * @internal
  */
-export const boolField = (fieldNumber: number, value: boolean): Uint8Array => varintField(fieldNumber, value ? 1 : 0)
+export const boolField = (fieldNumber: number, value: boolean): Uint8Array =>
+  varintField(fieldNumber, value ? 1 : 0);
 
 /**
  * Encodes a fixed64 field
@@ -160,7 +169,7 @@ export const fixed64Field = (fieldNumber: number, value: bigint): Uint8Array =>
   concat(
     encodeVarint(encodeTag(fieldNumber, WireType.Fixed64)),
     encodeFixed64(value)
-  )
+  );
 
 /**
  * Encodes a fixed32 field
@@ -171,7 +180,7 @@ export const fixed32Field = (fieldNumber: number, value: number): Uint8Array =>
   concat(
     encodeVarint(encodeTag(fieldNumber, WireType.Fixed32)),
     encodeFixed32(value)
-  )
+  );
 
 /**
  * Encodes a double field
@@ -182,19 +191,22 @@ export const doubleField = (fieldNumber: number, value: number): Uint8Array =>
   concat(
     encodeVarint(encodeTag(fieldNumber, WireType.Fixed64)),
     encodeDouble(value)
-  )
+  );
 
 /**
  * Encodes a length-delimited field (bytes, string, embedded message)
  *
  * @internal
  */
-export const lengthDelimitedField = (fieldNumber: number, value: Uint8Array): Uint8Array =>
+export const lengthDelimitedField = (
+  fieldNumber: number,
+  value: Uint8Array
+): Uint8Array =>
   concat(
     encodeVarint(encodeTag(fieldNumber, WireType.LengthDelimited)),
     encodeVarint(value.length),
     value
-  )
+  );
 
 /**
  * Encodes a string field
@@ -202,23 +214,27 @@ export const lengthDelimitedField = (fieldNumber: number, value: Uint8Array): Ui
  * @internal
  */
 export const stringField = (fieldNumber: number, value: string): Uint8Array =>
-  lengthDelimitedField(fieldNumber, encodeString(value))
+  lengthDelimitedField(fieldNumber, encodeString(value));
 
 /**
  * Encodes a bytes field from hex string
  *
  * @internal
  */
-export const bytesFieldFromHex = (fieldNumber: number, hex: string): Uint8Array =>
-  lengthDelimitedField(fieldNumber, encodeHexBytes(hex))
+export const bytesFieldFromHex = (
+  fieldNumber: number,
+  hex: string
+): Uint8Array => lengthDelimitedField(fieldNumber, encodeHexBytes(hex));
 
 /**
  * Encodes an embedded message field
  *
  * @internal
  */
-export const messageField = (fieldNumber: number, message: Uint8Array): Uint8Array =>
-  lengthDelimitedField(fieldNumber, message)
+export const messageField = (
+  fieldNumber: number,
+  message: Uint8Array
+): Uint8Array => lengthDelimitedField(fieldNumber, message);
 
 /**
  * Encodes repeated fields
@@ -229,7 +245,8 @@ export const repeatedField = <T>(
   fieldNumber: number,
   values: ReadonlyArray<T>,
   encode: (value: T) => Uint8Array
-): Uint8Array => concat(...values.map((v) => messageField(fieldNumber, encode(v))))
+): Uint8Array =>
+  concat(...values.map((v) => messageField(fieldNumber, encode(v))));
 
 /**
  * Encodes repeated varint fields (not packed)
@@ -239,7 +256,7 @@ export const repeatedField = <T>(
 export const repeatedVarintField = (
   fieldNumber: number,
   values: ReadonlyArray<number | bigint>
-): Uint8Array => concat(...values.map((v) => varintField(fieldNumber, v)))
+): Uint8Array => concat(...values.map((v) => varintField(fieldNumber, v)));
 
 /**
  * Helper to conditionally encode an optional field
@@ -249,7 +266,7 @@ export const repeatedVarintField = (
 export const optionalField = <T>(
   value: T | undefined,
   encode: (v: T) => Uint8Array
-): Uint8Array => value !== undefined ? encode(value) : new Uint8Array(0)
+): Uint8Array => (value !== undefined ? encode(value) : new Uint8Array(0));
 
 /**
  * Helper to conditionally encode a string field if non-empty
@@ -259,4 +276,7 @@ export const optionalField = <T>(
 export const optionalStringField = (
   fieldNumber: number,
   value: string | undefined
-): Uint8Array => value !== undefined && value !== "" ? stringField(fieldNumber, value) : new Uint8Array(0)
+): Uint8Array =>
+  value !== undefined && value !== ""
+    ? stringField(fieldNumber, value)
+    : new Uint8Array(0);

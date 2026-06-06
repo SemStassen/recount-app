@@ -7,9 +7,9 @@
 /**
  * @since 4.0.0
  */
-export * as Model from "./Model.ts"
+export * as Model from "./Model.ts";
 
 /**
  * @since 4.0.0
  */
-export * as VariantSchema from "./VariantSchema.ts"
+export * as VariantSchema from "./VariantSchema.ts";

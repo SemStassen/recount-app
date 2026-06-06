@@ -25,17 +25,17 @@
  *
  * @since 2.0.0
  */
-import * as Arr from "../Array.ts"
-import * as Clock from "../Clock.ts"
-import * as Data from "../Data.ts"
-import * as Duration from "../Duration.ts"
-import * as Effect from "../Effect.ts"
-import * as Fiber from "../Fiber.ts"
-import { flow } from "../Function.ts"
-import * as Latch from "../Latch.ts"
-import * as Layer from "../Layer.ts"
-import * as Order from "../Order.ts"
-import * as Semaphore from "../Semaphore.ts"
+import * as Arr from "../Array.ts";
+import * as Clock from "../Clock.ts";
+import * as Data from "../Data.ts";
+import * as Duration from "../Duration.ts";
+import * as Effect from "../Effect.ts";
+import * as Fiber from "../Fiber.ts";
+import { flow } from "../Function.ts";
+import * as Latch from "../Latch.ts";
+import * as Layer from "../Layer.ts";
+import * as Order from "../Order.ts";
+import * as Semaphore from "../Semaphore.ts";
 
 /**
  * A `TestClock` simplifies deterministic and efficient testing of effects that
@@ -108,17 +108,17 @@ export interface TestClock extends Clock.Clock {
    * that were scheduled to occur on or before the new time will be run in
    * order.
    */
-  adjust(duration: Duration.Input): Effect.Effect<void>
+  adjust(duration: Duration.Input): Effect.Effect<void>;
   /**
    * Sets the current clock time to the specified `timestamp`. Any effects that
    * were scheduled to occur on or before the new time will be run in order.
    */
-  setTime(timestamp: number): Effect.Effect<void>
+  setTime(timestamp: number): Effect.Effect<void>;
   /**
    * Executes the specified effect with the live `Clock` instead of the
    * `TestClock`.
    */
-  withLive<A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R>
+  withLive<A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R>;
 }
 
 /**
@@ -175,7 +175,7 @@ export declare namespace TestClock {
      * The amount of time to wait before displaying a warning message when a
      * test is using time but is not advancing the `TestClock`.
      */
-    readonly warningDelay?: Duration.Input
+    readonly warningDelay?: Duration.Input;
   }
 
   /**
@@ -187,8 +187,8 @@ export declare namespace TestClock {
    * @since 4.0.0
    */
   export interface State {
-    readonly timestamp: number
-    readonly sleeps: ReadonlyArray<[number, Latch.Latch]>
+    readonly timestamp: number;
+    readonly sleeps: ReadonlyArray<[number, Latch.Latch]>;
   }
 }
 
@@ -196,18 +196,21 @@ export declare namespace TestClock {
  * The warning message that will be displayed if a test is using time but is
  * not advancing the `TestClock`.
  */
-const warningMessage = "A test is using time, but is not advancing the test " +
+const warningMessage =
+  "A test is using time, but is not advancing the test " +
   "clock, which may result in the test hanging. Use TestClock.adjust to " +
-  "manually advance the time."
+  "manually advance the time.";
 
 const defaultOptions: Required<TestClock.Options> = {
-  warningDelay: "1 second"
-}
+  warningDelay: "1 second",
+};
 
-const SleepOrder = Order.flip(Order.Struct({
-  timestamp: Order.Number,
-  sequence: Order.Number
-}))
+const SleepOrder = Order.flip(
+  Order.Struct({
+    timestamp: Order.Number,
+    sequence: Order.Number,
+  })
+);
 
 /**
  * Creates a `TestClock` with optional configuration.
@@ -237,35 +240,33 @@ const SleepOrder = Order.flip(Order.Struct({
  * @category constructors
  * @since 4.0.0
  */
-export const make = Effect.fnUntraced(function*(
-  options?: TestClock.Options
-) {
-  const config = Object.assign({}, defaultOptions, options)
-  let sequence = 0
+export const make = Effect.fnUntraced(function* (options?: TestClock.Options) {
+  const config = Object.assign({}, defaultOptions, options);
+  let sequence = 0;
   const sleeps: Array<{
-    readonly sequence: number
-    readonly timestamp: number
-    readonly latch: Latch.Latch
-  }> = []
-  const liveClock = yield* Clock.clockWith(Effect.succeed)
-  const warningSemaphore = yield* Semaphore.make(1)
+    readonly sequence: number;
+    readonly timestamp: number;
+    readonly latch: Latch.Latch;
+  }> = [];
+  const liveClock = yield* Clock.clockWith(Effect.succeed);
+  const warningSemaphore = yield* Semaphore.make(1);
 
-  let currentTimestamp: number = new Date(0).getTime()
-  let warningState: WarningState = WarningState.Start()
+  let currentTimestamp: number = new Date(0).getTime();
+  let warningState: WarningState = WarningState.Start();
 
   function currentTimeMillisUnsafe(): number {
-    return currentTimestamp
+    return currentTimestamp;
   }
 
   function currentTimeNanosUnsafe(): bigint {
-    return BigInt(Math.floor(currentTimestamp * 1000000))
+    return BigInt(Math.floor(currentTimestamp * 1000000));
   }
 
-  const currentTimeMillis = Effect.sync(currentTimeMillisUnsafe)
-  const currentTimeNanos = Effect.sync(currentTimeNanosUnsafe)
+  const currentTimeMillis = Effect.sync(currentTimeMillisUnsafe);
+  const currentTimeNanos = Effect.sync(currentTimeNanosUnsafe);
 
   function withLive<A, E, R>(effect: Effect.Effect<A, E, R>) {
-    return Effect.provideService(effect, Clock.Clock, liveClock)
+    return Effect.provideService(effect, Clock.Clock, liveClock);
   }
 
   /**
@@ -282,14 +283,14 @@ export const make = Effect.fnUntraced(function*(
           Effect.interruptible,
           Effect.flatMap((fiber) =>
             Effect.sync(() => {
-              warningState = WarningState.Pending({ fiber })
+              warningState = WarningState.Pending({ fiber });
             })
           )
-        )
+        );
       }
-      return Effect.void
+      return Effect.void;
     })
-  )
+  );
   /**
    * Cancels the warning message that is displayed if a test is using time but
    * is not advancing the `TestClock`.
@@ -299,59 +300,65 @@ export const make = Effect.fnUntraced(function*(
       switch (warningState._tag) {
         case "Pending": {
           return Fiber.interrupt(warningState.fiber).pipe(
-            Effect.andThen(Effect.sync(() => {
-              warningState = WarningState.Done()
-            }))
-          )
+            Effect.andThen(
+              Effect.sync(() => {
+                warningState = WarningState.Done();
+              })
+            )
+          );
         }
         case "Start":
         case "Done": {
-          warningState = WarningState.Done()
-          return Effect.void
+          warningState = WarningState.Done();
+          return Effect.void;
         }
       }
     })
-  )
+  );
 
-  const sleep = Effect.fnUntraced(function*(duration: Duration.Duration) {
-    const millis = Duration.toMillis(duration)
-    const end = currentTimestamp + millis
-    if (end <= currentTimestamp) return
-    const latch = Latch.makeUnsafe()
+  const sleep = Effect.fnUntraced(function* (duration: Duration.Duration) {
+    const millis = Duration.toMillis(duration);
+    const end = currentTimestamp + millis;
+    if (end <= currentTimestamp) return;
+    const latch = Latch.makeUnsafe();
     sleeps.push({
       sequence: sequence++,
       timestamp: end,
-      latch
-    })
-    sleeps.sort(SleepOrder)
-    yield* warningStart
-    yield* latch.await
-  })
+      latch,
+    });
+    sleeps.sort(SleepOrder);
+    yield* warningStart;
+    yield* latch.await;
+  });
 
-  const runSemaphore = yield* Semaphore.make(1)
-  const run = Effect.fnUntraced(function*(step: (currentTimestamp: number) => number) {
-    yield* Fiber.await(yield* Effect.forkChild(Effect.yieldNow))
-    const endTimestamp = step(currentTimestamp)
+  const runSemaphore = yield* Semaphore.make(1);
+  const run = Effect.fnUntraced(function* (
+    step: (currentTimestamp: number) => number
+  ) {
+    yield* Fiber.await(yield* Effect.forkChild(Effect.yieldNow));
+    const endTimestamp = step(currentTimestamp);
     while (Arr.isArrayNonEmpty(sleeps)) {
-      if (Arr.lastNonEmpty(sleeps).timestamp > endTimestamp) break
-      const entry = sleeps.pop()!
-      currentTimestamp = entry.timestamp
-      entry.latch.openUnsafe()
-      yield* Effect.yieldNow
+      if (Arr.lastNonEmpty(sleeps).timestamp > endTimestamp) break;
+      const entry = sleeps.pop()!;
+      currentTimestamp = entry.timestamp;
+      entry.latch.openUnsafe();
+      yield* Effect.yieldNow;
     }
-    currentTimestamp = endTimestamp
-  }, runSemaphore.withPermits(1))
+    currentTimestamp = endTimestamp;
+  }, runSemaphore.withPermits(1));
 
   function adjust(duration: Duration.Input) {
-    const millis = Duration.toMillis(Duration.fromInputUnsafe(duration))
-    return warningDone.pipe(Effect.andThen(run((timestamp) => timestamp + millis)))
+    const millis = Duration.toMillis(Duration.fromInputUnsafe(duration));
+    return warningDone.pipe(
+      Effect.andThen(run((timestamp) => timestamp + millis))
+    );
   }
 
   function setTime(timestamp: number) {
-    return warningDone.pipe(Effect.andThen(run(() => timestamp)))
+    return warningDone.pipe(Effect.andThen(run(() => timestamp)));
   }
 
-  yield* Effect.addFinalizer(() => warningDone)
+  yield* Effect.addFinalizer(() => warningDone);
 
   return {
     currentTimeMillisUnsafe,
@@ -361,9 +368,9 @@ export const make = Effect.fnUntraced(function*(
     adjust,
     setTime,
     sleep,
-    withLive
-  }
-})
+    withLive,
+  };
+});
 
 /**
  * Creates a `Layer` which constructs a `TestClock`.
@@ -391,10 +398,8 @@ export const make = Effect.fnUntraced(function*(
  * @category layers
  * @since 4.0.0
  */
-export const layer: (options?: TestClock.Options) => Layer.Layer<TestClock> = flow(
-  make,
-  Layer.effect(Clock.Clock)
-) as any
+export const layer: (options?: TestClock.Options) => Layer.Layer<TestClock> =
+  flow(make, Layer.effect(Clock.Clock)) as any;
 
 /**
  * Retrieves the `TestClock` service for this test and uses it to run the
@@ -424,7 +429,8 @@ export const layer: (options?: TestClock.Options) => Layer.Layer<TestClock> = fl
  */
 export const testClockWith = <A, E, R>(
   f: (testClock: TestClock) => Effect.Effect<A, E, R>
-): Effect.Effect<A, E, R> => Effect.withFiber((fiber) => f(fiber.getRef(Clock.Clock) as TestClock))
+): Effect.Effect<A, E, R> =>
+  Effect.withFiber((fiber) => f(fiber.getRef(Clock.Clock) as TestClock));
 
 /**
  * Accesses a `TestClock` instance in the context and increments the time
@@ -458,7 +464,7 @@ export const testClockWith = <A, E, R>(
  * @since 2.0.0
  */
 export const adjust = (duration: Duration.Input): Effect.Effect<void> =>
-  testClockWith((testClock) => testClock.adjust(duration))
+  testClockWith((testClock) => testClock.adjust(duration));
 
 /**
  * Sets the current clock time to the specified `timestamp`. Any effects that
@@ -492,7 +498,7 @@ export const adjust = (duration: Duration.Input): Effect.Effect<void> =>
  * @since 2.0.0
  */
 export const setTime = (timestamp: number): Effect.Effect<void> =>
-  testClockWith((testClock) => testClock.setTime(timestamp))
+  testClockWith((testClock) => testClock.setTime(timestamp));
 
 /**
  * Executes the specified effect with the live `Clock` instead of the
@@ -525,8 +531,10 @@ export const setTime = (timestamp: number): Effect.Effect<void> =>
  * @category testing
  * @since 4.0.0
  */
-export const withLive = <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
-  testClockWith((testClock) => testClock.withLive(effect))
+export const withLive = <A, E, R>(
+  effect: Effect.Effect<A, E, R>
+): Effect.Effect<A, E, R> =>
+  testClockWith((testClock) => testClock.withLive(effect));
 
 /**
  * `WarningState` describes the state of the warning message that is displayed
@@ -542,7 +550,7 @@ type WarningState = Data.TaggedEnum<{
   /**
    * The `WarningState` which indicates that a test has not yet used time.
    */
-  readonly Start: {}
+  readonly Start: {};
   /**
    * The `WarningState` which indicates that a test has used time but has not
    * adjusted the `TestClock`.
@@ -551,12 +559,12 @@ type WarningState = Data.TaggedEnum<{
    * display the warning message.
    */
   readonly Pending: {
-    readonly fiber: Fiber.Fiber<void, unknown>
-  }
+    readonly fiber: Fiber.Fiber<void, unknown>;
+  };
   /**
    * The `WarningState` which indicates that a test has used time, or that the
    * warning message has already been displayed.
    */
-  readonly Done: {}
-}>
-const WarningState = Data.taggedEnum<WarningState>()
+  readonly Done: {};
+}>;
+const WarningState = Data.taggedEnum<WarningState>();

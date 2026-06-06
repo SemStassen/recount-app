@@ -67,7 +67,7 @@
  * @since 4.0.0
  */
 
-import type * as Combiner from "./Combiner.ts"
+import type * as Combiner from "./Combiner.ts";
 
 /**
  * Represents a strategy for reducing a collection of values of type `A` into
@@ -119,7 +119,7 @@ export interface Reducer<A> extends Combiner.Combiner<A> {
    *
    * Use to seed a reduction and represent the result of reducing an empty collection.
    */
-  readonly initialValue: A
+  readonly initialValue: A;
 
   /**
    * Combines all values in the collection, starting from `initialValue`.
@@ -128,7 +128,7 @@ export interface Reducer<A> extends Combiner.Combiner<A> {
    *
    * Use to reduce an iterable with this reducer's initial value and combining operation.
    */
-  readonly combineAll: (collection: Iterable<A>) => A
+  readonly combineAll: (collection: Iterable<A>) => A;
 }
 
 /**
@@ -185,15 +185,16 @@ export function make<A>(
   return {
     combine,
     initialValue,
-    combineAll: combineAll ??
+    combineAll:
+      combineAll ??
       ((collection) => {
-        let out = initialValue
+        let out = initialValue;
         for (const value of collection) {
-          out = combine(out, value)
+          out = combine(out, value);
         }
-        return out
-      })
-  }
+        return out;
+      }),
+  };
 }
 
 /**
@@ -233,5 +234,8 @@ export function make<A>(
  * @since 4.0.0
  */
 export function flip<A>(reducer: Reducer<A>): Reducer<A> {
-  return make((self, that) => reducer.combine(that, self), reducer.initialValue)
+  return make(
+    (self, that) => reducer.combine(that, self),
+    reducer.initialValue
+  );
 }

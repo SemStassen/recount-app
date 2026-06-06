@@ -1,6 +1,6 @@
-import { Schema, SchemaTransformation } from "effect"
-import { Bench } from "tinybench"
-import { z } from "zod"
+import { Schema, SchemaTransformation } from "effect";
+import { Bench } from "tinybench";
+import { z } from "zod";
 
 /*
 ┌─────────┬─────────────────┬──────────────────┬───────────────────┬────────────────────────┬────────────────────────┬─────────┐
@@ -13,59 +13,61 @@ import { z } from "zod"
 └─────────┴─────────────────┴──────────────────┴───────────────────┴────────────────────────┴────────────────────────┴─────────┘
 */
 
-const bench = new Bench()
+const bench = new Bench();
 
 const schema = Schema.Struct({
   a: Schema.String,
   id: Schema.String,
   c: Schema.Number.check(Schema.isGreaterThanOrEqualTo(0)),
-  d: Schema.String
-}).pipe(Schema.decodeTo(
-  Schema.Struct({
-    a: Schema.String,
-    b: Schema.Struct({ id: Schema.String }),
-    c: Schema.Number.check(Schema.isGreaterThanOrEqualTo(0)),
-    d: Schema.String
-  }),
-  SchemaTransformation.transform({
-    decode: ({ id, ...v }) => ({ ...v, b: { id } }),
-    encode: ({ b: { id }, ...v }) => ({ ...v, id })
-  })
-))
+  d: Schema.String,
+}).pipe(
+  Schema.decodeTo(
+    Schema.Struct({
+      a: Schema.String,
+      b: Schema.Struct({ id: Schema.String }),
+      c: Schema.Number.check(Schema.isGreaterThanOrEqualTo(0)),
+      d: Schema.String,
+    }),
+    SchemaTransformation.transform({
+      decode: ({ id, ...v }) => ({ ...v, b: { id } }),
+      encode: ({ b: { id }, ...v }) => ({ ...v, id }),
+    })
+  )
+);
 
 const zod = z.codec(
   z.object({
     a: z.string(),
     id: z.string(),
     c: z.number().check(z.nonnegative()),
-    d: z.string()
+    d: z.string(),
   }),
   z.object({
     a: z.string(),
     b: z.object({ id: z.string() }),
     c: z.number().check(z.nonnegative()),
-    d: z.string()
+    d: z.string(),
   }),
   {
     decode: ({ id, ...v }) => ({ ...v, b: { id } }),
-    encode: ({ b: { id }, ...v }) => ({ ...v, id })
+    encode: ({ b: { id }, ...v }) => ({ ...v, id }),
   }
-)
+);
 
 const good = {
   a: "a",
   id: "id",
   c: 1,
-  d: "d"
-}
+  d: "d",
+};
 const bad = {
   a: "a",
   id: "id",
   c: -1,
-  d: "d"
-}
+  d: "d",
+};
 
-const decodeUnknownExit = Schema.decodeUnknownExit(schema)
+const decodeUnknownExit = Schema.decodeUnknownExit(schema);
 
 // console.log(decodeUnknownExit(good))
 // console.log(String(decodeUnknownExit(bad)))
@@ -73,19 +75,19 @@ const decodeUnknownExit = Schema.decodeUnknownExit(schema)
 // console.log(zod.safeDecode(bad))
 
 bench
-  .add("Schema (good)", function() {
-    decodeUnknownExit(good)
+  .add("Schema (good)", function () {
+    decodeUnknownExit(good);
   })
-  .add("Zod (good)", function() {
-    zod.safeDecode(good)
+  .add("Zod (good)", function () {
+    zod.safeDecode(good);
   })
-  .add("Schema (bad)", function() {
-    decodeUnknownExit(bad)
+  .add("Schema (bad)", function () {
+    decodeUnknownExit(bad);
   })
-  .add("Zod (bad)", function() {
-    zod.safeDecode(bad)
-  })
+  .add("Zod (bad)", function () {
+    zod.safeDecode(bad);
+  });
 
-await bench.run()
+await bench.run();
 
-console.table(bench.table())
+console.table(bench.table());

@@ -10,19 +10,24 @@
  *
  * @since 4.0.0
  */
-import * as Context from "effect/Context"
-import * as Effect from "effect/Effect"
-import type * as JsonSchema from "effect/JsonSchema"
-import * as Layer from "effect/Layer"
-import * as Predicate from "effect/Predicate"
-import * as String from "effect/String"
-import type { OpenAPISecurityScheme, OpenAPISpec, OpenAPISpecMethodName } from "effect/unstable/httpapi/OpenApi"
-import SwaggerToOpenApi from "swagger2openapi"
-import * as HttpApiTransformer from "./HttpApiTransformer.ts"
-import * as JsonSchemaGenerator from "./JsonSchemaGenerator.ts"
-import * as OpenApiTransformer from "./OpenApiTransformer.ts"
-import * as ParsedOperation from "./ParsedOperation.ts"
-import * as Utils from "./Utils.ts"
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import type * as JsonSchema from "effect/JsonSchema";
+import * as Layer from "effect/Layer";
+import * as Predicate from "effect/Predicate";
+import * as String from "effect/String";
+import type {
+  OpenAPISecurityScheme,
+  OpenAPISpec,
+  OpenAPISpecMethodName,
+} from "effect/unstable/httpapi/OpenApi";
+import SwaggerToOpenApi from "swagger2openapi";
+
+import * as HttpApiTransformer from "./HttpApiTransformer.ts";
+import * as JsonSchemaGenerator from "./JsonSchemaGenerator.ts";
+import * as OpenApiTransformer from "./OpenApiTransformer.ts";
+import * as ParsedOperation from "./ParsedOperation.ts";
+import * as Utils from "./Utils.ts";
 
 /**
  * Service for turning OpenAPI or Swagger specifications into generated Effect
@@ -33,7 +38,12 @@ import * as Utils from "./Utils.ts"
  */
 export class OpenApiGenerator extends Context.Service<
   OpenApiGenerator,
-  { readonly generate: (spec: OpenAPISpec, options: OpenApiGenerateOptions) => Effect.Effect<string> }
+  {
+    readonly generate: (
+      spec: OpenAPISpec,
+      options: OpenApiGenerateOptions
+    ) => Effect.Effect<string>;
+  }
 >()("OpenApiGenerator") {}
 
 /**
@@ -42,7 +52,10 @@ export class OpenApiGenerator extends Context.Service<
  * @category models
  * @since 4.0.0
  */
-export type OpenApiGeneratorFormat = "httpclient" | "httpclient-type-only" | "httpapi"
+export type OpenApiGeneratorFormat =
+  | "httpclient"
+  | "httpclient-type-only"
+  | "httpapi";
 
 /**
  * Stable identifiers for non-fatal OpenAPI generation warnings.
@@ -59,7 +72,7 @@ export type OpenApiGeneratorWarningCode =
   | "default-response-remapped"
   | "security-and-downgraded"
   | "no-body-method-request-body-skipped"
-  | "naming-collision"
+  | "naming-collision";
 
 /**
  * Describes a non-fatal issue encountered while mapping an OpenAPI operation to
@@ -69,11 +82,11 @@ export type OpenApiGeneratorWarningCode =
  * @since 4.0.0
  */
 export interface OpenApiGeneratorWarning {
-  readonly code: OpenApiGeneratorWarningCode
-  readonly message: string
-  readonly path?: string | undefined
-  readonly method?: OpenAPISpecMethodName | undefined
-  readonly operationId?: string | undefined
+  readonly code: OpenApiGeneratorWarningCode;
+  readonly message: string;
+  readonly path?: string | undefined;
+  readonly method?: OpenAPISpecMethodName | undefined;
+  readonly operationId?: string | undefined;
 }
 
 /**
@@ -86,24 +99,26 @@ export interface OpenApiGenerateOptions {
   /**
    * The name to give to the generated output.
    */
-  readonly name: string
+  readonly name: string;
   /**
    * The output format to generate.
    */
-  readonly format: OpenApiGeneratorFormat
+  readonly format: OpenApiGeneratorFormat;
   /**
    * Hook to transform each JSON Schema node before processing.
    */
-  readonly onEnter?: ((js: JsonSchema.JsonSchema) => JsonSchema.JsonSchema) | undefined
+  readonly onEnter?:
+    | ((js: JsonSchema.JsonSchema) => JsonSchema.JsonSchema)
+    | undefined;
   /**
    * Callback to receive non-fatal generation warnings.
    */
-  readonly onWarning?: ((warning: OpenApiGeneratorWarning) => void) | undefined
+  readonly onWarning?: ((warning: OpenApiGeneratorWarning) => void) | undefined;
 }
 
 interface HttpApiMultipartSchemaRefs {
-  readonly singleFile: string
-  readonly files: string
+  readonly singleFile: string;
+  readonly files: string;
 }
 
 const methodNames: ReadonlyArray<OpenAPISpecMethodName> = [
@@ -114,8 +129,8 @@ const methodNames: ReadonlyArray<OpenAPISpecMethodName> = [
   "options",
   "head",
   "patch",
-  "trace"
-]
+  "trace",
+];
 
 /**
  * Constructs the OpenAPI generator service implementation.
@@ -123,61 +138,73 @@ const methodNames: ReadonlyArray<OpenAPISpecMethodName> = [
  * @category constructors
  * @since 4.0.0
  */
-export const make = Effect.gen(function*() {
+export const make = Effect.gen(function* () {
   const generate = Effect.fn(
-    function*(spec: OpenAPISpec, options: OpenApiGenerateOptions) {
-      const generator = JsonSchemaGenerator.make()
-      const openApiTransformer = yield* OpenApiTransformer.OpenApiTransformer
-      const emitWarning = makeWarningEmitter(options)
+    function* (spec: OpenAPISpec, options: OpenApiGenerateOptions) {
+      const generator = JsonSchemaGenerator.make();
+      const openApiTransformer = yield* OpenApiTransformer.OpenApiTransformer;
+      const emitWarning = makeWarningEmitter(options);
 
       // If we receive a Swagger 2.0 spec, convert it to an OpenApi 3.0 spec
       if (isSwaggerSpec(spec)) {
-        spec = yield* convertSwaggerSpec(spec)
+        spec = yield* convertSwaggerSpec(spec);
       }
 
       function resolveRef(ref: string) {
-        const parts = ref.split("/").slice(1)
-        let current: any = spec
+        const parts = ref.split("/").slice(1);
+        let current: any = spec;
         for (const part of parts) {
-          current = current[part]
+          current = current[part];
         }
-        return current
+        return current;
       }
 
-      const multipartSchemaRefs = options.format === "httpapi"
-        ? makeHttpApiMultipartSchemaRefs(spec.components?.schemas ?? {})
-        : undefined
+      const multipartSchemaRefs =
+        options.format === "httpapi"
+          ? makeHttpApiMultipartSchemaRefs(spec.components?.schemas ?? {})
+          : undefined;
 
-      const parsed = parseOpenApi(spec, generator, resolveRef, options.format, emitWarning, multipartSchemaRefs)
+      const parsed = parseOpenApi(
+        spec,
+        generator,
+        resolveRef,
+        options.format,
+        emitWarning,
+        multipartSchemaRefs
+      );
 
       // TODO: make a CLI option ?
-      const importName = "Schema"
-      const source = getDialect(spec)
-      const generation = options.format === "httpapi"
-        ? generator.generateHttpApi(
-          source,
-          withHttpApiMultipartSchemas(spec.components?.schemas ?? {}, multipartSchemaRefs),
-          {
-            onEnter: options.onEnter,
-            multipartSchemaRefs
-          }
-        )
-        : generator.generate(
-          source,
-          spec.components?.schemas ?? {},
-          options.format === "httpclient-type-only",
-          {
-            onEnter: options.onEnter
-          }
-        )
+      const importName = "Schema";
+      const source = getDialect(spec);
+      const generation =
+        options.format === "httpapi"
+          ? generator.generateHttpApi(
+              source,
+              withHttpApiMultipartSchemas(
+                spec.components?.schemas ?? {},
+                multipartSchemaRefs
+              ),
+              {
+                onEnter: options.onEnter,
+                multipartSchemaRefs,
+              }
+            )
+          : generator.generate(
+              source,
+              spec.components?.schemas ?? {},
+              options.format === "httpclient-type-only",
+              {
+                onEnter: options.onEnter,
+              }
+            );
 
       if (options.format === "httpapi") {
-        const needsMultipartImport = generation.includes("Multipart.")
+        const needsMultipartImport = generation.includes("Multipart.");
         return String.stripMargin(
           `|${HttpApiTransformer.imports(importName, { multipart: needsMultipartImport })}
            |${generation}
            |${HttpApiTransformer.toImplementation(importName, options.name, parsed)}`
-        )
+        );
       }
 
       return String.stripMargin(
@@ -186,7 +213,7 @@ export const make = Effect.gen(function*() {
          |${openApiTransformer.toImplementation(importName, options.name, parsed)}
          |
          |${openApiTransformer.toTypes(importName, options.name, parsed)}`
-      )
+      );
     },
     (effect, _, options) =>
       Effect.provideServiceEffect(
@@ -196,16 +223,18 @@ export const make = Effect.gen(function*() {
           ? Effect.sync(OpenApiTransformer.makeTransformerTs)
           : Effect.sync(OpenApiTransformer.makeTransformerSchema)
       )
-  )
+  );
 
-  return { generate } as const
-})
+  return { generate } as const;
+});
 
-type WarningEmitter = (warning: OpenApiGeneratorWarning) => void
+type WarningEmitter = (warning: OpenApiGeneratorWarning) => void;
 
-const makeWarningEmitter = (options: OpenApiGenerateOptions): WarningEmitter => (warning) => {
-  options.onWarning?.(warning)
-}
+const makeWarningEmitter =
+  (options: OpenApiGenerateOptions): WarningEmitter =>
+  (warning) => {
+    options.onWarning?.(warning);
+  };
 
 const parseOpenApi = (
   spec: OpenAPISpec,
@@ -215,387 +244,483 @@ const parseOpenApi = (
   emitWarning: WarningEmitter,
   multipartSchemaRefs: HttpApiMultipartSchemaRefs | undefined
 ): ParsedOperation.ParsedOpenApi => {
-  const operations: Array<ParsedOperation.ParsedOperation> = []
-  const reservedSchemaNames = new Set<string>(Object.keys(spec.components?.schemas ?? {}))
-  const isHttpApi = format === "httpapi"
-  const securitySchemes = isHttpApi ? parseSecuritySchemes(spec, resolveRef) : []
+  const operations: Array<ParsedOperation.ParsedOperation> = [];
+  const reservedSchemaNames = new Set<string>(
+    Object.keys(spec.components?.schemas ?? {})
+  );
+  const isHttpApi = format === "httpapi";
+  const securitySchemes = isHttpApi
+    ? parseSecuritySchemes(spec, resolveRef)
+    : [];
 
   const addSchema = (
     baseName: string,
     schema: JsonSchema.JsonSchema,
     operation: ParsedOperation.ParsedOperation
   ): string => {
-    let candidate = baseName
-    let index = 2
+    let candidate = baseName;
+    let index = 2;
     while (reservedSchemaNames.has(candidate)) {
-      candidate = `${baseName}${index}`
-      index += 1
+      candidate = `${baseName}${index}`;
+      index += 1;
     }
     if (candidate !== baseName) {
       warnForOperation(emitWarning, operation, {
         code: "naming-collision",
-        message: `Schema name "${baseName}" collided with an existing name and was renamed to "${candidate}".`
-      })
+        message: `Schema name "${baseName}" collided with an existing name and was renamed to "${candidate}".`,
+      });
     }
-    reservedSchemaNames.add(candidate)
-    return generator.addSchema(candidate, schema)
-  }
+    reservedSchemaNames.add(candidate);
+    return generator.addSchema(candidate, schema);
+  };
 
   for (const [path, methods] of Object.entries(spec.paths)) {
     for (const method of methodNames) {
-      const operation = methods[method]
+      const operation = methods[method];
 
       if (Predicate.isUndefined(operation)) {
-        continue
+        continue;
       }
 
       const id = operation.operationId
         ? Utils.camelize(operation.operationId)
-        : `${method.toUpperCase()}${path}`
+        : `${method.toUpperCase()}${path}`;
 
-      const description = Utils.nonEmptyString(operation.description) ?? Utils.nonEmptyString(operation.summary)
+      const description =
+        Utils.nonEmptyString(operation.description) ??
+        Utils.nonEmptyString(operation.summary);
 
-      const { pathIds, pathTemplate } = processPath(path)
+      const { pathIds, pathTemplate } = processPath(path);
 
       const op = ParsedOperation.makeDeepMutable({
         id,
         method,
         description,
         pathIds,
-        pathTemplate
-      })
-      op.path = path
-      op.operationId = Utils.nonEmptyString(operation.operationId)
-      op.tags = [...(operation.tags ?? [])]
+        pathTemplate,
+      });
+      op.path = path;
+      op.operationId = Utils.nonEmptyString(operation.operationId);
+      op.tags = [...(operation.tags ?? [])];
       if (isHttpApi && op.tags.length > 1) {
         warnForOperation(emitWarning, op, {
           code: "additional-tags-dropped",
           message: `Additional tags (${op.tags.slice(1).join(", ")}) were dropped. Only the first tag ("${
             op.tags[0]
-          }") is used for grouping.`
-        })
+          }") is used for grouping.`,
+        });
       }
       op.metadata = {
         summary: Utils.nonEmptyString(operation.summary),
         description: Utils.nonEmptyString(operation.description),
         deprecated: operation.deprecated === true,
-        externalDocs: operation.externalDocs
-      }
-      op.effectiveSecurity = cloneSecurityRequirements(operation.security ?? spec.security ?? [])
+        externalDocs: operation.externalDocs,
+      };
+      op.effectiveSecurity = cloneSecurityRequirements(
+        operation.security ?? spec.security ?? []
+      );
       if (isHttpApi) {
-        warnForAndSecurityRequirements(emitWarning, op)
+        warnForAndSecurityRequirements(emitWarning, op);
       }
 
-      const schemaId = Utils.identifier(operation.operationId ?? path)
+      const schemaId = Utils.identifier(operation.operationId ?? path);
 
-      const pathParameters = Predicate.isObject(methods) && Array.isArray((methods as any).parameters)
-        ? (methods as any).parameters as ReadonlyArray<unknown>
-        : undefined
+      const pathParameters =
+        Predicate.isObject(methods) &&
+        Array.isArray((methods as any).parameters)
+          ? ((methods as any).parameters as ReadonlyArray<unknown>)
+          : undefined;
       const parameters = resolveOperationParameters(
         pathParameters,
         Array.isArray(operation.parameters) ? operation.parameters : undefined,
         resolveRef
-      )
+      );
       for (const parameter of parameters) {
         const parsedParameter: ParsedOperation.ParsedOperationParameter = {
           name: parameter.name,
           in: parameter.in,
           required: parameter.required === true,
           description: Utils.nonEmptyString(parameter.description),
-          schema: parameter.schema
-        }
+          schema: parameter.schema,
+        };
         switch (parameter.in) {
           case "path": {
-            op.parameters.path.push(parsedParameter)
-            break
+            op.parameters.path.push(parsedParameter);
+            break;
           }
           case "query": {
-            op.parameters.query.push(parsedParameter)
-            break
+            op.parameters.query.push(parsedParameter);
+            break;
           }
           case "header": {
-            op.parameters.header.push(parsedParameter)
-            break
+            op.parameters.header.push(parsedParameter);
+            break;
           }
           case "cookie": {
-            op.parameters.cookie.push(parsedParameter)
+            op.parameters.cookie.push(parsedParameter);
             warnForOperation(emitWarning, op, {
               code: "cookie-parameter-dropped",
-              message:
-                `Cookie parameter "${parameter.name}" was dropped because non-security cookie parameters are not supported.`
-            })
-            break
+              message: `Cookie parameter "${parameter.name}" was dropped because non-security cookie parameters are not supported.`,
+            });
+            break;
           }
         }
       }
 
-      const requestBody = resolveReference(operation.requestBody, resolveRef)
-      if (isHttpApi && !methodSupportsRequestBody(op.method) && Predicate.isObject(requestBody)) {
+      const requestBody = resolveReference(operation.requestBody, resolveRef);
+      if (
+        isHttpApi &&
+        !methodSupportsRequestBody(op.method) &&
+        Predicate.isObject(requestBody)
+      ) {
         warnForOperation(emitWarning, op, {
           code: "no-body-method-request-body-skipped",
-          message: `Operation was skipped because ${op.method.toUpperCase()} does not support request bodies.`
-        })
-        continue
+          message: `Operation was skipped because ${op.method.toUpperCase()} does not support request bodies.`,
+        });
+        continue;
       }
 
       const resolvedResponses = Object.entries(operation.responses ?? {}).map(
-        ([status, response]) => [status, resolveReference(response, resolveRef)] as const
-      )
+        ([status, response]) =>
+          [status, resolveReference(response, resolveRef)] as const
+      );
       const hasExplicitSuccessResponse = resolvedResponses.some(([status]) => {
         if (!/^\d{3}$/.test(status)) {
-          return false
+          return false;
         }
-        return Number(status) < 400
-      })
+        return Number(status) < 400;
+      });
 
-      if (isHttpApi && hasSuccessfulSseResponse(resolvedResponses, hasExplicitSuccessResponse)) {
+      if (
+        isHttpApi &&
+        hasSuccessfulSseResponse(resolvedResponses, hasExplicitSuccessResponse)
+      ) {
         warnForOperation(emitWarning, op, {
           code: "sse-operation-skipped",
           message:
-            "Operation was skipped because successful text/event-stream responses are not supported in HttpApi generation."
-        })
-        continue
+            "Operation was skipped because successful text/event-stream responses are not supported in HttpApi generation.",
+        });
+        continue;
       }
 
-      const validParameters = parameters.filter((parameter) => parameter.in !== "path" && parameter.in !== "cookie")
+      const validParameters = parameters.filter(
+        (parameter) => parameter.in !== "path" && parameter.in !== "cookie"
+      );
 
-      const combinedParameterSchema = buildParameterSchema(validParameters, (parameter, added) => {
-        if (parameter.in === "query") {
-          Utils.spreadElementsInto(added, op.urlParams)
-        } else if (parameter.in === "header") {
-          Utils.spreadElementsInto(added, op.headers)
-        } else if (parameter.in === "cookie") {
-          Utils.spreadElementsInto(added, op.cookies)
+      const combinedParameterSchema = buildParameterSchema(
+        validParameters,
+        (parameter, added) => {
+          if (parameter.in === "query") {
+            Utils.spreadElementsInto(added, op.urlParams);
+          } else if (parameter.in === "header") {
+            Utils.spreadElementsInto(added, op.headers);
+          } else if (parameter.in === "cookie") {
+            Utils.spreadElementsInto(added, op.cookies);
+          }
         }
-      })
+      );
 
       if (combinedParameterSchema !== undefined) {
-        op.params = addSchema(`${schemaId}Params`, combinedParameterSchema.schema, op)
-        op.paramsOptional = combinedParameterSchema.optional
+        op.params = addSchema(
+          `${schemaId}Params`,
+          combinedParameterSchema.schema,
+          op
+        );
+        op.paramsOptional = combinedParameterSchema.optional;
       }
 
       if (isHttpApi) {
-        const pathParameterSchema = buildParameterSchema(op.parameters.path)
+        const pathParameterSchema = buildParameterSchema(op.parameters.path);
         if (pathParameterSchema !== undefined) {
-          op.pathSchema = addSchema(`${schemaId}PathParams`, pathParameterSchema.schema, op)
+          op.pathSchema = addSchema(
+            `${schemaId}PathParams`,
+            pathParameterSchema.schema,
+            op
+          );
         }
 
-        const queryParameterSchema = buildParameterSchema(op.parameters.query)
+        const queryParameterSchema = buildParameterSchema(op.parameters.query);
         if (queryParameterSchema !== undefined) {
-          op.querySchema = addSchema(`${schemaId}Query`, queryParameterSchema.schema, op)
-          op.querySchemaOptional = queryParameterSchema.optional
+          op.querySchema = addSchema(
+            `${schemaId}Query`,
+            queryParameterSchema.schema,
+            op
+          );
+          op.querySchemaOptional = queryParameterSchema.optional;
         }
 
-        const headerParameterSchema = buildParameterSchema(op.parameters.header)
+        const headerParameterSchema = buildParameterSchema(
+          op.parameters.header
+        );
         if (headerParameterSchema !== undefined) {
-          op.headersSchema = addSchema(`${schemaId}Headers`, headerParameterSchema.schema, op)
-          op.headersSchemaOptional = headerParameterSchema.optional
+          op.headersSchema = addSchema(
+            `${schemaId}Headers`,
+            headerParameterSchema.schema,
+            op
+          );
+          op.headersSchemaOptional = headerParameterSchema.optional;
         }
       }
 
-      if (Predicate.isNotUndefined(requestBody) && Predicate.isObject(requestBody)) {
+      if (
+        Predicate.isNotUndefined(requestBody) &&
+        Predicate.isObject(requestBody)
+      ) {
         const content = Predicate.isObject(requestBody.content)
-          ? requestBody.content as Record<string, any>
-          : {}
-        const requestSchemaNames = new Map<string, string>()
+          ? (requestBody.content as Record<string, any>)
+          : {};
+        const requestSchemaNames = new Map<string, string>();
         op.requestBody = {
           required: requestBody.required === true,
-          contentTypes: Object.keys(content)
-        }
+          contentTypes: Object.keys(content),
+        };
         if (isHttpApi && requestBody.required === false) {
           warnForOperation(emitWarning, op, {
             code: "optional-request-body-approximated",
-            message: "Optional request body was approximated by adding a no-content payload alternative."
-          })
+            message:
+              "Optional request body was approximated by adding a no-content payload alternative.",
+          });
         }
 
         if (Predicate.isNotUndefined(content["application/json"]?.schema)) {
-          op.payload = addSchema(`${schemaId}RequestJson`, content["application/json"].schema, op)
-          requestSchemaNames.set("application/json", op.payload)
+          op.payload = addSchema(
+            `${schemaId}RequestJson`,
+            content["application/json"].schema,
+            op
+          );
+          requestSchemaNames.set("application/json", op.payload);
         }
 
         if (Predicate.isNotUndefined(content["multipart/form-data"]?.schema)) {
           op.payload = addSchema(
             `${schemaId}RequestFormData`,
-            transformMultipartSchema(content["multipart/form-data"].schema, multipartSchemaRefs, resolveRef),
+            transformMultipartSchema(
+              content["multipart/form-data"].schema,
+              multipartSchemaRefs,
+              resolveRef
+            ),
             op
-          )
-          op.payloadFormData = true
-          requestSchemaNames.set("multipart/form-data", op.payload)
+          );
+          op.payloadFormData = true;
+          requestSchemaNames.set("multipart/form-data", op.payload);
         }
 
-        if (Predicate.isNotUndefined(content["application/x-www-form-urlencoded"]?.schema)) {
+        if (
+          Predicate.isNotUndefined(
+            content["application/x-www-form-urlencoded"]?.schema
+          )
+        ) {
           op.payload = addSchema(
             `${schemaId}RequestFormUrlEncoded`,
             content["application/x-www-form-urlencoded"].schema,
             op
-          )
-          op.payloadFormUrlEncoded = true
-          requestSchemaNames.set("application/x-www-form-urlencoded", op.payload)
+          );
+          op.payloadFormUrlEncoded = true;
+          requestSchemaNames.set(
+            "application/x-www-form-urlencoded",
+            op.payload
+          );
         }
 
         if (isHttpApi) {
-          const representableRequestBody: Array<ParsedOperation.ParsedOperationMediaTypeSchema> = []
+          const representableRequestBody: Array<ParsedOperation.ParsedOperationMediaTypeSchema> =
+            [];
           for (const [contentType, mediaType] of Object.entries(content)) {
-            if (!Predicate.isObject(mediaType) || Predicate.isUndefined(mediaType.schema)) {
-              continue
+            if (
+              !Predicate.isObject(mediaType) ||
+              Predicate.isUndefined(mediaType.schema)
+            ) {
+              continue;
             }
-            const encoding = getRequestMediaTypeEncoding(contentType)
+            const encoding = getRequestMediaTypeEncoding(contentType);
             if (encoding === undefined) {
-              continue
+              continue;
             }
-            let schemaName = requestSchemaNames.get(contentType)
+            let schemaName = requestSchemaNames.get(contentType);
             if (schemaName === undefined) {
-              const schema = encoding === "multipart"
-                ? transformMultipartSchema(mediaType.schema as JsonSchema.JsonSchema, multipartSchemaRefs, resolveRef)
-                : mediaType.schema as JsonSchema.JsonSchema
+              const schema =
+                encoding === "multipart"
+                  ? transformMultipartSchema(
+                      mediaType.schema as JsonSchema.JsonSchema,
+                      multipartSchemaRefs,
+                      resolveRef
+                    )
+                  : (mediaType.schema as JsonSchema.JsonSchema);
               schemaName = addSchema(
                 `${schemaId}Request${mediaTypeToSuffix(contentType)}`,
                 schema,
                 op
-              )
-              requestSchemaNames.set(contentType, schemaName)
+              );
+              requestSchemaNames.set(contentType, schemaName);
             }
             representableRequestBody.push({
               contentType,
               encoding,
-              schema: schemaName
-            })
+              schema: schemaName,
+            });
           }
-          op.requestBodyRepresentable = representableRequestBody
+          op.requestBodyRepresentable = representableRequestBody;
         }
       }
 
-      let defaultSchema: string | undefined
+      let defaultSchema: string | undefined;
       for (const [status, response] of resolvedResponses) {
         if (!Predicate.isObject(response)) {
-          continue
+          continue;
         }
 
         const parsedStatus = isHttpApi
-          ? remapDefaultResponseStatusForHttpApi(status, hasExplicitSuccessResponse)
-          : status
+          ? remapDefaultResponseStatusForHttpApi(
+              status,
+              hasExplicitSuccessResponse
+            )
+          : status;
         if (isHttpApi && status === "default") {
           warnForOperation(emitWarning, op, {
             code: "default-response-remapped",
-            message: `Default response was remapped to status ${parsedStatus} for HttpApi generation.`
-          })
+            message: `Default response was remapped to status ${parsedStatus} for HttpApi generation.`,
+          });
         }
 
         const content = Predicate.isObject(response.content)
-          ? response.content as Record<string, any>
-          : undefined
+          ? (response.content as Record<string, any>)
+          : undefined;
         if (isHttpApi && Predicate.isNotUndefined(response.headers)) {
           warnForOperation(emitWarning, op, {
             code: "response-headers-ignored",
-            message: `Response headers on status ${status} were ignored in HttpApi generation.`
-          })
+            message: `Response headers on status ${status} were ignored in HttpApi generation.`,
+          });
         }
-        const representable: Array<ParsedOperation.ParsedOperationMediaTypeSchema> = []
+        const representable: Array<ParsedOperation.ParsedOperationMediaTypeSchema> =
+          [];
 
-        let jsonSchemaName: string | undefined
-        const jsonResponseSchema = content?.["application/json"]?.schema
+        let jsonSchemaName: string | undefined;
+        const jsonResponseSchema = content?.["application/json"]?.schema;
         if (Predicate.isNotUndefined(jsonResponseSchema)) {
-          jsonSchemaName = addSchema(`${schemaId}${status}`, jsonResponseSchema, op)
+          jsonSchemaName = addSchema(
+            `${schemaId}${status}`,
+            jsonResponseSchema,
+            op
+          );
           if (isHttpApi) {
             representable.push({
               contentType: "application/json",
               encoding: "json",
-              schema: jsonSchemaName
-            })
+              schema: jsonSchemaName,
+            });
           }
         }
 
         if (isHttpApi) {
-          for (const [contentType, mediaType] of Object.entries(content ?? {})) {
+          for (const [contentType, mediaType] of Object.entries(
+            content ?? {}
+          )) {
             if (contentType === "application/json") {
-              continue
+              continue;
             }
-            if (!Predicate.isObject(mediaType) || Predicate.isUndefined(mediaType.schema)) {
-              continue
+            if (
+              !Predicate.isObject(mediaType) ||
+              Predicate.isUndefined(mediaType.schema)
+            ) {
+              continue;
             }
-            const encoding = getResponseMediaTypeEncoding(contentType)
+            const encoding = getResponseMediaTypeEncoding(contentType);
             if (encoding === undefined) {
-              continue
+              continue;
             }
             const schemaName = addSchema(
               `${schemaId}${status}${mediaTypeToSuffix(contentType)}`,
               mediaType.schema as JsonSchema.JsonSchema,
               op
-            )
+            );
             representable.push({
               contentType,
               encoding,
-              schema: schemaName
-            })
+              schema: schemaName,
+            });
           }
         }
 
-        const isEmptyResponse = Predicate.isUndefined(content) || Object.keys(content).length === 0
+        const isEmptyResponse =
+          Predicate.isUndefined(content) || Object.keys(content).length === 0;
         const parsedResponse = {
           status: parsedStatus,
           description: Utils.nonEmptyString(response.description),
-          contentTypes: Predicate.isNotUndefined(content) ? Object.keys(content) : [],
+          contentTypes: Predicate.isNotUndefined(content)
+            ? Object.keys(content)
+            : [],
           hasHeaders: Predicate.isNotUndefined(response.headers),
           isEmpty: isEmptyResponse,
-          representable
-        }
-        op.responses.push(parsedResponse)
+          representable,
+        };
+        op.responses.push(parsedResponse);
         if (status === "default") {
-          op.defaultResponse = parsedResponse
+          op.defaultResponse = parsedResponse;
         }
 
         if (Predicate.isNotUndefined(jsonSchemaName)) {
-          const schemaName = jsonSchemaName
+          const schemaName = jsonSchemaName;
 
           if (status === "default" && !isHttpApi) {
-            defaultSchema = schemaName
-            continue
+            defaultSchema = schemaName;
+            continue;
           }
 
-          const statusLower = parsedStatus.toLowerCase()
-          const statusMajorNumber = Number(parsedStatus[0])
+          const statusLower = parsedStatus.toLowerCase();
+          const statusMajorNumber = Number(parsedStatus[0]);
           if (Number.isNaN(statusMajorNumber)) {
-            continue
+            continue;
           }
           if (statusMajorNumber < 4) {
-            op.successSchemas.set(statusLower, schemaName)
+            op.successSchemas.set(statusLower, schemaName);
           } else {
-            op.errorSchemas.set(statusLower, schemaName)
+            op.errorSchemas.set(statusLower, schemaName);
           }
         }
 
-        const sseResponseSchema = content?.["text/event-stream"]?.schema
-        if (Predicate.isUndefined(op.sseSchema) && Predicate.isNotUndefined(sseResponseSchema)) {
-          const statusMajorNumber = Number(parsedStatus[0])
+        const sseResponseSchema = content?.["text/event-stream"]?.schema;
+        if (
+          Predicate.isUndefined(op.sseSchema) &&
+          Predicate.isNotUndefined(sseResponseSchema)
+        ) {
+          const statusMajorNumber = Number(parsedStatus[0]);
           if (!Number.isNaN(statusMajorNumber) && statusMajorNumber < 4) {
-            op.sseSchema = addSchema(`${schemaId}${status}Sse`, sseResponseSchema, op)
+            op.sseSchema = addSchema(
+              `${schemaId}${status}Sse`,
+              sseResponseSchema,
+              op
+            );
           }
         }
 
         if (Predicate.isNotUndefined(content?.["application/octet-stream"])) {
-          const statusMajorNumber = Number(parsedStatus[0])
+          const statusMajorNumber = Number(parsedStatus[0]);
           if (!Number.isNaN(statusMajorNumber) && statusMajorNumber < 4) {
-            op.binaryResponse = true
+            op.binaryResponse = true;
           }
         }
 
         if (isEmptyResponse) {
           if (parsedStatus !== "default") {
-            op.voidSchemas.add(parsedStatus.toLowerCase())
+            op.voidSchemas.add(parsedStatus.toLowerCase());
           }
         }
       }
 
-      if (!isHttpApi && op.successSchemas.size === 0 && Predicate.isNotUndefined(defaultSchema)) {
-        op.successSchemas.set("2xx", defaultSchema)
+      if (
+        !isHttpApi &&
+        op.successSchemas.size === 0 &&
+        Predicate.isNotUndefined(defaultSchema)
+      ) {
+        op.successSchemas.set("2xx", defaultSchema);
         warnForOperation(emitWarning, op, {
           code: "default-response-remapped",
-          message: "Default response was remapped to 2xx for the current HttpClient outputs."
-        })
+          message:
+            "Default response was remapped to 2xx for the current HttpClient outputs.",
+        });
       }
 
-      operations.push(op)
+      operations.push(op);
     }
   }
 
@@ -606,187 +731,202 @@ const parseOpenApi = (
       summary: Utils.nonEmptyString(spec.info.summary),
       description: Utils.nonEmptyString(spec.info.description),
       license: spec.info.license,
-      servers: spec.servers
+      servers: spec.servers,
     },
     tags: (spec.tags ?? []).map((tag) => ({
       name: tag.name,
       description: Utils.nonEmptyString(tag.description),
-      externalDocs: tag.externalDocs
+      externalDocs: tag.externalDocs,
     })),
     securitySchemes,
-    operations
-  }
-}
+    operations,
+  };
+};
 
 interface OpenApiParameter {
-  readonly name: string
-  readonly in: "path" | "query" | "header" | "cookie"
-  readonly required: boolean
-  readonly schema: {}
-  readonly description?: string | undefined
+  readonly name: string;
+  readonly in: "path" | "query" | "header" | "cookie";
+  readonly required: boolean;
+  readonly schema: {};
+  readonly description?: string | undefined;
 }
 
-const isOpenApiParameter = (parameter: unknown): parameter is OpenApiParameter => {
+const isOpenApiParameter = (
+  parameter: unknown
+): parameter is OpenApiParameter => {
   if (!Predicate.isObject(parameter)) {
-    return false
+    return false;
   }
   return (
     typeof parameter.name === "string" &&
-    (parameter.in === "path" || parameter.in === "query" || parameter.in === "header" || parameter.in === "cookie")
-  )
-}
+    (parameter.in === "path" ||
+      parameter.in === "query" ||
+      parameter.in === "header" ||
+      parameter.in === "cookie")
+  );
+};
 
 const resolveOperationParameters = (
   pathParameters: ReadonlyArray<unknown> | undefined,
   operationParameters: ReadonlyArray<unknown> | undefined,
   resolveRef: (ref: string) => unknown
 ): Array<OpenApiParameter> => {
-  const resolved = new Map<string, OpenApiParameter>()
+  const resolved = new Map<string, OpenApiParameter>();
   const add = (parameter: unknown): void => {
-    const current = resolveReference(parameter, resolveRef)
+    const current = resolveReference(parameter, resolveRef);
     if (!isOpenApiParameter(current)) {
-      return
+      return;
     }
 
-    const key = `${current.in}:${current.name}`
+    const key = `${current.in}:${current.name}`;
     if (resolved.has(key)) {
-      resolved.delete(key)
+      resolved.delete(key);
     }
-    resolved.set(key, current)
-  }
+    resolved.set(key, current);
+  };
 
   for (const parameter of pathParameters ?? []) {
-    add(parameter)
+    add(parameter);
   }
 
   for (const parameter of operationParameters ?? []) {
-    add(parameter)
+    add(parameter);
   }
 
-  return [...resolved.values()]
-}
+  return [...resolved.values()];
+};
 
 const buildParameterSchema = <
   Parameter extends {
-    readonly name: string
-    readonly required: boolean
-    readonly schema: {}
-    readonly in?: "path" | "query" | "header" | "cookie" | undefined
-  }
+    readonly name: string;
+    readonly required: boolean;
+    readonly schema: {};
+    readonly in?: "path" | "query" | "header" | "cookie" | undefined;
+  },
 >(
   parameters: ReadonlyArray<Parameter>,
   onAdded?: ((parameter: Parameter, added: Array<string>) => void) | undefined
-): {
-  readonly schema: JsonSchema.JsonSchema
-  readonly optional: boolean
-} | undefined => {
+):
+  | {
+      readonly schema: JsonSchema.JsonSchema;
+      readonly optional: boolean;
+    }
+  | undefined => {
   if (parameters.length === 0) {
-    return
+    return;
   }
 
   const schema = {
     type: "object" as JsonSchema.Type,
     properties: {} as Record<string, JsonSchema.JsonSchema>,
     required: [] as Array<string>,
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  };
 
   for (const parameter of parameters) {
-    const paramSchema = parameter.schema as any
-    const added: Array<string> = []
+    const paramSchema = parameter.schema as any;
+    const added: Array<string> = [];
     if (
       Predicate.isObject(paramSchema) &&
       "properties" in paramSchema &&
       Predicate.isObject(paramSchema.properties)
     ) {
-      const required = "required" in paramSchema
-        ? paramSchema.required as Array<string>
-        : []
+      const required =
+        "required" in paramSchema
+          ? (paramSchema.required as Array<string>)
+          : [];
 
-      for (const [name, propertySchema] of Object.entries(paramSchema.properties)) {
-        const adjustedName = `${parameter.name}[${name}]`
-        schema.properties[adjustedName] = propertySchema as JsonSchema.JsonSchema
+      for (const [name, propertySchema] of Object.entries(
+        paramSchema.properties
+      )) {
+        const adjustedName = `${parameter.name}[${name}]`;
+        schema.properties[adjustedName] =
+          propertySchema as JsonSchema.JsonSchema;
         if (required.includes(name)) {
-          schema.required.push(adjustedName)
+          schema.required.push(adjustedName);
         }
-        added.push(adjustedName)
+        added.push(adjustedName);
       }
     } else {
-      schema.properties[parameter.name] = parameter.schema as JsonSchema.JsonSchema
+      schema.properties[parameter.name] =
+        parameter.schema as JsonSchema.JsonSchema;
       if (parameter.required) {
-        schema.required.push(parameter.name)
+        schema.required.push(parameter.name);
       }
-      added.push(parameter.name)
+      added.push(parameter.name);
     }
 
-    onAdded?.(parameter, added)
+    onAdded?.(parameter, added);
   }
 
   return {
     schema,
-    optional: schema.required.length === 0
-  }
-}
+    optional: schema.required.length === 0,
+  };
+};
 
 const mediaTypeToSuffix = (contentType: string): string => {
-  const normalized = contentType.toLowerCase()
+  const normalized = contentType.toLowerCase();
   switch (normalized) {
     case "application/json":
-      return "Json"
+      return "Json";
     case "multipart/form-data":
-      return "FormData"
+      return "FormData";
     case "application/x-www-form-urlencoded":
-      return "FormUrlEncoded"
+      return "FormUrlEncoded";
     case "text/plain":
-      return "Text"
+      return "Text";
     case "application/octet-stream":
-      return "Binary"
+      return "Binary";
   }
-  const suffix = Utils.identifier(contentType)
-  return suffix.length > 0 ? suffix : "Body"
-}
+  const suffix = Utils.identifier(contentType);
+  return suffix.length > 0 ? suffix : "Body";
+};
 
-const makeHttpApiMultipartSchemaRefs = (definitions: JsonSchema.Definitions): HttpApiMultipartSchemaRefs => {
-  const names = new Set(Object.keys(definitions))
+const makeHttpApiMultipartSchemaRefs = (
+  definitions: JsonSchema.Definitions
+): HttpApiMultipartSchemaRefs => {
+  const names = new Set(Object.keys(definitions));
   const allocate = (base: string): string => {
-    let candidate = base
-    let index = 2
+    let candidate = base;
+    let index = 2;
     while (names.has(candidate)) {
-      candidate = `${base}${index}`
-      index += 1
+      candidate = `${base}${index}`;
+      index += 1;
     }
-    names.add(candidate)
-    return candidate
-  }
+    names.add(candidate);
+    return candidate;
+  };
   return {
     singleFile: allocate("__HttpApiMultipartSingleFile"),
-    files: allocate("__HttpApiMultipartFiles")
-  }
-}
+    files: allocate("__HttpApiMultipartFiles"),
+  };
+};
 
-const toDefinitionRef = (name: string): string => `#/$defs/${name.replaceAll("~", "~0").replaceAll("/", "~1")}`
+const toDefinitionRef = (name: string): string =>
+  `#/$defs/${name.replaceAll("~", "~0").replaceAll("/", "~1")}`;
 
 const withHttpApiMultipartSchemas = (
   definitions: JsonSchema.Definitions,
   multipartSchemaRefs: HttpApiMultipartSchemaRefs | undefined
 ): JsonSchema.Definitions => {
   if (multipartSchemaRefs === undefined) {
-    return definitions
+    return definitions;
   }
   return {
     ...definitions,
     [multipartSchemaRefs.singleFile]: {
       type: "string",
-      format: "binary"
+      format: "binary",
     },
     [multipartSchemaRefs.files]: {
       type: "array",
       items: {
-        $ref: toDefinitionRef(multipartSchemaRefs.singleFile)
-      }
-    }
-  }
-}
+        $ref: toDefinitionRef(multipartSchemaRefs.singleFile),
+      },
+    },
+  };
+};
 
 const transformMultipartSchema = (
   schema: JsonSchema.JsonSchema,
@@ -794,143 +934,162 @@ const transformMultipartSchema = (
   resolveRef: (ref: string) => unknown
 ): JsonSchema.JsonSchema => {
   if (multipartSchemaRefs === undefined) {
-    return schema
+    return schema;
   }
 
-  const singleFileRef = toDefinitionRef(multipartSchemaRefs.singleFile)
-  const filesRef = toDefinitionRef(multipartSchemaRefs.files)
-  const cache = new Map<string, unknown>()
-  const stack = new Set<string>()
+  const singleFileRef = toDefinitionRef(multipartSchemaRefs.singleFile);
+  const filesRef = toDefinitionRef(multipartSchemaRefs.files);
+  const cache = new Map<string, unknown>();
+  const stack = new Set<string>();
 
   const visit = (value: unknown): unknown => {
     if (Array.isArray(value)) {
-      return value.map(visit)
+      return value.map(visit);
     }
     if (!Predicate.isObject(value)) {
-      return value
+      return value;
     }
 
-    if (typeof value.$ref === "string" && value.$ref.startsWith("#/components/schemas/")) {
-      const cached = cache.get(value.$ref)
+    if (
+      typeof value.$ref === "string" &&
+      value.$ref.startsWith("#/components/schemas/")
+    ) {
+      const cached = cache.get(value.$ref);
       if (cached !== undefined) {
-        return cached
+        return cached;
       }
       if (stack.has(value.$ref)) {
-        return value
+        return value;
       }
-      stack.add(value.$ref)
-      const transformed = visit(resolveSchemaReference(value.$ref, resolveRef))
-      stack.delete(value.$ref)
-      cache.set(value.$ref, transformed)
-      return transformed
+      stack.add(value.$ref);
+      const transformed = visit(resolveSchemaReference(value.$ref, resolveRef));
+      stack.delete(value.$ref);
+      cache.set(value.$ref, transformed);
+      return transformed;
     }
 
     if (isMultipartBinaryFile(value)) {
-      return { $ref: singleFileRef }
+      return { $ref: singleFileRef };
     }
 
-    const out: Record<string, unknown> = {}
+    const out: Record<string, unknown> = {};
     for (const [key, current] of Object.entries(value)) {
-      out[key] = visit(current)
+      out[key] = visit(current);
     }
 
     if (isMultipartBinaryFiles(out, singleFileRef)) {
-      return { $ref: filesRef }
+      return { $ref: filesRef };
     }
 
-    return out
-  }
+    return out;
+  };
 
-  return visit(schema) as JsonSchema.JsonSchema
-}
+  return visit(schema) as JsonSchema.JsonSchema;
+};
 
-const resolveSchemaReference = (ref: string, resolveRef: (ref: string) => unknown): unknown => {
-  let current: unknown = { $ref: ref }
-  const seen = new Set<string>()
+const resolveSchemaReference = (
+  ref: string,
+  resolveRef: (ref: string) => unknown
+): unknown => {
+  let current: unknown = { $ref: ref };
+  const seen = new Set<string>();
   while (Predicate.isObject(current) && typeof current.$ref === "string") {
     if (seen.has(current.$ref)) {
-      return current
+      return current;
     }
-    seen.add(current.$ref)
-    current = resolveRef(current.$ref)
+    seen.add(current.$ref);
+    current = resolveRef(current.$ref);
   }
-  return current
-}
+  return current;
+};
 
-const isMultipartBinaryFile = (value: unknown): value is JsonSchema.JsonSchema =>
+const isMultipartBinaryFile = (
+  value: unknown
+): value is JsonSchema.JsonSchema =>
   Predicate.isObject(value) &&
   value.type === "string" &&
-  (
-    (typeof value.format === "string" && value.format.toLowerCase() === "binary") ||
-    (typeof value.contentEncoding === "string" && value.contentEncoding.toLowerCase() === "binary")
-  )
+  ((typeof value.format === "string" &&
+    value.format.toLowerCase() === "binary") ||
+    (typeof value.contentEncoding === "string" &&
+      value.contentEncoding.toLowerCase() === "binary"));
 
-const isMultipartBinaryFiles = (value: Record<string, unknown>, singleFileRef: string): boolean => {
+const isMultipartBinaryFiles = (
+  value: Record<string, unknown>,
+  singleFileRef: string
+): boolean => {
   if (value.type !== "array") {
-    return false
+    return false;
   }
-  const items = value.items
-  return isMultipartBinaryFile(items) || (Predicate.isObject(items) && items.$ref === singleFileRef)
-}
+  const items = value.items;
+  return (
+    isMultipartBinaryFile(items) ||
+    (Predicate.isObject(items) && items.$ref === singleFileRef)
+  );
+};
 
 const isJsonMediaType = (contentType: string): boolean =>
   contentType === "application/json" ||
-  (contentType.startsWith("application/") && contentType.endsWith("+json"))
+  (contentType.startsWith("application/") && contentType.endsWith("+json"));
 
-const isTextMediaType = (contentType: string): boolean => contentType.startsWith("text/")
+const isTextMediaType = (contentType: string): boolean =>
+  contentType.startsWith("text/");
 
 const isBinaryMediaType = (contentType: string): boolean =>
   contentType === "application/octet-stream" ||
-  (contentType.startsWith("application/") && (contentType.includes("binary") || contentType.endsWith("+octet-stream")))
+  (contentType.startsWith("application/") &&
+    (contentType.includes("binary") || contentType.endsWith("+octet-stream")));
 
 const getRequestMediaTypeEncoding = (
   contentType: string
 ): ParsedOperation.ParsedOperationMediaTypeEncoding | undefined => {
-  const normalized = contentType.toLowerCase()
+  const normalized = contentType.toLowerCase();
   if (isJsonMediaType(normalized)) {
-    return "json"
+    return "json";
   }
   if (normalized === "multipart/form-data") {
-    return "multipart"
+    return "multipart";
   }
   if (normalized === "application/x-www-form-urlencoded") {
-    return "form-url-encoded"
+    return "form-url-encoded";
   }
   if (isTextMediaType(normalized)) {
-    return "text"
+    return "text";
   }
   if (isBinaryMediaType(normalized)) {
-    return "binary"
+    return "binary";
   }
-  return
-}
+  return;
+};
 
 const getResponseMediaTypeEncoding = (
   contentType: string
 ): ParsedOperation.ParsedOperationMediaTypeEncoding | undefined => {
-  const normalized = contentType.toLowerCase()
+  const normalized = contentType.toLowerCase();
   if (isJsonMediaType(normalized)) {
-    return "json"
+    return "json";
   }
   if (normalized === "application/x-www-form-urlencoded") {
-    return "form-url-encoded"
+    return "form-url-encoded";
   }
   if (isTextMediaType(normalized)) {
-    return "text"
+    return "text";
   }
   if (isBinaryMediaType(normalized)) {
-    return "binary"
+    return "binary";
   }
-  return
-}
+  return;
+};
 
-const resolveReference = (input: unknown, resolveRef: (ref: string) => unknown): any => {
-  let current = input
+const resolveReference = (
+  input: unknown,
+  resolveRef: (ref: string) => unknown
+): any => {
+  let current = input;
   while (Predicate.isObject(current) && typeof current.$ref === "string") {
-    current = resolveRef(current.$ref)
+    current = resolveRef(current.$ref);
   }
-  return current
-}
+  return current;
+};
 
 const cloneSecurityRequirements = (
   security: ReadonlyArray<Record<string, ReadonlyArray<string>>>
@@ -939,23 +1098,25 @@ const cloneSecurityRequirements = (
     Object.fromEntries(
       Object.entries(requirement).map(([name, scopes]) => [name, [...scopes]])
     )
-  )
+  );
 
 const parseSecuritySchemes = (
   spec: OpenAPISpec,
   resolveRef: (ref: string) => unknown
 ): Array<ParsedOperation.ParsedOpenApiSecurityScheme> => {
-  const securitySchemes = spec.components?.securitySchemes ?? {}
-  const parsed: Array<ParsedOperation.ParsedOpenApiSecurityScheme> = []
+  const securitySchemes = spec.components?.securitySchemes ?? {};
+  const parsed: Array<ParsedOperation.ParsedOpenApiSecurityScheme> = [];
 
   for (const [name, value] of Object.entries(securitySchemes)) {
-    const scheme = resolveReference(value, resolveRef) as OpenAPISecurityScheme | undefined
+    const scheme = resolveReference(value, resolveRef) as
+      | OpenAPISecurityScheme
+      | undefined;
     if (!Predicate.isObject(scheme)) {
-      continue
+      continue;
     }
 
     if (scheme.type === "http" && typeof scheme.scheme === "string") {
-      const normalizedScheme = scheme.scheme.toLowerCase()
+      const normalizedScheme = scheme.scheme.toLowerCase();
       if (normalizedScheme === "basic") {
         parsed.push({
           name,
@@ -964,8 +1125,8 @@ const parseSecuritySchemes = (
           bearerFormat: undefined,
           scheme: undefined,
           key: undefined,
-          in: undefined
-        })
+          in: undefined,
+        });
       } else if (normalizedScheme === "bearer") {
         parsed.push({
           name,
@@ -974,8 +1135,8 @@ const parseSecuritySchemes = (
           bearerFormat: Utils.nonEmptyString(scheme.bearerFormat),
           scheme: undefined,
           key: undefined,
-          in: undefined
-        })
+          in: undefined,
+        });
       } else {
         parsed.push({
           name,
@@ -984,15 +1145,17 @@ const parseSecuritySchemes = (
           bearerFormat: Utils.nonEmptyString(scheme.bearerFormat),
           scheme: scheme.scheme,
           key: undefined,
-          in: undefined
-        })
+          in: undefined,
+        });
       }
-      continue
+      continue;
     }
 
     if (
       scheme.type === "apiKey" &&
-      (scheme.in === "header" || scheme.in === "query" || scheme.in === "cookie") &&
+      (scheme.in === "header" ||
+        scheme.in === "query" ||
+        scheme.in === "cookie") &&
       typeof scheme.name === "string"
     ) {
       parsed.push({
@@ -1002,34 +1165,38 @@ const parseSecuritySchemes = (
         bearerFormat: undefined,
         scheme: undefined,
         key: scheme.name,
-        in: scheme.in
-      })
+        in: scheme.in,
+      });
     }
   }
 
-  return parsed
-}
+  return parsed;
+};
 
 const warnForAndSecurityRequirements = (
   emitWarning: WarningEmitter,
   operation: ParsedOperation.ParsedOperation
 ): void => {
-  if (operation.effectiveSecurity.some((requirement) => Object.keys(requirement).length === 0)) {
-    return
+  if (
+    operation.effectiveSecurity.some(
+      (requirement) => Object.keys(requirement).length === 0
+    )
+  ) {
+    return;
   }
   for (const requirement of operation.effectiveSecurity) {
-    const schemes = Object.keys(requirement)
+    const schemes = Object.keys(requirement);
     if (schemes.length <= 1) {
-      continue
+      continue;
     }
     warnForOperation(emitWarning, operation, {
       code: "security-and-downgraded",
-      message: `Security requirement requiring all of [${
-        schemes.join(", ")
-      }] was downgraded to a placeholder middleware.`
-    })
+      message: `Security requirement requiring all of [${schemes.join(
+        ", "
+      )}] was downgraded to a placeholder middleware.`,
+    });
   }
-}
+};
 
 const hasSuccessfulSseResponse = (
   responses: ReadonlyArray<readonly [string, unknown]>,
@@ -1037,48 +1204,57 @@ const hasSuccessfulSseResponse = (
 ): boolean => {
   for (const [status, response] of responses) {
     if (!Predicate.isObject(response)) {
-      continue
+      continue;
     }
     const content = Predicate.isObject(response.content)
-      ? response.content as Record<string, any>
-      : undefined
+      ? (response.content as Record<string, any>)
+      : undefined;
     if (Predicate.isUndefined(content?.["text/event-stream"]?.schema)) {
-      continue
+      continue;
     }
 
-    const remappedStatus = remapDefaultResponseStatusForHttpApi(status, hasExplicitSuccessResponse)
-    const statusCode = Number(remappedStatus)
+    const remappedStatus = remapDefaultResponseStatusForHttpApi(
+      status,
+      hasExplicitSuccessResponse
+    );
+    const statusCode = Number(remappedStatus);
     if (!Number.isNaN(statusCode) && statusCode < 400) {
-      return true
+      return true;
     }
   }
-  return false
-}
+  return false;
+};
 
-const remapDefaultResponseStatusForHttpApi = (status: string, hasExplicitSuccessResponse: boolean): string =>
-  status === "default" ? (hasExplicitSuccessResponse ? "500" : "200") : status
+const remapDefaultResponseStatusForHttpApi = (
+  status: string,
+  hasExplicitSuccessResponse: boolean
+): string =>
+  status === "default" ? (hasExplicitSuccessResponse ? "500" : "200") : status;
 
 const methodSupportsRequestBody = (method: OpenAPISpecMethodName): boolean =>
-  method !== "get" && method !== "head" && method !== "options" && method !== "trace"
+  method !== "get" &&
+  method !== "head" &&
+  method !== "options" &&
+  method !== "trace";
 
 const warnForOperation = (
   emitWarning: WarningEmitter,
   operation: ParsedOperation.ParsedOperation,
   warning: {
-    readonly code: OpenApiGeneratorWarningCode
-    readonly message: string
+    readonly code: OpenApiGeneratorWarningCode;
+    readonly message: string;
   }
 ): void => {
   emitWarning({
     ...warning,
     path: operation.path,
     method: operation.method,
-    operationId: operation.operationId
-  })
-}
+    operationId: operation.operationId,
+  });
+};
 
 function getDialect(spec: OpenAPISpec): "openapi-3.0" | "openapi-3.1" {
-  return spec.openapi.trim().startsWith("3.0") ? "openapi-3.0" : "openapi-3.1"
+  return spec.openapi.trim().startsWith("3.0") ? "openapi-3.0" : "openapi-3.1";
 }
 
 /**
@@ -1087,7 +1263,8 @@ function getDialect(spec: OpenAPISpec): "openapi-3.0" | "openapi-3.1" {
  * @category layers
  * @since 4.0.0
  */
-export const layerTransformerSchema: Layer.Layer<OpenApiGenerator> = Layer.effect(OpenApiGenerator, make)
+export const layerTransformerSchema: Layer.Layer<OpenApiGenerator> =
+  Layer.effect(OpenApiGenerator, make);
 
 /**
  * Layer providing an OpenAPI generator for type-only HTTP client output.
@@ -1095,9 +1272,12 @@ export const layerTransformerSchema: Layer.Layer<OpenApiGenerator> = Layer.effec
  * @category layers
  * @since 4.0.0
  */
-export const layerTransformerTs: Layer.Layer<OpenApiGenerator> = Layer.effect(OpenApiGenerator, make)
+export const layerTransformerTs: Layer.Layer<OpenApiGenerator> = Layer.effect(
+  OpenApiGenerator,
+  make
+);
 
-const isSwaggerSpec = (spec: OpenAPISpec) => "swagger" in spec
+const isSwaggerSpec = (spec: OpenAPISpec) => "swagger" in spec;
 
 const convertSwaggerSpec = Effect.fn((spec: OpenAPISpec) =>
   Effect.callback<OpenAPISpec>((resume) => {
@@ -1106,25 +1286,27 @@ const convertSwaggerSpec = Effect.fn((spec: OpenAPISpec) =>
       { laxDefaults: true, laxurls: true, patch: true, warnOnly: true },
       (err, result) => {
         if (err) {
-          resume(Effect.die(err))
+          resume(Effect.die(err));
         } else {
-          resume(Effect.succeed(result.openapi as any))
+          resume(Effect.succeed(result.openapi as any));
         }
       }
-    )
+    );
   }).pipe(Effect.withSpan("OpenApi.convertSwaggerSpec"))
-)
+);
 
-const processPath = (path: string): {
-  readonly pathIds: Array<string>
-  readonly pathTemplate: string
+const processPath = (
+  path: string
+): {
+  readonly pathIds: Array<string>;
+  readonly pathTemplate: string;
 } => {
-  const pathIds: Array<string> = []
+  const pathIds: Array<string> = [];
   path = path.replace(/{([^}]+)}/g, (_, name) => {
-    const id = Utils.camelize(name)
-    pathIds.push(id)
-    return "${" + id + "}"
-  })
-  const pathTemplate = "`" + path + "`"
-  return { pathIds, pathTemplate } as const
-}
+    const id = Utils.camelize(name);
+    pathIds.push(id);
+    return "${" + id + "}";
+  });
+  const pathTemplate = "`" + path + "`";
+  return { pathIds, pathTemplate } as const;
+};

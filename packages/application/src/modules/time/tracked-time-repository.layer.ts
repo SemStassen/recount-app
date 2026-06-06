@@ -208,8 +208,10 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
         insertManyTimeEntries(
           timeEntries.map(trackedTimeRowFromTimeEntry)
         ).pipe(
-          Effect.map((trackedTimeRows) =>
-            trackedTimeRows.map(timeEntryFromTrackedTimeRow)
+          Effect.flatMap((trackedTimeRows) =>
+            Effect.forEach(trackedTimeRows, (trackedTimeRow) =>
+              Effect.fromResult(timeEntryFromTrackedTimeRow(trackedTimeRow))
+            )
           ),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
@@ -219,7 +221,9 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
           workspaceId: params.workspaceId,
           update: trackedTimeUpdateFromTimeEntryChanges(params.data),
         }).pipe(
-          Effect.map(timeEntryFromTrackedTimeRow),
+          Effect.flatMap((trackedTimeRow) =>
+            Effect.fromResult(timeEntryFromTrackedTimeRow(trackedTimeRow))
+          ),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       hardDeleteMany: (params) =>
@@ -228,17 +232,35 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
         ),
       findTimeEntry: (params) =>
         findTimeEntryById(params).pipe(
-          Effect.map(Option.map(timeEntryFromTrackedTimeRow)),
+          Effect.flatMap(
+            Option.match({
+              onNone: () => Effect.succeed(Option.none()),
+              onSome: (trackedTimeRow) =>
+                Effect.fromResult(
+                  timeEntryFromTrackedTimeRow(trackedTimeRow)
+                ).pipe(Effect.map(Option.some)),
+            })
+          ),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       findCurrentTimer: (params) =>
         findCurrentTimer(params).pipe(
-          Effect.map(Option.map(timerFromTrackedTimeRow)),
+          Effect.flatMap(
+            Option.match({
+              onNone: () => Effect.succeed(Option.none()),
+              onSome: (trackedTimeRow) =>
+                Effect.fromResult(timerFromTrackedTimeRow(trackedTimeRow)).pipe(
+                  Effect.map(Option.some)
+                ),
+            })
+          ),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       insertCurrentTimer: (timer) =>
         insertCurrentTimer(trackedTimeRowFromTimer(timer)).pipe(
-          Effect.map(timerFromTrackedTimeRow),
+          Effect.flatMap((trackedTimeRow) =>
+            Effect.fromResult(timerFromTrackedTimeRow(trackedTimeRow))
+          ),
           Effect.mapError((e) =>
             isCurrentTimerConflict(e)
               ? new TimerAlreadyRunningError({
@@ -254,7 +276,15 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
           workspaceMemberId: params.workspaceMemberId,
           update: params.data,
         }).pipe(
-          Effect.map(Option.map(timerFromTrackedTimeRow)),
+          Effect.flatMap(
+            Option.match({
+              onNone: () => Effect.succeed(Option.none()),
+              onSome: (trackedTimeRow) =>
+                Effect.fromResult(timerFromTrackedTimeRow(trackedTimeRow)).pipe(
+                  Effect.map(Option.some)
+                ),
+            })
+          ),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
       completeCurrentTimer: (params) =>
@@ -265,7 +295,15 @@ export const TrackedTimeRepositoryLayer = Layer.effect(
             stoppedAt: params.timeEntry.stoppedAt,
           }),
         }).pipe(
-          Effect.map(Option.map(timeEntryFromTrackedTimeRow)),
+          Effect.flatMap(
+            Option.match({
+              onNone: () => Effect.succeed(Option.none()),
+              onSome: (trackedTimeRow) =>
+                Effect.fromResult(
+                  timeEntryFromTrackedTimeRow(trackedTimeRow)
+                ).pipe(Effect.map(Option.some)),
+            })
+          ),
           Effect.mapError((e) => new RepositoryError({ cause: e }))
         ),
     };

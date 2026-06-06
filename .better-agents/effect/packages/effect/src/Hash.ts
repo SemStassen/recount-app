@@ -51,9 +51,9 @@
  *
  * @since 2.0.0
  */
-import { dual } from "./Function.ts"
-import { byReferenceInstances, getAllObjectKeys } from "./internal/equal.ts"
-import { hasProperty } from "./Predicate.ts"
+import { dual } from "./Function.ts";
+import { byReferenceInstances, getAllObjectKeys } from "./internal/equal.ts";
+import { hasProperty } from "./Predicate.ts";
 
 /**
  * Defines the unique identifier used to identify objects that implement the Hash interface.
@@ -70,7 +70,7 @@ import { hasProperty } from "./Predicate.ts"
  * @category symbols
  * @since 2.0.0
  */
-export const symbol = "~effect/interfaces/Hash"
+export const symbol = "~effect/interfaces/Hash";
 
 /**
  * A type that represents an object that can be hashed.
@@ -105,7 +105,7 @@ export const symbol = "~effect/interfaces/Hash"
  * @since 2.0.0
  */
 export interface Hash {
-  [symbol](): number
+  [symbol](): number;
 }
 
 /**
@@ -152,56 +152,56 @@ export interface Hash {
 export const hash: <A>(self: A) => number = <A>(self: A) => {
   switch (typeof self) {
     case "number":
-      return number(self)
+      return number(self);
     case "bigint":
-      return string(self.toString(10))
+      return string(self.toString(10));
     case "boolean":
-      return string(String(self))
+      return string(String(self));
     case "symbol":
-      return string(String(self))
+      return string(String(self));
     case "string":
-      return string(self)
+      return string(self);
     case "undefined":
-      return string("undefined")
+      return string("undefined");
     case "function":
     case "object": {
       if (self === null) {
-        return string("null")
+        return string("null");
       } else if (self instanceof Date) {
-        return string(self.toISOString())
+        return string(self.toISOString());
       } else if (self instanceof RegExp) {
-        return string(self.toString())
+        return string(self.toString());
       } else {
         if (byReferenceInstances.has(self)) {
-          return random(self)
+          return random(self);
         }
         if (hashCache.has(self)) {
-          return hashCache.get(self)!
+          return hashCache.get(self)!;
         }
         const h = withVisitedTracking(self, () => {
           if (isHash(self)) {
-            return self[symbol]()
+            return self[symbol]();
           } else if (typeof self === "function") {
-            return random(self)
+            return random(self);
           } else if (Array.isArray(self) || ArrayBuffer.isView(self)) {
-            return array(self as any)
+            return array(self as any);
           } else if (self instanceof Map) {
-            return hashMap(self)
+            return hashMap(self);
           } else if (self instanceof Set) {
-            return hashSet(self)
+            return hashSet(self);
           }
-          return structure(self)
-        })
-        hashCache.set(self, h)
-        return h
+          return structure(self);
+        });
+        hashCache.set(self, h);
+        return h;
       }
     }
     default:
       throw new Error(
         `BUG: unhandled typeof ${typeof self} - please report an issue at https://github.com/Effect-TS/effect/issues`
-      )
+      );
   }
-}
+};
 
 /**
  * Generates a random hash value for an object and caches it.
@@ -236,10 +236,13 @@ export const hash: <A>(self: A) => number = <A>(self: A) => {
  */
 export const random: <A extends object>(self: A) => number = (self) => {
   if (!randomHashCache.has(self)) {
-    randomHashCache.set(self, number(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)))
+    randomHashCache.set(
+      self,
+      number(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER))
+    );
   }
-  return randomHashCache.get(self)!
-}
+  return randomHashCache.get(self)!;
+};
 
 /**
  * Combines two hash values into a single hash value.
@@ -277,9 +280,9 @@ export const random: <A extends object>(self: A) => number = (self) => {
  * @since 2.0.0
  */
 export const combine: {
-  (b: number): (self: number) => number
-  (self: number, b: number): number
-} = dual(2, (self: number, b: number): number => (self * 53) ^ b)
+  (b: number): (self: number) => number;
+  (self: number, b: number): number;
+} = dual(2, (self: number, b: number): number => (self * 53) ^ b);
 
 /**
  * Applies bit manipulation techniques to optimize a hash value.
@@ -309,7 +312,8 @@ export const combine: {
  * @category hashing
  * @since 2.0.0
  */
-export const optimize = (n: number): number => (n & 0xbfffffff) | ((n >>> 1) & 0x40000000)
+export const optimize = (n: number): number =>
+  (n & 0xbfffffff) | ((n >>> 1) & 0x40000000);
 
 /**
  * Checks whether a value implements the Hash interface.
@@ -343,7 +347,7 @@ export const optimize = (n: number): number => (n & 0xbfffffff) | ((n >>> 1) & 0
  * @category guards
  * @since 2.0.0
  */
-export const isHash = (u: unknown): u is Hash => hasProperty(u, symbol)
+export const isHash = (u: unknown): u is Hash => hasProperty(u, symbol);
 
 /**
  * Computes a hash value for a number.
@@ -377,23 +381,23 @@ export const isHash = (u: unknown): u is Hash => hasProperty(u, symbol)
  */
 export const number = (n: number) => {
   if (n !== n) {
-    return string("NaN")
+    return string("NaN");
   }
   if (n === Infinity) {
-    return string("Infinity")
+    return string("Infinity");
   }
   if (n === -Infinity) {
-    return string("-Infinity")
+    return string("-Infinity");
   }
-  let h = n | 0
+  let h = n | 0;
   if (h !== n) {
-    h ^= n * 0xffffffff
+    h ^= n * 0xffffffff;
   }
   while (n > 0xffffffff) {
-    h ^= n /= 0xffffffff
+    h ^= n /= 0xffffffff;
   }
-  return optimize(h)
-}
+  return optimize(h);
+};
 
 /**
  * Computes a hash value for a string using the djb2 algorithm.
@@ -426,12 +430,13 @@ export const number = (n: number) => {
  * @since 2.0.0
  */
 export const string = (str: string) => {
-  let h = 5381, i = str.length
+  let h = 5381,
+    i = str.length;
   while (i) {
-    h = (h * 33) ^ str.charCodeAt(--i)
+    h = (h * 33) ^ str.charCodeAt(--i);
   }
-  return optimize(h)
-}
+  return optimize(h);
+};
 
 /**
  * Computes a hash value for an object using only the specified keys.
@@ -470,12 +475,12 @@ export const string = (str: string) => {
  * @since 2.0.0
  */
 export const structureKeys = (o: object, keys: Iterable<PropertyKey>) => {
-  let h = 12289
+  let h = 12289;
   for (const key of keys) {
-    h ^= combine(hash(key), hash((o as any)[key]))
+    h ^= combine(hash(key), hash((o as any)[key]));
   }
-  return optimize(h)
-}
+  return optimize(h);
+};
 
 /**
  * Computes a structural hash for an object using Effect's object key collection.
@@ -509,15 +514,17 @@ export const structureKeys = (o: object, keys: Iterable<PropertyKey>) => {
  * @category hashing
  * @since 2.0.0
  */
-export const structure = <A extends object>(o: A) => structureKeys(o, getAllObjectKeys(o))
+export const structure = <A extends object>(o: A) =>
+  structureKeys(o, getAllObjectKeys(o));
 
-const iterableWith = (seed: number, f: (el: any) => number) => (iter: Iterable<any>) => {
-  let h = seed
-  for (const element of iter) {
-    h ^= f(element)
-  }
-  return optimize(h)
-}
+const iterableWith =
+  (seed: number, f: (el: any) => number) => (iter: Iterable<any>) => {
+    let h = seed;
+    for (const element of iter) {
+      h ^= f(element);
+    }
+    return optimize(h);
+  };
 
 /**
  * Computes a hash value for an iterable by hashing all of its elements.
@@ -558,24 +565,27 @@ const iterableWith = (seed: number, f: (el: any) => number) => (iter: Iterable<a
  * @category hashing
  * @since 2.0.0
  */
-export const array: <A>(arr: Iterable<A>) => number = iterableWith(6151, hash)
+export const array: <A>(arr: Iterable<A>) => number = iterableWith(6151, hash);
 
 const hashMap: <K, V>(map: Iterable<readonly [K, V]>) => number = iterableWith(
   string("Map"),
   ([k, v]) => combine(hash(k), hash(v))
-)
-const hashSet: <A>(set: Iterable<A>) => number = iterableWith(string("Set"), hash)
+);
+const hashSet: <A>(set: Iterable<A>) => number = iterableWith(
+  string("Set"),
+  hash
+);
 
-const randomHashCache = new WeakMap<any, number>()
-const hashCache = new WeakMap<any, number>()
-const visitedObjects = new WeakSet<object>()
+const randomHashCache = new WeakMap<any, number>();
+const hashCache = new WeakMap<any, number>();
+const visitedObjects = new WeakSet<object>();
 
 function withVisitedTracking<T>(obj: object, fn: () => T): T {
   if (visitedObjects.has(obj)) {
-    return string("[Circular]") as T
+    return string("[Circular]") as T;
   }
-  visitedObjects.add(obj)
-  const result = fn()
-  visitedObjects.delete(obj)
-  return result
+  visitedObjects.add(obj);
+  const result = fn();
+  visitedObjects.delete(obj);
+  return result;
 }

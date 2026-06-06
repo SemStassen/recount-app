@@ -64,7 +64,7 @@
   const experimental = Command.make("experimental").pipe(Command.withHidden);
 
   const root = Command.make("mycli").pipe(
-    Command.withSubcommands([experimental]),
+    Command.withSubcommands([experimental])
   );
   ```
 
@@ -1117,7 +1117,7 @@
   ```typescript
   const app = Command.make("myapp");
   Command.run(app, { version: "1.0.0" }).pipe(
-    GlobalFlag.add(CustomFlag, customFlagValue),
+    GlobalFlag.add(CustomFlag, customFlagValue)
   );
   ```
 

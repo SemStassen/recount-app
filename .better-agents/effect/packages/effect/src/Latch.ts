@@ -33,8 +33,8 @@
  *
  * @since 4.0.0
  */
-import type * as Effect from "./Effect.ts"
-import * as internal from "./internal/effect.ts"
+import type * as Effect from "./Effect.ts";
+import * as internal from "./internal/effect.ts";
 
 /**
  * A reusable coordination primitive that lets fibers wait until they are
@@ -83,7 +83,7 @@ export interface Latch {
    *
    * Use to let current and future waiters continue.
    */
-  readonly open: Effect.Effect<boolean>
+  readonly open: Effect.Effect<boolean>;
 
   /**
    * Opens the latch synchronously, releasing all fibers waiting on it.
@@ -92,7 +92,7 @@ export interface Latch {
    *
    * Use when synchronous code must open the latch immediately.
    */
-  openUnsafe(this: Latch): boolean
+  openUnsafe(this: Latch): boolean;
 
   /**
    * Releases all fibers currently waiting on the latch without opening it.
@@ -101,7 +101,7 @@ export interface Latch {
    *
    * Use to let current waiters continue while future waiters still suspend.
    */
-  readonly release: Effect.Effect<boolean>
+  readonly release: Effect.Effect<boolean>;
 
   /**
    * Waits for the latch to be opened or released.
@@ -110,7 +110,7 @@ export interface Latch {
    *
    * Use to suspend until the latch allows the current fiber to continue.
    */
-  readonly await: Effect.Effect<void>
+  readonly await: Effect.Effect<void>;
 
   /**
    * Closes the latch so future waiters suspend again.
@@ -119,7 +119,7 @@ export interface Latch {
    *
    * Use to re-enable waiting after a latch has been opened.
    */
-  readonly close: Effect.Effect<boolean>
+  readonly close: Effect.Effect<boolean>;
 
   /**
    * Closes the latch synchronously so future waiters suspend again.
@@ -128,7 +128,7 @@ export interface Latch {
    *
    * Use when synchronous code must close the latch immediately.
    */
-  closeUnsafe(this: Latch): boolean
+  closeUnsafe(this: Latch): boolean;
 
   /**
    * Runs the given effect only after the latch allows waiting fibers to
@@ -138,7 +138,7 @@ export interface Latch {
    *
    * Use to gate an effect behind the latch signal.
    */
-  whenOpen<A, E, R>(self: Effect.Effect<A, E, R>): Effect.Effect<A, E, R>
+  whenOpen<A, E, R>(self: Effect.Effect<A, E, R>): Effect.Effect<A, E, R>;
 }
 
 /**
@@ -180,7 +180,8 @@ export interface Latch {
  * @category constructors
  * @since 4.0.0
  */
-export const makeUnsafe: (open?: boolean | undefined) => Latch = internal.makeLatchUnsafe
+export const makeUnsafe: (open?: boolean | undefined) => Latch =
+  internal.makeLatchUnsafe;
 
 /**
  * Creates a `Latch` inside `Effect`.
@@ -222,7 +223,8 @@ export const makeUnsafe: (open?: boolean | undefined) => Latch = internal.makeLa
  * @category constructors
  * @since 4.0.0
  */
-export const make: (open?: boolean | undefined) => Effect.Effect<Latch> = internal.makeLatch
+export const make: (open?: boolean | undefined) => Effect.Effect<Latch> =
+  internal.makeLatch;
 
 /**
  * Opens the latch and releases fibers waiting on it.
@@ -242,7 +244,7 @@ export const make: (open?: boolean | undefined) => Effect.Effect<Latch> = intern
  * @category combinators
  * @since 4.0.0
  */
-export const open = (self: Latch): Effect.Effect<boolean> => self.open
+export const open = (self: Latch): Effect.Effect<boolean> => self.open;
 
 /**
  * Opens the latch synchronously and releases fibers waiting on it.
@@ -265,7 +267,7 @@ export const open = (self: Latch): Effect.Effect<boolean> => self.open
  * @category unsafe
  * @since 4.0.0
  */
-export const openUnsafe = (self: Latch): boolean => self.openUnsafe()
+export const openUnsafe = (self: Latch): boolean => self.openUnsafe();
 
 /**
  * Releases the fibers currently waiting on a closed latch without opening it.
@@ -286,9 +288,9 @@ export const openUnsafe = (self: Latch): boolean => self.openUnsafe()
  * @category combinators
  * @since 4.0.0
  */
-export const release = (self: Latch): Effect.Effect<boolean> => self.release
+export const release = (self: Latch): Effect.Effect<boolean> => self.release;
 
-const _await = (self: Latch): Effect.Effect<void> => self.await
+const _await = (self: Latch): Effect.Effect<void> => self.await;
 
 export {
   /**
@@ -316,8 +318,8 @@ export {
    * @category getters
    * @since 4.0.0
    */
-  _await as await
-}
+  _await as await,
+};
 
 /**
  * Closes the latch so future `await` and `whenOpen` calls suspend.
@@ -338,7 +340,7 @@ export {
  * @category combinators
  * @since 4.0.0
  */
-export const close = (self: Latch): Effect.Effect<boolean> => self.close
+export const close = (self: Latch): Effect.Effect<boolean> => self.close;
 
 /**
  * Closes the latch synchronously so future `await` and `whenOpen` calls
@@ -362,7 +364,7 @@ export const close = (self: Latch): Effect.Effect<boolean> => self.close
  * @category unsafe
  * @since 4.0.0
  */
-export const closeUnsafe = (self: Latch): boolean => self.closeUnsafe()
+export const closeUnsafe = (self: Latch): boolean => self.closeUnsafe();
 
 /**
  * Waits on the latch, then runs the provided effect.
@@ -387,13 +389,18 @@ export const closeUnsafe = (self: Latch): boolean => self.closeUnsafe()
  * @since 4.0.0
  */
 export const whenOpen: {
-  (self: Latch): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
-  <A, E, R>(self: Latch, effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R>
+  (
+    self: Latch
+  ): <A, E, R>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>;
+  <A, E, R>(
+    self: Latch,
+    effect: Effect.Effect<A, E, R>
+  ): Effect.Effect<A, E, R>;
 } = ((...args: Array<any>) => {
   if (args.length === 1) {
-    const [self] = args
-    return (effect: Effect.Effect<any, any, any>) => self.whenOpen(effect)
+    const [self] = args;
+    return (effect: Effect.Effect<any, any, any>) => self.whenOpen(effect);
   }
-  const [self, effect] = args
-  return self.whenOpen(effect)
-}) as any
+  const [self, effect] = args;
+  return self.whenOpen(effect);
+}) as any;

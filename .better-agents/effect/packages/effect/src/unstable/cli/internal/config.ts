@@ -46,14 +46,14 @@
  * 1. Flat iteration over all params for parsing/validation
  * 2. Reconstruction of original nested shape for handler input
  */
-import * as Predicate from "../../../Predicate.ts"
-import * as Param from "../Param.ts"
+import * as Predicate from "../../../Predicate.ts";
+import * as Param from "../Param.ts";
 
 /* ========================================================================== */
 /* Type ID                                                                    */
 /* ========================================================================== */
 
-const ConfigInternalTypeId = "~effect/cli/Command/Config/Internal" as const
+const ConfigInternalTypeId = "~effect/cli/Command/Config/Internal" as const;
 
 /* ========================================================================== */
 /* Types                                                                      */
@@ -66,15 +66,15 @@ const ConfigInternalTypeId = "~effect/cli/Command/Config/Internal" as const
  * while preserving the original nested structure via the tree.
  */
 export interface ConfigInternal {
-  readonly [ConfigInternalTypeId]: typeof ConfigInternalTypeId
+  readonly [ConfigInternalTypeId]: typeof ConfigInternalTypeId;
   /** The command's positional argument parameters. */
-  readonly arguments: ReadonlyArray<Param.AnyArgument>
+  readonly arguments: ReadonlyArray<Param.AnyArgument>;
   /** The command's flag parameters. */
-  readonly flags: ReadonlyArray<Param.AnyFlag>
+  readonly flags: ReadonlyArray<Param.AnyFlag>;
   /** All parameters in declaration order. */
-  readonly orderedParams: ReadonlyArray<Param.Any>
+  readonly orderedParams: ReadonlyArray<Param.Any>;
   /** Tree structure for reconstructing nested config. */
-  readonly tree: ConfigInternal.Tree
+  readonly tree: ConfigInternal.Tree;
 }
 
 /**
@@ -89,7 +89,7 @@ export declare namespace ConfigInternal {
    * Preserves the shape of the user's config object.
    */
   export interface Tree {
-    [key: string]: Node
+    [key: string]: Node;
   }
 
   /**
@@ -102,7 +102,7 @@ export declare namespace ConfigInternal {
   export type Node =
     | { readonly _tag: "Param"; readonly index: number }
     | { readonly _tag: "Array"; readonly children: ReadonlyArray<Node> }
-    | { readonly _tag: "Nested"; readonly tree: Tree }
+    | { readonly _tag: "Nested"; readonly tree: Tree };
 }
 
 /* ========================================================================== */
@@ -110,7 +110,8 @@ export declare namespace ConfigInternal {
 /* ========================================================================== */
 
 /** @internal */
-export const isConfigInternal = (u: unknown): u is ConfigInternal => Predicate.hasProperty(u, ConfigInternalTypeId)
+export const isConfigInternal = (u: unknown): u is ConfigInternal =>
+  Predicate.hasProperty(u, ConfigInternalTypeId);
 
 /* ========================================================================== */
 /* Parsing                                                                    */
@@ -124,7 +125,7 @@ interface Config {
   readonly [key: string]:
     | Param.Param<Param.ParamKind, any>
     | ReadonlyArray<Param.Param<Param.ParamKind, any> | Config>
-    | Config
+    | Config;
 }
 
 /**
@@ -138,16 +139,16 @@ interface Config {
  * @internal
  */
 export const parseConfig = (config: Config): ConfigInternal => {
-  const orderedParams: Array<Param.Any> = []
-  const flags: Array<Param.AnyFlag> = []
-  const args: Array<Param.AnyArgument> = []
+  const orderedParams: Array<Param.Any> = [];
+  const flags: Array<Param.AnyFlag> = [];
+  const args: Array<Param.AnyArgument> = [];
 
   function parse(config: Config): ConfigInternal.Tree {
-    const tree: ConfigInternal.Tree = {}
+    const tree: ConfigInternal.Tree = {};
     for (const key in config) {
-      tree[key] = parseValue(config[key])
+      tree[key] = parseValue(config[key]);
     }
-    return tree
+    return tree;
   }
 
   function parseValue(
@@ -156,24 +157,24 @@ export const parseConfig = (config: Config): ConfigInternal => {
     if (Array.isArray(value)) {
       return {
         _tag: "Array",
-        children: (value as Array<any>).map((v) => parseValue(v))
-      }
+        children: (value as Array<any>).map((v) => parseValue(v)),
+      };
     } else if (Param.isParam(value)) {
-      const index = orderedParams.length
-      orderedParams.push(value)
+      const index = orderedParams.length;
+      orderedParams.push(value);
 
       if (value.kind === "argument") {
-        args.push(value as Param.AnyArgument)
+        args.push(value as Param.AnyArgument);
       } else {
-        flags.push(value as Param.AnyFlag)
+        flags.push(value as Param.AnyFlag);
       }
 
-      return { _tag: "Param", index }
+      return { _tag: "Param", index };
     } else {
       return {
         _tag: "Nested",
-        tree: parse(value as Config)
-      }
+        tree: parse(value as Config),
+      };
     }
   }
 
@@ -182,47 +183,53 @@ export const parseConfig = (config: Config): ConfigInternal => {
     flags,
     arguments: args,
     orderedParams,
-    tree: parse(config)
-  }
-}
+    tree: parse(config),
+  };
+};
 
 /** @internal */
-export const emptyConfig: ConfigInternal = parseConfig({})
+export const emptyConfig: ConfigInternal = parseConfig({});
 
-const shiftNodeIndexes = (node: ConfigInternal.Node, offset: number): ConfigInternal.Node => {
+const shiftNodeIndexes = (
+  node: ConfigInternal.Node,
+  offset: number
+): ConfigInternal.Node => {
   switch (node._tag) {
     case "Param":
       return {
         _tag: "Param",
-        index: node.index + offset
-      }
+        index: node.index + offset,
+      };
     case "Array":
       return {
         _tag: "Array",
-        children: node.children.map((child) => shiftNodeIndexes(child, offset))
-      }
+        children: node.children.map((child) => shiftNodeIndexes(child, offset)),
+      };
     case "Nested":
       return {
         _tag: "Nested",
-        tree: shiftTreeIndexes(node.tree, offset)
-      }
+        tree: shiftTreeIndexes(node.tree, offset),
+      };
   }
-}
+};
 
-const shiftTreeIndexes = (tree: ConfigInternal.Tree, offset: number): ConfigInternal.Tree => {
-  const output: ConfigInternal.Tree = {}
+const shiftTreeIndexes = (
+  tree: ConfigInternal.Tree,
+  offset: number
+): ConfigInternal.Tree => {
+  const output: ConfigInternal.Tree = {};
   for (const key in tree) {
-    output[key] = shiftNodeIndexes(tree[key], offset)
+    output[key] = shiftNodeIndexes(tree[key], offset);
   }
-  return output
-}
+  return output;
+};
 
 /** @internal */
 export const mergeConfig = (
   left: ConfigInternal,
   right: ConfigInternal
 ): ConfigInternal => {
-  const offset = left.orderedParams.length
+  const offset = left.orderedParams.length;
   return {
     [ConfigInternalTypeId]: ConfigInternalTypeId,
     flags: [...left.flags, ...right.flags],
@@ -230,10 +237,10 @@ export const mergeConfig = (
     orderedParams: [...left.orderedParams, ...right.orderedParams],
     tree: {
       ...left.tree,
-      ...shiftTreeIndexes(right.tree, offset)
-    }
-  }
-}
+      ...shiftTreeIndexes(right.tree, offset),
+    },
+  };
+};
 
 /* ========================================================================== */
 /* Reconstruction                                                             */
@@ -251,22 +258,22 @@ export const reconstructTree = (
   tree: ConfigInternal.Tree,
   results: ReadonlyArray<any>
 ): Record<string, any> => {
-  const output: Record<string, any> = {}
+  const output: Record<string, any> = {};
 
   for (const key in tree) {
-    output[key] = nodeValue(tree[key])
+    output[key] = nodeValue(tree[key]);
   }
 
-  return output
+  return output;
 
   function nodeValue(node: ConfigInternal.Node): any {
     switch (node._tag) {
       case "Param":
-        return results[node.index]
+        return results[node.index];
       case "Array":
-        return node.children.map((child) => nodeValue(child))
+        return node.children.map((child) => nodeValue(child));
       case "Nested":
-        return reconstructTree(node.tree, results)
+        return reconstructTree(node.tree, results);
     }
   }
-}
+};

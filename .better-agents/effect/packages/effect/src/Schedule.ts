@@ -64,26 +64,28 @@
  *
  * @since 2.0.0
  */
-import * as Cause from "./Cause.ts"
-import * as Context from "./Context.ts"
-import * as Cron from "./Cron.ts"
-import type * as DateTime from "./DateTime.ts"
-import * as Duration from "./Duration.ts"
-import type { Effect } from "./Effect.ts"
-import type { LazyArg } from "./Function.ts"
-import { constant, dual, identity } from "./Function.ts"
-import { isEffect } from "./internal/core.ts"
-import * as effect from "./internal/effect.ts"
-import * as random from "./internal/random.ts"
-import { type Pipeable, pipeArguments } from "./Pipeable.ts"
-import { hasProperty } from "./Predicate.ts"
-import * as Pull from "./Pull.ts"
-import * as Result from "./Result.ts"
-import type { Contravariant, Covariant, Mutable } from "./Types.ts"
+import * as Cause from "./Cause.ts";
+import * as Context from "./Context.ts";
+import * as Cron from "./Cron.ts";
+import type * as DateTime from "./DateTime.ts";
+import * as Duration from "./Duration.ts";
+import type { Effect } from "./Effect.ts";
+import type { LazyArg } from "./Function.ts";
+import { constant, dual, identity } from "./Function.ts";
+import { isEffect } from "./internal/core.ts";
+import * as effect from "./internal/effect.ts";
+import * as random from "./internal/random.ts";
+import { type Pipeable, pipeArguments } from "./Pipeable.ts";
+import { hasProperty } from "./Predicate.ts";
+import * as Pull from "./Pull.ts";
+import * as Result from "./Result.ts";
+import type { Contravariant, Covariant, Mutable } from "./Types.ts";
 
-const TypeId = "~effect/Schedule"
+const TypeId = "~effect/Schedule";
 
-const randomNext: Effect<number> = random.Random.useSync((random) => random.nextDoubleUnsafe())
+const randomNext: Effect<number> = random.Random.useSync((random) =>
+  random.nextDoubleUnsafe()
+);
 
 /**
  * A Schedule defines a strategy for repeating or retrying effects based on some policy.
@@ -130,9 +132,13 @@ const randomNext: Effect<number> = random.Random.useSync((random) => random.next
  * @category models
  * @since 2.0.0
  */
-export interface Schedule<out Output, in Input = unknown, out Error = never, out Env = never>
-  extends Schedule.Variance<Output, Input, Error, Env>, Pipeable
-{}
+export interface Schedule<
+  out Output,
+  in Input = unknown,
+  out Error = never,
+  out Env = never,
+>
+  extends Schedule.Variance<Output, Input, Error, Env>, Pipeable {}
 
 /**
  * Metadata provided to schedule functions containing timing and input information.
@@ -161,12 +167,12 @@ export interface Schedule<out Output, in Input = unknown, out Error = never, out
  * @since 4.0.0
  */
 export interface InputMetadata<Input> {
-  readonly input: Input
-  readonly attempt: number
-  readonly start: number
-  readonly now: number
-  readonly elapsed: number
-  readonly elapsedSincePrevious: number
+  readonly input: Input;
+  readonly attempt: number;
+  readonly start: number;
+  readonly now: number;
+  readonly elapsed: number;
+  readonly elapsedSincePrevious: number;
 }
 
 /**
@@ -203,9 +209,12 @@ export interface InputMetadata<Input> {
  * @category metadata
  * @since 4.0.0
  */
-export interface Metadata<Output = unknown, Input = unknown> extends InputMetadata<Input> {
-  readonly output: Output
-  readonly duration: Duration.Duration
+export interface Metadata<
+  Output = unknown,
+  Input = unknown,
+> extends InputMetadata<Input> {
+  readonly output: Output;
+  readonly duration: Duration.Duration;
 }
 
 /**
@@ -221,18 +230,21 @@ export interface Metadata<Output = unknown, Input = unknown> extends InputMetada
  * @category metadata
  * @since 4.0.0
  */
-export const CurrentMetadata = Context.Reference<Metadata>("effect/Schedule/CurrentMetadata", {
-  defaultValue: constant({
-    input: undefined,
-    output: undefined,
-    duration: Duration.zero,
-    attempt: 0,
-    start: 0,
-    now: 0,
-    elapsed: 0,
-    elapsedSincePrevious: 0
-  })
-})
+export const CurrentMetadata = Context.Reference<Metadata>(
+  "effect/Schedule/CurrentMetadata",
+  {
+    defaultValue: constant({
+      input: undefined,
+      output: undefined,
+      duration: Duration.zero,
+      attempt: 0,
+      start: 0,
+      now: 0,
+      elapsed: 0,
+      elapsedSincePrevious: 0,
+    }),
+  }
+);
 
 /**
  * The Schedule namespace contains types and utilities for working with schedules.
@@ -300,7 +312,7 @@ export declare namespace Schedule {
    * @since 2.0.0
    */
   export interface Variance<out Output, in Input, out Error, out Env> {
-    readonly [TypeId]: VarianceStruct<Output, Input, Error, Env>
+    readonly [TypeId]: VarianceStruct<Output, Input, Error, Env>;
   }
 
   /**
@@ -316,10 +328,10 @@ export declare namespace Schedule {
    * @since 4.0.0
    */
   export interface VarianceStruct<out Output, in Input, out Error, out Env> {
-    readonly _Out: Covariant<Output>
-    readonly _In: Contravariant<Input>
-    readonly _Error: Covariant<Error>
-    readonly _Env: Covariant<Env>
+    readonly _Out: Covariant<Output>;
+    readonly _In: Contravariant<Input>;
+    readonly _Error: Covariant<Error>;
+    readonly _Env: Covariant<Env>;
   }
 }
 
@@ -327,12 +339,12 @@ const ScheduleProto = {
   [TypeId]: {
     _Out: identity,
     _In: identity,
-    _Env: identity
+    _Env: identity,
   },
   pipe() {
-    return pipeArguments(this, arguments)
-  }
-}
+    return pipeArguments(this, arguments);
+  },
+};
 
 /**
  * Type guard that checks if a value is a Schedule.
@@ -354,7 +366,9 @@ const ScheduleProto = {
  * @category guards
  * @since 2.0.0
  */
-export const isSchedule = (u: unknown): u is Schedule<unknown, never, unknown, unknown> => hasProperty(u, TypeId)
+export const isSchedule = (
+  u: unknown
+): u is Schedule<unknown, never, unknown, unknown> => hasProperty(u, TypeId);
 
 /**
  * Creates a Schedule from a step function that returns a Pull.
@@ -381,28 +395,31 @@ export const isSchedule = (u: unknown): u is Schedule<unknown, never, unknown, u
  */
 export const fromStep = <Input, Output, EnvX, Error, ErrorX, Env>(
   step: Effect<
-    (now: number, input: Input) => Pull.Pull<[Output, Duration.Duration], ErrorX, Output, EnvX>,
+    (
+      now: number,
+      input: Input
+    ) => Pull.Pull<[Output, Duration.Duration], ErrorX, Output, EnvX>,
     Error,
     Env
   >
 ): Schedule<Output, Input, Error | Pull.ExcludeDone<ErrorX>, Env | EnvX> => {
-  const self = Object.create(ScheduleProto)
-  self.step = step
-  return self
-}
+  const self = Object.create(ScheduleProto);
+  self.step = step;
+  return self;
+};
 
 const metadataFn = () => {
-  let n = 0
-  let previous: number | undefined
-  let start: number | undefined
+  let n = 0;
+  let previous: number | undefined;
+  let start: number | undefined;
   return <In>(now: number, input: In): InputMetadata<In> => {
-    if (start === undefined) start = now
-    const elapsed = now - start
-    const elapsedSincePrevious = previous === undefined ? 0 : now - previous
-    previous = now
-    return { input, attempt: ++n, start, now, elapsed, elapsedSincePrevious }
-  }
-}
+    if (start === undefined) start = now;
+    const elapsed = now - start;
+    const elapsedSincePrevious = previous === undefined ? 0 : now - previous;
+    previous = now;
+    return { input, attempt: ++n, start, now, elapsed, elapsedSincePrevious };
+  };
+};
 
 /**
  * Creates a Schedule from a step function that receives metadata about the schedule's execution.
@@ -429,15 +446,19 @@ const metadataFn = () => {
  */
 export const fromStepWithMetadata = <Input, Output, EnvX, ErrorX, Error, Env>(
   step: Effect<
-    (options: InputMetadata<Input>) => Pull.Pull<[Output, Duration.Duration], ErrorX, Output, EnvX>,
+    (
+      options: InputMetadata<Input>
+    ) => Pull.Pull<[Output, Duration.Duration], ErrorX, Output, EnvX>,
     Error,
     Env
   >
 ): Schedule<Output, Input, Error | Pull.ExcludeDone<ErrorX>, Env | EnvX> =>
-  fromStep(effect.map(step, (f) => {
-    const meta = metadataFn()
-    return (now, input) => f(meta(now, input))
-  }))
+  fromStep(
+    effect.map(step, (f) => {
+      const meta = metadataFn();
+      return (now, input) => f(meta(now, input));
+    })
+  );
 
 /**
  * Extracts the step function from a Schedule.
@@ -468,14 +489,16 @@ export const fromStepWithMetadata = <Input, Output, EnvX, ErrorX, Error, Env>(
 export const toStep = <Output, Input, Error, Env>(
   schedule: Schedule<Output, Input, Error, Env>
 ): Effect<
-  (now: number, input: Input) => Pull.Pull<[Output, Duration.Duration], Error, Output, Env>,
+  (
+    now: number,
+    input: Input
+  ) => Pull.Pull<[Output, Duration.Duration], Error, Output, Env>,
   never,
   Env
 > =>
-  effect.catchCause(
-    (schedule as any).step,
-    (cause) => effect.succeed(() => effect.failCause(cause) as any)
-  )
+  effect.catchCause((schedule as any).step, (cause) =>
+    effect.succeed(() => effect.failCause(cause) as any)
+  );
 
 /**
  * Extracts a step function from a `Schedule` that sleeps for each computed
@@ -506,26 +529,20 @@ export const toStepWithMetadata = <Output, Input, Error, Env>(
   Env
 > =>
   effect.clockWith((clock) =>
-    effect.map(
-      toStep(schedule),
-      (step) => {
-        const metaFn = metadataFn()
-        return (input) =>
-          effect.suspend(() => {
-            const now = clock.currentTimeMillisUnsafe()
-            return effect.flatMap(
-              step(now, input),
-              ([output, duration]) => {
-                const meta = metaFn(now, input) as Mutable<Metadata<Output, Input>>
-                meta.output = output
-                meta.duration = duration
-                return effect.as(effect.sleep(duration), meta)
-              }
-            )
-          })
-      }
-    )
-  )
+    effect.map(toStep(schedule), (step) => {
+      const metaFn = metadataFn();
+      return (input) =>
+        effect.suspend(() => {
+          const now = clock.currentTimeMillisUnsafe();
+          return effect.flatMap(step(now, input), ([output, duration]) => {
+            const meta = metaFn(now, input) as Mutable<Metadata<Output, Input>>;
+            meta.output = output;
+            meta.duration = duration;
+            return effect.as(effect.sleep(duration), meta);
+          });
+        });
+    })
+  );
 
 /**
  * Extracts a step function from a Schedule that automatically handles sleep delays.
@@ -567,7 +584,7 @@ export const toStepWithSleep = <Output, Input, Error, Env>(
   effect.map(
     toStepWithMetadata(schedule),
     (step) => (input) => effect.map(step(input), (meta) => meta.output)
-  )
+  );
 
 /**
  * Returns a new `Schedule` that adds the delay computed by the specified
@@ -673,20 +690,26 @@ export const addDelay: {
     f: (output: Output) => Effect<Duration.Input, Error2, Env2>
   ): <Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Error2 = never, Env2 = never>(
     self: Schedule<Output, Input, Error, Env>,
     f: (output: Output) => Effect<Duration.Input, Error2, Env2>
-  ): Schedule<Output, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Error2 = never, Env2 = never>(
-  self: Schedule<Output, Input, Error, Env>,
-  f: (output: Output) => Effect<Duration.Input, Error2, Env2>
-): Schedule<Output, Input, Error | Error2, Env | Env2> =>
-  modifyDelay(
-    self,
-    (output, delay) =>
-      effect.map(f(output), (d) => Duration.sum(Duration.fromInputUnsafe(d), Duration.fromInputUnsafe(delay)))
-  ))
+  ): Schedule<Output, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Error2 = never, Env2 = never>(
+    self: Schedule<Output, Input, Error, Env>,
+    f: (output: Output) => Effect<Duration.Input, Error2, Env2>
+  ): Schedule<Output, Input, Error | Error2, Env | Env2> =>
+    modifyDelay(self, (output, delay) =>
+      effect.map(f(output), (d) =>
+        Duration.sum(
+          Duration.fromInputUnsafe(d),
+          Duration.fromInputUnsafe(delay)
+        )
+      )
+    )
+);
 
 /**
  * Returns a schedule that runs `self` to completion, then runs `other`, and
@@ -733,16 +756,21 @@ export const andThen: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output | Output2, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<Output | Output2, Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<Output | Output2, Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<Output | Output2, Input & Input2, Error | Error2, Env | Env2> =>
-  map(andThenResult(self, other), (result) => effect.succeed(Result.merge(result))))
+  ): Schedule<Output | Output2, Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<Output | Output2, Input & Input2, Error | Error2, Env | Env2> =>
+    map(andThenResult(self, other), (result) =>
+      effect.succeed(Result.merge(result))
+    )
+);
 
 /**
  * Returns a schedule that runs `self` to completion, then runs `other`, and
@@ -791,59 +819,82 @@ export const andThenResult: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Result.Result<Output2, Output>, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<
+    Result.Result<Output2, Output>,
+    Input & Input2,
+    Error | Error2,
+    Env | Env2
+  >;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<Result.Result<Output2, Output>, Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<Result.Result<Output, Output2>, Input & Input2, Error | Error2, Env | Env2> =>
-  fromStep(effect.sync(() => {
-    let currentSide = 0
-    let currentStep:
-      | undefined
-      | ((now: number, input: Input & Input2) => Pull.Pull<
-        [Result.Result<Output, Output2>, Duration.Duration],
-        Error | Error2,
-        Result.Result<Output, Output2>,
-        Env | Env2
-      >)
-    const left = map(self, Result.succeed)
-    const right = map(other, Result.fail)
-    return function recur(
-      now,
-      input
-    ): Pull.Pull<
-      [Result.Result<Output, Output2>, Duration.Duration],
-      Error | Error2,
-      Result.Result<Output, Output2>,
-      Env | Env2
-    > {
-      if (currentStep) return currentStep(now, input)
-      return toStep<
-        Result.Result<Output, Output2>,
-        Input & Input2,
-        Error | Error2,
-        Env | Env2
-      >(currentSide === 0 ? left : right).pipe(
-        effect.flatMap((step) => {
-          currentSide++
-          if (currentSide === 1) {
-            currentStep = (now, input) =>
-              Pull.catchDone(step(now, input), (_) => {
-                currentStep = undefined
-                return recur(now, input)
-              })
-            return currentStep(now, input)
-          }
-          currentStep = step
-          return currentStep(now, input)
-        })
-      )
-    }
-  })))
+  ): Schedule<
+    Result.Result<Output2, Output>,
+    Input & Input2,
+    Error | Error2,
+    Env | Env2
+  >;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<
+    Result.Result<Output, Output2>,
+    Input & Input2,
+    Error | Error2,
+    Env | Env2
+  > =>
+    fromStep(
+      effect.sync(() => {
+        let currentSide = 0;
+        let currentStep:
+          | undefined
+          | ((
+              now: number,
+              input: Input & Input2
+            ) => Pull.Pull<
+              [Result.Result<Output, Output2>, Duration.Duration],
+              Error | Error2,
+              Result.Result<Output, Output2>,
+              Env | Env2
+            >);
+        const left = map(self, Result.succeed);
+        const right = map(other, Result.fail);
+        return function recur(
+          now,
+          input
+        ): Pull.Pull<
+          [Result.Result<Output, Output2>, Duration.Duration],
+          Error | Error2,
+          Result.Result<Output, Output2>,
+          Env | Env2
+        > {
+          if (currentStep) return currentStep(now, input);
+          return toStep<
+            Result.Result<Output, Output2>,
+            Input & Input2,
+            Error | Error2,
+            Env | Env2
+          >(currentSide === 0 ? left : right).pipe(
+            effect.flatMap((step) => {
+              currentSide++;
+              if (currentSide === 1) {
+                currentStep = (now, input) =>
+                  Pull.catchDone(step(now, input), (_) => {
+                    currentStep = undefined;
+                    return recur(now, input);
+                  });
+                return currentStep(now, input);
+              }
+              currentStep = step;
+              return currentStep(now, input);
+            })
+          );
+        };
+      })
+    )
+);
 
 /**
  * Combines two `Schedule`s by recurring if both of the two schedules want
@@ -926,16 +977,19 @@ export const both: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2> =>
-  bothWith(self, other, (left, right) => [left, right]))
+  ): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2> =>
+    bothWith(self, other, (left, right) => [left, right])
+);
 
 /**
  * Combines two `Schedule`s by recurring if both of the two schedules want
@@ -979,15 +1033,19 @@ export const bothLeft: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<Output, Input & Input2, Error | Error2, Env | Env2> => bothWith(self, other, (output) => output))
+  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2> =>
+    bothWith(self, other, (output) => output)
+);
 
 /**
  * Combines two `Schedule`s by recurring if both of the two schedules want
@@ -1033,15 +1091,19 @@ export const bothRight: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<Output2, Input & Input2, Error | Error2, Env | Env2> => bothWith(self, other, (_, output) => output))
+  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<Output2, Input & Input2, Error | Error2, Env | Env2> =>
+    bothWith(self, other, (_, output) => output)
+);
 
 /**
  * Combines two `Schedule`s by recurring if both of the two schedules want
@@ -1093,39 +1155,52 @@ export const bothWith: {
     combine: (selfOutput: Output, otherOutput: Output2) => Output3
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2, Output3>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>,
     combine: (selfOutput: Output, otherOutput: Output2) => Output3
-  ): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>
-} = dual(3, <Output, Input, Error, Env, Output2, Input2, Error2, Env2, Output3>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>,
-  combine: (selfOutput: Output, otherOutput: Output2) => Output3
-): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(
-    effect.zip(toStep(self), toStep(other)),
-    ([stepLeft, stepRight]) => (now, input) =>
-      Pull.matchEffect(stepLeft(now, input as Input), {
-        onSuccess: (leftResult) =>
-          stepRight(now, input as Input2).pipe(
-            effect.map((rightResult) =>
-              [
-                combine(leftResult[0], rightResult[0]),
-                Duration.max(leftResult[1], rightResult[1])
-              ] as [Output3, Duration.Duration]
-            ),
-            Pull.catchDone((rightDone) => Cause.done(combine(leftResult[0], rightDone as Output2)))
-          ),
-        onDone: (leftDone) =>
-          stepRight(now, input as Input2).pipe(
-            effect.flatMap((rightResult) => Cause.done(combine(leftDone, rightResult[0]))),
-            Pull.catchDone((rightDone) => Cause.done(combine(leftDone, rightDone as Output2)))
-          ),
-        onFailure: effect.failCause
-      })
-  )))
+  ): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  3,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2, Output3>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>,
+    combine: (selfOutput: Output, otherOutput: Output2) => Output3
+  ): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(
+        effect.zip(toStep(self), toStep(other)),
+        ([stepLeft, stepRight]) =>
+          (now, input) =>
+            Pull.matchEffect(stepLeft(now, input as Input), {
+              onSuccess: (leftResult) =>
+                stepRight(now, input as Input2).pipe(
+                  effect.map(
+                    (rightResult) =>
+                      [
+                        combine(leftResult[0], rightResult[0]),
+                        Duration.max(leftResult[1], rightResult[1]),
+                      ] as [Output3, Duration.Duration]
+                  ),
+                  Pull.catchDone((rightDone) =>
+                    Cause.done(combine(leftResult[0], rightDone as Output2))
+                  )
+                ),
+              onDone: (leftDone) =>
+                stepRight(now, input as Input2).pipe(
+                  effect.flatMap((rightResult) =>
+                    Cause.done(combine(leftDone, rightResult[0]))
+                  ),
+                  Pull.catchDone((rightDone) =>
+                    Cause.done(combine(leftDone, rightDone as Output2))
+                  )
+                ),
+              onFailure: effect.failCause,
+            })
+      )
+    )
+);
 
 /**
  * Returns a new `Schedule` that follows `self` and outputs the inputs seen so
@@ -1164,7 +1239,8 @@ export const bothWith: {
  */
 export const collectInputs = <Output, Input, Error, Env>(
   self: Schedule<Output, Input, Error, Env>
-): Schedule<Array<Input>, Input, Error, Env> => collectWhile(passthrough(self), () => effect.succeed(true))
+): Schedule<Array<Input>, Input, Error, Env> =>
+  collectWhile(passthrough(self), () => effect.succeed(true));
 
 /**
  * Returns a new `Schedule` that follows `self` and outputs the schedule outputs
@@ -1201,7 +1277,8 @@ export const collectInputs = <Output, Input, Error, Env>(
  */
 export const collectOutputs = <Output, Input, Error, Env>(
   self: Schedule<Output, Input, Error, Env>
-): Schedule<Array<Output>, Input, Error, Env> => collectWhile(self, () => effect.succeed(true))
+): Schedule<Array<Output>, Input, Error, Env> =>
+  collectWhile(self, () => effect.succeed(true));
 
 /**
  * Returns a new `Schedule` that recurs as long as the specified `predicate`
@@ -1293,23 +1370,30 @@ export const collectWhile: {
     ) => boolean | Effect<boolean, Error2, Env2>
   ): <Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Array<Output>, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Array<Output>, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Error2 = never, Env2 = never>(
     self: Schedule<Output, Input, Error, Env>,
     predicate: (
       metadata: Metadata<Output, Input>
     ) => boolean | Effect<boolean, Error2, Env2>
-  ): Schedule<Array<Output>, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Error2 = never, Env2 = never>(
-  self: Schedule<Output, Input, Error, Env>,
-  predicate: (
-    metadata: Metadata<Output, Input>
-  ) => boolean | Effect<boolean, Error2, Env2>
-): Schedule<Array<Output>, Input, Error | Error2, Env | Env2> =>
-  reduce(while_(self, predicate), () => [] as Array<Output>, (outputs, output) => {
-    outputs.push(output)
-    return outputs
-  }))
+  ): Schedule<Array<Output>, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Error2 = never, Env2 = never>(
+    self: Schedule<Output, Input, Error, Env>,
+    predicate: (
+      metadata: Metadata<Output, Input>
+    ) => boolean | Effect<boolean, Error2, Env2>
+  ): Schedule<Array<Output>, Input, Error | Error2, Env | Env2> =>
+    reduce(
+      while_(self, predicate),
+      () => [] as Array<Output>,
+      (outputs, output) => {
+        outputs.push(output);
+        return outputs;
+      }
+    )
+);
 
 /**
  * Returns a new `Schedule` that recurs on the specified `Cron` schedule and
@@ -1443,17 +1527,29 @@ export const collectWhile: {
  * @since 2.0.0
  */
 export const cron: {
-  (expression: Cron.Cron): Schedule<Duration.Duration, unknown, Cron.CronParseError>
-  (expression: string, tz?: string | DateTime.TimeZone): Schedule<Duration.Duration, unknown, Cron.CronParseError>
+  (
+    expression: Cron.Cron
+  ): Schedule<Duration.Duration, unknown, Cron.CronParseError>;
+  (
+    expression: string,
+    tz?: string | DateTime.TimeZone
+  ): Schedule<Duration.Duration, unknown, Cron.CronParseError>;
 } = (expression: string | Cron.Cron, tz?: string | DateTime.TimeZone) => {
-  const parsed = Cron.isCron(expression) ? Result.succeed(expression) : Cron.parse(expression, tz)
-  return fromStep(effect.map(effect.fromResult(parsed), (cron) => (now, _) =>
-    effect.sync(() => {
-      const next = Cron.next(cron, now).getTime()
-      const duration = Duration.millis(next - now)
-      return [duration, duration]
-    })))
-}
+  const parsed = Cron.isCron(expression)
+    ? Result.succeed(expression)
+    : Cron.parse(expression, tz);
+  return fromStep(
+    effect.map(
+      effect.fromResult(parsed),
+      (cron) => (now, _) =>
+        effect.sync(() => {
+          const next = Cron.next(cron, now).getTime();
+          const duration = Duration.millis(next - now);
+          return [duration, duration];
+        })
+    )
+  );
+};
 
 /**
  * Returns a new schedule that outputs the delay between each occurrence.
@@ -1539,7 +1635,9 @@ export const cron: {
  * @category constructors
  * @since 2.0.0
  */
-export const delays = <Out, In, E, R>(self: Schedule<Out, In, E, R>): Schedule<Duration.Duration, In, E, R> =>
+export const delays = <Out, In, E, R>(
+  self: Schedule<Out, In, E, R>
+): Schedule<Duration.Duration, In, E, R> =>
   fromStep(
     effect.map(
       toStep(self),
@@ -1549,7 +1647,7 @@ export const delays = <Out, In, E, R>(self: Schedule<Out, In, E, R>): Schedule<D
           (_) => Cause.done(Duration.zero)
         )
     )
-  )
+  );
 
 /**
  * Returns a schedule that recurs once after the specified duration.
@@ -1579,14 +1677,18 @@ export const delays = <Out, In, E, R>(self: Schedule<Out, In, E, R>): Schedule<D
  * @category constructors
  * @since 2.0.0
  */
-export const duration = (durationInput: Duration.Input): Schedule<Duration.Duration> => {
-  const duration = Duration.fromInputUnsafe(durationInput)
-  return fromStepWithMetadata(effect.succeed((meta) =>
-    meta.attempt === 1
-      ? effect.succeed([duration, duration])
-      : Cause.done(Duration.zero)
-  ))
-}
+export const duration = (
+  durationInput: Duration.Input
+): Schedule<Duration.Duration> => {
+  const duration = Duration.fromInputUnsafe(durationInput);
+  return fromStepWithMetadata(
+    effect.succeed((meta) =>
+      meta.attempt === 1
+        ? effect.succeed([duration, duration])
+        : Cause.done(Duration.zero)
+    )
+  );
+};
 
 /**
  * Returns a new `Schedule` that will always recur, but only during the
@@ -1680,10 +1782,11 @@ export const duration = (durationInput: Duration.Input): Schedule<Duration.Durat
  * @since 4.0.0
  */
 export const during = (duration: Duration.Input): Schedule<Duration.Duration> =>
-  while_(
-    elapsed,
-    ({ output }) => effect.succeed(Duration.isLessThanOrEqualTo(output, Duration.fromInputUnsafe(duration)))
-  )
+  while_(elapsed, ({ output }) =>
+    effect.succeed(
+      Duration.isLessThanOrEqualTo(output, Duration.fromInputUnsafe(duration))
+    )
+  );
 
 /**
  * Combines two `Schedule`s by recurring if either of the two schedules wants
@@ -1768,16 +1871,19 @@ export const either: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2> =>
-  eitherWith(self, other, (left, right) => [left, right]))
+  ): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<[Output, Output2], Input & Input2, Error | Error2, Env | Env2> =>
+    eitherWith(self, other, (left, right) => [left, right])
+);
 
 /**
  * Combines two `Schedule`s by recurring if either of the two schedules wants
@@ -1824,15 +1930,19 @@ export const eitherLeft: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<Output, Input & Input2, Error | Error2, Env | Env2> => eitherWith(self, other, (output) => output))
+  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<Output, Input & Input2, Error | Error2, Env | Env2> =>
+    eitherWith(self, other, (output) => output)
+);
 
 /**
  * Combines two `Schedule`s by recurring if either of the two schedules wants
@@ -1879,15 +1989,19 @@ export const eitherRight: {
     other: Schedule<Output2, Input2, Error2, Env2>
   ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output2, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<Output2, Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>
-  ): Schedule<Output2, Input & Input2, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>
-): Schedule<Output2, Input & Input2, Error | Error2, Env | Env2> => eitherWith(self, other, (_, output) => output))
+  ): Schedule<Output2, Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>
+  ): Schedule<Output2, Input & Input2, Error | Error2, Env | Env2> =>
+    eitherWith(self, other, (_, output) => output)
+);
 
 /**
  * Combines two `Schedule`s by recurring if either of the two schedules wants
@@ -1940,49 +2054,59 @@ export const eitherWith: {
     combine: (selfOutput: Output, otherOutput: Output2) => Output3
   ): <Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>
+  ) => Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Input2, Error2, Env2, Output3>(
     self: Schedule<Output, Input, Error, Env>,
     other: Schedule<Output2, Input2, Error2, Env2>,
     combine: (selfOutput: Output, otherOutput: Output2) => Output3
-  ): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>
-} = dual(3, <Output, Input, Error, Env, Output2, Input2, Error2, Env2, Output3>(
-  self: Schedule<Output, Input, Error, Env>,
-  other: Schedule<Output2, Input2, Error2, Env2>,
-  combine: (selfOutput: Output, otherOutput: Output2) => Output3
-): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(
-    effect.zip(toStep(self), toStep(other)),
-    ([stepLeft, stepRight]) => (now, input) =>
-      Pull.matchEffect(stepLeft(now, input as Input), {
-        onSuccess: (leftResult) =>
-          stepRight(now, input as Input2).pipe(
-            effect.map((rightResult) =>
-              [combine(leftResult[0], rightResult[0]), Duration.min(leftResult[1], rightResult[1])] as [
-                Output3,
-                Duration.Duration
-              ]
-            ),
-            Pull.catchDone((rightDone) =>
-              effect.succeed<[Output3, Duration.Duration]>([
-                combine(leftResult[0], rightDone as Output2),
-                leftResult[1]
-              ])
-            )
-          ),
-        onFailure: effect.failCause,
-        onDone: (leftDone) =>
-          stepRight(now, input as Input2).pipe(
-            effect.map((rightResult) =>
-              [combine(leftDone, rightResult[0]), rightResult[1]] as [
-                Output3,
-                Duration.Duration
-              ]
-            ),
-            Pull.catchDone((rightDone) => Cause.done(combine(leftDone, rightDone as Output2)))
-          )
-      })
-  )))
+  ): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2>;
+} = dual(
+  3,
+  <Output, Input, Error, Env, Output2, Input2, Error2, Env2, Output3>(
+    self: Schedule<Output, Input, Error, Env>,
+    other: Schedule<Output2, Input2, Error2, Env2>,
+    combine: (selfOutput: Output, otherOutput: Output2) => Output3
+  ): Schedule<Output3, Input & Input2, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(
+        effect.zip(toStep(self), toStep(other)),
+        ([stepLeft, stepRight]) =>
+          (now, input) =>
+            Pull.matchEffect(stepLeft(now, input as Input), {
+              onSuccess: (leftResult) =>
+                stepRight(now, input as Input2).pipe(
+                  effect.map(
+                    (rightResult) =>
+                      [
+                        combine(leftResult[0], rightResult[0]),
+                        Duration.min(leftResult[1], rightResult[1]),
+                      ] as [Output3, Duration.Duration]
+                  ),
+                  Pull.catchDone((rightDone) =>
+                    effect.succeed<[Output3, Duration.Duration]>([
+                      combine(leftResult[0], rightDone as Output2),
+                      leftResult[1],
+                    ])
+                  )
+                ),
+              onFailure: effect.failCause,
+              onDone: (leftDone) =>
+                stepRight(now, input as Input2).pipe(
+                  effect.map(
+                    (rightResult) =>
+                      [combine(leftDone, rightResult[0]), rightResult[1]] as [
+                        Output3,
+                        Duration.Duration,
+                      ]
+                  ),
+                  Pull.catchDone((rightDone) =>
+                    Cause.done(combine(leftDone, rightDone as Output2))
+                  )
+                ),
+            })
+      )
+    )
+);
 
 /**
  * Schedule that always recurs and returns the total elapsed duration since the
@@ -2016,8 +2140,10 @@ export const eitherWith: {
  * @since 2.0.0
  */
 export const elapsed: Schedule<Duration.Duration> = fromStepWithMetadata(
-  effect.succeed((meta) => effect.succeed([Duration.millis(meta.elapsed), Duration.zero] as const))
-)
+  effect.succeed((meta) =>
+    effect.succeed([Duration.millis(meta.elapsed), Duration.zero] as const)
+  )
+);
 
 /**
  * Schedule that always recurs, but will wait a certain amount between
@@ -2072,12 +2198,16 @@ export const exponential = (
   base: Duration.Input,
   factor: number = 2
 ): Schedule<Duration.Duration> => {
-  const baseMillis = Duration.toMillis(Duration.fromInputUnsafe(base))
-  return fromStepWithMetadata(effect.succeed((meta) => {
-    const duration = Duration.millis(baseMillis * Math.pow(factor, meta.attempt - 1))
-    return effect.succeed([duration, duration])
-  }))
-}
+  const baseMillis = Duration.toMillis(Duration.fromInputUnsafe(base));
+  return fromStepWithMetadata(
+    effect.succeed((meta) => {
+      const duration = Duration.millis(
+        baseMillis * Math.pow(factor, meta.attempt - 1)
+      );
+      return effect.succeed([duration, duration]);
+    })
+  );
+};
 
 /**
  * Schedule that always recurs, increasing delays by summing the preceding
@@ -2147,19 +2277,23 @@ export const exponential = (
  * @since 2.0.0
  */
 export const fibonacci = (one: Duration.Input): Schedule<Duration.Duration> => {
-  const oneMillis = Duration.toMillis(Duration.fromInputUnsafe(one))
-  return fromStep(effect.sync(() => {
-    let a = 0
-    let b = oneMillis
-    return constant(effect.sync(() => {
-      const next = a + b
-      a = b
-      b = next
-      const duration = Duration.millis(next)
-      return [duration, duration]
-    }))
-  }))
-}
+  const oneMillis = Duration.toMillis(Duration.fromInputUnsafe(one));
+  return fromStep(
+    effect.sync(() => {
+      let a = 0;
+      let b = oneMillis;
+      return constant(
+        effect.sync(() => {
+          const next = a + b;
+          a = b;
+          b = next;
+          const duration = Duration.millis(next);
+          return [duration, duration];
+        })
+      );
+    })
+  );
+};
 
 /**
  * Returns a `Schedule` that recurs on the specified fixed `interval` and
@@ -2233,28 +2367,30 @@ export const fibonacci = (one: Duration.Input): Schedule<Duration.Duration> => {
  * @since 2.0.0
  */
 export const fixed = (interval: Duration.Input): Schedule<number> => {
-  const window = Duration.toMillis(Duration.fromInputUnsafe(interval))
-  return fromStepWithMetadata(effect.sync(() => {
-    let start = 0
-    let lastRun = 0
-    return (meta) =>
-      effect.sync(() => {
-        if (window === 0) {
-          return [meta.attempt - 1, Duration.zero] as const
-        }
-        if (meta.attempt === 1) {
-          start = meta.now
-          lastRun = meta.now + window
-          return [0, Duration.millis(window)] as const
-        }
-        const runningBehind = meta.now > (lastRun + window)
-        const boundary = window - ((meta.now - start) % window)
-        const delay = runningBehind ? 0 : boundary === 0 ? window : boundary
-        lastRun = runningBehind ? meta.now : meta.now + delay
-        return [meta.attempt - 1, Duration.millis(delay)] as const
-      })
-  }))
-}
+  const window = Duration.toMillis(Duration.fromInputUnsafe(interval));
+  return fromStepWithMetadata(
+    effect.sync(() => {
+      let start = 0;
+      let lastRun = 0;
+      return (meta) =>
+        effect.sync(() => {
+          if (window === 0) {
+            return [meta.attempt - 1, Duration.zero] as const;
+          }
+          if (meta.attempt === 1) {
+            start = meta.now;
+            lastRun = meta.now + window;
+            return [0, Duration.millis(window)] as const;
+          }
+          const runningBehind = meta.now > lastRun + window;
+          const boundary = window - ((meta.now - start) % window);
+          const delay = runningBehind ? 0 : boundary === 0 ? window : boundary;
+          lastRun = runningBehind ? meta.now : meta.now + delay;
+          return [meta.attempt - 1, Duration.millis(delay)] as const;
+        });
+    })
+  );
+};
 
 /**
  * Returns a new `Schedule` that maps the output of this schedule using the
@@ -2323,30 +2459,45 @@ export const map: {
     f: (output: Output) => Output2 | Effect<Output2, Error2, Env2>
   ): <Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output2, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Output2, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Output2, Error2 = never, Env2 = never>(
     self: Schedule<Output, Input, Error, Env>,
     f: (output: Output) => Output2 | Effect<Output2, Error2, Env2>
-  ): Schedule<Output2, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Output2, Error2 = never, Env2 = never>(
-  self: Schedule<Output, Input, Error, Env>,
-  f: (output: Output) => Output2 | Effect<Output2, Error2, Env2>
-): Schedule<Output2, Input, Error | Error2, Env | Env2> => {
-  const handle = Pull.matchEffect({
-    onSuccess: ([output, duration]: [Output, Duration.Duration]) => {
-      const result = f(output)
-      if (!isEffect(result)) return effect.succeed([result, duration] as [Output2, Duration.Duration])
-      return effect.map(result, (output) => [output, duration] as [Output2, Duration.Duration])
-    },
-    onFailure: effect.failCause<Error>,
-    onDone: (output: Output) => {
-      const result = f(output)
-      if (!isEffect(result)) return Cause.done(result as Output2)
-      return effect.flatMap(result, Cause.done)
-    }
-  })
-  return fromStep(effect.map(toStep(self), (step) => (now, input) => handle(step(now, input))))
-})
+  ): Schedule<Output2, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Output2, Error2 = never, Env2 = never>(
+    self: Schedule<Output, Input, Error, Env>,
+    f: (output: Output) => Output2 | Effect<Output2, Error2, Env2>
+  ): Schedule<Output2, Input, Error | Error2, Env | Env2> => {
+    const handle = Pull.matchEffect({
+      onSuccess: ([output, duration]: [Output, Duration.Duration]) => {
+        const result = f(output);
+        if (!isEffect(result))
+          return effect.succeed([result, duration] as [
+            Output2,
+            Duration.Duration,
+          ]);
+        return effect.map(
+          result,
+          (output) => [output, duration] as [Output2, Duration.Duration]
+        );
+      },
+      onFailure: effect.failCause<Error>,
+      onDone: (output: Output) => {
+        const result = f(output);
+        if (!isEffect(result)) return Cause.done(result as Output2);
+        return effect.flatMap(result, Cause.done);
+      },
+    });
+    return fromStep(
+      effect.map(
+        toStep(self),
+        (step) => (now, input) => handle(step(now, input))
+      )
+    );
+  }
+);
 
 /**
  * Returns a new `Schedule` that modifies the delay of the next recurrence
@@ -2389,26 +2540,36 @@ export const modifyDelay: {
     ) => Effect<Duration.Input, Error2, Env2>
   ): <Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Error2 = never, Env2 = never>(
     self: Schedule<Output, Input, Error, Env>,
     f: (
       output: Output,
       delay: Duration.Input
     ) => Effect<Duration.Input, Error2, Env2>
-  ): Schedule<Output, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Error2 = never, Env2 = never>(
-  self: Schedule<Output, Input, Error, Env>,
-  f: (
-    output: Output,
-    delay: Duration.Input
-  ) => Effect<Duration.Input, Error2, Env2>
-): Schedule<Output, Input, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(toStep(self), (step) => (now, input) =>
-    effect.flatMap(
-      step(now, input),
-      ([output, delay]) => effect.map(f(output, delay), (delay) => [output, Duration.fromInputUnsafe(delay)])
-    ))))
+  ): Schedule<Output, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Error2 = never, Env2 = never>(
+    self: Schedule<Output, Input, Error, Env>,
+    f: (
+      output: Output,
+      delay: Duration.Input
+    ) => Effect<Duration.Input, Error2, Env2>
+  ): Schedule<Output, Input, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(
+        toStep(self),
+        (step) => (now, input) =>
+          effect.flatMap(step(now, input), ([output, delay]) =>
+            effect.map(f(output, delay), (delay) => [
+              output,
+              Duration.fromInputUnsafe(delay),
+            ])
+          )
+      )
+    )
+);
 
 /**
  * Returns a new `Schedule` that randomly adjusts each recurrence delay.
@@ -2432,9 +2593,12 @@ export const jittered = <Output, Input, Error, Env>(
 ): Schedule<Output, Input, Error, Env> =>
   modifyDelay(self, (_, delay) =>
     effect.map(randomNext, (random) => {
-      const millis = Duration.toMillis(Duration.fromInputUnsafe(delay))
-      return Duration.millis(millis * 0.8 * (1 - random) + millis * 1.2 * random)
-    }))
+      const millis = Duration.toMillis(Duration.fromInputUnsafe(delay));
+      return Duration.millis(
+        millis * 0.8 * (1 - random) + millis * 1.2 * random
+      );
+    })
+  );
 
 /**
  * Returns a new `Schedule` that outputs the inputs of the specified schedule.
@@ -2468,12 +2632,17 @@ export const jittered = <Output, Input, Error, Env>(
 export const passthrough = <Output, Input, Error, Env>(
   self: Schedule<Output, Input, Error, Env>
 ): Schedule<Input, Input, Error, Env> =>
-  fromStep(effect.map(toStep(self), (step) => (now, input) =>
-    Pull.matchEffect(step(now, input), {
-      onSuccess: (result) => effect.succeed([input, result[1]]),
-      onFailure: effect.failCause,
-      onDone: () => Cause.done(input)
-    })))
+  fromStep(
+    effect.map(
+      toStep(self),
+      (step) => (now, input) =>
+        Pull.matchEffect(step(now, input), {
+          onSuccess: (result) => effect.succeed([input, result[1]]),
+          onFailure: effect.failCause,
+          onDone: () => Cause.done(input),
+        })
+    )
+  );
 
 /**
  * Returns a `Schedule` which can only be stepped the specified number of
@@ -2545,7 +2714,7 @@ export const passthrough = <Output, Input, Error, Env>(
  * @since 2.0.0
  */
 export const recurs = (times: number): Schedule<number> =>
-  while_(forever, ({ attempt }) => effect.succeed(attempt <= times))
+  while_(forever, ({ attempt }) => effect.succeed(attempt <= times));
 
 /**
  * Returns a new `Schedule` that combines the outputs of the provided schedule
@@ -2662,42 +2831,61 @@ export const recurs = (times: number): Schedule<number> =>
 export const reduce: {
   <State, Output, Error2 = never, Env2 = never>(
     initial: LazyArg<State>,
-    combine: (state: State, output: Output) => State | Effect<State, Error2, Env2>
+    combine: (
+      state: State,
+      output: Output
+    ) => State | Effect<State, Error2, Env2>
   ): <Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<State, Input, Error | Error2, Env | Env2>
+  ) => Schedule<State, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, State, Error2 = never, Env2 = never>(
     self: Schedule<Output, Input, Error, Env>,
     initial: LazyArg<State>,
-    combine: (state: State, output: Output) => State | Effect<State, Error2, Env2>
-  ): Schedule<State, Input, Error | Error2, Env | Env2>
-} = dual(3, <Output, Input, Error, Env, State, Error2 = never, Env2 = never>(
-  self: Schedule<Output, Input, Error, Env>,
-  initial: LazyArg<State>,
-  combine: (state: State, output: Output) => State | Effect<State, Error2, Env2>
-): Schedule<State, Input, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(toStep(self), (step) => {
-    let state = initial()
-    return (now, input) =>
-      Pull.matchEffect(step(now, input), {
-        onSuccess([output, delay]) {
-          const next = combine(state, output)
-          if (!isEffect(next)) {
-            state = next
-            return effect.succeed([next, delay] as [State, Duration.Duration])
-          }
-          return effect.map(next, (nextState) => {
-            state = nextState
-            return [nextState, delay]
-          })
-        },
-        onFailure: effect.failCause,
-        onDone(output) {
-          const next = combine(state, output)
-          return isEffect(next) ? effect.flatMap(next, Cause.done) : Cause.done(next)
-        }
+    combine: (
+      state: State,
+      output: Output
+    ) => State | Effect<State, Error2, Env2>
+  ): Schedule<State, Input, Error | Error2, Env | Env2>;
+} = dual(
+  3,
+  <Output, Input, Error, Env, State, Error2 = never, Env2 = never>(
+    self: Schedule<Output, Input, Error, Env>,
+    initial: LazyArg<State>,
+    combine: (
+      state: State,
+      output: Output
+    ) => State | Effect<State, Error2, Env2>
+  ): Schedule<State, Input, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(toStep(self), (step) => {
+        let state = initial();
+        return (now, input) =>
+          Pull.matchEffect(step(now, input), {
+            onSuccess([output, delay]) {
+              const next = combine(state, output);
+              if (!isEffect(next)) {
+                state = next;
+                return effect.succeed([next, delay] as [
+                  State,
+                  Duration.Duration,
+                ]);
+              }
+              return effect.map(next, (nextState) => {
+                state = nextState;
+                return [nextState, delay];
+              });
+            },
+            onFailure: effect.failCause,
+            onDone(output) {
+              const next = combine(state, output);
+              return isEffect(next)
+                ? effect.flatMap(next, Cause.done)
+                : Cause.done(next);
+            },
+          });
       })
-  })))
+    )
+);
 
 /**
  * Returns a schedule that recurs continuously, each repetition spaced the
@@ -2756,9 +2944,11 @@ export const reduce: {
  * @since 2.0.0
  */
 export const spaced = (duration: Duration.Input): Schedule<number> => {
-  const decoded = Duration.fromInputUnsafe(duration)
-  return fromStepWithMetadata(effect.succeed((meta) => effect.succeed([meta.attempt - 1, decoded])))
-}
+  const decoded = Duration.fromInputUnsafe(duration);
+  return fromStepWithMetadata(
+    effect.succeed((meta) => effect.succeed([meta.attempt - 1, decoded]))
+  );
+};
 
 /**
  * Returns a new `Schedule` that allows execution of an effectful function for
@@ -2799,20 +2989,27 @@ export const tap: {
     f: (metadata: Metadata<Output, Input>) => Effect<X, Error2, Env2>
   ): <Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, X, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     f: (metadata: Metadata<Output, Input>) => Effect<X, Error2, Env2>
-  ): Schedule<Output, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, X, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  f: (metadata: Metadata<Output, Input>) => Effect<X, Error2, Env2>
-): Schedule<Output, Input, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(toStep(self), (step) => {
-    const meta = metadataFn()
-    return (now, input) =>
-      effect.tap(step(now, input), ([output, duration]) => f({ ...meta(now, input), output, duration }))
-  })))
+  ): Schedule<Output, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, X, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    f: (metadata: Metadata<Output, Input>) => Effect<X, Error2, Env2>
+  ): Schedule<Output, Input, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(toStep(self), (step) => {
+        const meta = metadataFn();
+        return (now, input) =>
+          effect.tap(step(now, input), ([output, duration]) =>
+            f({ ...meta(now, input), output, duration })
+          );
+      })
+    )
+);
 
 /**
  * Returns a new `Schedule` that allows execution of an effectful function for
@@ -2946,19 +3143,24 @@ export const tapInput: {
     f: (input: Input) => Effect<X, Error2, Env2>
   ): <Output, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, X, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     f: (input: Input) => Effect<X, Error2, Env2>
-  ): Schedule<Output, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, X, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  f: (input: Input) => Effect<X, Error2, Env2>
-): Schedule<Output, Input, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(
-    toStep(self),
-    (step) => (now, input) => effect.andThen(f(input), step(now, input))
-  )))
+  ): Schedule<Output, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, X, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    f: (input: Input) => Effect<X, Error2, Env2>
+  ): Schedule<Output, Input, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(
+        toStep(self),
+        (step) => (now, input) => effect.andThen(f(input), step(now, input))
+      )
+    )
+);
 
 /**
  * Returns a new `Schedule` that allows execution of an effectful function for
@@ -3050,19 +3252,25 @@ export const tapOutput: {
     f: (output: Output) => Effect<X, Error2, Env2>
   ): <Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, X, Error2, Env2>(
     self: Schedule<Output, Input, Error, Env>,
     f: (output: Output) => Effect<X, Error2, Env2>
-  ): Schedule<Output, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, X, Error2, Env2>(
-  self: Schedule<Output, Input, Error, Env>,
-  f: (output: Output) => Effect<X, Error2, Env2>
-): Schedule<Output, Input, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(
-    toStep(self),
-    (step) => (now, input) => effect.tap(step(now, input), ([output]) => f(output))
-  )))
+  ): Schedule<Output, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, X, Error2, Env2>(
+    self: Schedule<Output, Input, Error, Env>,
+    f: (output: Output) => Effect<X, Error2, Env2>
+  ): Schedule<Output, Input, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(
+        toStep(self),
+        (step) => (now, input) =>
+          effect.tap(step(now, input), ([output]) => f(output))
+      )
+    )
+);
 
 /**
  * Returns a new `Schedule` that takes at most the specified number of outputs
@@ -3158,17 +3366,23 @@ export const tapOutput: {
  * @since 4.0.0
  */
 export const take: {
-  (n: number): <Output, Input, Error, Env>(
+  (
+    n: number
+  ): <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input, Error, Env>
+  ) => Schedule<Output, Input, Error, Env>;
   <Output, Input, Error, Env>(
     self: Schedule<Output, Input, Error, Env>,
     n: number
-  ): Schedule<Output, Input, Error, Env>
-} = dual(2, <Output, Input, Error, Env>(
-  self: Schedule<Output, Input, Error, Env>,
-  n: number
-): Schedule<Output, Input, Error, Env> => while_(self, ({ attempt }) => effect.succeed(attempt <= n)))
+  ): Schedule<Output, Input, Error, Env>;
+} = dual(
+  2,
+  <Output, Input, Error, Env>(
+    self: Schedule<Output, Input, Error, Env>,
+    n: number
+  ): Schedule<Output, Input, Error, Env> =>
+    while_(self, ({ attempt }) => effect.succeed(attempt <= n))
+);
 
 /**
  * Creates a schedule that unfolds a state by repeatedly applying a function,
@@ -3270,17 +3484,21 @@ export const unfold = <State, Error = never, Env = never>(
   initial: State,
   next: (state: State) => Effect<State, Error, Env>
 ): Schedule<State, unknown, Error, Env> =>
-  fromStep(effect.sync(() => {
-    let state = initial
-    return constant(effect.map(
-      effect.suspend(() => next(state)),
-      (nextState) => {
-        const prev = state
-        state = nextState
-        return [prev, Duration.zero] as const
-      }
-    ))
-  }))
+  fromStep(
+    effect.sync(() => {
+      let state = initial;
+      return constant(
+        effect.map(
+          effect.suspend(() => next(state)),
+          (nextState) => {
+            const prev = state;
+            state = nextState;
+            return [prev, Duration.zero] as const;
+          }
+        )
+      );
+    })
+  );
 
 const while_: {
   <Input, Output, Error2 = never, Env2 = never>(
@@ -3289,31 +3507,36 @@ const while_: {
     ) => boolean | Effect<boolean, Error2, Env2>
   ): <Error, Env>(
     self: Schedule<Output, Input, Error, Env>
-  ) => Schedule<Output, Input, Error | Error2, Env | Env2>
+  ) => Schedule<Output, Input, Error | Error2, Env | Env2>;
   <Output, Input, Error, Env, Error2 = never, Env2 = never>(
     self: Schedule<Output, Input, Error, Env>,
     predicate: (
       metadata: Metadata<Output, Input>
     ) => boolean | Effect<boolean, Error2, Env2>
-  ): Schedule<Output, Input, Error | Error2, Env | Env2>
-} = dual(2, <Output, Input, Error, Env, Error2 = never, Env2 = never>(
-  self: Schedule<Output, Input, Error, Env>,
-  predicate: (
-    metadata: Metadata<Output, Input>
-  ) => boolean | Effect<boolean, Error2, Env2>
-): Schedule<Output, Input, Error | Error2, Env | Env2> =>
-  fromStep(effect.map(toStep(self), (step) => {
-    const meta = metadataFn()
-    return (now, input) =>
-      effect.flatMap(step(now, input), (result) => {
-        const [output, duration] = result
-        const eff = predicate({ ...meta(now, input), output, duration })
-        return effect.flatMap(
-          isEffect(eff) ? eff : effect.succeed(eff),
-          (check) => (check ? effect.succeed(result) : Cause.done(output))
-        )
+  ): Schedule<Output, Input, Error | Error2, Env | Env2>;
+} = dual(
+  2,
+  <Output, Input, Error, Env, Error2 = never, Env2 = never>(
+    self: Schedule<Output, Input, Error, Env>,
+    predicate: (
+      metadata: Metadata<Output, Input>
+    ) => boolean | Effect<boolean, Error2, Env2>
+  ): Schedule<Output, Input, Error | Error2, Env | Env2> =>
+    fromStep(
+      effect.map(toStep(self), (step) => {
+        const meta = metadataFn();
+        return (now, input) =>
+          effect.flatMap(step(now, input), (result) => {
+            const [output, duration] = result;
+            const eff = predicate({ ...meta(now, input), output, duration });
+            return effect.flatMap(
+              isEffect(eff) ? eff : effect.succeed(eff),
+              (check) => (check ? effect.succeed(result) : Cause.done(output))
+            );
+          });
       })
-  })))
+    )
+);
 
 export {
   /**
@@ -3336,8 +3559,8 @@ export {
    * @category filtering
    * @since 4.0.0
    */
-  while_ as while
-}
+  while_ as while,
+};
 
 /**
  * Schedule that divides the timeline to `interval`-long windows, and sleeps
@@ -3377,14 +3600,18 @@ export {
  * @since 2.0.0
  */
 export const windowed = (interval: Duration.Input): Schedule<number> => {
-  const window = Duration.toMillis(Duration.fromInputUnsafe(interval))
-  return fromStepWithMetadata(effect.succeed((meta) =>
-    effect.sync(() => [
-      meta.attempt - 1,
-      window === 0 ? Duration.zero : Duration.millis(window - (meta.elapsed % window))
-    ])
-  ))
-}
+  const window = Duration.toMillis(Duration.fromInputUnsafe(interval));
+  return fromStepWithMetadata(
+    effect.succeed((meta) =>
+      effect.sync(() => [
+        meta.attempt - 1,
+        window === 0
+          ? Duration.zero
+          : Duration.millis(window - (meta.elapsed % window)),
+      ])
+    )
+  );
+};
 
 /**
  * Returns a new `Schedule` that will recur forever.
@@ -3416,13 +3643,15 @@ export const windowed = (interval: Duration.Input): Schedule<number> => {
  * @category constructors
  * @since 2.0.0
  */
-export const forever: Schedule<number> = spaced(Duration.zero)
+export const forever: Schedule<number> = spaced(Duration.zero);
 
 const constIdentity = fromStep(
-  effect.succeed((_now, input: unknown) => effect.succeed([input, Duration.zero] as [unknown, Duration.Duration]))
-)
+  effect.succeed((_now, input: unknown) =>
+    effect.succeed([input, Duration.zero] as [unknown, Duration.Duration])
+  )
+);
 
-const identity_ = <A>(): Schedule<A, A> => constIdentity as Schedule<A, A>
+const identity_ = <A>(): Schedule<A, A> => constIdentity as Schedule<A, A>;
 
 export {
   /**
@@ -3443,8 +3672,8 @@ export {
    * @category constructors
    * @since 2.0.0
    */
-  identity_ as identity
-}
+  identity_ as identity,
+};
 
 /**
  * Ensures that a schedule's input type extends a given type `T`.
@@ -3476,10 +3705,12 @@ export {
  * @category utility types
  * @since 4.0.0
  */
-export const satisfiesInputType = <T>() =>
-<Input extends T, Output = never, Error = never, Env = never>(
-  self: Schedule<Output, Input, Error, Env>
-): Schedule<Output, Input, Error, Env> => self
+export const satisfiesInputType =
+  <T>() =>
+  <Input extends T, Output = never, Error = never, Env = never>(
+    self: Schedule<Output, Input, Error, Env>
+  ): Schedule<Output, Input, Error, Env> =>
+    self;
 
 /**
  * Sets the input type of the provided schedule without altering its behavior.
@@ -3509,7 +3740,11 @@ export const satisfiesInputType = <T>() =>
  * @since 4.0.0
  */
 export const setInputType =
-  <T>() => <Output, Error, Env>(self: Schedule<Output, T, Error, Env>): Schedule<Output, T, Error, Env> => self
+  <T>() =>
+  <Output, Error, Env>(
+    self: Schedule<Output, T, Error, Env>
+  ): Schedule<Output, T, Error, Env> =>
+    self;
 
 /**
  * Ensures that a schedule's output type extends a given type `T`.
@@ -3539,10 +3774,12 @@ export const setInputType =
  * @category utility types
  * @since 4.0.0
  */
-export const satisfiesOutputType = <T>() =>
-<Output extends T, Error = never, Input = unknown, Env = never>(
-  self: Schedule<Output, Input, Error, Env>
-): Schedule<Output, Input, Error, Env> => self
+export const satisfiesOutputType =
+  <T>() =>
+  <Output extends T, Error = never, Input = unknown, Env = never>(
+    self: Schedule<Output, Input, Error, Env>
+  ): Schedule<Output, Input, Error, Env> =>
+    self;
 
 /**
  * Ensures that a schedule's error type extends a given type `T`.
@@ -3577,10 +3814,12 @@ export const satisfiesOutputType = <T>() =>
  * @category utility types
  * @since 4.0.0
  */
-export const satisfiesErrorType = <T>() =>
-<Error extends T, Output = never, Input = unknown, Env = never>(
-  self: Schedule<Output, Input, Error, Env>
-): Schedule<Output, Input, Error, Env> => self
+export const satisfiesErrorType =
+  <T>() =>
+  <Error extends T, Output = never, Input = unknown, Env = never>(
+    self: Schedule<Output, Input, Error, Env>
+  ): Schedule<Output, Input, Error, Env> =>
+    self;
 
 /**
  * Ensures that a schedule's context type extends a given type `T`.
@@ -3614,7 +3853,9 @@ export const satisfiesErrorType = <T>() =>
  * @category utility types
  * @since 4.0.0
  */
-export const satisfiesServicesType = <T>() =>
-<Env extends T, Output = never, Input = unknown, Error = never>(
-  self: Schedule<Output, Input, Error, Env>
-): Schedule<Output, Input, Error, Env> => self
+export const satisfiesServicesType =
+  <T>() =>
+  <Env extends T, Output = never, Input = unknown, Error = never>(
+    self: Schedule<Output, Input, Error, Env>
+  ): Schedule<Output, Input, Error, Env> =>
+    self;

@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config"
+import { defineConfig } from "vitest/config";
 
-const isDeno = process.versions.deno !== undefined
-const isBun = process.versions.bun !== undefined
+const isDeno = process.versions.deno !== undefined;
+const isBun = process.versions.bun !== undefined;
 
 export default defineConfig({
   test: {
@@ -11,21 +11,17 @@ export default defineConfig({
       "packages/atom/*/vitest.config.ts",
       "packages/tools/*/vitest.config.ts",
       "packages/sql/*/vitest.config.ts",
-      ...(isDeno ?
-        [
-          "!packages/atom",
-          "!packages/platform-bun",
-          "!packages/platform-node",
-          "!packages/platform-node-shared",
-          "!packages/sql/d1",
-          "!packages/sql/sqlite-node"
-        ] :
-        []),
-      ...(isBun ?
-        [
-          "!packages/platform-node"
-        ] :
-        [])
-    ]
-  }
-})
+      ...(isDeno
+        ? [
+            "!packages/atom",
+            "!packages/platform-bun",
+            "!packages/platform-node",
+            "!packages/platform-node-shared",
+            "!packages/sql/d1",
+            "!packages/sql/sqlite-node",
+          ]
+        : []),
+      ...(isBun ? ["!packages/platform-node"] : []),
+    ],
+  },
+});

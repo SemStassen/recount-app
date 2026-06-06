@@ -59,44 +59,38 @@ and compose it before any recurrence happens.
 This example defines two policies first, then attaches them to effects:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 const retryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-const refreshPolicy = Schedule.spaced("10 millis").pipe(
-  Schedule.take(2)
-)
+const refreshPolicy = Schedule.spaced("10 millis").pipe(Schedule.take(2));
 
-let attempts = 0
+let attempts = 0;
 
-const flakyRequest = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`request attempt ${attempts}`)
+const flakyRequest = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`request attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail("temporary outage")
+    return yield* Effect.fail("temporary outage");
   }
 
-  return "response"
-})
+  return "response";
+});
 
-const refresh = Console.log("refresh cache")
+const refresh = Console.log("refresh cache");
 
-const program = Effect.gen(function*() {
-  const response = yield* flakyRequest.pipe(
-    Effect.retry(retryPolicy)
-  )
-  yield* Console.log(`retry result: ${response}`)
+const program = Effect.gen(function* () {
+  const response = yield* flakyRequest.pipe(Effect.retry(retryPolicy));
+  yield* Console.log(`retry result: ${response}`);
 
-  const refreshOutput = yield* refresh.pipe(
-    Effect.repeat(refreshPolicy)
-  )
-  yield* Console.log(`refresh schedule output: ${refreshOutput}`)
-})
+  const refreshOutput = yield* refresh.pipe(Effect.repeat(refreshPolicy));
+  yield* Console.log(`refresh schedule output: ${refreshOutput}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // request attempt 1
 // request attempt 2
@@ -189,20 +183,18 @@ into a log-friendly label:
 <!-- no-check: focuses on the schedule-builder shape rather than a standalone copy-paste example -->
 
 ```ts no-check
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-type Status = "warming" | "ready"
+type Status = "warming" | "ready";
 
-let polls = 0
+let polls = 0;
 
 const readStatus = Effect.sync((): Status => {
-  polls += 1
-  return polls < 3 ? "warming" : "ready"
-}).pipe(
-  Effect.tap((status) => Console.log(`effect success: ${status}`))
-)
+  polls += 1;
+  return polls < 3 ? "warming" : "ready";
+}).pipe(Effect.tap((status) => Console.log(`effect success: ${status}`)));
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const scheduleOutput = yield* readStatus.pipe(
     Effect.repeat(($) =>
       Schedule.passthrough($(Schedule.forever)).pipe(
@@ -212,12 +204,12 @@ const program = Effect.gen(function*() {
         Schedule.while(({ input }) => input !== "ready")
       )
     )
-  )
+  );
 
-  yield* Console.log(`repeat returned: ${scheduleOutput}`)
-})
+  yield* Console.log(`repeat returned: ${scheduleOutput}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The effect succeeds with `"warming"`, `"warming"`, then `"ready"`. Each success
@@ -449,45 +441,41 @@ This retry policy has three separate concerns: a fast phase, a slower phase, and
 a hard retry limit.
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class TemporaryError extends Data.TaggedError("TemporaryError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
 const burstThenSlow = Schedule.spaced("10 millis").pipe(
   Schedule.take(2),
-  Schedule.andThen(
-    Schedule.spaced("25 millis").pipe(Schedule.take(2))
-  )
-)
+  Schedule.andThen(Schedule.spaced("25 millis").pipe(Schedule.take(2)))
+);
 
 const retryPolicy = burstThenSlow.pipe(
   Schedule.bothLeft(Schedule.recurs(4)),
   Schedule.tapOutput((step) => Console.log(`policy step ${step}`))
-)
+);
 
-let attempts = 0
+let attempts = 0;
 
-const request = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`request attempt ${attempts}`)
+const request = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`request attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(new TemporaryError({ attempt: attempts }))
+    return yield* Effect.fail(new TemporaryError({ attempt: attempts }));
   }
 
-  return "ok"
-})
+  return "ok";
+});
 
-const program = Effect.gen(function*() {
-  const result = yield* request.pipe(
-    Effect.retry(retryPolicy)
-  )
-  yield* Console.log(`result: ${result}`)
-})
+const program = Effect.gen(function* () {
+  const result = yield* request.pipe(Effect.retry(retryPolicy));
+  yield* Console.log(`result: ${result}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // request attempt 1
 // policy step 0
@@ -583,29 +571,27 @@ effect.
 This heartbeat runs once immediately, then repeats twice more:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let beats = 0
+let beats = 0;
 
 const heartbeat = Effect.sync(() => {
-  beats += 1
-  return `heartbeat ${beats}`
-}).pipe(
-  Effect.tap((message) => Console.log(message))
-)
+  beats += 1;
+  return `heartbeat ${beats}`;
+}).pipe(Effect.tap((message) => Console.log(message)));
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const lastValue = yield* heartbeat.pipe(
     Effect.repeat({
       schedule: Schedule.spaced("10 millis"),
-      times: 2
+      times: 2,
     })
-  )
+  );
 
-  yield* Console.log(`repeat returned last value: ${lastValue}`)
-})
+  yield* Console.log(`repeat returned last value: ${lastValue}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // heartbeat 1
 // heartbeat 2
@@ -695,45 +681,43 @@ as `while`, `until`, and `times` when the policy is local to one call site.
 This request fails twice with a retryable error, then succeeds:
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class HttpError extends Data.TaggedError("HttpError")<{
-  readonly status: number
-  readonly retryable: boolean
+  readonly status: number;
+  readonly retryable: boolean;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const request = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`request attempt ${attempts}`)
+const request = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`request attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail(
-      new HttpError({ status: 503, retryable: true })
-    )
+    return yield* Effect.fail(new HttpError({ status: 503, retryable: true }));
   }
 
-  return "response body"
-})
+  return "response body";
+});
 
 const retryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const body = yield* request.pipe(
     Effect.retry({
       schedule: retryPolicy,
-      while: (error) => error.retryable
+      while: (error) => error.retryable,
     })
-  )
+  );
 
-  yield* Console.log(`retry result: ${body}`)
-})
+  yield* Console.log(`retry result: ${body}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // request attempt 1
 // request attempt 2
@@ -796,59 +780,57 @@ This program uses `repeat` for successful job states and `retry` for transient
 service failures:
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
-type JobState = "pending" | "ready"
+type JobState = "pending" | "ready";
 
-let polls = 0
+let polls = 0;
 
 const checkJob = Effect.sync((): JobState => {
-  polls += 1
-  return polls < 3 ? "pending" : "ready"
-}).pipe(
-  Effect.tap((state) => Console.log(`job state: ${state}`))
-)
+  polls += 1;
+  return polls < 3 ? "pending" : "ready";
+}).pipe(Effect.tap((state) => Console.log(`job state: ${state}`)));
 
 class ReportError extends Data.TaggedError("ReportError")<{
-  readonly kind: "Unavailable" | "Unauthorized"
+  readonly kind: "Unavailable" | "Unauthorized";
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const fetchReport = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`report attempt ${attempts}`)
+const fetchReport = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`report attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail(new ReportError({ kind: "Unavailable" }))
+    return yield* Effect.fail(new ReportError({ kind: "Unavailable" }));
   }
 
-  return "report"
-})
+  return "report";
+});
 
 const retryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalState = yield* checkJob.pipe(
     Effect.repeat({
       schedule: Schedule.spaced("10 millis"),
-      until: (state) => state === "ready"
+      until: (state) => state === "ready",
     })
-  )
-  yield* Console.log(`repeat finished with: ${finalState}`)
+  );
+  yield* Console.log(`repeat finished with: ${finalState}`);
 
   const report = yield* fetchReport.pipe(
     Effect.retry({
       schedule: retryPolicy,
-      while: (error) => error.kind === "Unavailable"
+      while: (error) => error.kind === "Unavailable",
     })
-  )
-  yield* Console.log(`retry finished with: ${report}`)
-})
+  );
+  yield* Console.log(`retry finished with: ${report}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // job state: pending
 // job state: pending
@@ -921,55 +903,46 @@ channel the schedule is observing, then ask what value the operator returns.
 This small program shows three of the common surprises:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-const program = Effect.gen(function*() {
-  let repeatRuns = 0
+const program = Effect.gen(function* () {
+  let repeatRuns = 0;
 
   const lastValue = yield* Effect.sync(() => {
-    repeatRuns += 1
-    return `repeat run ${repeatRuns}`
-  }).pipe(
-    Effect.repeat({ times: 2 })
-  )
+    repeatRuns += 1;
+    return `repeat run ${repeatRuns}`;
+  }).pipe(Effect.repeat({ times: 2 }));
 
   yield* Console.log(
     `repeat ran ${repeatRuns} times and returned "${lastValue}"`
-  )
+  );
 
-  let retryAttempts = 0
+  let retryAttempts = 0;
 
   const retryExit = yield* Effect.failSync(() => {
-    retryAttempts += 1
-    return "temporary"
-  }).pipe(
-    Effect.retry({ times: 2 }),
-    Effect.exit
-  )
+    retryAttempts += 1;
+    return "temporary";
+  }).pipe(Effect.retry({ times: 2 }), Effect.exit);
 
   yield* Console.log(
     `retry attempted ${retryAttempts} times and ended with ${retryExit._tag}`
-  )
+  );
 
   const rawScheduleOutput = yield* Effect.succeed("done").pipe(
     Effect.repeat(Schedule.recurs(2))
-  )
+  );
 
-  yield* Console.log(
-    `raw schedule repeat returned ${rawScheduleOutput}`
-  )
+  yield* Console.log(`raw schedule repeat returned ${rawScheduleOutput}`);
 
   const repeatExit = yield* Effect.fail("temporary").pipe(
     Effect.repeat(Schedule.recurs(2)),
     Effect.exit
-  )
+  );
 
-  yield* Console.log(
-    `repeat over failure ended with ${repeatExit._tag}`
-  )
-})
+  yield* Console.log(`repeat over failure ended with ${repeatExit._tag}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // repeat ran 3 times and returned "repeat run 3"
 // retry attempted 3 times and ended with Failure
@@ -1058,59 +1031,57 @@ final successful value.
 This program uses both entry points for their intended channels:
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
-type Status = "starting" | "ready"
+type Status = "starting" | "ready";
 
-let statusChecks = 0
+let statusChecks = 0;
 
 const readStatus = Effect.sync((): Status => {
-  statusChecks += 1
-  return statusChecks < 3 ? "starting" : "ready"
-}).pipe(
-  Effect.tap((status) => Console.log(`status check: ${status}`))
-)
+  statusChecks += 1;
+  return statusChecks < 3 ? "starting" : "ready";
+}).pipe(Effect.tap((status) => Console.log(`status check: ${status}`)));
 
 class ServiceError extends Data.TaggedError("ServiceError")<{
-  readonly retryable: boolean
+  readonly retryable: boolean;
 }> {}
 
-let serviceCalls = 0
+let serviceCalls = 0;
 
-const callService = Effect.gen(function*() {
-  serviceCalls += 1
-  yield* Console.log(`service call ${serviceCalls}`)
+const callService = Effect.gen(function* () {
+  serviceCalls += 1;
+  yield* Console.log(`service call ${serviceCalls}`);
 
   if (serviceCalls < 3) {
-    return yield* Effect.fail(new ServiceError({ retryable: true }))
+    return yield* Effect.fail(new ServiceError({ retryable: true }));
   }
 
-  return "service response"
-})
+  return "service response";
+});
 
 const retryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalStatus = yield* readStatus.pipe(
     Effect.repeat({
       schedule: Schedule.spaced("10 millis"),
-      until: (status) => status === "ready"
+      until: (status) => status === "ready",
     })
-  )
-  yield* Console.log(`repeat returned: ${finalStatus}`)
+  );
+  yield* Console.log(`repeat returned: ${finalStatus}`);
 
   const response = yield* callService.pipe(
     Effect.retry({
       schedule: retryPolicy,
-      while: (error) => error.retryable
+      while: (error) => error.retryable,
     })
-  )
-  yield* Console.log(`retry returned: ${response}`)
-})
+  );
+  yield* Console.log(`retry returned: ${response}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // status check: starting
 // status check: starting
@@ -1195,21 +1166,21 @@ means one initial run plus four repeats.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
-const program = Effect.gen(function*() {
-  const runs = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const runs = yield* Ref.make(0);
 
   yield* Ref.updateAndGet(runs, (n) => n + 1).pipe(
     Effect.tap((run) => Console.log(`run ${run}`)),
     Effect.repeat(Schedule.recurs(4))
-  )
+  );
 
-  const total = yield* Ref.get(runs)
-  yield* Console.log(`total runs: ${total}`)
-})
+  const total = yield* Ref.get(runs);
+  yield* Console.log(`total runs: ${total}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // run 1
 // run 2
@@ -1227,20 +1198,20 @@ Use `times` when you only need a local fixed repeat and want the final effect
 value back:
 
 ```ts runnable deterministic
-import { Console, Effect, Ref } from "effect"
+import { Console, Effect, Ref } from "effect";
 
-const program = Effect.gen(function*() {
-  const runs = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const runs = yield* Ref.make(0);
 
   const lastValue = yield* Ref.updateAndGet(runs, (n) => n + 1).pipe(
     Effect.tap((run) => Console.log(`run ${run}`)),
     Effect.repeat({ times: 4 })
-  )
+  );
 
-  yield* Console.log(`last value: ${lastValue}`)
-})
+  yield* Console.log(`last value: ${lastValue}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // run 1
 // run 2
@@ -1303,31 +1274,31 @@ while the effect is still failing, the last typed failure is returned.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class RequestError extends Data.TaggedError("RequestError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-let attempt = 0
+let attempt = 0;
 
-const fetchUser = Effect.gen(function*() {
-  attempt += 1
-  yield* Console.log(`attempt ${attempt}`)
+const fetchUser = Effect.gen(function* () {
+  attempt += 1;
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt < 4) {
-    return yield* Effect.fail(new RequestError({ attempt }))
+    return yield* Effect.fail(new RequestError({ attempt }));
   }
 
-  return { id: "user-1", name: "Ada" }
-})
+  return { id: "user-1", name: "Ada" };
+});
 
 const program = fetchUser.pipe(
   Effect.retry(Schedule.recurs(3)),
   Effect.tap((user) => Console.log(`loaded ${user.name}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -1388,21 +1359,21 @@ immediately; the delay applies before each later recurrence.
 Limit a spaced schedule with `Schedule.take(n)`:
 
 ```ts runnable deterministic
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
-const program = Effect.gen(function*() {
-  const runs = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const runs = yield* Ref.make(0);
 
   yield* Ref.updateAndGet(runs, (n) => n + 1).pipe(
     Effect.tap((run) => Console.log(`run ${run}`)),
     Effect.repeat(Schedule.spaced("25 millis").pipe(Schedule.take(3)))
-  )
+  );
 
-  const total = yield* Ref.get(runs)
-  yield* Console.log(`total runs: ${total}`)
-})
+  const total = yield* Ref.get(runs);
+  yield* Console.log(`total runs: ${total}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // run 1
 // run 2
@@ -1420,31 +1391,31 @@ The same schedule can pace retries. In retry, typed failures drive the schedule
 instead of successful values.
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class RequestError extends Data.TaggedError("RequestError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-let attempt = 0
+let attempt = 0;
 
-const request = Effect.gen(function*() {
-  attempt += 1
-  yield* Console.log(`attempt ${attempt}`)
+const request = Effect.gen(function* () {
+  attempt += 1;
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt < 3) {
-    return yield* Effect.fail(new RequestError({ attempt }))
+    return yield* Effect.fail(new RequestError({ attempt }));
   }
 
-  return "ok"
-})
+  return "ok";
+});
 
 const program = request.pipe(
   Effect.retry(Schedule.spaced("25 millis").pipe(Schedule.take(2))),
   Effect.tap((value) => Console.log(`result: ${value}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -1522,39 +1493,39 @@ repeat, it means up to three additional successful executions.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
-const countOnly = Effect.gen(function*() {
-  const runs = yield* Ref.make(0)
+const countOnly = Effect.gen(function* () {
+  const runs = yield* Ref.make(0);
 
   yield* Ref.updateAndGet(runs, (n) => n + 1).pipe(
     Effect.tap((run) => Console.log(`count-only run ${run}`)),
     Effect.repeat(Schedule.recurs(2))
-  )
+  );
 
-  return yield* Ref.get(runs)
-})
+  return yield* Ref.get(runs);
+});
 
-const spacedAndLimited = Effect.gen(function*() {
-  const runs = yield* Ref.make(0)
+const spacedAndLimited = Effect.gen(function* () {
+  const runs = yield* Ref.make(0);
 
   yield* Ref.updateAndGet(runs, (n) => n + 1).pipe(
     Effect.tap((run) => Console.log(`spaced run ${run}`)),
     Effect.repeat(Schedule.spaced("20 millis").pipe(Schedule.take(2)))
-  )
+  );
 
-  return yield* Ref.get(runs)
-})
+  return yield* Ref.get(runs);
+});
 
-const program = Effect.gen(function*() {
-  const countTotal = yield* countOnly
-  const spacedTotal = yield* spacedAndLimited
+const program = Effect.gen(function* () {
+  const countTotal = yield* countOnly;
+  const spacedTotal = yield* spacedAndLimited;
 
-  yield* Console.log(`count-only total: ${countTotal}`)
-  yield* Console.log(`spaced total: ${spacedTotal}`)
-})
+  yield* Console.log(`count-only total: ${countTotal}`);
+  yield* Console.log(`spaced total: ${spacedTotal}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // count-only run 1
 // count-only run 2
@@ -1575,10 +1546,10 @@ Use `Schedule.during` for a best-effort elapsed window, usually with spacing so
 the loop does not spin.
 
 ```ts runnable
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
-const program = Effect.gen(function*() {
-  const runs = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const runs = yield* Ref.make(0);
 
   yield* Ref.updateAndGet(runs, (n) => n + 1).pipe(
     Effect.tap((run) => Console.log(`windowed run ${run}`)),
@@ -1587,13 +1558,13 @@ const program = Effect.gen(function*() {
         Schedule.both(Schedule.during("30 millis"))
       )
     )
-  )
+  );
 
-  const total = yield* Ref.get(runs)
-  yield* Console.log(`windowed total: ${total}`)
-})
+  const total = yield* Ref.get(runs);
+  yield* Console.log(`windowed total: ${total}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: elapsed timing can cross the budget boundary differently under load
 // windowed run 1
 // windowed run 2
@@ -1722,31 +1693,31 @@ fails, `Effect.retry` returns the last typed failure.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect } from "effect"
+import { Console, Data, Effect } from "effect";
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-let attempt = 0
+let attempt = 0;
 
-const callService = Effect.gen(function*() {
-  attempt += 1
-  yield* Console.log(`attempt ${attempt}`)
+const callService = Effect.gen(function* () {
+  attempt += 1;
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt < 4) {
-    return yield* Effect.fail(new ServiceUnavailable({ attempt }))
+    return yield* Effect.fail(new ServiceUnavailable({ attempt }));
   }
 
-  return "service response"
-})
+  return "service response";
+});
 
 const program = callService.pipe(
   Effect.retry({ times: 3 }),
   Effect.tap((response) => Console.log(`completed: ${response}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -1802,35 +1773,35 @@ both schedules must continue, and the combined delay is the maximum of their
 delays.
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class TemporaryRequestError extends Data.TaggedError("TemporaryRequestError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-let attempt = 0
+let attempt = 0;
 
-const request = Effect.gen(function*() {
-  attempt += 1
-  yield* Console.log(`attempt ${attempt}`)
+const request = Effect.gen(function* () {
+  attempt += 1;
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt < 4) {
-    return yield* Effect.fail(new TemporaryRequestError({ attempt }))
+    return yield* Effect.fail(new TemporaryRequestError({ attempt }));
   }
 
-  return { id: "user-1", name: "Ada" }
-})
+  return { id: "user-1", name: "Ada" };
+});
 
 const retryPolicy = Schedule.spaced("25 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const program = request.pipe(
   Effect.retry(retryPolicy),
   Effect.tap((user) => Console.log(`loaded ${user.name}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -1895,36 +1866,38 @@ The count is a retry count:
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Ref, Schedule } from "effect"
+import { Console, Data, Effect, Ref, Schedule } from "effect";
 
 class CacheBusy extends Data.TaggedError("CacheBusy")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-const readSnapshot = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`attempt ${attempt}`)
+const readSnapshot = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt <= 2) {
-    return yield* Effect.fail(new CacheBusy({ attempt }))
+    return yield* Effect.fail(new CacheBusy({ attempt }));
   }
 
-  return { version: "v1", entries: 42 }
-})
+  return { version: "v1", entries: 42 };
+});
 
-const retryBriefly = Schedule.recurs(2)
+const retryBriefly = Schedule.recurs(2);
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
 
   const snapshot = yield* readSnapshot(attempts).pipe(
     Effect.retry(retryBriefly)
-  )
+  );
 
-  yield* Console.log(`snapshot ${snapshot.version}: ${snapshot.entries} entries`)
-})
+  yield* Console.log(
+    `snapshot ${snapshot.version}: ${snapshot.entries} entries`
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -1980,35 +1953,35 @@ happen when an earlier attempt succeeds.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Ref, Schedule } from "effect"
+import { Console, Data, Effect, Ref, Schedule } from "effect";
 
 class TemporaryError extends Data.TaggedError("TemporaryError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-const flakyRequest = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`attempt ${attempt}`)
+const flakyRequest = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt < 3) {
-    return yield* Effect.fail(new TemporaryError({ attempt }))
+    return yield* Effect.fail(new TemporaryError({ attempt }));
   }
 
-  return `success on attempt ${attempt}`
-})
+  return `success on attempt ${attempt}`;
+});
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
 
   const value = yield* flakyRequest(attempts).pipe(
     Effect.retry(Schedule.recurs(4))
-  )
+  );
 
-  const totalAttempts = yield* Ref.get(attempts)
-  yield* Console.log(`${value}; total attempts: ${totalAttempts}`)
-})
+  const totalAttempts = yield* Ref.get(attempts);
+  yield* Console.log(`${value}; total attempts: ${totalAttempts}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -2082,59 +2055,57 @@ returned, the retry budget is not spent.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 class ExternalApiError extends Data.TaggedError("ExternalApiError")<{
-  readonly attempt: number
-  readonly status: number
+  readonly attempt: number;
+  readonly status: number;
 }> {}
 
 interface Customer {
-  readonly id: string
-  readonly name: string
+  readonly id: string;
+  readonly name: string;
 }
 
-const fetchCustomer = Effect.fnUntraced(function*(
+const fetchCustomer = Effect.fnUntraced(function* (
   id: string,
   attempts: Ref.Ref<number>
 ) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`api attempt ${attempt}`)
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`api attempt ${attempt}`);
 
   if (attempt < 3) {
-    return yield* Effect.fail(new ExternalApiError({ attempt, status: 503 }))
+    return yield* Effect.fail(new ExternalApiError({ attempt, status: 503 }));
   }
 
-  return { id, name: "Ada" } satisfies Customer
-})
+  return { id, name: "Ada" } satisfies Customer;
+});
 
 const isRetryableApiError = (error: ExternalApiError) =>
-  error.status === 408 ||
-  error.status === 429 ||
-  error.status >= 500
+  error.status === 408 || error.status === 429 || error.status >= 500;
 
 const retryExternalApi = {
   schedule: Schedule.spaced("1 second"),
   times: 4,
-  while: isRetryableApiError
-}
+  while: isRetryableApiError,
+};
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* fetchCustomer("customer-123", attempts).pipe(
     Effect.retry(retryExternalApi),
     Effect.forkScoped
-  )
+  );
 
-  yield* TestClock.adjust("1 second")
-  yield* TestClock.adjust("1 second")
+  yield* TestClock.adjust("1 second");
+  yield* TestClock.adjust("1 second");
 
-  const customer = yield* Fiber.join(fiber)
-  yield* Console.log(`customer: ${customer.id} ${customer.name}`)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const customer = yield* Fiber.join(fiber);
+  yield* Console.log(`customer: ${customer.id} ${customer.name}`);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program).then(() => undefined)
+Effect.runPromise(program).then(() => undefined);
 ```
 
 The API fails twice with a retryable `503`, waits one virtual second before
@@ -2194,59 +2165,59 @@ supplies the limit.
 ##### Example
 
 ```ts
-import { Console, Data, Duration, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Duration, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
-type Environment = "development" | "staging" | "production"
+type Environment = "development" | "staging" | "production";
 
 class RequestError extends Data.TaggedError("RequestError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-const request = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`request attempt ${attempt}`)
+const request = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`request attempt ${attempt}`);
 
   if (attempt < 3) {
-    return yield* Effect.fail(new RequestError({ attempt }))
+    return yield* Effect.fail(new RequestError({ attempt }));
   }
 
-  return "accepted"
-})
+  return "accepted";
+});
 
 const retryDelays: Record<Environment, Duration.Input> = {
   development: "50 millis",
   staging: "250 millis",
-  production: "1 second"
-}
+  production: "1 second",
+};
 
 const retryPolicy = (environment: Environment) =>
   Schedule.spaced(retryDelays[environment]).pipe(
     Schedule.both(Schedule.recurs(3))
-  )
+  );
 
-const runRequest = Effect.fnUntraced(function*(
+const runRequest = Effect.fnUntraced(function* (
   environment: Environment,
   attempts: Ref.Ref<number>
 ) {
-  return yield* request(attempts).pipe(
-    Effect.retry(retryPolicy(environment))
-  )
-})
+  return yield* request(attempts).pipe(Effect.retry(retryPolicy(environment)));
+});
 
-const program = Effect.gen(function*() {
-  const environment: Environment = "production"
-  const attempts = yield* Ref.make(0)
-  const fiber = yield* runRequest(environment, attempts).pipe(Effect.forkScoped)
+const program = Effect.gen(function* () {
+  const environment: Environment = "production";
+  const attempts = yield* Ref.make(0);
+  const fiber = yield* runRequest(environment, attempts).pipe(
+    Effect.forkScoped
+  );
 
-  yield* TestClock.adjust(retryDelays[environment])
-  yield* TestClock.adjust(retryDelays[environment])
+  yield* TestClock.adjust(retryDelays[environment]);
+  yield* TestClock.adjust(retryDelays[environment]);
 
-  const result = yield* Fiber.join(fiber)
-  yield* Console.log(`result in ${environment}: ${result}`)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const result = yield* Fiber.join(fiber);
+  yield* Console.log(`result in ${environment}: ${result}`);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program).then(() => undefined)
+Effect.runPromise(program).then(() => undefined);
 ```
 
 The example uses the production delay, so each retry waits one virtual second.
@@ -2315,44 +2286,47 @@ consulted only after a typed failure. Pair it with `Schedule.recurs(5)` or
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 class RequestError extends Data.TaggedError("RequestError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-const fetchUser = Effect.fnUntraced(function*(id: string, attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`fetch user attempt ${attempt}`)
+const fetchUser = Effect.fnUntraced(function* (
+  id: string,
+  attempts: Ref.Ref<number>
+) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`fetch user attempt ${attempt}`);
 
   if (attempt < 4) {
-    return yield* Effect.fail(new RequestError({ attempt }))
+    return yield* Effect.fail(new RequestError({ attempt }));
   }
 
-  return { id, name: "Ada" }
-})
+  return { id, name: "Ada" };
+});
 
 const retryWithBackoff = Schedule.exponential("100 millis").pipe(
   Schedule.both(Schedule.recurs(5))
-)
+);
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* fetchUser("user-123", attempts).pipe(
     Effect.retry(retryWithBackoff),
     Effect.forkScoped
-  )
+  );
 
-  yield* TestClock.adjust("100 millis")
-  yield* TestClock.adjust("200 millis")
-  yield* TestClock.adjust("400 millis")
+  yield* TestClock.adjust("100 millis");
+  yield* TestClock.adjust("200 millis");
+  yield* TestClock.adjust("400 millis");
 
-  const user = yield* Fiber.join(fiber)
-  yield* Console.log(`loaded user: ${user.name}`)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const user = yield* Fiber.join(fiber);
+  yield* Console.log(`loaded user: ${user.name}`);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program).then(() => undefined)
+Effect.runPromise(program).then(() => undefined);
 ```
 
 The example fails three times, then succeeds on the fourth attempt. The virtual
@@ -2414,70 +2388,75 @@ immediately.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 class NetworkFailure extends Data.TaggedError("NetworkFailure")<{
-  readonly reason: "ConnectionReset" | "Timeout" | "TemporaryDnsFailure"
+  readonly reason: "ConnectionReset" | "Timeout" | "TemporaryDnsFailure";
 }> {}
 
 class HttpFailure extends Data.TaggedError("HttpFailure")<{
-  readonly status: number
+  readonly status: number;
 }> {}
 
 class DecodeFailure extends Data.TaggedError("DecodeFailure")<{
-  readonly message: string
+  readonly message: string;
 }> {}
 
-type FetchUserError = NetworkFailure | HttpFailure | DecodeFailure
+type FetchUserError = NetworkFailure | HttpFailure | DecodeFailure;
 
-const fetchUser = Effect.fnUntraced(function*(id: string, attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`network attempt ${attempt}`)
+const fetchUser = Effect.fnUntraced(function* (
+  id: string,
+  attempts: Ref.Ref<number>
+) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`network attempt ${attempt}`);
 
   if (attempt === 1) {
-    return yield* Effect.fail(new NetworkFailure({ reason: "Timeout" }))
+    return yield* Effect.fail(new NetworkFailure({ reason: "Timeout" }));
   }
   if (attempt === 2) {
-    return yield* Effect.fail(new HttpFailure({ status: 502 }))
+    return yield* Effect.fail(new HttpFailure({ status: 502 }));
   }
 
-  return { id, name: "Ada" }
-})
+  return { id, name: "Ada" };
+});
 
 const isRetryableNetworkFailure = (error: FetchUserError): boolean => {
   switch (error._tag) {
     case "NetworkFailure":
-      return true
+      return true;
     case "HttpFailure":
-      return error.status === 408 || error.status === 502 || error.status === 504
+      return (
+        error.status === 408 || error.status === 502 || error.status === 504
+      );
     case "DecodeFailure":
-      return false
+      return false;
   }
-}
+};
 
 const networkBackoff = Schedule.exponential("100 millis").pipe(
   Schedule.both(Schedule.recurs(5))
-)
+);
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* fetchUser("user-123", attempts).pipe(
     Effect.retry({
       schedule: networkBackoff,
-      while: isRetryableNetworkFailure
+      while: isRetryableNetworkFailure,
     }),
     Effect.forkScoped
-  )
+  );
 
-  yield* TestClock.adjust("100 millis")
-  yield* TestClock.adjust("200 millis")
+  yield* TestClock.adjust("100 millis");
+  yield* TestClock.adjust("200 millis");
 
-  const user = yield* Fiber.join(fiber)
-  yield* Console.log(`loaded user: ${user.name}`)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const user = yield* Fiber.join(fiber);
+  yield* Console.log(`loaded user: ${user.name}`);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program).then(() => undefined)
+Effect.runPromise(program).then(() => undefined);
 ```
 
 The first failure is a timeout, the second is a retryable gateway failure, and
@@ -2539,47 +2518,47 @@ limit.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 class DownstreamOverloaded extends Data.TaggedError("DownstreamOverloaded")<{
-  readonly service: string
-  readonly attempt: number
+  readonly service: string;
+  readonly attempt: number;
 }> {}
 
-const callInventory = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`inventory attempt ${attempt}`)
+const callInventory = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`inventory attempt ${attempt}`);
 
   if (attempt < 4) {
     return yield* Effect.fail(
       new DownstreamOverloaded({ service: "inventory", attempt })
-    )
+    );
   }
 
-  return { sku: "sku-123", available: true }
-})
+  return { sku: "sku-123", available: true };
+});
 
 const overloadBackoff = Schedule.exponential("100 millis").pipe(
   Schedule.both(Schedule.recurs(5))
-)
+);
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* callInventory(attempts).pipe(
     Effect.retry(overloadBackoff),
     Effect.forkScoped
-  )
+  );
 
-  yield* TestClock.adjust("100 millis")
-  yield* TestClock.adjust("200 millis")
-  yield* TestClock.adjust("400 millis")
+  yield* TestClock.adjust("100 millis");
+  yield* TestClock.adjust("200 millis");
+  yield* TestClock.adjust("400 millis");
 
-  const result = yield* Fiber.join(fiber)
-  yield* Console.log(`available: ${result.available}`)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const result = yield* Fiber.join(fiber);
+  yield* Console.log(`available: ${result.available}`);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program).then(() => undefined)
+Effect.runPromise(program).then(() => undefined);
 ```
 
 The first three calls fail with `DownstreamOverloaded`. The retry delays grow
@@ -2637,48 +2616,50 @@ the recurrence schedule stops the policy after the retry budget is exhausted.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 class DependencyNotReady extends Data.TaggedError("DependencyNotReady")<{
-  readonly dependency: string
-  readonly attempt: number
+  readonly dependency: string;
+  readonly attempt: number;
 }> {}
 
-const waitForDatabase = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`database readiness attempt ${attempt}`)
+const waitForDatabase = Effect.fnUntraced(function* (
+  attempts: Ref.Ref<number>
+) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`database readiness attempt ${attempt}`);
 
   if (attempt < 4) {
     return yield* Effect.fail(
       new DependencyNotReady({ dependency: "database", attempt })
-    )
+    );
   }
-})
+});
 
-const startApplication = Console.log("application started")
+const startApplication = Console.log("application started");
 
 const startupDependencyBackoff = Schedule.exponential("200 millis").pipe(
   Schedule.both(Schedule.recurs(8))
-)
+);
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
-  const fiber = yield* Effect.gen(function*() {
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
+  const fiber = yield* Effect.gen(function* () {
     yield* waitForDatabase(attempts).pipe(
       Effect.retry(startupDependencyBackoff)
-    )
-    yield* startApplication
-  }).pipe(Effect.forkScoped)
+    );
+    yield* startApplication;
+  }).pipe(Effect.forkScoped);
 
-  yield* TestClock.adjust("200 millis")
-  yield* TestClock.adjust("400 millis")
-  yield* TestClock.adjust("800 millis")
+  yield* TestClock.adjust("200 millis");
+  yield* TestClock.adjust("400 millis");
+  yield* TestClock.adjust("800 millis");
 
-  yield* Fiber.join(fiber)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  yield* Fiber.join(fiber);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program).then(() => undefined)
+Effect.runPromise(program).then(() => undefined);
 ```
 
 The readiness check fails three times, backs off through 200, 400, and 800
@@ -2739,52 +2720,53 @@ is the first pause after a typed failure.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 class ServiceError extends Data.TaggedError("ServiceError")<{
-  readonly attempt: number
-  readonly status: number
+  readonly attempt: number;
+  readonly status: number;
 }> {}
 
-const loadAccount = Effect.fnUntraced(function*(id: string, attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`account attempt ${attempt}`)
+const loadAccount = Effect.fnUntraced(function* (
+  id: string,
+  attempts: Ref.Ref<number>
+) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`account attempt ${attempt}`);
 
   if (attempt < 4) {
-    return yield* Effect.fail(new ServiceError({ attempt, status: 503 }))
+    return yield* Effect.fail(new ServiceError({ attempt, status: 503 }));
   }
 
-  return { id, balance: 100 }
-})
+  return { id, balance: 100 };
+});
 
 const isRetryableServiceError = (error: ServiceError) =>
-  error.status === 408 ||
-  error.status === 429 ||
-  error.status >= 500
+  error.status === 408 || error.status === 429 || error.status >= 500;
 
 const retryWithPracticalBackoff = {
   schedule: Schedule.exponential("500 millis"),
   times: 4,
-  while: isRetryableServiceError
-}
+  while: isRetryableServiceError,
+};
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* loadAccount("account-123", attempts).pipe(
     Effect.retry(retryWithPracticalBackoff),
     Effect.forkScoped
-  )
+  );
 
-  yield* TestClock.adjust("500 millis")
-  yield* TestClock.adjust("1 second")
-  yield* TestClock.adjust("2 seconds")
+  yield* TestClock.adjust("500 millis");
+  yield* TestClock.adjust("1 second");
+  yield* TestClock.adjust("2 seconds");
 
-  const account = yield* Fiber.join(fiber)
-  yield* Console.log(`balance: ${account.balance}`)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const account = yield* Fiber.join(fiber);
+  yield* Console.log(`balance: ${account.balance}`);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program).then(() => undefined)
+Effect.runPromise(program).then(() => undefined);
 ```
 
 The first retry waits 500 milliseconds, then the next retries wait about 1
@@ -2853,36 +2835,36 @@ times total.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class ApiError extends Data.TaggedError("ApiError")<{
-  readonly status: number
+  readonly status: number;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const request = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`request attempt ${attempts}`)
+const request = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`request attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(new ApiError({ status: 503 }))
+    return yield* Effect.fail(new ApiError({ status: 503 }));
   }
 
-  return "response body"
-})
+  return "response body";
+});
 
 const cappedBackoff = Schedule.exponential("10 millis").pipe(
   Schedule.either(Schedule.spaced("40 millis")),
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const program = request.pipe(
   Effect.retry(cappedBackoff),
   Effect.tap((body) => Console.log(`success: ${body}`))
-)
+);
 
-Effect.runPromise(program).then(() => undefined, console.error)
+Effect.runPromise(program).then(() => undefined, console.error);
 // Output:
 // request attempt 1
 // request attempt 2
@@ -2973,48 +2955,50 @@ unbounded capped backoff.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly service: string
-  readonly status: number
+  readonly service: string;
+  readonly status: number;
 }> {}
 
 interface AccountSummary {
-  readonly id: string
-  readonly balance: number
+  readonly id: string;
+  readonly balance: number;
 }
 
-let attempts = 0
+let attempts = 0;
 
-const loadAccountSummary = (id: string): Effect.Effect<AccountSummary, ServiceUnavailable> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`load ${id}: attempt ${attempts}`)
+const loadAccountSummary = (
+  id: string
+): Effect.Effect<AccountSummary, ServiceUnavailable> =>
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`load ${id}: attempt ${attempts}`);
 
     if (attempts < 4) {
       return yield* Effect.fail(
         new ServiceUnavailable({
           service: "accounts",
-          status: 503
+          status: 503,
         })
-      )
+      );
     }
 
-    return { id, balance: 125 }
-  })
+    return { id, balance: 125 };
+  });
 
 const cappedBackoff = Schedule.exponential("10 millis").pipe(
   Schedule.either(Schedule.spaced("50 millis")),
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = loadAccountSummary("account-123").pipe(
   Effect.retry(cappedBackoff),
   Effect.tap((account) => Console.log(`balance: ${account.balance}`))
-)
+);
 
-Effect.runPromise(program).then(() => undefined, console.error)
+Effect.runPromise(program).then(() => undefined, console.error);
 // Output:
 // load account-123: attempt 1
 // load account-123: attempt 2
@@ -3096,39 +3080,41 @@ after a typed failure.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class GatewayError extends Data.TaggedError("GatewayError")<{
-  readonly status: number
+  readonly status: number;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const submitRequest: Effect.Effect<string, GatewayError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`gateway attempt ${attempts}`)
+const submitRequest: Effect.Effect<string, GatewayError> = Effect.gen(
+  function* () {
+    attempts += 1;
+    yield* Console.log(`gateway attempt ${attempts}`);
 
-  if (attempts < 4) {
-    return yield* Effect.fail(new GatewayError({ status: 503 }))
+    if (attempts < 4) {
+      return yield* Effect.fail(new GatewayError({ status: 503 }));
+    }
+
+    return "accepted";
   }
-
-  return "accepted"
-})
+);
 
 const cappedBackoffWithLimit = Schedule.exponential("10 millis").pipe(
   Schedule.either(Schedule.spaced("40 millis")),
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = submitRequest.pipe(
   Effect.retry({
     schedule: cappedBackoffWithLimit,
-    while: (error) => error.status === 429 || error.status >= 500
+    while: (error) => error.status === 429 || error.status >= 500,
   }),
   Effect.tap((value) => Console.log(`result: ${value}`))
-)
+);
 
-Effect.runPromise(program).then(() => undefined, console.error)
+Effect.runPromise(program).then(() => undefined, console.error);
 // Output:
 // gateway attempt 1
 // gateway attempt 2
@@ -3214,52 +3200,54 @@ sleep and run the next attempt after the nominal 10 second boundary.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class GatewayError extends Data.TaggedError("GatewayError")<{
-  readonly reason: "Unavailable" | "Overloaded" | "BadRequest"
+  readonly reason: "Unavailable" | "Overloaded" | "BadRequest";
 }> {}
 
 interface GatewayResponse {
-  readonly body: string
+  readonly body: string;
 }
 
-let attempts = 0
+let attempts = 0;
 
-const callGateway: Effect.Effect<GatewayResponse, GatewayError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`gateway attempt ${attempts}`)
+const callGateway: Effect.Effect<GatewayResponse, GatewayError> = Effect.gen(
+  function* () {
+    attempts += 1;
+    yield* Console.log(`gateway attempt ${attempts}`);
 
-  if (attempts < 3) {
-    return yield* Effect.fail(
-      new GatewayError({
-        reason: attempts === 1 ? "Unavailable" : "Overloaded"
-      })
-    )
+    if (attempts < 3) {
+      return yield* Effect.fail(
+        new GatewayError({
+          reason: attempts === 1 ? "Unavailable" : "Overloaded",
+        })
+      );
+    }
+
+    return { body: "ok" };
   }
-
-  return { body: "ok" }
-})
+);
 
 const isRetryableGatewayError = (error: GatewayError): boolean =>
-  error.reason === "Unavailable" || error.reason === "Overloaded"
+  error.reason === "Unavailable" || error.reason === "Overloaded";
 
 const retryForAtMost10Seconds = Schedule.exponential("100 millis").pipe(
   Schedule.both(Schedule.during("10 seconds"))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const response = yield* callGateway.pipe(
     Effect.retry({
       schedule: retryForAtMost10Seconds,
-      while: isRetryableGatewayError
+      while: isRetryableGatewayError,
     })
-  )
+  );
 
-  yield* Console.log(`gateway response: ${response.body}`)
-})
+  yield* Console.log(`gateway response: ${response.body}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 `BadRequest` would stop immediately because the `while` predicate returns
@@ -3323,43 +3311,46 @@ stops when the one-minute window closes.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class RegistryUnavailable extends Data.TaggedError("RegistryUnavailable")<{
-  readonly service: string
+  readonly service: string;
 }> {}
 
 interface Endpoint {
-  readonly host: string
-  readonly port: number
+  readonly host: string;
+  readonly port: number;
 }
 
-let attempts = 0
+let attempts = 0;
 
-const discoverEndpoint: Effect.Effect<Endpoint, RegistryUnavailable> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`discovery attempt ${attempts}`)
+const discoverEndpoint: Effect.Effect<Endpoint, RegistryUnavailable> =
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`discovery attempt ${attempts}`);
 
-  if (attempts === 1) {
-    return yield* Effect.fail(new RegistryUnavailable({ service: "registry" }))
-  }
+    if (attempts === 1) {
+      return yield* Effect.fail(
+        new RegistryUnavailable({ service: "registry" })
+      );
+    }
 
-  return { host: "api.internal", port: 443 }
-})
+    return { host: "api.internal", port: 443 };
+  });
 
 const retryForAtMost1Minute = Schedule.spaced("1 second").pipe(
   Schedule.both(Schedule.during("1 minute"))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const endpoint = yield* discoverEndpoint.pipe(
     Effect.retry(retryForAtMost1Minute)
-  )
+  );
 
-  yield* Console.log(`endpoint: ${endpoint.host}:${endpoint.port}`)
-})
+  yield* Console.log(`endpoint: ${endpoint.host}:${endpoint.port}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 If every attempt keeps failing until the one-minute retry window closes,
@@ -3425,54 +3416,58 @@ controls waiting and `during` controls when retry scheduling stops.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class DependencyNotReady extends Data.TaggedError("DependencyNotReady")<{
-  readonly dependency: string
-  readonly detail: string
+  readonly dependency: string;
+  readonly detail: string;
 }> {}
 
-class DependencyMisconfigured extends Data.TaggedError("DependencyMisconfigured")<{
-  readonly dependency: string
-  readonly detail: string
+class DependencyMisconfigured extends Data.TaggedError(
+  "DependencyMisconfigured"
+)<{
+  readonly dependency: string;
+  readonly detail: string;
 }> {}
 
-type StartupDependencyError = DependencyNotReady | DependencyMisconfigured
+type StartupDependencyError = DependencyNotReady | DependencyMisconfigured;
 
-let checks = 0
+let checks = 0;
 
-const waitForDatabase: Effect.Effect<void, StartupDependencyError> = Effect.gen(function*() {
-  checks += 1
-  yield* Console.log(`database readiness check ${checks}`)
+const waitForDatabase: Effect.Effect<void, StartupDependencyError> = Effect.gen(
+  function* () {
+    checks += 1;
+    yield* Console.log(`database readiness check ${checks}`);
 
-  if (checks < 3) {
-    return yield* Effect.fail(
-      new DependencyNotReady({
-        dependency: "database",
-        detail: "connection refused"
-      })
-    )
+    if (checks < 3) {
+      return yield* Effect.fail(
+        new DependencyNotReady({
+          dependency: "database",
+          detail: "connection refused",
+        })
+      );
+    }
   }
-})
+);
 
-const startApplication = Console.log("application started")
+const startApplication = Console.log("application started");
 
 const startupReadinessPolicy = Schedule.exponential("200 millis").pipe(
   Schedule.both(Schedule.during("30 seconds"))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   yield* waitForDatabase.pipe(
     Effect.retry({
       schedule: startupReadinessPolicy,
-      while: (error) => error._tag === "DependencyNotReady"
+      while: (error) => error._tag === "DependencyNotReady",
     })
-  )
+  );
 
-  yield* startApplication
-})
+  yield* startApplication;
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 `DependencyMisconfigured` would stop retrying immediately. It is a permanent
@@ -3535,41 +3530,43 @@ scheduling must stop.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class TemporaryGatewayError extends Data.TaggedError("TemporaryGatewayError")<{
-  readonly status: 429 | 500 | 502 | 503 | 504
+  readonly status: 429 | 500 | 502 | 503 | 504;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const callGateway: Effect.Effect<string, TemporaryGatewayError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`gateway call ${attempts}`)
+const callGateway: Effect.Effect<string, TemporaryGatewayError> = Effect.gen(
+  function* () {
+    attempts += 1;
+    yield* Console.log(`gateway call ${attempts}`);
 
-  if (attempts < 3) {
-    return yield* Effect.fail(new TemporaryGatewayError({ status: 503 }))
+    if (attempts < 3) {
+      return yield* Effect.fail(new TemporaryGatewayError({ status: 503 }));
+    }
+
+    return "accepted";
   }
-
-  return "accepted"
-})
+);
 
 const retryWithinBudget = Schedule.exponential("200 millis").pipe(
   Schedule.both(Schedule.during("30 seconds"))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const result = yield* callGateway.pipe(
     Effect.retry({
       schedule: retryWithinBudget,
-      while: (error) => error.status === 429 || error.status >= 500
+      while: (error) => error.status === 429 || error.status >= 500,
     })
-  )
+  );
 
-  yield* Console.log(`gateway result: ${result}`)
-})
+  yield* Console.log(`gateway result: ${result}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 If retryable failures continue until the 30 second window closes,
@@ -3626,38 +3623,36 @@ requirement.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class RemoteBusy extends Data.TaggedError("RemoteBusy")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const callRemote: Effect.Effect<string, RemoteBusy> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`remote attempt ${attempts}`)
+const callRemote: Effect.Effect<string, RemoteBusy> = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`remote attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(new RemoteBusy({ attempt: attempts }))
+    return yield* Effect.fail(new RemoteBusy({ attempt: attempts }));
   }
 
-  return "remote value"
-})
+  return "remote value";
+});
 
 const retryWithinLatencyBudget = Schedule.exponential("50 millis").pipe(
   Schedule.both(Schedule.during("1 second"))
-)
+);
 
-const program = Effect.gen(function*() {
-  const value = yield* callRemote.pipe(
-    Effect.retry(retryWithinLatencyBudget)
-  )
+const program = Effect.gen(function* () {
+  const value = yield* callRemote.pipe(Effect.retry(retryWithinLatencyBudget));
 
-  yield* Console.log(`completed with: ${value}`)
-})
+  yield* Console.log(`completed with: ${value}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 This policy does not promise exactly three retries. It retries according to the
@@ -3733,26 +3728,26 @@ both present, both must allow another attempt.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class Timeout extends Data.TaggedError("Timeout")<{
-  readonly operation: string
+  readonly operation: string;
 }> {}
 
 class RateLimited extends Data.TaggedError("RateLimited")<{
-  readonly retryAfterMillis: number
+  readonly retryAfterMillis: number;
 }> {}
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly status: 503 | 504
+  readonly status: 503 | 504;
 }> {}
 
 class InvalidRequest extends Data.TaggedError("InvalidRequest")<{
-  readonly message: string
+  readonly message: string;
 }> {}
 
 class Unauthorized extends Data.TaggedError("Unauthorized")<{
-  readonly reason: "MissingToken" | "ExpiredToken"
+  readonly reason: "MissingToken" | "ExpiredToken";
 }> {}
 
 type ApiError =
@@ -3760,40 +3755,40 @@ type ApiError =
   | RateLimited
   | ServiceUnavailable
   | InvalidRequest
-  | Unauthorized
+  | Unauthorized;
 
 interface ApiResponse {
-  readonly id: string
-  readonly status: "accepted"
+  readonly id: string;
+  readonly status: "accepted";
 }
 
 const isTransientApiError = (error: ApiError): boolean =>
   error._tag === "Timeout" ||
   error._tag === "RateLimited" ||
-  error._tag === "ServiceUnavailable"
+  error._tag === "ServiceUnavailable";
 
 const retryTransientFailures = Schedule.spaced("50 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const makeRequest = (
   label: string,
   failures: ReadonlyArray<ApiError>
 ): Effect.Effect<ApiResponse, ApiError> => {
-  let attempt = 0
+  let attempt = 0;
 
-  return Effect.gen(function*() {
-    attempt += 1
-    yield* Console.log(`${label}: attempt ${attempt}`)
+  return Effect.gen(function* () {
+    attempt += 1;
+    yield* Console.log(`${label}: attempt ${attempt}`);
 
-    const failure = failures[attempt - 1]
+    const failure = failures[attempt - 1];
     if (failure !== undefined) {
-      return yield* Effect.fail(failure)
+      return yield* Effect.fail(failure);
     }
 
-    return { id: label, status: "accepted" }
-  })
-}
+    return { id: label, status: "accepted" };
+  });
+};
 
 const runRequest = (
   label: string,
@@ -3802,32 +3797,30 @@ const runRequest = (
   request.pipe(
     Effect.retry({
       schedule: retryTransientFailures,
-      while: isTransientApiError
+      while: isTransientApiError,
     }),
     Effect.matchEffect({
       onFailure: (error) => Console.log(`${label}: failed with ${error._tag}`),
-      onSuccess: (response) => Console.log(`${label}: ${response.status}`)
+      onSuccess: (response) => Console.log(`${label}: ${response.status}`),
     })
-  )
+  );
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   yield* runRequest(
     "transient",
     makeRequest("transient", [
       new Timeout({ operation: "create-job" }),
-      new ServiceUnavailable({ status: 503 })
+      new ServiceUnavailable({ status: 503 }),
     ])
-  )
+  );
 
   yield* runRequest(
     "permanent",
-    makeRequest("permanent", [
-      new InvalidRequest({ message: "missing id" })
-    ])
-  )
-})
+    makeRequest("permanent", [new InvalidRequest({ message: "missing id" })])
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // transient: attempt 1
 // transient: attempt 2
@@ -3892,92 +3885,96 @@ whether another retry is available and how long to wait.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 interface RegistrationInput {
-  readonly email: string
-  readonly plan: "Free" | "Pro"
+  readonly email: string;
+  readonly plan: "Free" | "Pro";
 }
 
 interface Registration {
-  readonly id: string
-  readonly email: string
+  readonly id: string;
+  readonly email: string;
 }
 
 class ValidationError extends Data.TaggedError("ValidationError")<{
-  readonly field: string
-  readonly message: string
+  readonly field: string;
+  readonly message: string;
 }> {}
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly service: "Accounts" | "Billing"
+  readonly service: "Accounts" | "Billing";
 }> {}
 
 class RateLimited extends Data.TaggedError("RateLimited")<{
-  readonly retryAfterMillis: number
+  readonly retryAfterMillis: number;
 }> {}
 
 class ConflictError extends Data.TaggedError("ConflictError")<{
-  readonly resource: "Email"
+  readonly resource: "Email";
 }> {}
 
 type RegistrationError =
   | ValidationError
   | ServiceUnavailable
   | RateLimited
-  | ConflictError
+  | ConflictError;
 
 const isRetryableRegistrationError = (error: RegistrationError): boolean =>
-  error._tag === "ServiceUnavailable" || error._tag === "RateLimited"
+  error._tag === "ServiceUnavailable" || error._tag === "RateLimited";
 
 const retryTransientFailures = Schedule.exponential("50 millis").pipe(
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const submitRegistration = (
   input: RegistrationInput
 ): Effect.Effect<Registration, RegistrationError> => {
-  let attempt = 0
+  let attempt = 0;
 
-  return Effect.gen(function*() {
-    attempt += 1
-    yield* Console.log(`${input.email}: submit attempt ${attempt}`)
+  return Effect.gen(function* () {
+    attempt += 1;
+    yield* Console.log(`${input.email}: submit attempt ${attempt}`);
 
     if (!input.email.includes("@")) {
       return yield* Effect.fail(
         new ValidationError({
           field: "email",
-          message: "must contain @"
+          message: "must contain @",
         })
-      )
+      );
     }
 
     if (attempt === 1) {
-      return yield* Effect.fail(new ServiceUnavailable({ service: "Accounts" }))
+      return yield* Effect.fail(
+        new ServiceUnavailable({ service: "Accounts" })
+      );
     }
 
-    return { id: `registration-${attempt}`, email: input.email }
-  })
-}
+    return { id: `registration-${attempt}`, email: input.email };
+  });
+};
 
 const runRegistration = (input: RegistrationInput) =>
   submitRegistration(input).pipe(
     Effect.retry({
       schedule: retryTransientFailures,
-      while: isRetryableRegistrationError
+      while: isRetryableRegistrationError,
     }),
     Effect.matchEffect({
-      onFailure: (error) => Console.log(`${input.email}: failed with ${error._tag}`),
-      onSuccess: (registration) => Console.log(`${input.email}: ${registration.id}`)
+      onFailure: (error) =>
+        Console.log(`${input.email}: failed with ${error._tag}`),
+      onSuccess: (registration) =>
+        Console.log(`${input.email}: ${registration.id}`),
     })
-  )
+  );
 
-const program = Effect.gen(function*() {
-  yield* runRegistration({ email: "ada@example.com", plan: "Pro" })
-  yield* runRegistration({ email: "not-an-email", plan: "Free" })
-})
+const program = Effect.gen(function* () {
+  yield* runRegistration({ email: "ada@example.com", plan: "Pro" });
+  yield* runRegistration({ email: "not-an-email", plan: "Free" });
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // ada@example.com: submit attempt 1
 // ada@example.com: submit attempt 2
@@ -4040,53 +4037,52 @@ immediately.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 interface Invoice {
-  readonly id: string
-  readonly total: number
+  readonly id: string;
+  readonly total: number;
 }
 
 class RequestTimeout extends Data.TaggedError("RequestTimeout")<{
-  readonly operation: "lookup-invoice"
+  readonly operation: "lookup-invoice";
 }> {}
 
 class HttpFailure extends Data.TaggedError("HttpFailure")<{
-  readonly status: number
+  readonly status: number;
 }> {}
 
 class DecodeFailure extends Data.TaggedError("DecodeFailure")<{
-  readonly message: string
+  readonly message: string;
 }> {}
 
-type LookupInvoiceError = RequestTimeout | HttpFailure | DecodeFailure
+type LookupInvoiceError = RequestTimeout | HttpFailure | DecodeFailure;
 
-const isRequestTimeout = (
-  error: LookupInvoiceError
-): error is RequestTimeout => error._tag === "RequestTimeout"
+const isRequestTimeout = (error: LookupInvoiceError): error is RequestTimeout =>
+  error._tag === "RequestTimeout";
 
 const timeoutRetryPolicy = Schedule.exponential("50 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const makeLookupInvoice = (
   label: string,
   failures: ReadonlyArray<LookupInvoiceError>
 ): Effect.Effect<Invoice, LookupInvoiceError> => {
-  let attempt = 0
+  let attempt = 0;
 
-  return Effect.gen(function*() {
-    attempt += 1
-    yield* Console.log(`${label}: lookup attempt ${attempt}`)
+  return Effect.gen(function* () {
+    attempt += 1;
+    yield* Console.log(`${label}: lookup attempt ${attempt}`);
 
-    const failure = failures[attempt - 1]
+    const failure = failures[attempt - 1];
     if (failure !== undefined) {
-      return yield* Effect.fail(failure)
+      return yield* Effect.fail(failure);
     }
 
-    return { id: "inv-123", total: 42 }
-  })
-}
+    return { id: "inv-123", total: 42 };
+  });
+};
 
 const runLookup = (
   label: string,
@@ -4095,32 +4091,30 @@ const runLookup = (
   lookup.pipe(
     Effect.retry({
       schedule: timeoutRetryPolicy,
-      while: isRequestTimeout
+      while: isRequestTimeout,
     }),
     Effect.matchEffect({
       onFailure: (error) => Console.log(`${label}: failed with ${error._tag}`),
-      onSuccess: (invoice) => Console.log(`${label}: invoice ${invoice.id}`)
+      onSuccess: (invoice) => Console.log(`${label}: invoice ${invoice.id}`),
     })
-  )
+  );
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   yield* runLookup(
     "timeout-recovers",
     makeLookupInvoice("timeout-recovers", [
       new RequestTimeout({ operation: "lookup-invoice" }),
-      new RequestTimeout({ operation: "lookup-invoice" })
+      new RequestTimeout({ operation: "lookup-invoice" }),
     ])
-  )
+  );
 
   yield* runLookup(
     "http-failure",
-    makeLookupInvoice("http-failure", [
-      new HttpFailure({ status: 403 })
-    ])
-  )
-})
+    makeLookupInvoice("http-failure", [new HttpFailure({ status: 403 })])
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // timeout-recovers: lookup attempt 1
 // timeout-recovers: lookup attempt 2
@@ -4187,7 +4181,7 @@ For most clients, combine the predicate with a finite backoff schedule.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 type HttpStatus =
   | 400
@@ -4200,43 +4194,44 @@ type HttpStatus =
   | 501
   | 502
   | 503
-  | 504
+  | 504;
 
 class HttpResponseError extends Data.TaggedError("HttpResponseError")<{
-  readonly method: "GET" | "POST"
-  readonly url: string
-  readonly status: HttpStatus
+  readonly method: "GET" | "POST";
+  readonly url: string;
+  readonly status: HttpStatus;
 }> {}
 
 interface User {
-  readonly id: string
-  readonly name: string
+  readonly id: string;
+  readonly name: string;
 }
 
-const is5xxResponse = (error: HttpResponseError): boolean => error.status >= 500 && error.status < 600
+const is5xxResponse = (error: HttpResponseError): boolean =>
+  error.status >= 500 && error.status < 600;
 
 const retryWithBackoff = Schedule.exponential("50 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const makeRequestUser = (
   label: string,
   failures: ReadonlyArray<HttpResponseError>
 ): Effect.Effect<User, HttpResponseError> => {
-  let attempt = 0
+  let attempt = 0;
 
-  return Effect.gen(function*() {
-    attempt += 1
-    yield* Console.log(`${label}: HTTP attempt ${attempt}`)
+  return Effect.gen(function* () {
+    attempt += 1;
+    yield* Console.log(`${label}: HTTP attempt ${attempt}`);
 
-    const failure = failures[attempt - 1]
+    const failure = failures[attempt - 1];
     if (failure !== undefined) {
-      return yield* Effect.fail(failure)
+      return yield* Effect.fail(failure);
     }
 
-    return { id: "user-123", name: "Ada" }
-  })
-}
+    return { id: "user-123", name: "Ada" };
+  });
+};
 
 const runRequest = (
   label: string,
@@ -4245,32 +4240,37 @@ const runRequest = (
   request.pipe(
     Effect.retry({
       schedule: retryWithBackoff,
-      while: is5xxResponse
+      while: is5xxResponse,
     }),
     Effect.matchEffect({
-      onFailure: (error) => Console.log(`${label}: failed with HTTP ${error.status}`),
-      onSuccess: (user) => Console.log(`${label}: user ${user.name}`)
+      onFailure: (error) =>
+        Console.log(`${label}: failed with HTTP ${error.status}`),
+      onSuccess: (user) => Console.log(`${label}: user ${user.name}`),
     })
-  )
+  );
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   yield* runRequest(
     "server-recovers",
     makeRequestUser("server-recovers", [
       new HttpResponseError({ method: "GET", url: "/users/123", status: 503 }),
-      new HttpResponseError({ method: "GET", url: "/users/123", status: 502 })
+      new HttpResponseError({ method: "GET", url: "/users/123", status: 502 }),
     ])
-  )
+  );
 
   yield* runRequest(
     "client-error",
     makeRequestUser("client-error", [
-      new HttpResponseError({ method: "GET", url: "/users/missing", status: 404 })
+      new HttpResponseError({
+        method: "GET",
+        url: "/users/missing",
+        status: 404,
+      }),
     ])
-  )
-})
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // server-recovers: HTTP attempt 1
 // server-recovers: HTTP attempt 2
@@ -4327,71 +4327,75 @@ duration.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class ServerError extends Data.TaggedError("ServerError")<{
-  readonly status: 500 | 502 | 503 | 504
+  readonly status: 500 | 502 | 503 | 504;
 }> {}
 
 class RateLimited extends Data.TaggedError("RateLimited")<{
-  readonly retryAfterMillis: number
+  readonly retryAfterMillis: number;
 }> {}
 
-let serverAttempts = 0
+let serverAttempts = 0;
 
-const callServer: Effect.Effect<string, ServerError> = Effect.gen(function*() {
-  serverAttempts += 1
-  yield* Console.log(`server attempt ${serverAttempts}`)
+const callServer: Effect.Effect<string, ServerError> = Effect.gen(function* () {
+  serverAttempts += 1;
+  yield* Console.log(`server attempt ${serverAttempts}`);
 
   if (serverAttempts < 3) {
-    return yield* Effect.fail(new ServerError({ status: 503 }))
+    return yield* Effect.fail(new ServerError({ status: 503 }));
   }
 
-  return "server value"
-})
+  return "server value";
+});
 
-let rateLimitAttempts = 0
+let rateLimitAttempts = 0;
 
-const callRateLimitedApi: Effect.Effect<string, RateLimited> = Effect.gen(function*() {
-  rateLimitAttempts += 1
-  yield* Console.log(`rate-limit attempt ${rateLimitAttempts}`)
+const callRateLimitedApi: Effect.Effect<string, RateLimited> = Effect.gen(
+  function* () {
+    rateLimitAttempts += 1;
+    yield* Console.log(`rate-limit attempt ${rateLimitAttempts}`);
 
-  if (rateLimitAttempts === 1) {
-    return yield* Effect.fail(new RateLimited({ retryAfterMillis: 100 }))
+    if (rateLimitAttempts === 1) {
+      return yield* Effect.fail(new RateLimited({ retryAfterMillis: 100 }));
+    }
+
+    return "rate-limited value";
   }
-
-  return "rate-limited value"
-})
+);
 
 const retryServerErrors = Schedule.exponential("50 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const retryRateLimits = Schedule.identity<RateLimited>().pipe(
   Schedule.both(Schedule.recurs(2)),
-  Schedule.addDelay(([error]) => Effect.succeed(Duration.millis(error.retryAfterMillis)))
-)
+  Schedule.addDelay(([error]) =>
+    Effect.succeed(Duration.millis(error.retryAfterMillis))
+  )
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const serverValue = yield* callServer.pipe(
     Effect.retry({
       schedule: retryServerErrors,
-      while: (error) => error.status >= 500 && error.status < 600
+      while: (error) => error.status >= 500 && error.status < 600,
     })
-  )
-  yield* Console.log(`server result: ${serverValue}`)
+  );
+  yield* Console.log(`server result: ${serverValue}`);
 
   const rateLimitedValue = yield* callRateLimitedApi.pipe(
     Effect.retry({
       schedule: retryRateLimits,
-      while: (error) => error._tag === "RateLimited"
+      while: (error) => error._tag === "RateLimited",
     })
-  )
-  yield* Console.log(`rate-limit result: ${rateLimitedValue}`)
-})
+  );
+  yield* Console.log(`rate-limit result: ${rateLimitedValue}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // server attempt 1
 // server attempt 2
@@ -4490,59 +4494,65 @@ error channel are retried, and only while the predicate returns `true`.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class GetUserError extends Data.TaggedError("GetUserError")<{
-  readonly reason: "Timeout" | "ConnectionReset" | "BadGateway" | "NotFound" | "Unauthorized" | "DecodeError"
+  readonly reason:
+    | "Timeout"
+    | "ConnectionReset"
+    | "BadGateway"
+    | "NotFound"
+    | "Unauthorized"
+    | "DecodeError";
 }> {}
 
 interface User {
-  readonly id: string
-  readonly name: string
+  readonly id: string;
+  readonly name: string;
 }
 
-let attempts = 0
+let attempts = 0;
 
 const getUser = (id: string): Effect.Effect<User, GetUserError> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`GET /users/${id} attempt ${attempts}`)
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`GET /users/${id} attempt ${attempts}`);
 
     if (attempts < 3) {
-      return yield* Effect.fail(new GetUserError({ reason: "Timeout" }))
+      return yield* Effect.fail(new GetUserError({ reason: "Timeout" }));
     }
 
-    return { id, name: "Ada" }
-  })
+    return { id, name: "Ada" };
+  });
 
 const isRetryableGetFailure = (error: GetUserError): boolean => {
   switch (error.reason) {
     case "Timeout":
     case "ConnectionReset":
     case "BadGateway":
-      return true
+      return true;
     case "NotFound":
     case "Unauthorized":
     case "DecodeError":
-      return false
+      return false;
   }
-}
+};
 
 const safeGetRetryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(3))
-)
+);
 
-const program = getUser("user-123").pipe(
-  Effect.retry({
-    schedule: safeGetRetryPolicy,
-    while: isRetryableGetFailure
-  })
-).pipe(
-  Effect.tap((user) => Console.log(`loaded ${user.name}`))
-)
+const program = getUser("user-123")
+  .pipe(
+    Effect.retry({
+      schedule: safeGetRetryPolicy,
+      while: isRetryableGetFailure,
+    })
+  )
+  .pipe(Effect.tap((user) => Console.log(`loaded ${user.name}`)));
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // GET /users/user-123 attempt 1
 // GET /users/user-123 attempt 2
@@ -4566,34 +4576,36 @@ slightly larger budget. The reads are still safe, but the downstream service may
 already be under pressure.
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 const statusLookupRetryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(2))
-)
+);
 
 const cacheRefreshRetryPolicy = Schedule.exponential("20 millis", 1.5).pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-let statusAttempts = 0
+let statusAttempts = 0;
 
-const readStatus = Effect.gen(function*() {
-  statusAttempts += 1
-  yield* Console.log(`status attempt ${statusAttempts}`)
-  if (statusAttempts < 2) return yield* Effect.fail("transient")
-  return "ok"
-})
+const readStatus = Effect.gen(function* () {
+  statusAttempts += 1;
+  yield* Console.log(`status attempt ${statusAttempts}`);
+  if (statusAttempts < 2) return yield* Effect.fail("transient");
+  return "ok";
+});
 
-const program = Effect.gen(function*() {
-  const status = yield* readStatus.pipe(Effect.retry(statusLookupRetryPolicy))
-  yield* Console.log(`status: ${status}`)
-  yield* Console.log(`cache refresh policy ready: ${Schedule.isSchedule(cacheRefreshRetryPolicy)}`)
-})
+const program = Effect.gen(function* () {
+  const status = yield* readStatus.pipe(Effect.retry(statusLookupRetryPolicy));
+  yield* Console.log(`status: ${status}`);
+  yield* Console.log(
+    `cache refresh policy ready: ${Schedule.isSchedule(cacheRefreshRetryPolicy)}`
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // status attempt 1
 // status attempt 2
@@ -4697,59 +4709,62 @@ exhausted, `Effect.retry` returns the last typed failure.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class WriteTimeout extends Data.TaggedError("WriteTimeout")<{
-  readonly operation: "SetAccountEmail"
+  readonly operation: "SetAccountEmail";
 }> {}
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly status: 503 | 504
+  readonly status: 503 | 504;
 }> {}
 
 class InvalidEmail extends Data.TaggedError("InvalidEmail")<{
-  readonly email: string
+  readonly email: string;
 }> {}
 
-type WriteError = WriteTimeout | ServiceUnavailable | InvalidEmail
+type WriteError = WriteTimeout | ServiceUnavailable | InvalidEmail;
 
-let attempts = 0
+let attempts = 0;
 
 const setAccountEmail = (
   accountId: string,
   email: string
 ): Effect.Effect<void, WriteError> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`set email attempt ${attempts} for ${accountId}`)
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`set email attempt ${attempts} for ${accountId}`);
 
     if (!email.includes("@")) {
-      return yield* Effect.fail(new InvalidEmail({ email }))
+      return yield* Effect.fail(new InvalidEmail({ email }));
     }
 
     if (attempts < 3) {
-      return yield* Effect.fail(new WriteTimeout({ operation: "SetAccountEmail" }))
+      return yield* Effect.fail(
+        new WriteTimeout({ operation: "SetAccountEmail" })
+      );
     }
 
-    yield* Console.log(`stored ${email}`)
-  })
+    yield* Console.log(`stored ${email}`);
+  });
 
 const retryDuplicateSafeWrite = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const updateEmail = (accountId: string, email: string) =>
   setAccountEmail(accountId, email).pipe(
     Effect.retry({
       schedule: retryDuplicateSafeWrite,
-      while: (error) => error._tag === "WriteTimeout" || error._tag === "ServiceUnavailable"
+      while: (error) =>
+        error._tag === "WriteTimeout" || error._tag === "ServiceUnavailable",
     })
-  )
+  );
 
-const program = updateEmail("account-1", "ada@example.com")
+const program = updateEmail("account-1", "ada@example.com");
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // set email attempt 1 for account-1
 // set email attempt 2 for account-1
@@ -4768,34 +4783,36 @@ Use a fixed delay when the downstream system prefers steady retry traffic, or a
 larger background policy when the caller can tolerate more latency:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 const steadyWriteRetry = Schedule.spaced("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const backgroundWriteRetry = Schedule.exponential("20 millis", 2).pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-let attempts = 0
+let attempts = 0;
 
-const writeAuditMarker = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`audit marker attempt ${attempts}`)
-  if (attempts < 2) return yield* Effect.fail("service-unavailable")
-  return "stored"
-})
+const writeAuditMarker = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`audit marker attempt ${attempts}`);
+  if (attempts < 2) return yield* Effect.fail("service-unavailable");
+  return "stored";
+});
 
-const program = Effect.gen(function*() {
-  const result = yield* writeAuditMarker.pipe(Effect.retry(steadyWriteRetry))
-  yield* Console.log(`steady policy result: ${result}`)
-  yield* Console.log(`background policy ready: ${Schedule.isSchedule(backgroundWriteRetry)}`)
-})
+const program = Effect.gen(function* () {
+  const result = yield* writeAuditMarker.pipe(Effect.retry(steadyWriteRetry));
+  yield* Console.log(`steady policy result: ${result}`);
+  yield* Console.log(
+    `background policy ready: ${Schedule.isSchedule(backgroundWriteRetry)}`
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // audit marker attempt 1
 // audit marker attempt 2
@@ -4836,33 +4853,37 @@ webhooks semantically safe.
 A retry policy is easy to attach to any failing effect:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let attempts = 0
-let chargesAccepted = 0
+let attempts = 0;
+let chargesAccepted = 0;
 
-const chargeCustomer = Effect.gen(function*() {
-  attempts += 1
-  chargesAccepted += 1
-  yield* Console.log(`attempt ${attempts}: provider accepted charge #${chargesAccepted}`)
+const chargeCustomer = Effect.gen(function* () {
+  attempts += 1;
+  chargesAccepted += 1;
+  yield* Console.log(
+    `attempt ${attempts}: provider accepted charge #${chargesAccepted}`
+  );
 
   if (attempts === 1) {
-    return yield* Effect.fail("response-lost")
+    return yield* Effect.fail("response-lost");
   }
 
-  return "charged"
-})
+  return "charged";
+});
 
 const retryWrites = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const program = chargeCustomer.pipe(
   Effect.retry(retryWrites),
-  Effect.tap((result) => Console.log(`${result}; accepted charges: ${chargesAccepted}`))
-)
+  Effect.tap((result) =>
+    Console.log(`${result}; accepted charges: ${chargesAccepted}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1: provider accepted charge #1
 // attempt 2: provider accepted charge #2
@@ -4911,15 +4932,17 @@ not own the downstream state.
 Attempt limits do not remove this risk:
 
 ```ts
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 const boundedButStillUnsafe = Schedule.spaced("1 second").pipe(
   Schedule.both(Schedule.recurs(2))
-)
+);
 
-const program = Console.log(`bounded policy: ${Schedule.isSchedule(boundedButStillUnsafe)}`)
+const program = Console.log(
+  `bounded policy: ${Schedule.isSchedule(boundedButStillUnsafe)}`
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 This policy limits the damage to two retries after the original attempt. It
@@ -4933,32 +4956,33 @@ outside generic retry wrappers unless the external protocol provides a
 duplicate-safe boundary.
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let reservationAttempts = 0
+let reservationAttempts = 0;
 
-const reserveLocalOrderNumber = Effect.gen(function*() {
-  reservationAttempts += 1
-  yield* Console.log(`reserve order number attempt ${reservationAttempts}`)
-  if (reservationAttempts < 2) return yield* Effect.fail("local-store-busy")
-  return "order-1001"
-})
+const reserveLocalOrderNumber = Effect.gen(function* () {
+  reservationAttempts += 1;
+  yield* Console.log(`reserve order number attempt ${reservationAttempts}`);
+  if (reservationAttempts < 2) return yield* Effect.fail("local-store-busy");
+  return "order-1001";
+});
 
-const submitChargeOnce = (orderNumber: string) => Console.log(`submit one charge for ${orderNumber}`)
+const submitChargeOnce = (orderNumber: string) =>
+  Console.log(`submit one charge for ${orderNumber}`);
 
 const retryTransientPreparation = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const orderNumber = yield* reserveLocalOrderNumber.pipe(
     Effect.retry(retryTransientPreparation)
-  )
+  );
 
-  yield* submitChargeOnce(orderNumber)
-})
+  yield* submitChargeOnce(orderNumber);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // reserve order number attempt 1
 // reserve order number attempt 2
@@ -5064,41 +5088,51 @@ schedule continues.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class CreatePaymentError extends Data.TaggedError("CreatePaymentError")<{
-  readonly reason: "Timeout" | "ConnectionReset" | "RateLimited" | "BadGateway" | "InvalidRequest" | "Declined"
+  readonly reason:
+    | "Timeout"
+    | "ConnectionReset"
+    | "RateLimited"
+    | "BadGateway"
+    | "InvalidRequest"
+    | "Declined";
 }> {}
 
 interface Payment {
-  readonly id: string
-  readonly status: "Created" | "AlreadyCreated"
+  readonly id: string;
+  readonly status: "Created" | "AlreadyCreated";
 }
 
 interface PaymentInput {
-  readonly customerId: string
-  readonly amountCents: number
-  readonly idempotencyKey: string
+  readonly customerId: string;
+  readonly amountCents: number;
+  readonly idempotencyKey: string;
 }
 
-let attempts = 0
+let attempts = 0;
 
-const createPayment = (input: PaymentInput): Effect.Effect<Payment, CreatePaymentError> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`payment attempt ${attempts} with key ${input.idempotencyKey}`)
+const createPayment = (
+  input: PaymentInput
+): Effect.Effect<Payment, CreatePaymentError> =>
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(
+      `payment attempt ${attempts} with key ${input.idempotencyKey}`
+    );
 
     if (attempts < 3) {
-      return yield* Effect.fail(new CreatePaymentError({ reason: "Timeout" }))
+      return yield* Effect.fail(new CreatePaymentError({ reason: "Timeout" }));
     }
 
-    return { id: "pay_123", status: "Created" }
-  })
+    return { id: "pay_123", status: "Created" };
+  });
 
 const retryKeyedWrite = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const isRetryablePaymentFailure = (error: CreatePaymentError): boolean => {
   switch (error.reason) {
@@ -5106,30 +5140,32 @@ const isRetryablePaymentFailure = (error: CreatePaymentError): boolean => {
     case "ConnectionReset":
     case "RateLimited":
     case "BadGateway":
-      return true
+      return true;
     case "InvalidRequest":
     case "Declined":
-      return false
+      return false;
   }
-}
+};
 
 const submitPayment = (
   customerId: string,
   amountCents: number,
   idempotencyKey: string
 ) =>
-  createPayment({ customerId, amountCents, idempotencyKey }).pipe(
-    Effect.retry({
-      schedule: retryKeyedWrite,
-      while: isRetryablePaymentFailure
-    })
-  ).pipe(
-    Effect.tap((payment) => Console.log(`${payment.id} ${payment.status}`))
-  )
+  createPayment({ customerId, amountCents, idempotencyKey })
+    .pipe(
+      Effect.retry({
+        schedule: retryKeyedWrite,
+        while: isRetryablePaymentFailure,
+      })
+    )
+    .pipe(
+      Effect.tap((payment) => Console.log(`${payment.id} ${payment.status}`))
+    );
 
-const program = submitPayment("customer-1", 5000, "payment-command-42")
+const program = submitPayment("customer-1", 5000, "payment-command-42");
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // payment attempt 1 with key payment-command-42
 // payment attempt 2 with key payment-command-42
@@ -5152,24 +5188,28 @@ For user-facing writes, keep the retry budget small. The idempotency key
 reduces duplicate-write risk, but the user still waits for the retry sequence:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 const userFacingKeyedWrite = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(2))
-)
+);
 
 const backgroundKeyedWrite = Schedule.exponential("20 millis", 1.5).pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-const program = Effect.gen(function*() {
-  yield* Console.log(`user-facing policy: ${Schedule.isSchedule(userFacingKeyedWrite)}`)
-  yield* Console.log(`background policy: ${Schedule.isSchedule(backgroundKeyedWrite)}`)
-})
+const program = Effect.gen(function* () {
+  yield* Console.log(
+    `user-facing policy: ${Schedule.isSchedule(userFacingKeyedWrite)}`
+  );
+  yield* Console.log(
+    `background policy: ${Schedule.isSchedule(backgroundKeyedWrite)}`
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // user-facing policy: true
 // background policy: true
@@ -5222,32 +5262,34 @@ looks temporary:
 <!-- no-check: intentionally unsafe anti-pattern; do not treat as a runnable cookbook example -->
 
 ```ts no-check
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let attempts = 0
-let providerCharges = 0
+let attempts = 0;
+let providerCharges = 0;
 
-const chargeCardOnce = Effect.gen(function*() {
-  attempts += 1
-  providerCharges += 1
-  yield* Console.log(`charge attempt ${attempts}; provider charge ${providerCharges}`)
+const chargeCardOnce = Effect.gen(function* () {
+  attempts += 1;
+  providerCharges += 1;
+  yield* Console.log(
+    `charge attempt ${attempts}; provider charge ${providerCharges}`
+  );
 
   if (attempts === 1) {
-    return yield* Effect.fail("response-lost")
+    return yield* Effect.fail("response-lost");
   }
-})
+});
 
 const retryTransientFailure = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 // Unsafe: do not attach a generic retry policy to a one-way charge.
 const unsafeProgram = chargeCardOnce.pipe(
   Effect.retry(retryTransientFailure),
   Effect.tap(() => Console.log(`provider charges: ${providerCharges}`))
-)
+);
 
-Effect.runPromise(unsafeProgram)
+Effect.runPromise(unsafeProgram);
 ```
 
 The schedule is finite and delayed, but that does not make the operation safe.
@@ -5290,15 +5332,17 @@ A retry limit only bounds the number of additional attempts. It does not make an
 unsafe operation safe:
 
 ```ts
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 const boundedButStillUnsafe = Schedule.spaced("1 second").pipe(
   Schedule.both(Schedule.recurs(1))
-)
+);
 
-const program = Console.log(`bounded policy: ${Schedule.isSchedule(boundedButStillUnsafe)}`)
+const program = Console.log(
+  `bounded policy: ${Schedule.isSchedule(boundedButStillUnsafe)}`
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 This policy allows only one retry after the original attempt, but that one retry
@@ -5310,29 +5354,32 @@ Do not attach `Effect.retry` when the next correct action is correction,
 escalation, or reconciliation.
 
 ```ts runnable deterministic
-import { Console, Effect, Result } from "effect"
+import { Console, Effect, Result } from "effect";
 
-let providerCharges = 0
+let providerCharges = 0;
 
-const submitPaymentOnce = Effect.gen(function*() {
-  providerCharges += 1
-  yield* Console.log(`submitted payment once; provider charge ${providerCharges}`)
-  return yield* Effect.fail("unknown-payment-outcome")
-})
+const submitPaymentOnce = Effect.gen(function* () {
+  providerCharges += 1;
+  yield* Console.log(
+    `submitted payment once; provider charge ${providerCharges}`
+  );
+  return yield* Effect.fail("unknown-payment-outcome");
+});
 
-const recordForReconciliation = (error: unknown) => Console.log(`recorded for reconciliation: ${String(error)}`)
+const recordForReconciliation = (error: unknown) =>
+  Console.log(`recorded for reconciliation: ${String(error)}`);
 
-const program = Effect.gen(function*() {
-  const result = yield* Effect.result(submitPaymentOnce)
+const program = Effect.gen(function* () {
+  const result = yield* Effect.result(submitPaymentOnce);
 
   if (Result.isFailure(result)) {
-    return yield* recordForReconciliation(result.failure)
+    return yield* recordForReconciliation(result.failure);
   }
 
-  yield* Console.log("payment confirmed")
-})
+  yield* Console.log("payment confirmed");
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // submitted payment once; provider charge 1
 // recorded for reconciliation: unknown-payment-outcome
@@ -5420,22 +5467,26 @@ the effect's final value.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let executions = 0
+let executions = 0;
 
-const writeMetric = Effect.gen(function*() {
-  executions += 1
-  yield* Console.log(`metric write ${executions}`)
-  return executions
-})
+const writeMetric = Effect.gen(function* () {
+  executions += 1;
+  yield* Console.log(`metric write ${executions}`);
+  return executions;
+});
 
 const program = writeMetric.pipe(
   Effect.repeat(Schedule.recurs(5)),
-  Effect.tap((recurrenceCount) => Console.log(`schedule output: ${recurrenceCount}; total executions: ${executions}`))
-)
+  Effect.tap((recurrenceCount) =>
+    Console.log(
+      `schedule output: ${recurrenceCount}; total executions: ${executions}`
+    )
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // metric write 1
 // metric write 2
@@ -5454,22 +5505,22 @@ If you want the repeated effect's final successful value instead of the schedule
 output, use the options form:
 
 ```ts runnable deterministic
-import { Console, Effect } from "effect"
+import { Console, Effect } from "effect";
 
-let sampleNumber = 0
+let sampleNumber = 0;
 
-const readSample = Effect.gen(function*() {
-  sampleNumber += 1
-  yield* Console.log(`sample ${sampleNumber}`)
-  return { sampleNumber }
-})
+const readSample = Effect.gen(function* () {
+  sampleNumber += 1;
+  yield* Console.log(`sample ${sampleNumber}`);
+  return { sampleNumber };
+});
 
 const finalSample = readSample.pipe(
   Effect.repeat({ times: 4 }),
   Effect.tap((sample) => Console.log(`final sample: ${sample.sampleNumber}`))
-)
+);
 
-Effect.runPromise(finalSample)
+Effect.runPromise(finalSample);
 // Output:
 // sample 1
 // sample 2
@@ -5487,19 +5538,19 @@ successful sample.
 For five total executions, use four recurrences:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let executions = 0
+let executions = 0;
 
-const program = Effect.gen(function*() {
-  executions += 1
-  yield* Console.log(`execution ${executions}`)
+const program = Effect.gen(function* () {
+  executions += 1;
+  yield* Console.log(`execution ${executions}`);
 }).pipe(
   Effect.repeat(Schedule.recurs(4)),
   Effect.tap(() => Console.log(`total executions: ${executions}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // execution 1
 // execution 2
@@ -5571,15 +5622,15 @@ outputs the current repetition count: `0`, `1`, `2`, and so on.
 For operational code, prefer a spaced forever schedule:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-const repeatEveryTick = Schedule.spaced("10 millis").pipe(
-  Schedule.take(2)
-)
+const repeatEveryTick = Schedule.spaced("10 millis").pipe(Schedule.take(2));
 
-const program = Console.log(`spaced policy: ${Schedule.isSchedule(repeatEveryTick)}`)
+const program = Console.log(
+  `spaced policy: ${Schedule.isSchedule(repeatEveryTick)}`
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // spaced policy: true
 ```
@@ -5592,26 +5643,30 @@ success. The `Schedule.take(2)` above is only there to keep the example finite.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let refreshes = 0
+let refreshes = 0;
 
-const refreshCache = Effect.gen(function*() {
-  refreshes += 1
-  yield* Console.log(`cache refresh ${refreshes}`)
-})
+const refreshCache = Effect.gen(function* () {
+  refreshes += 1;
+  yield* Console.log(`cache refresh ${refreshes}`);
+});
 
 const refreshPolicy = Schedule.spaced("10 millis").pipe(
-  Schedule.tapOutput((repetition) => Console.log(`scheduled repetition ${repetition}`)),
+  Schedule.tapOutput((repetition) =>
+    Console.log(`scheduled repetition ${repetition}`)
+  ),
   Schedule.take(3)
-)
+);
 
 const program = refreshCache.pipe(
   Effect.repeat(refreshPolicy),
-  Effect.tap((lastRepetition) => Console.log(`stopped demo after repetition ${lastRepetition}`))
-)
+  Effect.tap((lastRepetition) =>
+    Console.log(`stopped demo after repetition ${lastRepetition}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // cache refresh 1
 // scheduled repetition 0
@@ -5637,21 +5692,23 @@ only if `refreshCache` fails, the schedule fails, or the fiber is interrupted.
 Use `Schedule.forever` only when immediate repetition is deliberate:
 
 ```ts
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let drains = 0
+let drains = 0;
 
-const drainLocalQueue = Effect.gen(function*() {
-  drains += 1
-  yield* Console.log(`drain pass ${drains}`)
-})
+const drainLocalQueue = Effect.gen(function* () {
+  drains += 1;
+  yield* Console.log(`drain pass ${drains}`);
+});
 
 const program = drainLocalQueue.pipe(
   Effect.repeat(Schedule.forever.pipe(Schedule.take(3))),
-  Effect.tap((lastRepetition) => Console.log(`last repetition: ${lastRepetition}`))
-)
+  Effect.tap((lastRepetition) =>
+    Console.log(`last repetition: ${lastRepetition}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 This shape has no built-in spacing. It is appropriate only when the effect itself
@@ -5730,21 +5787,23 @@ runs four times total, with a pause before each recurrence.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let refreshes = 0
+let refreshes = 0;
 
-const refreshCache = Effect.gen(function*() {
-  refreshes += 1
-  yield* Console.log(`cache refresh ${refreshes}`)
-})
+const refreshCache = Effect.gen(function* () {
+  refreshes += 1;
+  yield* Console.log(`cache refresh ${refreshes}`);
+});
 
 const program = refreshCache.pipe(
   Effect.repeat(Schedule.spaced("10 millis").pipe(Schedule.take(3))),
-  Effect.tap((lastRepetition) => Console.log(`last repetition: ${lastRepetition}`))
-)
+  Effect.tap((lastRepetition) =>
+    Console.log(`last repetition: ${lastRepetition}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // cache refresh 1
 // cache refresh 2
@@ -5765,23 +5824,25 @@ final output. With `Schedule.spaced`, that output is the recurrence count.
 If you already have a count schedule and want to add a pause to it, use `Schedule.addDelay`:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 const repeatWithPause = Schedule.recurs(3).pipe(
   Schedule.addDelay(() => Effect.succeed("10 millis"))
-)
+);
 
-let runs = 0
+let runs = 0;
 
-const program = Effect.gen(function*() {
-  runs += 1
-  yield* Console.log(`run ${runs}`)
+const program = Effect.gen(function* () {
+  runs += 1;
+  yield* Console.log(`run ${runs}`);
 }).pipe(
   Effect.repeat(repeatWithPause),
-  Effect.tap((lastRepetition) => Console.log(`last repetition: ${lastRepetition}`))
-)
+  Effect.tap((lastRepetition) =>
+    Console.log(`last repetition: ${lastRepetition}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // run 1
 // run 2
@@ -5858,35 +5919,36 @@ successful value is not done and stops as soon as a successful value is done.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type JobStatus =
   | { readonly state: "running"; readonly progress: number }
-  | { readonly state: "ready"; readonly resultId: string }
+  | { readonly state: "ready"; readonly resultId: string };
 
-let checks = 0
+let checks = 0;
 
-const checkJob = Effect.gen(function*() {
-  checks += 1
+const checkJob = Effect.gen(function* () {
+  checks += 1;
 
-  const status: JobStatus = checks < 3
-    ? { state: "running", progress: checks * 50 }
-    : { state: "ready", resultId: "result-1" }
+  const status: JobStatus =
+    checks < 3
+      ? { state: "running", progress: checks * 50 }
+      : { state: "ready", resultId: "result-1" };
 
-  yield* Console.log(`check ${checks}: ${status.state}`)
-  return status
-})
+  yield* Console.log(`check ${checks}: ${status.state}`);
+  return status;
+});
 
 const untilReady = Schedule.identity<JobStatus>().pipe(
   Schedule.while(({ input }) => input.state !== "ready")
-)
+);
 
 const finalStatus = checkJob.pipe(
   Effect.repeat(untilReady),
   Effect.tap((status) => Console.log(`final state: ${status.state}`))
-)
+);
 
-Effect.runPromise(finalStatus)
+Effect.runPromise(finalStatus);
 // Output:
 // check 1: running
 // check 2: running
@@ -5908,35 +5970,36 @@ made the condition false.
 Add spacing when the next recurrence should wait after each non-terminal success:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type JobStatus =
   | { readonly state: "running"; readonly progress: number }
-  | { readonly state: "ready"; readonly resultId: string }
+  | { readonly state: "ready"; readonly resultId: string };
 
-let checks = 0
+let checks = 0;
 
-const checkJob = Effect.gen(function*() {
-  checks += 1
-  const status: JobStatus = checks < 2
-    ? { state: "running", progress: 50 }
-    : { state: "ready", resultId: "result-2" }
-  yield* Console.log(`check ${checks}: ${status.state}`)
-  return status
-})
+const checkJob = Effect.gen(function* () {
+  checks += 1;
+  const status: JobStatus =
+    checks < 2
+      ? { state: "running", progress: 50 }
+      : { state: "ready", resultId: "result-2" };
+  yield* Console.log(`check ${checks}: ${status.state}`);
+  return status;
+});
 
 const untilReadyWithPause = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state !== "ready")
-)
+);
 
 const finalStatus = checkJob.pipe(
   Effect.repeat(untilReadyWithPause),
   Effect.tap((status) => Console.log(`final state: ${status.state}`))
-)
+);
 
-Effect.runPromise(finalStatus)
+Effect.runPromise(finalStatus);
 // Output:
 // check 1: running
 // check 2: ready
@@ -6019,39 +6082,43 @@ returns `false`, the repeat stops.
 ##### Example
 
 ```ts
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface QueueDrainResult {
-  readonly processed: number
-  readonly remaining: number
+  readonly processed: number;
+  readonly remaining: number;
 }
 
-let remainingMessages = 5
+let remainingMessages = 5;
 
-const drainOneBatch = Effect.gen(function*() {
-  const processed = Math.min(2, remainingMessages)
-  remainingMessages -= processed
+const drainOneBatch = Effect.gen(function* () {
+  const processed = Math.min(2, remainingMessages);
+  remainingMessages -= processed;
 
   const result: QueueDrainResult = {
     processed,
-    remaining: remainingMessages
-  }
+    remaining: remainingMessages,
+  };
 
-  yield* Console.log(`processed ${result.processed}; remaining ${result.remaining}`)
-  return result
-})
+  yield* Console.log(
+    `processed ${result.processed}; remaining ${result.remaining}`
+  );
+  return result;
+});
 
 const whileQueueHasWork = Schedule.forever.pipe(
   Schedule.satisfiesInputType<QueueDrainResult>(),
   Schedule.while(({ input }) => input.remaining > 0)
-)
+);
 
 const drainQueue = drainOneBatch.pipe(
   Effect.repeat(whileQueueHasWork),
-  Effect.tap((lastRepetition) => Console.log(`last repetition: ${lastRepetition}`))
-)
+  Effect.tap((lastRepetition) =>
+    Console.log(`last repetition: ${lastRepetition}`)
+  )
+);
 
-Effect.runPromise(drainQueue)
+Effect.runPromise(drainQueue);
 ```
 
 `drainOneBatch` runs once immediately. If it succeeds with `remaining > 0`, the
@@ -6067,36 +6134,38 @@ Add a small pause between successful batches when the downstream system needs
 breathing room:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface PageResult {
-  readonly imported: number
-  readonly hasMore: boolean
+  readonly imported: number;
+  readonly hasMore: boolean;
 }
 
-let nextPage = 1
+let nextPage = 1;
 
-const importNextPage = Effect.gen(function*() {
+const importNextPage = Effect.gen(function* () {
   const result: PageResult = {
     imported: 10,
-    hasMore: nextPage < 3
-  }
-  yield* Console.log(`imported page ${nextPage}`)
-  nextPage += 1
-  return result
-})
+    hasMore: nextPage < 3,
+  };
+  yield* Console.log(`imported page ${nextPage}`);
+  nextPage += 1;
+  return result;
+});
 
 const whilePagesRemain = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<PageResult>(),
   Schedule.while(({ input }) => input.hasMore)
-)
+);
 
 const importAllAvailablePages = importNextPage.pipe(
   Effect.repeat(whilePagesRemain),
-  Effect.tap((lastRepetition) => Console.log(`last repetition: ${lastRepetition}`))
-)
+  Effect.tap((lastRepetition) =>
+    Console.log(`last repetition: ${lastRepetition}`)
+  )
+);
 
-Effect.runPromise(importAllAvailablePages)
+Effect.runPromise(importAllAvailablePages);
 // Output:
 // imported page 1
 // imported page 2
@@ -6115,23 +6184,25 @@ If you also need a hard safety limit, combine the continuation predicate with a
 bounded schedule:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface QueueDrainResult {
-  readonly processed: number
-  readonly remaining: number
+  readonly processed: number;
+  readonly remaining: number;
 }
 
 const atMostOneHundredMoreBatches = Schedule.recurs(100).pipe(
   Schedule.satisfiesInputType<QueueDrainResult>(),
   Schedule.while(({ input }) => input.remaining > 0)
-)
+);
 
-const program = Effect.gen(function*() {
-  yield* Console.log(`bounded drain policy: ${Schedule.isSchedule(atMostOneHundredMoreBatches)}`)
-})
+const program = Effect.gen(function* () {
+  yield* Console.log(
+    `bounded drain policy: ${Schedule.isSchedule(atMostOneHundredMoreBatches)}`
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // bounded drain policy: true
 ```
@@ -6200,27 +6271,25 @@ is what matters.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let refreshes = 0
+let refreshes = 0;
 
-const refreshCache = Effect.gen(function*() {
-  refreshes += 1
-  yield* Console.log(`cache refresh ${refreshes}`)
-})
+const refreshCache = Effect.gen(function* () {
+  refreshes += 1;
+  yield* Console.log(`cache refresh ${refreshes}`);
+});
 
-const loop = refreshCache.pipe(
-  Effect.repeat(Schedule.fixed("1 minute"))
-)
+const loop = refreshCache.pipe(Effect.repeat(Schedule.fixed("1 minute")));
 
 const program = loop.pipe(
   Effect.timeoutOrElse({
     duration: "50 millis",
-    orElse: () => Console.log(`demo stopped after ${refreshes} refresh`)
+    orElse: () => Console.log(`demo stopped after ${refreshes} refresh`),
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // cache refresh 1
 // demo stopped after 1 refresh
@@ -6294,27 +6363,25 @@ successful run completes.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let syncs = 0
+let syncs = 0;
 
-const syncReferenceData = Effect.gen(function*() {
-  syncs += 1
-  yield* Console.log(`reference-data sync ${syncs}`)
-})
+const syncReferenceData = Effect.gen(function* () {
+  syncs += 1;
+  yield* Console.log(`reference-data sync ${syncs}`);
+});
 
-const loop = syncReferenceData.pipe(
-  Effect.repeat(Schedule.fixed("1 hour"))
-)
+const loop = syncReferenceData.pipe(Effect.repeat(Schedule.fixed("1 hour")));
 
 const program = loop.pipe(
   Effect.timeoutOrElse({
     duration: "50 millis",
-    orElse: () => Console.log(`demo stopped after ${syncs} sync`)
+    orElse: () => Console.log(`demo stopped after ${syncs} sync`),
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // reference-data sync 1
 // demo stopped after 1 sync
@@ -6383,24 +6450,24 @@ When the repeat should stop after a known number of scheduled recurrences, add `
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let run = 0
+let run = 0;
 
-const refresh = Effect.gen(function*() {
-  run += 1
-  yield* Console.log(`refresh ${run}`)
-  return run
-})
+const refresh = Effect.gen(function* () {
+  run += 1;
+  yield* Console.log(`refresh ${run}`);
+  return run;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalRecurrence = yield* refresh.pipe(
     Effect.repeat(Schedule.spaced("10 millis").pipe(Schedule.take(2)))
-  )
-  yield* Console.log(`repeat returned schedule output ${finalRecurrence}`)
-})
+  );
+  yield* Console.log(`repeat returned schedule output ${finalRecurrence}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // refresh 1
 // refresh 2
@@ -6479,24 +6546,24 @@ worker runs 101 times total.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let checks = 0
+let checks = 0;
 
-const pollOnce = Effect.gen(function*() {
-  checks += 1
-  yield* Console.log(`queue check ${checks}: empty`)
-  return "empty" as const
-})
+const pollOnce = Effect.gen(function* () {
+  checks += 1;
+  yield* Console.log(`queue check ${checks}: empty`);
+  return "empty" as const;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalRecurrence = yield* pollOnce.pipe(
     Effect.repeat(Schedule.spaced("10 millis").pipe(Schedule.take(3)))
-  )
-  yield* Console.log(`worker stopped after recurrence ${finalRecurrence}`)
-})
+  );
+  yield* Console.log(`worker stopped after recurrence ${finalRecurrence}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // queue check 1: empty
 // queue check 2: empty
@@ -6570,28 +6637,28 @@ Together, the schedule says: run now, then keep repeating after success with a f
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let batch = 0
+let batch = 0;
 
-const processOneBatch = Effect.gen(function*() {
-  batch += 1
-  yield* Console.log(`processed batch ${batch}`)
-  return batch
-})
+const processOneBatch = Effect.gen(function* () {
+  batch += 1;
+  yield* Console.log(`processed batch ${batch}`);
+  return batch;
+});
 
-const smoothBatchSchedule = Schedule.spaced("10 millis").pipe(
-  Schedule.take(3)
-)
+const smoothBatchSchedule = Schedule.spaced("10 millis").pipe(Schedule.take(3));
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalRecurrence = yield* processOneBatch.pipe(
     Effect.repeat(smoothBatchSchedule)
-  )
-  yield* Console.log(`smoothing run stopped after recurrence ${finalRecurrence}`)
-})
+  );
+  yield* Console.log(
+    `smoothing run stopped after recurrence ${finalRecurrence}`
+  );
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // processed batch 1
 // processed batch 2
@@ -6677,26 +6744,24 @@ with `Effect.repeat`, the repeated program returns the final schedule output.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let runs = 0
+let runs = 0;
 
-const sample = Effect.gen(function*() {
-  runs += 1
-  yield* Console.log(`run ${runs}`)
-  return runs
-})
+const sample = Effect.gen(function* () {
+  runs += 1;
+  yield* Console.log(`run ${runs}`);
+  return runs;
+});
 
-const program = Effect.gen(function*() {
-  const scheduleOutput = yield* sample.pipe(
-    Effect.repeat(Schedule.recurs(3))
-  )
+const program = Effect.gen(function* () {
+  const scheduleOutput = yield* sample.pipe(Effect.repeat(Schedule.recurs(3)));
 
-  yield* Console.log(`total executions: ${runs}`)
-  yield* Console.log(`schedule output: ${scheduleOutput}`)
-})
+  yield* Console.log(`total executions: ${runs}`);
+  yield* Console.log(`schedule output: ${scheduleOutput}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // run 1
 // run 2
@@ -6776,26 +6841,26 @@ schedules to continue, so the repeat stops when the budget is exhausted.
 ##### Example
 
 ```ts runnable
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-let polls = 0
+let polls = 0;
 
-const pollOnce = Effect.gen(function*() {
-  polls += 1
-  yield* Console.log(`poll ${polls}`)
-})
+const pollOnce = Effect.gen(function* () {
+  polls += 1;
+  yield* Console.log(`poll ${polls}`);
+});
 
 const repeatWithinBudget = Schedule.spaced("20 millis").pipe(
   Schedule.both(Schedule.during("75 millis"))
-)
+);
 
-const program = Effect.gen(function*() {
-  yield* pollOnce.pipe(Effect.repeat(repeatWithinBudget))
+const program = Effect.gen(function* () {
+  yield* pollOnce.pipe(Effect.repeat(repeatWithinBudget));
 
-  yield* Console.log(`total polls: ${polls}`)
-})
+  yield* Console.log(`total polls: ${polls}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: elapsed timing can cross the budget boundary differently under load
 // poll 1
 // poll 2
@@ -6884,35 +6949,33 @@ The predicate above therefore means "repeat while the latest successful
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface Progress {
-  readonly percent: number
+  readonly percent: number;
 }
 
-let percent = 0
+let percent = 0;
 
-const readProgress = Effect.gen(function*() {
-  percent = Math.min(percent + 40, 100)
-  yield* Console.log(`progress: ${percent}%`)
-  return { percent }
-})
+const readProgress = Effect.gen(function* () {
+  percent = Math.min(percent + 40, 100);
+  yield* Console.log(`progress: ${percent}%`);
+  return { percent };
+});
 
 const untilComplete = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<Progress>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.percent < 100)
-)
+);
 
-const program = Effect.gen(function*() {
-  const finalProgress = yield* readProgress.pipe(
-    Effect.repeat(untilComplete)
-  )
+const program = Effect.gen(function* () {
+  const finalProgress = yield* readProgress.pipe(Effect.repeat(untilComplete));
 
-  yield* Console.log(`final progress: ${finalProgress.percent}%`)
-})
+  yield* Console.log(`final progress: ${finalProgress.percent}%`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // progress: 40%
 // progress: 80%
@@ -7001,45 +7064,45 @@ stability state. `Schedule.while` stops when that state is stable.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface Snapshot {
-  readonly version: string
-  readonly itemCount: number
+  readonly version: string;
+  readonly itemCount: number;
 }
 
 interface StabilityState {
-  readonly previous: Snapshot | undefined
-  readonly current: Snapshot | undefined
-  readonly stable: boolean
+  readonly previous: Snapshot | undefined;
+  readonly current: Snapshot | undefined;
+  readonly stable: boolean;
 }
 
 const snapshots: ReadonlyArray<Snapshot> = [
   { version: "v1", itemCount: 10 },
   { version: "v2", itemCount: 12 },
-  { version: "v2", itemCount: 12 }
-]
+  { version: "v2", itemCount: 12 },
+];
 
-let index = 0
+let index = 0;
 
-const readSnapshot = Effect.gen(function*() {
-  const lastSnapshot = snapshots[snapshots.length - 1]!
-  const snapshot = snapshots[index] ?? lastSnapshot
-  index += 1
+const readSnapshot = Effect.gen(function* () {
+  const lastSnapshot = snapshots[snapshots.length - 1]!;
+  const snapshot = snapshots[index] ?? lastSnapshot;
+  index += 1;
   yield* Console.log(
     `snapshot ${snapshot.version} with ${snapshot.itemCount} items`
-  )
-  return snapshot
-})
+  );
+  return snapshot;
+});
 
 const sameSnapshot = (left: Snapshot, right: Snapshot) =>
-  left.version === right.version && left.itemCount === right.itemCount
+  left.version === right.version && left.itemCount === right.itemCount;
 
 const initialState: StabilityState = {
   previous: undefined,
   current: undefined,
-  stable: false
-}
+  stable: false,
+};
 
 const untilStable = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<Snapshot>(),
@@ -7049,18 +7112,19 @@ const untilStable = Schedule.spaced("10 millis").pipe(
     (state, current): StabilityState => ({
       previous: state.current,
       current,
-      stable: state.current !== undefined && sameSnapshot(state.current, current)
+      stable:
+        state.current !== undefined && sameSnapshot(state.current, current),
     })
   ),
   Schedule.while(({ output }) => !output.stable)
-)
+);
 
-const program = Effect.gen(function*() {
-  const state = yield* readSnapshot.pipe(Effect.repeat(untilStable))
-  yield* Console.log(`stable version: ${state.current?.version}`)
-})
+const program = Effect.gen(function* () {
+  const state = yield* readSnapshot.pipe(Effect.repeat(untilStable));
+  yield* Console.log(`stable version: ${state.current?.version}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // snapshot v1 with 10 items
 // snapshot v2 with 12 items
@@ -7152,52 +7216,50 @@ stops as soon as a successful terminal status is observed.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type JobStatus =
   | { readonly state: "queued" }
   | { readonly state: "running"; readonly percent: number }
   | { readonly state: "succeeded"; readonly resultId: string }
   | { readonly state: "failed"; readonly reason: string }
-  | { readonly state: "canceled" }
+  | { readonly state: "canceled" };
 
 const isTerminal = (status: JobStatus): boolean =>
   status.state === "succeeded" ||
   status.state === "failed" ||
-  status.state === "canceled"
+  status.state === "canceled";
 
 const statuses: ReadonlyArray<JobStatus> = [
   { state: "queued" },
   { state: "running", percent: 40 },
   { state: "running", percent: 80 },
-  { state: "succeeded", resultId: "result-123" }
-]
+  { state: "succeeded", resultId: "result-123" },
+];
 
-let index = 0
+let index = 0;
 
-const observeJob = Effect.gen(function*() {
-  const lastStatus = statuses[statuses.length - 1]!
-  const status = statuses[index] ?? lastStatus
-  index += 1
-  yield* Console.log(`observed ${status.state}`)
-  return status
-})
+const observeJob = Effect.gen(function* () {
+  const lastStatus = statuses[statuses.length - 1]!;
+  const status = statuses[index] ?? lastStatus;
+  index += 1;
+  yield* Console.log(`observed ${status.state}`);
+  return status;
+});
 
 const untilTerminal = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => !isTerminal(input))
-)
+);
 
-const program = Effect.gen(function*() {
-  const terminalStatus = yield* observeJob.pipe(
-    Effect.repeat(untilTerminal)
-  )
+const program = Effect.gen(function* () {
+  const terminalStatus = yield* observeJob.pipe(Effect.repeat(untilTerminal));
 
-  yield* Console.log(`final state: ${terminalStatus.state}`)
-})
+  yield* Console.log(`final state: ${terminalStatus.state}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // observed queued
 // observed running
@@ -7294,60 +7356,62 @@ observed status.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type JobStatus =
   | { readonly state: "queued" }
   | { readonly state: "running"; readonly percent: number }
   | { readonly state: "succeeded"; readonly resultId: string }
   | { readonly state: "failed"; readonly reason: string }
-  | { readonly state: "canceled" }
+  | { readonly state: "canceled" };
 
 type StatusCheckError = {
-  readonly _tag: "StatusCheckError"
-  readonly message: string
-}
+  readonly _tag: "StatusCheckError";
+  readonly message: string;
+};
 
 const isTerminal = (status: JobStatus): boolean =>
   status.state === "succeeded" ||
   status.state === "failed" ||
-  status.state === "canceled"
+  status.state === "canceled";
 
-let step = 0
+let step = 0;
 
 const nextStatus = (): JobStatus => {
-  step += 1
+  step += 1;
   switch (step) {
     case 1:
-      return { state: "queued" }
+      return { state: "queued" };
     case 2:
-      return { state: "running", percent: 40 }
+      return { state: "running", percent: 40 };
     default:
-      return { state: "succeeded", resultId: "result-123" }
+      return { state: "succeeded", resultId: "result-123" };
   }
-}
+};
 
-const checkJobStatus = (jobId: string): Effect.Effect<JobStatus, StatusCheckError> =>
-  Effect.gen(function*() {
-    const status = nextStatus()
-    yield* Console.log(`${jobId}: ${status.state}`)
-    return status
-  })
+const checkJobStatus = (
+  jobId: string
+): Effect.Effect<JobStatus, StatusCheckError> =>
+  Effect.gen(function* () {
+    const status = nextStatus();
+    yield* Console.log(`${jobId}: ${status.state}`);
+    return status;
+  });
 
 const pollUntilTerminal = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => !isTerminal(input))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalStatus = yield* checkJobStatus("job-123").pipe(
     Effect.repeat(pollUntilTerminal)
-  )
-  yield* Console.log(`final status: ${finalStatus.state}`)
-})
+  );
+  yield* Console.log(`final status: ${finalStatus.state}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // job-123: queued
 // job-123: running
@@ -7439,59 +7503,67 @@ observed status as the value returned by the repeated effect.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type PaymentStatus =
   | { readonly state: "pending"; readonly paymentId: string }
   | { readonly state: "processing"; readonly paymentId: string }
   | { readonly state: "requires_review"; readonly paymentId: string }
-  | { readonly state: "settled"; readonly paymentId: string; readonly settlementId: string }
-  | { readonly state: "failed"; readonly paymentId: string; readonly reason: string }
-  | { readonly state: "canceled"; readonly paymentId: string }
+  | {
+      readonly state: "settled";
+      readonly paymentId: string;
+      readonly settlementId: string;
+    }
+  | {
+      readonly state: "failed";
+      readonly paymentId: string;
+      readonly reason: string;
+    }
+  | { readonly state: "canceled"; readonly paymentId: string };
 
 const isSettled = (status: PaymentStatus): boolean =>
   status.state === "settled" ||
   status.state === "failed" ||
-  status.state === "canceled"
+  status.state === "canceled";
 
-let step = 0
+let step = 0;
 
 const nextPaymentStatus = (): PaymentStatus => {
-  step += 1
+  step += 1;
   switch (step) {
     case 1:
-      return { state: "pending", paymentId: "pay_123" }
+      return { state: "pending", paymentId: "pay_123" };
     case 2:
-      return { state: "processing", paymentId: "pay_123" }
+      return { state: "processing", paymentId: "pay_123" };
     default:
       return {
         state: "settled",
         paymentId: "pay_123",
-        settlementId: "set_456"
-      }
+        settlementId: "set_456",
+      };
   }
-}
+};
 
-const observePaymentStatus = Effect.gen(function*() {
-  const status = nextPaymentStatus()
-  yield* Console.log(`payment ${status.paymentId}: ${status.state}`)
-  return status
-})
+const observePaymentStatus = Effect.gen(function* () {
+  const status = nextPaymentStatus();
+  yield* Console.log(`payment ${status.paymentId}: ${status.state}`);
+  return status;
+});
 
 const pollUntilSettled = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<PaymentStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => !isSettled(input))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalStatus = yield* observePaymentStatus.pipe(
     Effect.repeat(pollUntilSettled)
-  )
-  yield* Console.log(`final payment status: ${finalStatus.state}`)
-})
+  );
+  yield* Console.log(`final payment status: ${finalStatus.state}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // payment pay_123: pending
 // payment pay_123: processing
@@ -7585,59 +7657,71 @@ latest `ExportStatus` as the value returned by the repeated effect.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type ExportStatus =
-  | { readonly state: "running"; readonly exportId: string; readonly percent: number }
-  | { readonly state: "ready"; readonly exportId: string; readonly downloadUrl: string }
-  | { readonly state: "failed"; readonly exportId: string; readonly reason: string }
+  | {
+      readonly state: "running";
+      readonly exportId: string;
+      readonly percent: number;
+    }
+  | {
+      readonly state: "ready";
+      readonly exportId: string;
+      readonly downloadUrl: string;
+    }
+  | {
+      readonly state: "failed";
+      readonly exportId: string;
+      readonly reason: string;
+    };
 
 type ExportStatusError = {
-  readonly _tag: "ExportStatusError"
-  readonly message: string
-}
+  readonly _tag: "ExportStatusError";
+  readonly message: string;
+};
 
-let step = 0
+let step = 0;
 
 const nextExportStatus = (exportId: string): ExportStatus => {
-  step += 1
+  step += 1;
   switch (step) {
     case 1:
-      return { state: "running", exportId, percent: 25 }
+      return { state: "running", exportId, percent: 25 };
     case 2:
-      return { state: "running", exportId, percent: 80 }
+      return { state: "running", exportId, percent: 80 };
     default:
       return {
         state: "ready",
         exportId,
-        downloadUrl: "https://example.com/report.csv"
-      }
+        downloadUrl: "https://example.com/report.csv",
+      };
   }
-}
+};
 
 const checkExportStatus = (
   exportId: string
 ): Effect.Effect<ExportStatus, ExportStatusError> =>
-  Effect.gen(function*() {
-    const status = nextExportStatus(exportId)
-    yield* Console.log(`export ${exportId}: ${status.state}`)
-    return status
-  })
+  Effect.gen(function* () {
+    const status = nextExportStatus(exportId);
+    yield* Console.log(`export ${exportId}: ${status.state}`);
+    return status;
+  });
 
 const pollUntilReadyOrFailed = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<ExportStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "running")
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalStatus = yield* checkExportStatus("export-123").pipe(
     Effect.repeat(pollUntilReadyOrFailed)
-  )
-  yield* Console.log(`final export status: ${finalStatus.state}`)
-})
+  );
+  yield* Console.log(`final export status: ${finalStatus.state}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // export export-123: running
 // export export-123: running
@@ -7734,66 +7818,74 @@ keeps the final observed status as the result of `Effect.repeat`.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type ProvisioningStatus =
   | { readonly state: "pending"; readonly resourceId: string }
   | { readonly state: "creating"; readonly resourceId: string }
   | { readonly state: "configuring"; readonly resourceId: string }
-  | { readonly state: "ready"; readonly resourceId: string; readonly endpoint: string }
-  | { readonly state: "provisioning_failed"; readonly resourceId: string; readonly reason: string }
+  | {
+      readonly state: "ready";
+      readonly resourceId: string;
+      readonly endpoint: string;
+    }
+  | {
+      readonly state: "provisioning_failed";
+      readonly resourceId: string;
+      readonly reason: string;
+    };
 
 type StatusCheckError = {
-  readonly _tag: "StatusCheckError"
-  readonly message: string
-}
+  readonly _tag: "StatusCheckError";
+  readonly message: string;
+};
 
 const isProvisioning = (status: ProvisioningStatus): boolean =>
   status.state === "pending" ||
   status.state === "creating" ||
-  status.state === "configuring"
+  status.state === "configuring";
 
-let step = 0
+let step = 0;
 
 const nextProvisioningStatus = (resourceId: string): ProvisioningStatus => {
-  step += 1
+  step += 1;
   switch (step) {
     case 1:
-      return { state: "pending", resourceId }
+      return { state: "pending", resourceId };
     case 2:
-      return { state: "creating", resourceId }
+      return { state: "creating", resourceId };
     default:
       return {
         state: "ready",
         resourceId,
-        endpoint: "https://db.example.com"
-      }
+        endpoint: "https://db.example.com",
+      };
   }
-}
+};
 
 const describeResource = (
   resourceId: string
 ): Effect.Effect<ProvisioningStatus, StatusCheckError> =>
-  Effect.gen(function*() {
-    const status = nextProvisioningStatus(resourceId)
-    yield* Console.log(`resource ${resourceId}: ${status.state}`)
-    return status
-  })
+  Effect.gen(function* () {
+    const status = nextProvisioningStatus(resourceId);
+    yield* Console.log(`resource ${resourceId}: ${status.state}`);
+    return status;
+  });
 
 const pollUntilReadyOrFailed = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<ProvisioningStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => isProvisioning(input))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const finalStatus = yield* describeResource("db-123").pipe(
     Effect.repeat(pollUntilReadyOrFailed)
-  )
-  yield* Console.log(`final provisioning status: ${finalStatus.state}`)
-})
+  );
+  yield* Console.log(`final provisioning status: ${finalStatus.state}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // resource db-123: pending
 // resource db-123: creating
@@ -7884,78 +7976,79 @@ other terminal statuses to domain errors.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type JobStatus =
   | { readonly state: "Queued" }
   | { readonly state: "Running"; readonly percent: number }
   | { readonly state: "Completed"; readonly resultId: string }
   | { readonly state: "Failed"; readonly reason: string }
-  | { readonly state: "Canceled" }
+  | { readonly state: "Canceled" };
 
-type CompletedStatus = Extract<JobStatus, { readonly state: "Completed" }>
+type CompletedStatus = Extract<JobStatus, { readonly state: "Completed" }>;
 
 type CompletionError =
   | { readonly _tag: "JobFailed"; readonly reason: string }
   | { readonly _tag: "JobCanceled" }
-  | { readonly _tag: "JobDidNotCompleteInTime"; readonly lastState: JobStatus["state"] }
+  | {
+      readonly _tag: "JobDidNotCompleteInTime";
+      readonly lastState: JobStatus["state"];
+    };
 
 const scriptedStatuses: ReadonlyArray<JobStatus> = [
   { state: "Queued" },
   { state: "Running", percent: 40 },
-  { state: "Completed", resultId: "result-123" }
-]
+  { state: "Completed", resultId: "result-123" },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
-const isInProgress = (status: JobStatus): boolean => status.state === "Queued" || status.state === "Running"
+const isInProgress = (status: JobStatus): boolean =>
+  status.state === "Queued" || status.state === "Running";
 
 const checkJobStatus = (jobId: string): Effect.Effect<JobStatus> =>
   Effect.sync(() => {
-    const status = scriptedStatuses[
-      Math.min(readIndex, scriptedStatuses.length - 1)
-    ]!
-    readIndex += 1
-    return status
-  }).pipe(
-    Effect.tap((status) => Console.log(`[${jobId}] ${status.state}`))
-  )
+    const status =
+      scriptedStatuses[Math.min(readIndex, scriptedStatuses.length - 1)]!;
+    readIndex += 1;
+    return status;
+  }).pipe(Effect.tap((status) => Console.log(`[${jobId}] ${status.state}`)));
 
 const pollWhileInProgress = Schedule.spaced("20 millis").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => isInProgress(input)),
   Schedule.take(10)
-)
+);
 
 const requireCompleted = (
   status: JobStatus
 ): Effect.Effect<CompletedStatus, CompletionError> => {
   switch (status.state) {
     case "Completed":
-      return Effect.succeed(status)
+      return Effect.succeed(status);
     case "Failed":
-      return Effect.fail({ _tag: "JobFailed", reason: status.reason })
+      return Effect.fail({ _tag: "JobFailed", reason: status.reason });
     case "Canceled":
-      return Effect.fail({ _tag: "JobCanceled" })
+      return Effect.fail({ _tag: "JobCanceled" });
     case "Queued":
     case "Running":
       return Effect.fail({
         _tag: "JobDidNotCompleteInTime",
-        lastState: status.state
-      })
+        lastState: status.state,
+      });
   }
-}
+};
 
 const program = checkJobStatus("job-1").pipe(
   Effect.repeat(pollWhileInProgress),
   Effect.flatMap(requireCompleted),
   Effect.tap((status) => Console.log(`completed with ${status.resultId}`))
-)
+);
 
 Effect.runPromise(program).then((status) => {
-  console.log("result:", status)
-})
+  console.log("result:", status);
+});
 // Output:
 // [job-1] Queued
 // [job-1] Running
@@ -8036,47 +8129,49 @@ If a bounded schedule stops first, the final observation can still be
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface Resource {
-  readonly id: string
-  readonly url: string
+  readonly id: string;
+  readonly url: string;
 }
 
 type ResourceLookup =
   | { readonly _tag: "Missing" }
-  | { readonly _tag: "Found"; readonly resource: Resource }
+  | { readonly _tag: "Found"; readonly resource: Resource };
 
 type WaitForResourceError = {
-  readonly _tag: "ResourceNotFoundInTime"
-  readonly resourceId: string
-}
+  readonly _tag: "ResourceNotFoundInTime";
+  readonly resourceId: string;
+};
 
 const scriptedLookups: ReadonlyArray<ResourceLookup> = [
   { _tag: "Missing" },
   { _tag: "Missing" },
-  { _tag: "Found", resource: { id: "file-1", url: "https://example.test/file-1" } }
-]
+  {
+    _tag: "Found",
+    resource: { id: "file-1", url: "https://example.test/file-1" },
+  },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
 const lookupResource = (resourceId: string): Effect.Effect<ResourceLookup> =>
   Effect.sync(() => {
-    const lookup = scriptedLookups[
-      Math.min(readIndex, scriptedLookups.length - 1)
-    ]!
-    readIndex += 1
-    return lookup
+    const lookup =
+      scriptedLookups[Math.min(readIndex, scriptedLookups.length - 1)]!;
+    readIndex += 1;
+    return lookup;
   }).pipe(
     Effect.tap((lookup) => Console.log(`[${resourceId}] ${lookup._tag}`))
-  )
+  );
 
 const pollUntilFound = Schedule.spaced("15 millis").pipe(
   Schedule.satisfiesInputType<ResourceLookup>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag === "Missing"),
   Schedule.take(10)
-)
+);
 
 const requireFound = (
   resourceId: string,
@@ -8084,17 +8179,17 @@ const requireFound = (
 ): Effect.Effect<Resource, WaitForResourceError> =>
   lookup._tag === "Found"
     ? Effect.succeed(lookup.resource)
-    : Effect.fail({ _tag: "ResourceNotFoundInTime", resourceId })
+    : Effect.fail({ _tag: "ResourceNotFoundInTime", resourceId });
 
 const program = lookupResource("file-1").pipe(
   Effect.repeat(pollUntilFound),
   Effect.flatMap((lookup) => requireFound("file-1", lookup)),
   Effect.tap((resource) => Console.log(`resource url: ${resource.url}`))
-)
+);
 
 Effect.runPromise(program).then((resource) => {
-  console.log("result:", resource)
-})
+  console.log("result:", resource);
+});
 // Output:
 // [file-1] Missing
 // [file-1] Missing
@@ -8168,48 +8263,45 @@ For bounded waits, handle a final `Missing` value explicitly.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface CacheEntry {
-  readonly key: string
-  readonly value: string
-  readonly version: number
+  readonly key: string;
+  readonly value: string;
+  readonly version: number;
 }
 
 type CacheLookup =
   | { readonly _tag: "Missing" }
-  | { readonly _tag: "Present"; readonly entry: CacheEntry }
+  | { readonly _tag: "Present"; readonly entry: CacheEntry };
 
 type WaitForCacheEntryError = {
-  readonly _tag: "CacheEntryUnavailable"
-  readonly key: string
-}
+  readonly _tag: "CacheEntryUnavailable";
+  readonly key: string;
+};
 
 const scriptedLookups: ReadonlyArray<CacheLookup> = [
   { _tag: "Missing" },
   { _tag: "Missing" },
-  { _tag: "Present", entry: { key: "user:1", value: "Ada", version: 3 } }
-]
+  { _tag: "Present", entry: { key: "user:1", value: "Ada", version: 3 } },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
 const lookupCacheEntry = (key: string): Effect.Effect<CacheLookup> =>
   Effect.sync(() => {
-    const lookup = scriptedLookups[
-      Math.min(readIndex, scriptedLookups.length - 1)
-    ]!
-    readIndex += 1
-    return lookup
-  }).pipe(
-    Effect.tap((lookup) => Console.log(`[${key}] ${lookup._tag}`))
-  )
+    const lookup =
+      scriptedLookups[Math.min(readIndex, scriptedLookups.length - 1)]!;
+    readIndex += 1;
+    return lookup;
+  }).pipe(Effect.tap((lookup) => Console.log(`[${key}] ${lookup._tag}`)));
 
 const pollUntilPresent = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<CacheLookup>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag === "Missing"),
   Schedule.take(10)
-)
+);
 
 const requirePresent = (
   key: string,
@@ -8217,17 +8309,19 @@ const requirePresent = (
 ): Effect.Effect<CacheEntry, WaitForCacheEntryError> =>
   lookup._tag === "Present"
     ? Effect.succeed(lookup.entry)
-    : Effect.fail({ _tag: "CacheEntryUnavailable", key })
+    : Effect.fail({ _tag: "CacheEntryUnavailable", key });
 
 const program = lookupCacheEntry("user:1").pipe(
   Effect.repeat(pollUntilPresent),
   Effect.flatMap((lookup) => requirePresent("user:1", lookup)),
-  Effect.tap((entry) => Console.log(`cache value: ${entry.value} v${entry.version}`))
-)
+  Effect.tap((entry) =>
+    Console.log(`cache value: ${entry.value} v${entry.version}`)
+  )
+);
 
 Effect.runPromise(program).then((entry) => {
-  console.log("result:", entry)
-})
+  console.log("result:", entry);
+});
 // Output:
 // [user:1] Missing
 // [user:1] Missing
@@ -8307,48 +8401,49 @@ time" instead of returning stale data.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface ReplicaObservation {
-  readonly replica: "read-model"
-  readonly observedVersion: number
+  readonly replica: "read-model";
+  readonly observedVersion: number;
 }
 
 type WaitForReplicaError = {
-  readonly _tag: "ReplicaDidNotCatchUp"
-  readonly requiredVersion: number
-  readonly observedVersion: number
-}
+  readonly _tag: "ReplicaDidNotCatchUp";
+  readonly requiredVersion: number;
+  readonly observedVersion: number;
+};
 
 const scriptedObservations: ReadonlyArray<ReplicaObservation> = [
   { replica: "read-model", observedVersion: 41 },
   { replica: "read-model", observedVersion: 43 },
-  { replica: "read-model", observedVersion: 45 }
-]
+  { replica: "read-model", observedVersion: 45 },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
 const hasCaughtUp = (
   observation: ReplicaObservation,
   requiredVersion: number
-): boolean => observation.observedVersion >= requiredVersion
+): boolean => observation.observedVersion >= requiredVersion;
 
 const readReplicaWatermark = (
   streamName: string
 ): Effect.Effect<ReplicaObservation> =>
   Effect.sync(() => {
-    const observation = scriptedObservations[
-      Math.min(readIndex, scriptedObservations.length - 1)
-    ]!
-    readIndex += 1
-    return observation
+    const observation =
+      scriptedObservations[
+        Math.min(readIndex, scriptedObservations.length - 1)
+      ]!;
+    readIndex += 1;
+    return observation;
   }).pipe(
     Effect.tap((observation) =>
       Console.log(
         `[${streamName}] ${observation.replica} at ${observation.observedVersion}`
       )
     )
-  )
+  );
 
 const pollUntilVersion = (requiredVersion: number) =>
   Schedule.spaced("10 millis").pipe(
@@ -8356,7 +8451,7 @@ const pollUntilVersion = (requiredVersion: number) =>
     Schedule.passthrough,
     Schedule.while(({ input }) => !hasCaughtUp(input, requiredVersion)),
     Schedule.take(10)
-  )
+  );
 
 const requireCaughtUp = (
   requiredVersion: number,
@@ -8365,22 +8460,26 @@ const requireCaughtUp = (
   hasCaughtUp(observation, requiredVersion)
     ? Effect.succeed(observation)
     : Effect.fail({
-      _tag: "ReplicaDidNotCatchUp",
-      requiredVersion,
-      observedVersion: observation.observedVersion
-    })
+        _tag: "ReplicaDidNotCatchUp",
+        requiredVersion,
+        observedVersion: observation.observedVersion,
+      });
 
-const requiredVersion = 45
+const requiredVersion = 45;
 
 const program = readReplicaWatermark("orders").pipe(
   Effect.repeat(pollUntilVersion(requiredVersion)),
-  Effect.flatMap((observation) => requireCaughtUp(requiredVersion, observation)),
-  Effect.tap((observation) => Console.log(`caught up at ${observation.observedVersion}`))
-)
+  Effect.flatMap((observation) =>
+    requireCaughtUp(requiredVersion, observation)
+  ),
+  Effect.tap((observation) =>
+    Console.log(`caught up at ${observation.observedVersion}`)
+  )
+);
 
 Effect.runPromise(program).then((observation) => {
-  console.log("result:", observation)
-})
+  console.log("result:", observation);
+});
 // Output:
 // [orders] read-model at 41
 // [orders] read-model at 43
@@ -8464,47 +8563,47 @@ failure, and a bounded final `Behind` as "not settled in time."
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface OrderSummary {
-  readonly orderId: string
-  readonly revision: number
-  readonly totalCents: number
+  readonly orderId: string;
+  readonly revision: number;
+  readonly totalCents: number;
 }
 
 interface AccountOrdersView {
-  readonly accountId: string
-  readonly revision: number
-  readonly orders: ReadonlyArray<OrderSummary>
+  readonly accountId: string;
+  readonly revision: number;
+  readonly orders: ReadonlyArray<OrderSummary>;
 }
 
 type ProjectionObservation =
   | {
-    readonly _tag: "Behind"
-    readonly view: AccountOrdersView
-    readonly expectedRevision: number
-  }
+      readonly _tag: "Behind";
+      readonly view: AccountOrdersView;
+      readonly expectedRevision: number;
+    }
   | {
-    readonly _tag: "Settled"
-    readonly view: AccountOrdersView
-    readonly order: OrderSummary
-  }
+      readonly _tag: "Settled";
+      readonly view: AccountOrdersView;
+      readonly order: OrderSummary;
+    }
   | {
-    readonly _tag: "Inconsistent"
-    readonly view: AccountOrdersView
-    readonly reason: string
-  }
+      readonly _tag: "Inconsistent";
+      readonly view: AccountOrdersView;
+      readonly reason: string;
+    };
 
 type ProjectionWaitError =
   | {
-    readonly _tag: "ProjectionDidNotSettleInTime"
-    readonly expectedRevision: number
-    readonly observedRevision: number
-  }
+      readonly _tag: "ProjectionDidNotSettleInTime";
+      readonly expectedRevision: number;
+      readonly observedRevision: number;
+    }
   | {
-    readonly _tag: "ProjectionDidNotContainExpectedOrder"
-    readonly reason: string
-  }
+      readonly _tag: "ProjectionDidNotContainExpectedOrder";
+      readonly reason: string;
+    };
 
 const scriptedViews: ReadonlyArray<AccountOrdersView> = [
   { accountId: "account-1", revision: 8, orders: [] },
@@ -8512,29 +8611,30 @@ const scriptedViews: ReadonlyArray<AccountOrdersView> = [
   {
     accountId: "account-1",
     revision: 10,
-    orders: [{ orderId: "order-7", revision: 10, totalCents: 2599 }]
-  }
-]
+    orders: [{ orderId: "order-7", revision: 10, totalCents: 2599 }],
+  },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
 const findOrder = (
   view: AccountOrdersView,
   orderId: string
-): OrderSummary | undefined => view.orders.find((order) => order.orderId === orderId)
+): OrderSummary | undefined =>
+  view.orders.find((order) => order.orderId === orderId);
 
 const readAccountOrders = (
   accountId: string
 ): Effect.Effect<AccountOrdersView> =>
   Effect.sync(() => {
-    const view = scriptedViews[
-      Math.min(readIndex, scriptedViews.length - 1)
-    ]!
-    readIndex += 1
-    return view
+    const view = scriptedViews[Math.min(readIndex, scriptedViews.length - 1)]!;
+    readIndex += 1;
+    return view;
   }).pipe(
-    Effect.tap((view) => Console.log(`[${accountId}] read revision ${view.revision}`))
-  )
+    Effect.tap((view) =>
+      Console.log(`[${accountId}] read revision ${view.revision}`)
+    )
+  );
 
 const observeAccountOrders = (
   accountId: string,
@@ -8543,31 +8643,31 @@ const observeAccountOrders = (
 ): Effect.Effect<ProjectionObservation> =>
   readAccountOrders(accountId).pipe(
     Effect.map((view): ProjectionObservation => {
-      const order = findOrder(view, orderId)
+      const order = findOrder(view, orderId);
 
       if (order !== undefined && view.revision >= expectedRevision) {
-        return { _tag: "Settled", view, order }
+        return { _tag: "Settled", view, order };
       }
 
       if (view.revision < expectedRevision) {
-        return { _tag: "Behind", view, expectedRevision }
+        return { _tag: "Behind", view, expectedRevision };
       }
 
       return {
         _tag: "Inconsistent",
         view,
-        reason: "Projection reached the expected revision without the order"
-      }
+        reason: "Projection reached the expected revision without the order",
+      };
     }),
     Effect.tap((observation) => Console.log(`observation: ${observation._tag}`))
-  )
+  );
 
 const pollUntilProjectionSettles = Schedule.spaced("15 millis").pipe(
   Schedule.satisfiesInputType<ProjectionObservation>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag === "Behind"),
   Schedule.take(10)
-)
+);
 
 const requireSettled = (
   expectedRevision: number,
@@ -8575,22 +8675,22 @@ const requireSettled = (
 ): Effect.Effect<OrderSummary, ProjectionWaitError> => {
   switch (observation._tag) {
     case "Settled":
-      return Effect.succeed(observation.order)
+      return Effect.succeed(observation.order);
     case "Inconsistent":
       return Effect.fail({
         _tag: "ProjectionDidNotContainExpectedOrder",
-        reason: observation.reason
-      })
+        reason: observation.reason,
+      });
     case "Behind":
       return Effect.fail({
         _tag: "ProjectionDidNotSettleInTime",
         expectedRevision,
-        observedRevision: observation.view.revision
-      })
+        observedRevision: observation.view.revision,
+      });
   }
-}
+};
 
-const expectedRevision = 10
+const expectedRevision = 10;
 
 const program = observeAccountOrders(
   "account-1",
@@ -8598,13 +8698,15 @@ const program = observeAccountOrders(
   "order-7"
 ).pipe(
   Effect.repeat(pollUntilProjectionSettles),
-  Effect.flatMap((observation) => requireSettled(expectedRevision, observation)),
+  Effect.flatMap((observation) =>
+    requireSettled(expectedRevision, observation)
+  ),
   Effect.tap((order) => Console.log(`settled order total: ${order.totalCents}`))
-)
+);
 
 Effect.runPromise(program).then((order) => {
-  console.log("result:", order)
-})
+  console.log("result:", order);
+});
 // Output:
 // [account-1] read revision 8
 // observation: Behind
@@ -8687,54 +8789,52 @@ the repeat result is the last status observed by the schedule.
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type Status =
   | { readonly state: "pending" }
   | { readonly state: "ready"; readonly resourceId: string }
-  | { readonly state: "failed"; readonly reason: string }
+  | { readonly state: "failed"; readonly reason: string };
 
 const script: ReadonlyArray<Status> = [
   { state: "pending" },
   { state: "pending" },
-  { state: "ready", resourceId: "resource-123" }
-]
+  { state: "ready", resourceId: "resource-123" },
+];
 
 const pollEverySecondForUpTo30Seconds = Schedule.spaced("1 second").pipe(
   Schedule.satisfiesInputType<Status>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "pending"),
   Schedule.bothLeft(
-    Schedule.during("30 seconds").pipe(
-      Schedule.satisfiesInputType<Status>()
-    )
+    Schedule.during("30 seconds").pipe(Schedule.satisfiesInputType<Status>())
   )
-)
+);
 
-let checks = 0
+let checks = 0;
 
-const checkStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  const status = script[Math.min(checks, script.length - 1)]!
-  checks += 1
-  console.log(`t+${now}ms check ${checks}: ${status.state}`)
-  return status
-})
+const checkStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  const status = script[Math.min(checks, script.length - 1)]!;
+  checks += 1;
+  console.log(`t+${now}ms check ${checks}: ${status.state}`);
+  return status;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* checkStatus.pipe(
     Effect.repeat(pollEverySecondForUpTo30Seconds),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("30 seconds")
+  yield* TestClock.adjust("30 seconds");
 
-  const finalStatus = yield* Fiber.join(fiber)
-  console.log("final:", finalStatus)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const finalStatus = yield* Fiber.join(fiber);
+  console.log("final:", finalStatus);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The example uses `TestClock` so it can run in `scratchpad/repro.ts` without
@@ -8795,13 +8895,21 @@ combine the policy with `Schedule.during` to cap the recurrence window.
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type OperationStatus =
   | { readonly state: "pending"; readonly operationId: string }
-  | { readonly state: "ready"; readonly operationId: string; readonly resourceId: string }
-  | { readonly state: "failed"; readonly operationId: string; readonly reason: string }
+  | {
+      readonly state: "ready";
+      readonly operationId: string;
+      readonly resourceId: string;
+    }
+  | {
+      readonly state: "failed";
+      readonly operationId: string;
+      readonly reason: string;
+    };
 
 const giveUpWhenTooSlow = Schedule.spaced("2 seconds").pipe(
   Schedule.satisfiesInputType<OperationStatus>(),
@@ -8812,36 +8920,36 @@ const giveUpWhenTooSlow = Schedule.spaced("2 seconds").pipe(
       Schedule.satisfiesInputType<OperationStatus>()
     )
   )
-)
+);
 
-let checks = 0
+let checks = 0;
 
-const checkOperationStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  checks += 1
+const checkOperationStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  checks += 1;
 
   const status: OperationStatus = {
     state: "pending",
-    operationId: "operation-1"
-  }
+    operationId: "operation-1",
+  };
 
-  console.log(`t+${now}ms check ${checks}: ${status.state}`)
-  return status
-})
+  console.log(`t+${now}ms check ${checks}: ${status.state}`);
+  return status;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* checkOperationStatus.pipe(
     Effect.repeat(giveUpWhenTooSlow),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("12 seconds")
+  yield* TestClock.adjust("12 seconds");
 
-  const finalStatus = yield* Fiber.join(fiber)
-  console.log("final:", finalStatus)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const finalStatus = yield* Fiber.join(fiber);
+  console.log("final:", finalStatus);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The final status is still `"pending"`, which is the signal that the schedule
@@ -8902,17 +9010,30 @@ from `Schedule.while`, and keep the final `JobStatus` with
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type JobStatus =
   | { readonly state: "queued"; readonly jobId: string }
-  | { readonly state: "running"; readonly jobId: string; readonly progress: number }
-  | { readonly state: "succeeded"; readonly jobId: string; readonly resultId: string }
-  | { readonly state: "failed"; readonly jobId: string; readonly reason: string }
-  | { readonly state: "canceled"; readonly jobId: string }
+  | {
+      readonly state: "running";
+      readonly jobId: string;
+      readonly progress: number;
+    }
+  | {
+      readonly state: "succeeded";
+      readonly jobId: string;
+      readonly resultId: string;
+    }
+  | {
+      readonly state: "failed";
+      readonly jobId: string;
+      readonly reason: string;
+    }
+  | { readonly state: "canceled"; readonly jobId: string };
 
-const isStillRunning = (status: JobStatus): boolean => status.state === "queued" || status.state === "running"
+const isStillRunning = (status: JobStatus): boolean =>
+  status.state === "queued" || status.state === "running";
 
 const pollWhileStillRunning = Schedule.spaced("2 seconds").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
@@ -8921,58 +9042,64 @@ const pollWhileStillRunning = Schedule.spaced("2 seconds").pipe(
   Schedule.bothLeft(
     Schedule.during("1 minute").pipe(Schedule.satisfiesInputType<JobStatus>())
   )
-)
+);
 
 type PollResult =
   | { readonly _tag: "Completed"; readonly resultId: string }
   | { readonly _tag: "FailedPermanently"; readonly reason: string }
   | { readonly _tag: "Canceled" }
-  | { readonly _tag: "StillRunning"; readonly status: Extract<JobStatus, { readonly state: "queued" | "running" }> }
+  | {
+      readonly _tag: "StillRunning";
+      readonly status: Extract<
+        JobStatus,
+        { readonly state: "queued" | "running" }
+      >;
+    };
 
 const interpretFinalStatus = (status: JobStatus): PollResult => {
   switch (status.state) {
     case "succeeded":
-      return { _tag: "Completed", resultId: status.resultId }
+      return { _tag: "Completed", resultId: status.resultId };
     case "failed":
-      return { _tag: "FailedPermanently", reason: status.reason }
+      return { _tag: "FailedPermanently", reason: status.reason };
     case "canceled":
-      return { _tag: "Canceled" }
+      return { _tag: "Canceled" };
     case "queued":
     case "running":
-      return { _tag: "StillRunning", status }
+      return { _tag: "StillRunning", status };
   }
-}
+};
 
 const script: ReadonlyArray<JobStatus> = [
   { state: "queued", jobId: "job-1" },
   { state: "running", jobId: "job-1", progress: 40 },
-  { state: "failed", jobId: "job-1", reason: "validation failed" }
-]
+  { state: "failed", jobId: "job-1", reason: "validation failed" },
+];
 
-let checks = 0
+let checks = 0;
 
-const checkJobStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  const status = script[Math.min(checks, script.length - 1)]!
-  checks += 1
-  console.log(`t+${now}ms check ${checks}: ${status.state}`)
-  return status
-})
+const checkJobStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  const status = script[Math.min(checks, script.length - 1)]!;
+  checks += 1;
+  console.log(`t+${now}ms check ${checks}: ${status.state}`);
+  return status;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* checkJobStatus.pipe(
     Effect.repeat(pollWhileStillRunning),
     Effect.map(interpretFinalStatus),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("1 minute")
+  yield* TestClock.adjust("1 minute");
 
-  const result = yield* Fiber.join(fiber)
-  console.log("result:", result)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const result = yield* Fiber.join(fiber);
+  console.log("result:", result);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The final `"failed"` status stops polling because it is not still running. The
@@ -9061,99 +9188,105 @@ policy with `Schedule.during("30 seconds")`. After `Effect.repeat`, map a final
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type JobStatus =
   | { readonly state: "pending"; readonly jobId: string }
-  | { readonly state: "done"; readonly jobId: string; readonly resultId: string }
-  | { readonly state: "failed"; readonly jobId: string; readonly reason: string }
+  | {
+      readonly state: "done";
+      readonly jobId: string;
+      readonly resultId: string;
+    }
+  | {
+      readonly state: "failed";
+      readonly jobId: string;
+      readonly reason: string;
+    };
 
 type JobTimedOut = {
-  readonly _tag: "JobTimedOut"
-  readonly jobId: string
-}
+  readonly _tag: "JobTimedOut";
+  readonly jobId: string;
+};
 
 type JobFailed = {
-  readonly _tag: "JobFailed"
-  readonly jobId: string
-  readonly reason: string
-}
+  readonly _tag: "JobFailed";
+  readonly jobId: string;
+  readonly reason: string;
+};
 
 const pollForUpTo30Seconds = Schedule.spaced("1 second").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "pending"),
   Schedule.bothLeft(
-    Schedule.during("30 seconds").pipe(
-      Schedule.satisfiesInputType<JobStatus>()
-    )
+    Schedule.during("30 seconds").pipe(Schedule.satisfiesInputType<JobStatus>())
   )
-)
+);
 
-let checks = 0
+let checks = 0;
 
-const checkJobStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  checks += 1
+const checkJobStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  checks += 1;
 
   const status: JobStatus = {
     state: "pending",
-    jobId: "job-1"
-  }
+    jobId: "job-1",
+  };
 
   if (checks <= 3 || now >= 30000) {
-    console.log(`t+${now}ms check ${checks}: ${status.state}`)
+    console.log(`t+${now}ms check ${checks}: ${status.state}`);
   } else if (checks === 4) {
-    console.log("additional pending checks omitted")
+    console.log("additional pending checks omitted");
   }
 
-  return status
-})
+  return status;
+});
 
 const pollUntilDoneOrTimeout = checkJobStatus.pipe(
   Effect.repeat(pollForUpTo30Seconds),
-  Effect.flatMap((status): Effect.Effect<
-    Extract<JobStatus, { readonly state: "done" }>,
-    JobFailed | JobTimedOut
-  > => {
-    switch (status.state) {
-      case "done":
-        return Effect.succeed(status)
-      case "failed":
-        return Effect.fail(
-          {
+  Effect.flatMap(
+    (
+      status
+    ): Effect.Effect<
+      Extract<JobStatus, { readonly state: "done" }>,
+      JobFailed | JobTimedOut
+    > => {
+      switch (status.state) {
+        case "done":
+          return Effect.succeed(status);
+        case "failed":
+          return Effect.fail({
             _tag: "JobFailed",
             jobId: status.jobId,
-            reason: status.reason
-          } satisfies JobFailed
-        )
-      case "pending":
-        return Effect.fail(
-          {
+            reason: status.reason,
+          } satisfies JobFailed);
+        case "pending":
+          return Effect.fail({
             _tag: "JobTimedOut",
-            jobId: status.jobId
-          } satisfies JobTimedOut
-        )
+            jobId: status.jobId,
+          } satisfies JobTimedOut);
+      }
     }
-  })
-)
+  )
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* pollUntilDoneOrTimeout.pipe(
     Effect.match({
       onFailure: (error) => ({ _tag: "Failed" as const, error }),
-      onSuccess: (status) => ({ _tag: "Succeeded" as const, status })
+      onSuccess: (status) => ({ _tag: "Succeeded" as const, status }),
     }),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("35 seconds")
-  const result = yield* Fiber.join(fiber)
-  console.log("result:", result)
-}).pipe(Effect.scoped, Effect.provide(TestClock.layer()))
+  yield* TestClock.adjust("35 seconds");
+  const result = yield* Fiber.join(fiber);
+  console.log("result:", result);
+}).pipe(Effect.scoped, Effect.provide(TestClock.layer()));
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The logged result contains `JobTimedOut`. That error is produced by the final
@@ -9220,50 +9353,50 @@ to cap the burst, `Schedule.while` to continue only for pending statuses, and
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type Status =
   | { readonly state: "pending" }
   | { readonly state: "ready"; readonly resourceId: string }
-  | { readonly state: "failed"; readonly reason: string }
+  | { readonly state: "failed"; readonly reason: string };
 
 const fastInitialPolling = Schedule.spaced("250 millis").pipe(
   Schedule.take(12),
   Schedule.satisfiesInputType<Status>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "pending")
-)
+);
 
 const script: ReadonlyArray<Status> = [
   { state: "pending" },
   { state: "pending" },
-  { state: "ready", resourceId: "result-1" }
-]
+  { state: "ready", resourceId: "result-1" },
+];
 
-let checks = 0
+let checks = 0;
 
-const checkStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  const status = script[Math.min(checks, script.length - 1)]!
-  checks += 1
-  console.log(`t+${now}ms check ${checks}: ${status.state}`)
-  return status
-})
+const checkStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  const status = script[Math.min(checks, script.length - 1)]!;
+  checks += 1;
+  console.log(`t+${now}ms check ${checks}: ${status.state}`);
+  return status;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* checkStatus.pipe(
     Effect.repeat(fastInitialPolling),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("3 seconds")
+  yield* TestClock.adjust("3 seconds");
 
-  const finalStatus = yield* Fiber.join(fiber)
-  console.log("final:", finalStatus)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const finalStatus = yield* Fiber.join(fiber);
+  console.log("final:", finalStatus);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The first check is immediate. The 250-millisecond delay applies only after a
@@ -9333,50 +9466,50 @@ Use `Schedule.spaced("30 seconds")` for the slower cadence,
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type Status =
   | { readonly state: "pending"; readonly progress: number }
   | { readonly state: "ready"; readonly resultId: string }
-  | { readonly state: "failed"; readonly reason: string }
+  | { readonly state: "failed"; readonly reason: string };
 
-const isPending = (status: Status): boolean => status.state === "pending"
+const isPending = (status: Status): boolean => status.state === "pending";
 
 const slowPollingAfterInitialWindow = Schedule.spaced("30 seconds").pipe(
   Schedule.satisfiesInputType<Status>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => isPending(input))
-)
+);
 
 const script: ReadonlyArray<Status> = [
   { state: "pending", progress: 70 },
-  { state: "ready", resultId: "report-42" }
-]
+  { state: "ready", resultId: "report-42" },
+];
 
-let checks = 0
+let checks = 0;
 
-const checkStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  const status = script[Math.min(checks, script.length - 1)]!
-  checks += 1
-  console.log(`t+${now}ms check ${checks}: ${status.state}`)
-  return status
-})
+const checkStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  const status = script[Math.min(checks, script.length - 1)]!;
+  checks += 1;
+  console.log(`t+${now}ms check ${checks}: ${status.state}`);
+  return status;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* checkStatus.pipe(
     Effect.repeat(slowPollingAfterInitialWindow),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("30 seconds")
+  yield* TestClock.adjust("30 seconds");
 
-  const finalStatus = yield* Fiber.join(fiber)
-  console.log("final:", finalStatus)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const finalStatus = yield* Fiber.join(fiber);
+  console.log("final:", finalStatus);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 ##### Variants
@@ -9446,13 +9579,13 @@ stop both phases, and use `Schedule.passthrough` to return the latest
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type WorkflowStatus =
   | { readonly state: "processing"; readonly message: string }
   | { readonly state: "ready"; readonly resultUrl: string }
-  | { readonly state: "failed"; readonly reason: string }
+  | { readonly state: "failed"; readonly reason: string };
 
 const userTriggeredPolling = Schedule.spaced("500 millis").pipe(
   Schedule.take(4),
@@ -9460,7 +9593,7 @@ const userTriggeredPolling = Schedule.spaced("500 millis").pipe(
   Schedule.satisfiesInputType<WorkflowStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "processing")
-)
+);
 
 const script: ReadonlyArray<WorkflowStatus> = [
   { state: "processing", message: "queued" },
@@ -9468,32 +9601,32 @@ const script: ReadonlyArray<WorkflowStatus> = [
   { state: "processing", message: "uploading" },
   { state: "processing", message: "still uploading" },
   { state: "processing", message: "almost done" },
-  { state: "ready", resultUrl: "/reports/42" }
-]
+  { state: "ready", resultUrl: "/reports/42" },
+];
 
-let checks = 0
+let checks = 0;
 
-const checkWorkflowStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  const status = script[Math.min(checks, script.length - 1)]!
-  checks += 1
-  console.log(`t+${now}ms check ${checks}: ${status.state}`)
-  return status
-})
+const checkWorkflowStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  const status = script[Math.min(checks, script.length - 1)]!;
+  checks += 1;
+  console.log(`t+${now}ms check ${checks}: ${status.state}`);
+  return status;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* checkWorkflowStatus.pipe(
     Effect.repeat(userTriggeredPolling),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("10 seconds")
+  yield* TestClock.adjust("10 seconds");
 
-  const finalStatus = yield* Fiber.join(fiber)
-  console.log("final:", finalStatus)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const finalStatus = yield* Fiber.join(fiber);
+  console.log("final:", finalStatus);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The first check is immediate. The first four scheduled recurrences use the
@@ -9576,13 +9709,17 @@ cadence with `Schedule.andThen`. Preserve the latest `JobStatus` with
 ##### Example
 
 ```ts
-import { Clock, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Clock, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type JobStatus =
-  | { readonly state: "running"; readonly processed: number; readonly total: number }
+  | {
+      readonly state: "running";
+      readonly processed: number;
+      readonly total: number;
+    }
   | { readonly state: "completed"; readonly completedAt: string }
-  | { readonly state: "failed"; readonly reason: string }
+  | { readonly state: "failed"; readonly reason: string };
 
 const backOfficeJobPolling = Schedule.spaced("30 seconds").pipe(
   Schedule.take(3),
@@ -9590,7 +9727,7 @@ const backOfficeJobPolling = Schedule.spaced("30 seconds").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "running")
-)
+);
 
 const script: ReadonlyArray<JobStatus> = [
   { state: "running", processed: 10, total: 100 },
@@ -9598,32 +9735,32 @@ const script: ReadonlyArray<JobStatus> = [
   { state: "running", processed: 30, total: 100 },
   { state: "running", processed: 40, total: 100 },
   { state: "running", processed: 80, total: 100 },
-  { state: "completed", completedAt: "2026-05-17T12:00:00Z" }
-]
+  { state: "completed", completedAt: "2026-05-17T12:00:00Z" },
+];
 
-let checks = 0
+let checks = 0;
 
-const readJobStatus = Effect.gen(function*() {
-  const now = yield* Clock.currentTimeMillis
-  const status = script[Math.min(checks, script.length - 1)]!
-  checks += 1
-  console.log(`t+${now}ms check ${checks}: ${status.state}`)
-  return status
-})
+const readJobStatus = Effect.gen(function* () {
+  const now = yield* Clock.currentTimeMillis;
+  const status = script[Math.min(checks, script.length - 1)]!;
+  checks += 1;
+  console.log(`t+${now}ms check ${checks}: ${status.state}`);
+  return status;
+});
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* readJobStatus.pipe(
     Effect.repeat(backOfficeJobPolling),
     Effect.forkDetach
-  )
+  );
 
-  yield* TestClock.adjust("15 minutes")
+  yield* TestClock.adjust("15 minutes");
 
-  const finalStatus = yield* Fiber.join(fiber)
-  console.log("final:", finalStatus)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  const finalStatus = yield* Fiber.join(fiber);
+  console.log("final:", finalStatus);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The example uses three early recurrences to keep the output short. In a real
@@ -9711,46 +9848,51 @@ four and six seconds.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type Status =
   | { readonly state: "pending"; readonly requestId: string }
-  | { readonly state: "complete"; readonly requestId: string; readonly resultId: string }
+  | {
+      readonly state: "complete";
+      readonly requestId: string;
+      readonly resultId: string;
+    };
 
 const scriptedStatuses: ReadonlyArray<Status> = [
   { state: "pending", requestId: "request-42" },
   { state: "pending", requestId: "request-42" },
-  { state: "complete", requestId: "request-42", resultId: "result-7" }
-]
+  { state: "complete", requestId: "request-42", resultId: "result-7" },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
 const checkStatus = (requestId: string): Effect.Effect<Status> =>
   Effect.sync(() => {
-    const status = scriptedStatuses[
-      Math.min(readIndex, scriptedStatuses.length - 1)
-    ]!
-    readIndex += 1
-    return status
+    const status =
+      scriptedStatuses[Math.min(readIndex, scriptedStatuses.length - 1)]!;
+    readIndex += 1;
+    return status;
   }).pipe(
-    Effect.tap((status) => Console.log(`[${requestId}] observed ${status.state}`))
-  )
+    Effect.tap((status) =>
+      Console.log(`[${requestId}] observed ${status.state}`)
+    )
+  );
 
 const pollWithJitter = Schedule.spaced("20 millis").pipe(
   Schedule.jittered,
   Schedule.satisfiesInputType<Status>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "pending")
-)
+);
 
 const program = checkStatus("request-42").pipe(
   Effect.repeat(pollWithJitter),
   Effect.tap((status) => Console.log(`finished with ${status.state}`))
-)
+);
 
 Effect.runPromise(program).then((status) => {
-  console.log("result:", status)
-})
+  console.log("result:", status);
+});
 // Output:
 // [request-42] observed pending
 // [request-42] observed pending
@@ -9835,49 +9977,58 @@ twelve seconds.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type WorkerStatus =
-  | { readonly state: "running"; readonly workerId: string; readonly taskId: string }
-  | { readonly state: "complete"; readonly workerId: string; readonly taskId: string }
+  | {
+      readonly state: "running";
+      readonly workerId: string;
+      readonly taskId: string;
+    }
+  | {
+      readonly state: "complete";
+      readonly workerId: string;
+      readonly taskId: string;
+    };
 
 const scriptedStatuses: ReadonlyArray<WorkerStatus> = [
   { state: "running", workerId: "worker-a", taskId: "task-9" },
   { state: "running", workerId: "worker-a", taskId: "task-9" },
-  { state: "complete", workerId: "worker-a", taskId: "task-9" }
-]
+  { state: "complete", workerId: "worker-a", taskId: "task-9" },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
 const checkWorkerStatus = (
   workerId: string,
   taskId: string
 ): Effect.Effect<WorkerStatus> =>
   Effect.sync(() => {
-    const status = scriptedStatuses[
-      Math.min(readIndex, scriptedStatuses.length - 1)
-    ]!
-    readIndex += 1
-    return status
+    const status =
+      scriptedStatuses[Math.min(readIndex, scriptedStatuses.length - 1)]!;
+    readIndex += 1;
+    return status;
   }).pipe(
-    Effect.tap((status) => Console.log(`[${workerId}/${taskId}] ${status.state}`))
-  )
+    Effect.tap((status) =>
+      Console.log(`[${workerId}/${taskId}] ${status.state}`)
+    )
+  );
 
 const distributedStatusChecks = Schedule.spaced("25 millis").pipe(
   Schedule.jittered,
   Schedule.satisfiesInputType<WorkerStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "running")
-)
+);
 
 const program = checkWorkerStatus("worker-a", "task-9").pipe(
   Effect.repeat(distributedStatusChecks),
   Effect.tap((status) => Console.log(`final status: ${status.state}`))
-)
+);
 
 Effect.runPromise(program).then((status) => {
-  console.log("result:", status)
-})
+  console.log("result:", status);
+});
 // Output:
 // [worker-a/task-9] running
 // [worker-a/task-9] running
@@ -9960,52 +10111,56 @@ a delay between twelve and eighteen seconds.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type ControlPlaneStatus =
   | { readonly state: "queued"; readonly operationId: string }
   | { readonly state: "reconciling"; readonly operationId: string }
   | { readonly state: "ready"; readonly operationId: string }
-  | { readonly state: "rejected"; readonly operationId: string; readonly reason: string }
+  | {
+      readonly state: "rejected";
+      readonly operationId: string;
+      readonly reason: string;
+    };
 
 const scriptedStatuses: ReadonlyArray<ControlPlaneStatus> = [
   { state: "queued", operationId: "op-22" },
   { state: "reconciling", operationId: "op-22" },
-  { state: "ready", operationId: "op-22" }
-]
+  { state: "ready", operationId: "op-22" },
+];
 
-let readIndex = 0
+let readIndex = 0;
 
-const isActive = (status: ControlPlaneStatus): boolean => status.state === "queued" || status.state === "reconciling"
+const isActive = (status: ControlPlaneStatus): boolean =>
+  status.state === "queued" || status.state === "reconciling";
 
 const describeOperation = (
   operationId: string
 ): Effect.Effect<ControlPlaneStatus> =>
   Effect.sync(() => {
-    const status = scriptedStatuses[
-      Math.min(readIndex, scriptedStatuses.length - 1)
-    ]!
-    readIndex += 1
-    return status
+    const status =
+      scriptedStatuses[Math.min(readIndex, scriptedStatuses.length - 1)]!;
+    readIndex += 1;
+    return status;
   }).pipe(
     Effect.tap((status) => Console.log(`[${operationId}] ${status.state}`))
-  )
+  );
 
 const controlPlanePolling = Schedule.spaced("30 millis").pipe(
   Schedule.jittered,
   Schedule.satisfiesInputType<ControlPlaneStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => isActive(input))
-)
+);
 
 const program = describeOperation("op-22").pipe(
   Effect.repeat(controlPlanePolling),
   Effect.tap((status) => Console.log(`control-plane result: ${status.state}`))
-)
+);
 
 Effect.runPromise(program).then((status) => {
-  console.log("result:", status)
-})
+  console.log("result:", status);
+});
 // Output:
 // [op-22] queued
 // [op-22] reconciling
@@ -10102,38 +10257,36 @@ mean by "wait 500 milliseconds before retrying." For retry policies, reach for
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class TemporaryProfileError extends Data.TaggedError("TemporaryProfileError")<{
-  readonly reason: "Timeout" | "Unavailable"
+  readonly reason: "Timeout" | "Unavailable";
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const fetchProfile = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`profile attempt ${attempts}`)
+const fetchProfile = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`profile attempt ${attempts}`);
 
   if (attempts < 3) {
     return yield* Effect.fail(
       new TemporaryProfileError({ reason: "Unavailable" })
-    )
+    );
   }
 
-  return { id: "user-123", name: "Ada" }
-})
+  return { id: "user-123", name: "Ada" };
+});
 
 const retryWithConstantDelay = Schedule.spaced("50 millis").pipe(
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-const program = fetchProfile.pipe(
-  Effect.retry(retryWithConstantDelay)
-)
+const program = fetchProfile.pipe(Effect.retry(retryWithConstantDelay));
 
 Effect.runPromise(program).then((profile) => {
-  console.log(`loaded profile: ${profile.name}`)
-})
+  console.log(`loaded profile: ${profile.name}`);
+});
 // Output:
 // profile attempt 1
 // profile attempt 2
@@ -10225,40 +10378,37 @@ number of times after the original attempt.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class IndexError extends Data.TaggedError("IndexError")<{
-  readonly reason: "busy" | "unavailable"
+  readonly reason: "busy" | "unavailable";
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const refreshSearchIndex = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`index attempt ${attempts}`)
+const refreshSearchIndex = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`index attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(new IndexError({ reason: "busy" }))
+    return yield* Effect.fail(new IndexError({ reason: "busy" }));
   }
 
-  return "index refreshed"
-})
+  return "index refreshed";
+});
 
-const retryWithLinearBackoff = Schedule.unfold(
-  1,
-  (step) => Effect.succeed(step + 1)
+const retryWithLinearBackoff = Schedule.unfold(1, (step) =>
+  Effect.succeed(step + 1)
 ).pipe(
   Schedule.addDelay((step) => Effect.succeed(Duration.millis(step * 20))),
   Schedule.take(5)
-)
+);
 
-const program = refreshSearchIndex.pipe(
-  Effect.retry(retryWithLinearBackoff)
-)
+const program = refreshSearchIndex.pipe(Effect.retry(retryWithLinearBackoff));
 
 Effect.runPromise(program).then((message) => {
-  console.log(message)
-})
+  console.log(message);
+});
 // Output:
 // index attempt 1
 // index attempt 2
@@ -10347,36 +10497,36 @@ growing delay but bound the number of retries.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class DownstreamError extends Data.TaggedError("DownstreamError")<{
-  readonly reason: "Timeout" | "Unavailable" | "Overloaded"
+  readonly reason: "Timeout" | "Unavailable" | "Overloaded";
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const fetchCustomerProfile = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`profile API attempt ${attempts}`)
+const fetchCustomerProfile = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`profile API attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(new DownstreamError({ reason: "Unavailable" }))
+    return yield* Effect.fail(new DownstreamError({ reason: "Unavailable" }));
   }
 
-  return { customerId: "customer-123", plan: "pro" as const }
-})
+  return { customerId: "customer-123", plan: "pro" as const };
+});
 
 const retryTransientRemoteFailure = Schedule.exponential("20 millis").pipe(
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = fetchCustomerProfile.pipe(
   Effect.retry(retryTransientRemoteFailure)
-)
+);
 
 Effect.runPromise(program).then((profile) => {
-  console.log(`${profile.customerId} plan: ${profile.plan}`)
-})
+  console.log(`${profile.customerId} plan: ${profile.plan}`);
+});
 // Output:
 // profile API attempt 1
 // profile API attempt 2
@@ -10460,39 +10610,39 @@ operation should eventually give up.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly service: string
+  readonly service: string;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const refreshControlPlaneState = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`control-plane attempt ${attempts}`)
+const refreshControlPlaneState = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`control-plane attempt ${attempts}`);
 
   if (attempts < 5) {
     return yield* Effect.fail(
       new ServiceUnavailable({ service: "control-plane" })
-    )
+    );
   }
 
-  return "control plane refreshed"
-})
+  return "control plane refreshed";
+});
 
 const cappedBackoff = Schedule.exponential("20 millis").pipe(
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(50)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(50)))
+  ),
   Schedule.both(Schedule.recurs(8))
-)
+);
 
-const program = refreshControlPlaneState.pipe(
-  Effect.retry(cappedBackoff)
-)
+const program = refreshControlPlaneState.pipe(Effect.retry(cappedBackoff));
 
 Effect.runPromise(program).then((message) => {
-  console.log(message)
-})
+  console.log(message);
+});
 // Output:
 // control-plane attempt 1
 // control-plane attempt 2
@@ -10572,69 +10722,74 @@ Use the `while` option on `Effect.retry` to classify retryable errors.
 ##### Example
 
 ```ts
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class RemoteApiError extends Data.TaggedError("RemoteApiError")<{
-  readonly status: number
-  readonly message: string
+  readonly status: number;
+  readonly message: string;
 }> {}
 
 interface UsageReceipt {
-  readonly id: string
+  readonly id: string;
 }
 
 interface UsageRequest {
-  readonly accountId: string
-  readonly units: number
-  readonly idempotencyKey: string
+  readonly accountId: string;
+  readonly units: number;
+  readonly idempotencyKey: string;
 }
 
-const statuses = [503, 429, 200] as const
-let attempts = 0
+const statuses = [503, 429, 200] as const;
+let attempts = 0;
 
 const submitUsageEvent = (request: UsageRequest) =>
-  Effect.gen(function*() {
-    attempts += 1
-    const status = statuses[Math.min(attempts - 1, statuses.length - 1)]
-    yield* Console.log(`billing attempt ${attempts}: HTTP ${status}`)
+  Effect.gen(function* () {
+    attempts += 1;
+    const status = statuses[Math.min(attempts - 1, statuses.length - 1)];
+    yield* Console.log(`billing attempt ${attempts}: HTTP ${status}`);
 
     if (status !== 200) {
       return yield* Effect.fail(
         new RemoteApiError({ status, message: "temporary billing failure" })
-      )
+      );
     }
 
     return {
-      id: `receipt-${request.idempotencyKey}`
-    } satisfies UsageReceipt
-  })
+      id: `receipt-${request.idempotencyKey}`,
+    } satisfies UsageReceipt;
+  });
 
-const isRetryable = (error: RemoteApiError) => error.status === 408 || error.status === 429 || error.status >= 500
+const isRetryable = (error: RemoteApiError) =>
+  error.status === 408 || error.status === 429 || error.status >= 500;
 
 const remoteApiBackoff = Schedule.exponential("20 millis").pipe(
   Schedule.jittered,
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(80)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(80)))
+  ),
   Schedule.both(Schedule.recurs(4)),
   Schedule.both(Schedule.during("1 second"))
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const receipt = yield* submitUsageEvent({
     accountId: "acct_123",
     units: 42,
-    idempotencyKey: "usage-acct_123-demo"
+    idempotencyKey: "usage-acct_123-demo",
   }).pipe(
     Effect.retry({
       schedule: remoteApiBackoff,
-      while: isRetryable
+      while: isRetryable,
     })
-  )
-  yield* Console.log(`accepted usage event: ${receipt.id}`)
+  );
+  yield* Console.log(`accepted usage event: ${receipt.id}`);
 }).pipe(
-  Effect.catch((error) => Console.log(`usage event failed without retrying further: ${error._tag}`))
-)
+  Effect.catch((error) =>
+    Console.log(`usage event failed without retrying further: ${error._tag}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The example uses millisecond-scale delays so it is quick to run. Increase the
@@ -10693,52 +10848,51 @@ default. `Schedule.recurs(6)` allows six retries after the original attempt.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type QueueConnectError =
   | { readonly _tag: "BrokerUnavailable" }
-  | { readonly _tag: "ConnectionReset" }
+  | { readonly _tag: "ConnectionReset" };
 
 type QueueRuntimeError =
   | QueueConnectError
-  | { readonly _tag: "MessageDecodeFailed" }
+  | { readonly _tag: "MessageDecodeFailed" };
 
 interface QueueConnection {
-  readonly run: Effect.Effect<void, QueueRuntimeError>
+  readonly run: Effect.Effect<void, QueueRuntimeError>;
 }
 
-let connectAttempts = 0
+let connectAttempts = 0;
 
-const openQueueConnection: Effect.Effect<QueueConnection, QueueConnectError> = Effect.gen(function*() {
-  connectAttempts += 1
-  yield* Console.log(`queue connect attempt ${connectAttempts}`)
+const openQueueConnection: Effect.Effect<QueueConnection, QueueConnectError> =
+  Effect.gen(function* () {
+    connectAttempts += 1;
+    yield* Console.log(`queue connect attempt ${connectAttempts}`);
 
-  if (connectAttempts < 3) {
-    return yield* Effect.fail({ _tag: "BrokerUnavailable" } as const)
-  }
+    if (connectAttempts < 3) {
+      return yield* Effect.fail({ _tag: "BrokerUnavailable" } as const);
+    }
 
-  return {
-    run: Console.log("consumer processed one message")
-  }
-})
+    return {
+      run: Console.log("consumer processed one message"),
+    };
+  });
 
 const reconnectBackoff = Schedule.exponential("20 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const connectWithBackoff = openQueueConnection.pipe(
   Effect.retry(reconnectBackoff)
-)
+);
 
-const consumer = Effect.gen(function*() {
-  const connection = yield* connectWithBackoff
-  yield* connection.run
-}).pipe(
-  Effect.catch((error) => Console.log(`consumer failed: ${error._tag}`))
-)
+const consumer = Effect.gen(function* () {
+  const connection = yield* connectWithBackoff;
+  yield* connection.run;
+}).pipe(Effect.catch((error) => Console.log(`consumer failed: ${error._tag}`)));
 
-Effect.runPromise(consumer)
+Effect.runPromise(consumer);
 // Output:
 // queue connect attempt 1
 // queue connect attempt 2
@@ -10806,59 +10960,61 @@ startup so instances are less likely to retry at exactly the same moment.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class DependencyNotReady extends Data.TaggedError("DependencyNotReady")<{
-  readonly dependency: string
-  readonly reason: string
+  readonly dependency: string;
+  readonly reason: string;
 }> {}
 
-class DependencyMisconfigured extends Data.TaggedError("DependencyMisconfigured")<{
-  readonly dependency: string
-  readonly reason: string
+class DependencyMisconfigured extends Data.TaggedError(
+  "DependencyMisconfigured"
+)<{
+  readonly dependency: string;
+  readonly reason: string;
 }> {}
 
-type StartupDependencyError = DependencyNotReady | DependencyMisconfigured
+type StartupDependencyError = DependencyNotReady | DependencyMisconfigured;
 
-let readinessChecks = 0
+let readinessChecks = 0;
 
-const checkDatabaseReady: Effect.Effect<void, StartupDependencyError> = Effect.gen(function*() {
-  readinessChecks += 1
-  yield* Console.log(`database readiness check ${readinessChecks}`)
+const checkDatabaseReady: Effect.Effect<void, StartupDependencyError> =
+  Effect.gen(function* () {
+    readinessChecks += 1;
+    yield* Console.log(`database readiness check ${readinessChecks}`);
 
-  if (readinessChecks < 4) {
-    return yield* Effect.fail(
-      new DependencyNotReady({
-        dependency: "postgres",
-        reason: "accepting connections soon"
-      })
-    )
-  }
-})
+    if (readinessChecks < 4) {
+      return yield* Effect.fail(
+        new DependencyNotReady({
+          dependency: "postgres",
+          reason: "accepting connections soon",
+        })
+      );
+    }
+  });
 
-const startHttpServer = Console.log("HTTP server started")
+const startHttpServer = Console.log("HTTP server started");
 
 const coldStartBackoff = Schedule.exponential("15 millis").pipe(
   Schedule.both(Schedule.recurs(5)),
   Schedule.jittered
-)
+);
 
-const isRetryableStartupFailure = (error: StartupDependencyError) => error._tag === "DependencyNotReady"
+const isRetryableStartupFailure = (error: StartupDependencyError) =>
+  error._tag === "DependencyNotReady";
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   yield* checkDatabaseReady.pipe(
     Effect.retry({
       schedule: coldStartBackoff,
-      while: isRetryableStartupFailure
+      while: isRetryableStartupFailure,
     })
-  )
+  );
 
-  yield* startHttpServer
-}).pipe(
-  Effect.catch((error) => Console.log(`startup failed: ${error._tag}`))
-)
+  yield* startHttpServer;
+}).pipe(Effect.catch((error) => Console.log(`startup failed: ${error._tag}`)));
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // database readiness check 1
 // database readiness check 2
@@ -10929,34 +11085,35 @@ stopping behavior separately with `Schedule.recurs` or `Schedule.during`.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class ControlPlaneUnavailable extends Data.TaggedError(
   "ControlPlaneUnavailable"
 )<{
-  readonly service: string
-  readonly attempt: number
+  readonly service: string;
+  readonly attempt: number;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const refreshRoutingTable = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`refresh attempt ${attempts}`)
+const refreshRoutingTable = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`refresh attempt ${attempts}`);
 
   if (attempts < 4) {
     return yield* Effect.fail(
       new ControlPlaneUnavailable({
         service: "routing",
-        attempt: attempts
+        attempt: attempts,
       })
-    )
+    );
   }
 
-  return "routes refreshed"
-})
+  return "routes refreshed";
+});
 
-const capAt5Seconds = (delay: Duration.Duration) => Duration.min(delay, Duration.seconds(5))
+const capAt5Seconds = (delay: Duration.Duration) =>
+  Duration.min(delay, Duration.seconds(5));
 
 const cappedBackoff = Schedule.exponential("250 millis").pipe(
   Schedule.modifyDelay((_, delay) => Effect.succeed(capAt5Seconds(delay))),
@@ -10969,14 +11126,14 @@ const cappedBackoff = Schedule.exponential("250 millis").pipe(
     )
   ),
   Schedule.both(Schedule.recurs(8))
-)
+);
 
 const program = refreshRoutingTable.pipe(
   Effect.retry(cappedBackoff),
   Effect.flatMap((message) => Console.log(`result: ${message}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // refresh attempt 1
 // retrying routing after attempt 1
@@ -11055,26 +11212,27 @@ The cap does not flatten the whole policy. With a base of `250 millis` and a
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class RemoteError extends Data.TaggedError("RemoteError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const callControlPlane = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`attempt ${attempts}`)
+const callControlPlane = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(new RemoteError({ attempt: attempts }))
+    return yield* Effect.fail(new RemoteError({ attempt: attempts }));
   }
 
-  return "ok"
-})
+  return "ok";
+});
 
-const capAt5Seconds = (delay: Duration.Duration) => Duration.min(delay, Duration.seconds(5))
+const capAt5Seconds = (delay: Duration.Duration) =>
+  Duration.min(delay, Duration.seconds(5));
 
 const cappedCadence = Schedule.exponential("250 millis").pipe(
   Schedule.modifyDelay((_, delay) => Effect.succeed(capAt5Seconds(delay))),
@@ -11083,18 +11241,16 @@ const cappedCadence = Schedule.exponential("250 millis").pipe(
       `raw delay ${Duration.format(rawDelay)} -> capped ${Duration.format(capAt5Seconds(rawDelay))}`
     )
   )
-)
+);
 
-const retryPolicy = cappedCadence.pipe(
-  Schedule.both(Schedule.recurs(8))
-)
+const retryPolicy = cappedCadence.pipe(Schedule.both(Schedule.recurs(8)));
 
 const program = callControlPlane.pipe(
   Effect.retry(retryPolicy),
   Effect.flatMap((result) => Console.log(`result: ${result}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // raw delay 250ms -> capped 250ms
@@ -11196,19 +11352,19 @@ the next run happens immediately, but missed runs do not pile up.
 ##### Example
 
 ```ts
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
 type RequestError = {
-  readonly _tag: "RequestError"
-  readonly message: string
-}
+  readonly _tag: "RequestError";
+  readonly message: string;
+};
 
 const oneSecondAfterEachRequest = Schedule.spaced("1 second").pipe(
   Schedule.take(2)
-)
+);
 
-const program = Effect.gen(function*() {
-  const sent = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const sent = yield* Ref.make(0);
 
   const sendRequest: Effect.Effect<void, RequestError> = Ref.updateAndGet(
     sent,
@@ -11216,16 +11372,16 @@ const program = Effect.gen(function*() {
   ).pipe(
     Effect.tap((requestNumber) => Console.log(`sent request ${requestNumber}`)),
     Effect.flatMap(() => Effect.sleep("25 millis"))
-  )
+  );
 
   const finalRecurrence = yield* sendRequest.pipe(
     Effect.repeat(oneSecondAfterEachRequest)
-  )
+  );
 
-  yield* Console.log(`schedule stopped after recurrence ${finalRecurrence}`)
-})
+  yield* Console.log(`schedule stopped after recurrence ${finalRecurrence}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 `program` sends the first request immediately, then waits one second after each
@@ -11316,64 +11472,64 @@ after the previous item started.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
 type BatchItem = {
-  readonly id: string
-  readonly payload: string
-}
+  readonly id: string;
+  readonly payload: string;
+};
 
 type DependencyError = {
-  readonly _tag: "DependencyError"
-  readonly itemId: string
-}
+  readonly _tag: "DependencyError";
+  readonly itemId: string;
+};
 
 const items: ReadonlyArray<BatchItem> = [
   { id: "a", payload: "alpha" },
   { id: "b", payload: "bravo" },
-  { id: "c", payload: "charlie" }
-]
+  { id: "c", payload: "charlie" },
+];
 
 const gapBetweenItems = Schedule.spaced("50 millis").pipe(
   Schedule.satisfiesInputType<number>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input > 0)
-)
+);
 
-const program = Effect.gen(function*() {
-  const remaining = yield* Ref.make(items)
+const program = Effect.gen(function* () {
+  const remaining = yield* Ref.make(items);
 
   const sendToDependency = (
     item: BatchItem
-  ): Effect.Effect<void, DependencyError> => Console.log(`sent ${item.id}: ${item.payload}`)
+  ): Effect.Effect<void, DependencyError> =>
+    Console.log(`sent ${item.id}: ${item.payload}`);
 
-  const processNext = Effect.gen(function*() {
-    const item = yield* Ref.modify(remaining, (items) =>
-      [
-        items[0],
-        items.slice(1)
-      ] as const)
+  const processNext = Effect.gen(function* () {
+    const item = yield* Ref.modify(
+      remaining,
+      (items) => [items[0], items.slice(1)] as const
+    );
 
     if (item === undefined) {
-      return 0
+      return 0;
     }
 
-    yield* sendToDependency(item)
+    yield* sendToDependency(item);
 
-    const left = yield* Ref.get(remaining)
-    yield* Console.log(`${left.length} item(s) left`)
+    const left = yield* Ref.get(remaining);
+    yield* Console.log(`${left.length} item(s) left`);
 
-    return left.length
-  })
+    return left.length;
+  });
 
   const finalRemaining = yield* processNext.pipe(
     Effect.repeat(gapBetweenItems)
-  )
+  );
 
-  yield* Console.log(`batch complete; remaining=${finalRemaining}`)
-})
+  yield* Console.log(`batch complete; remaining=${finalRemaining}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // sent a: alpha
 // 2 item(s) left
@@ -11485,22 +11641,20 @@ finish quickly.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Random, Ref, Schedule } from "effect"
+import { Console, Data, Effect, Random, Ref, Schedule } from "effect";
 
 class VendorApiError extends Data.TaggedError("VendorApiError")<{
-  readonly status: number
-  readonly message: string
+  readonly status: number;
+  readonly message: string;
 }> {}
 
 interface Enrichment {
-  readonly companyId: string
-  readonly riskScore: number
+  readonly companyId: string;
+  readonly riskScore: number;
 }
 
 const isRetryableVendorFailure = (error: VendorApiError) =>
-  error.status === 408 ||
-  error.status === 429 ||
-  error.status >= 500
+  error.status === 408 || error.status === 429 || error.status >= 500;
 
 const vendorRetryPolicy = Schedule.exponential("30 millis").pipe(
   Schedule.satisfiesInputType<VendorApiError>(),
@@ -11508,48 +11662,48 @@ const vendorRetryPolicy = Schedule.exponential("30 millis").pipe(
   Schedule.both(Schedule.recurs(5)),
   Schedule.both(Schedule.during("1 second")),
   Schedule.while(({ input }) => isRetryableVendorFailure(input))
-)
+);
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
 
   const enrichCompany = (request: {
-    readonly companyId: string
-    readonly idempotencyKey: string
+    readonly companyId: string;
+    readonly idempotencyKey: string;
   }): Effect.Effect<Enrichment, VendorApiError> =>
-    Effect.gen(function*() {
-      const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
+    Effect.gen(function* () {
+      const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
       yield* Console.log(
         `vendor attempt ${attempt} with key ${request.idempotencyKey}`
-      )
+      );
 
       if (attempt === 1) {
         return yield* Effect.fail(
           new VendorApiError({ status: 429, message: "slow down" })
-        )
+        );
       }
 
       if (attempt === 2) {
         return yield* Effect.fail(
           new VendorApiError({ status: 503, message: "temporary outage" })
-        )
+        );
       }
 
-      return { companyId: request.companyId, riskScore: 42 }
-    })
+      return { companyId: request.companyId, riskScore: 42 };
+    });
 
   const enrichment = yield* enrichCompany({
     companyId: "company_123",
-    idempotencyKey: "enrich-company_123"
+    idempotencyKey: "enrich-company_123",
   }).pipe(
     Effect.retry(vendorRetryPolicy),
     Random.withSeed("vendor-retry-demo")
-  )
+  );
 
-  yield* Console.log(`risk score: ${enrichment.riskScore}`)
-})
+  yield* Console.log(`risk score: ${enrichment.riskScore}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The first `enrichCompany` call happens immediately. If it fails with a retryable
@@ -11641,61 +11795,60 @@ the base spacing, but instances no longer line up perfectly.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Random, Ref, Schedule } from "effect"
+import { Console, Effect, Random, Ref, Schedule } from "effect";
 
 type WorkItem = {
-  readonly id: string
-}
+  readonly id: string;
+};
 
 type WorkerError = {
-  readonly _tag: "WorkerError"
-}
+  readonly _tag: "WorkerError";
+};
 
 const initialItems: ReadonlyArray<WorkItem> = [
   { id: "job-1" },
   { id: "job-2" },
   { id: "job-3" },
-  { id: "job-4" }
-]
+  { id: "job-4" },
+];
 
 const smoothedDemand = Schedule.spaced("40 millis").pipe(
   Schedule.jittered,
   Schedule.satisfiesInputType<number>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input > 0)
-)
+);
 
-const program = Effect.gen(function*() {
-  const queue = yield* Ref.make(initialItems)
+const program = Effect.gen(function* () {
+  const queue = yield* Ref.make(initialItems);
 
   const processNextItem: Effect.Effect<number, WorkerError> = Effect.gen(
-    function*() {
-      const item = yield* Ref.modify(queue, (items) =>
-        [
-          items[0],
-          items.slice(1)
-        ] as const)
+    function* () {
+      const item = yield* Ref.modify(
+        queue,
+        (items) => [items[0], items.slice(1)] as const
+      );
 
       if (item === undefined) {
-        return 0
+        return 0;
       }
 
-      yield* Console.log(`processed ${item.id}`)
+      yield* Console.log(`processed ${item.id}`);
 
-      const remaining = yield* Ref.get(queue)
-      return remaining.length
+      const remaining = yield* Ref.get(queue);
+      return remaining.length;
     }
-  )
+  );
 
   const remaining = yield* processNextItem.pipe(
     Effect.repeat(smoothedDemand),
     Random.withSeed("smoothed-demand-demo")
-  )
+  );
 
-  yield* Console.log(`queue drained; remaining=${remaining}`)
-})
+  yield* Console.log(`queue drained; remaining=${remaining}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // processed job-1
 // processed job-2
@@ -11786,61 +11939,69 @@ follow-up drain steps.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Queue, Schedule } from "effect"
+import { Console, Effect, Queue, Schedule } from "effect";
 
 type WorkItem = {
-  readonly id: number
-  readonly payload: string
-}
+  readonly id: number;
+  readonly payload: string;
+};
 
 type DrainStep =
-  | { readonly _tag: "Processed"; readonly item: WorkItem; readonly remaining: number }
-  | { readonly _tag: "Drained" }
+  | {
+      readonly _tag: "Processed";
+      readonly item: WorkItem;
+      readonly remaining: number;
+    }
+  | { readonly _tag: "Drained" };
 
-const processItem = (item: WorkItem) => Console.log(`processed item ${item.id}: ${item.payload}`)
+const processItem = (item: WorkItem) =>
+  Console.log(`processed item ${item.id}: ${item.payload}`);
 
-const drainOneAvailableItem = Effect.fnUntraced(function*(queue: Queue.Queue<WorkItem>) {
-  const queued = yield* Queue.size(queue)
+const drainOneAvailableItem = Effect.fnUntraced(function* (
+  queue: Queue.Queue<WorkItem>
+) {
+  const queued = yield* Queue.size(queue);
 
   if (queued === 0) {
-    yield* Console.log("queue is empty")
-    return { _tag: "Drained" } as const
+    yield* Console.log("queue is empty");
+    return { _tag: "Drained" } as const;
   }
 
-  const item = yield* Queue.take(queue)
-  yield* processItem(item)
+  const item = yield* Queue.take(queue);
+  yield* processItem(item);
 
-  const remaining = yield* Queue.size(queue)
-  yield* Console.log(`${remaining} item(s) remain`)
+  const remaining = yield* Queue.size(queue);
+  yield* Console.log(`${remaining} item(s) remain`);
 
-  return { _tag: "Processed", item, remaining } as const
-})
+  return { _tag: "Processed", item, remaining } as const;
+});
 
 const slowDrainPolicy = Schedule.spaced("10 millis").pipe(
   Schedule.both(Schedule.recurs(9))
-)
+);
 
-const shouldContinue = (step: DrainStep) => step._tag === "Processed" && step.remaining > 0
+const shouldContinue = (step: DrainStep) =>
+  step._tag === "Processed" && step.remaining > 0;
 
-const program = Effect.gen(function*() {
-  const queue = yield* Queue.unbounded<WorkItem>()
+const program = Effect.gen(function* () {
+  const queue = yield* Queue.unbounded<WorkItem>();
   yield* Queue.offerAll(queue, [
     { id: 1, payload: "refresh-search-index" },
     { id: 2, payload: "publish-outbox-event" },
-    { id: 3, payload: "expire-cache-entry" }
-  ])
+    { id: 3, payload: "expire-cache-entry" },
+  ]);
 
   yield* drainOneAvailableItem(queue).pipe(
     Effect.repeat({
       schedule: slowDrainPolicy,
-      while: shouldContinue
+      while: shouldContinue,
     })
-  )
+  );
 
-  yield* Console.log("drain pass finished")
-})
+  yield* Console.log("drain pass finished");
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // processed item 1: refresh-search-index
 // 2 item(s) remain
@@ -11923,7 +12084,7 @@ The first provider call is not delayed.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class EmailDeliveryError extends Data.TaggedError("EmailDeliveryError")<{
   readonly reason:
@@ -11931,68 +12092,70 @@ class EmailDeliveryError extends Data.TaggedError("EmailDeliveryError")<{
     | "ProviderUnavailable"
     | "RateLimited"
     | "InvalidRecipient"
-    | "RejectedContent"
+    | "RejectedContent";
 }> {}
 
 interface EmailMessage {
-  readonly to: string
-  readonly subject: string
-  readonly bodyText: string
-  readonly idempotencyKey: string
+  readonly to: string;
+  readonly subject: string;
+  readonly bodyText: string;
+  readonly idempotencyKey: string;
 }
 
 interface ProviderMessageId {
-  readonly value: string
+  readonly value: string;
 }
 
-let attempts = 0
+let attempts = 0;
 
 const sendViaProvider = (message: EmailMessage) =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`email attempt ${attempts} using key ${message.idempotencyKey}`)
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(
+      `email attempt ${attempts} using key ${message.idempotencyKey}`
+    );
 
     if (attempts === 1) {
-      return yield* Effect.fail(new EmailDeliveryError({ reason: "Timeout" }))
+      return yield* Effect.fail(new EmailDeliveryError({ reason: "Timeout" }));
     }
 
-    return { value: `provider-${message.idempotencyKey}` } satisfies ProviderMessageId
-  })
+    return {
+      value: `provider-${message.idempotencyKey}`,
+    } satisfies ProviderMessageId;
+  });
 
 const emailRetrySpacing = Schedule.spaced("20 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const isRetryableEmailFailure = (error: EmailDeliveryError): boolean => {
   switch (error.reason) {
     case "Timeout":
     case "ProviderUnavailable":
     case "RateLimited":
-      return true
+      return true;
     case "InvalidRecipient":
     case "RejectedContent":
-      return false
+      return false;
   }
-}
+};
 
 const sendEmailWithControlledSpacing = (message: EmailMessage) =>
   sendViaProvider(message).pipe(
     Effect.retry({
       schedule: emailRetrySpacing,
-      while: isRetryableEmailFailure
+      while: isRetryableEmailFailure,
     })
-  )
+  );
 
 const program = sendEmailWithControlledSpacing({
   to: "user@example.com",
   subject: "Your report is ready",
   bodyText: "Open the dashboard to view it.",
-  idempotencyKey: "email:report-ready:user-123"
-}).pipe(
-  Effect.tap((receipt) => Console.log(`accepted as ${receipt.value}`))
-)
+  idempotencyKey: "email:report-ready:user-123",
+}).pipe(Effect.tap((receipt) => Console.log(`accepted as ${receipt.value}`)));
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // email attempt 1 using key email:report-ready:user-123
 // email attempt 2 using key email:report-ready:user-123
@@ -12071,40 +12234,47 @@ predicate controls whether a failure is allowed to use the schedule.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class ProviderError extends Data.TaggedError("ProviderError")<{
-  readonly status: number
-  readonly reason: string
+  readonly status: number;
+  readonly reason: string;
 }> {}
 
 interface DeliveryReceipt {
-  readonly messageId: string
-  readonly accepted: boolean
+  readonly messageId: string;
+  readonly accepted: boolean;
 }
 
 type ProviderRequest = {
-  readonly tenantId: string
-  readonly messageId: string
-  readonly idempotencyKey: string
-}
+  readonly tenantId: string;
+  readonly messageId: string;
+  readonly idempotencyKey: string;
+};
 
-let attempts = 0
+let attempts = 0;
 
 const sendProviderMessage = (request: ProviderRequest) =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`provider attempt ${attempts} for ${request.messageId}`)
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`provider attempt ${attempts} for ${request.messageId}`);
 
     if (attempts === 1) {
-      return yield* Effect.fail(new ProviderError({ status: 429, reason: "rate limited" }))
+      return yield* Effect.fail(
+        new ProviderError({ status: 429, reason: "rate limited" })
+      );
     }
     if (attempts === 2) {
-      return yield* Effect.fail(new ProviderError({ status: 503, reason: "unavailable" }))
+      return yield* Effect.fail(
+        new ProviderError({ status: 503, reason: "unavailable" })
+      );
     }
 
-    return { messageId: request.messageId, accepted: true } satisfies DeliveryReceipt
-  })
+    return {
+      messageId: request.messageId,
+      accepted: true,
+    } satisfies DeliveryReceipt;
+  });
 
 const isRetryableProviderError = (error: ProviderError) =>
   error.status === 408 ||
@@ -12112,25 +12282,25 @@ const isRetryableProviderError = (error: ProviderError) =>
   error.status === 500 ||
   error.status === 502 ||
   error.status === 503 ||
-  error.status === 504
+  error.status === 504;
 
 const providerQuotaPolicy = Schedule.spaced("20 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const program = sendProviderMessage({
   tenantId: "tenant-123",
   messageId: "message-456",
-  idempotencyKey: "tenant-123:message-456"
+  idempotencyKey: "tenant-123:message-456",
 }).pipe(
   Effect.retry({
     schedule: providerQuotaPolicy,
-    while: isRetryableProviderError
+    while: isRetryableProviderError,
   }),
   Effect.tap((receipt) => Console.log(`accepted: ${receipt.accepted}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // provider attempt 1 for message-456
 // provider attempt 2 for message-456
@@ -12223,87 +12393,86 @@ queue shutdown signal may be the stop condition instead.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
 type PartnerEvent = {
-  readonly idempotencyKey: string
-  readonly payload: string
-}
+  readonly idempotencyKey: string;
+  readonly payload: string;
+};
 
 type PartnerError =
   | { readonly _tag: "Timeout" }
   | { readonly _tag: "Unavailable" }
   | { readonly _tag: "RateLimited" }
-  | { readonly _tag: "Rejected"; readonly reason: string }
+  | { readonly _tag: "Rejected"; readonly reason: string };
 
 const events: ReadonlyArray<PartnerEvent> = [
   { idempotencyKey: "event-1", payload: "alpha" },
   { idempotencyKey: "event-2", payload: "bravo" },
-  { idempotencyKey: "event-3", payload: "charlie" }
-]
+  { idempotencyKey: "event-3", payload: "charlie" },
+];
 
-const nextEvent = Effect.fnUntraced(function*(cursor: Ref.Ref<number>) {
-  const index = yield* Ref.updateAndGet(cursor, (n) => n + 1)
-  const event = events[index - 1]
+const nextEvent = Effect.fnUntraced(function* (cursor: Ref.Ref<number>) {
+  const index = yield* Ref.updateAndGet(cursor, (n) => n + 1);
+  const event = events[index - 1];
 
   if (event === undefined) {
-    return yield* Effect.fail({ _tag: "NoMoreEvents" } as const)
+    return yield* Effect.fail({ _tag: "NoMoreEvents" } as const);
   }
 
-  yield* Console.log(`next: ${event.idempotencyKey}`)
-  return event
-})
+  yield* Console.log(`next: ${event.idempotencyKey}`);
+  return event;
+});
 
-const postToPartner = Effect.fnUntraced(function*(
+const postToPartner = Effect.fnUntraced(function* (
   calls: Ref.Ref<number>,
   event: PartnerEvent
 ) {
-  const callNumber = yield* Ref.updateAndGet(calls, (n) => n + 1)
-  yield* Console.log(`provider call ${callNumber}: ${event.payload}`)
+  const callNumber = yield* Ref.updateAndGet(calls, (n) => n + 1);
+  yield* Console.log(`provider call ${callNumber}: ${event.payload}`);
 
   if (callNumber === 1) {
-    return yield* Effect.fail({ _tag: "Unavailable" } as const)
+    return yield* Effect.fail({ _tag: "Unavailable" } as const);
   }
 
-  return { acceptedId: `accepted-${event.idempotencyKey}` }
-})
+  return { acceptedId: `accepted-${event.idempotencyKey}` };
+});
 
-const isRetryablePartnerError = (error: PartnerError): boolean => error._tag !== "Rejected"
+const isRetryablePartnerError = (error: PartnerError): boolean =>
+  error._tag !== "Rejected";
 
 const retryTransientCallFailure = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(2))
-)
+);
 
-const sendOneEvent = Effect.fnUntraced(function*(
+const sendOneEvent = Effect.fnUntraced(function* (
   cursor: Ref.Ref<number>,
   calls: Ref.Ref<number>
 ) {
-  const event = yield* nextEvent(cursor)
+  const event = yield* nextEvent(cursor);
   const response = yield* postToPartner(calls, event).pipe(
     Effect.retry({
       schedule: retryTransientCallFailure,
-      while: isRetryablePartnerError
+      while: isRetryablePartnerError,
     })
-  )
-  yield* Console.log(`sent: ${response.acceptedId}`)
-})
+  );
+  yield* Console.log(`sent: ${response.acceptedId}`);
+});
 
-const program = Effect.gen(function*() {
-  const cursor = yield* Ref.make(0)
-  const calls = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const cursor = yield* Ref.make(0);
+  const calls = yield* Ref.make(0);
 
   yield* sendOneEvent(cursor, calls).pipe(
     Effect.repeat(
-      Schedule.spaced("25 millis").pipe(
-        Schedule.both(Schedule.recurs(2))
-      )
+      Schedule.spaced("25 millis").pipe(Schedule.both(Schedule.recurs(2)))
     )
-  )
+  );
 
-  yield* Console.log("done")
-})
+  yield* Console.log("done");
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // next: event-1
 // provider call 1: alpha
@@ -12397,74 +12566,71 @@ headers.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Ref, Schedule } from "effect"
+import { Console, Duration, Effect, Ref, Schedule } from "effect";
 
 type ApiError =
   | {
-    readonly _tag: "RateLimited"
-    readonly retryAfter: Duration.Duration | undefined
-  }
+      readonly _tag: "RateLimited";
+      readonly retryAfter: Duration.Duration | undefined;
+    }
   | {
-    readonly _tag: "ServerUnavailable"
-  }
+      readonly _tag: "ServerUnavailable";
+    };
 
-const fallback429Delay = Duration.millis(40)
+const fallback429Delay = Duration.millis(40);
 
 const retryAfter = (error: ApiError): Duration.Duration =>
   error._tag === "RateLimited" && error.retryAfter !== undefined
     ? error.retryAfter
-    : fallback429Delay
+    : fallback429Delay;
 
-const isRateLimited = (error: ApiError): boolean => error._tag === "RateLimited"
+const isRateLimited = (error: ApiError): boolean =>
+  error._tag === "RateLimited";
 
 const rateLimitPolicy = Schedule.identity<ApiError>().pipe(
   Schedule.while(({ input }) => input._tag === "RateLimited"),
   Schedule.modifyDelay((error) => {
-    const delay = retryAfter(error)
+    const delay = retryAfter(error);
     return Console.log(`429 delay: ${Duration.toMillis(delay)}ms`).pipe(
       Effect.as(delay)
-    )
+    );
   }),
   Schedule.both(Schedule.recurs(4))
-)
+);
 
-const callApi = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`HTTP attempt ${attempt}`)
+const callApi = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`HTTP attempt ${attempt}`);
 
   if (attempt === 1) {
-    return yield* Effect.fail(
-      {
-        _tag: "RateLimited",
-        retryAfter: Duration.millis(25)
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "RateLimited",
+      retryAfter: Duration.millis(25),
+    } as const);
   }
 
   if (attempt === 2) {
-    return yield* Effect.fail(
-      {
-        _tag: "RateLimited",
-        retryAfter: undefined
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "RateLimited",
+      retryAfter: undefined,
+    } as const);
   }
 
-  return { body: "ok" }
-})
+  return { body: "ok" };
+});
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const response = yield* callApi(attempts).pipe(
     Effect.retry({
       schedule: rateLimitPolicy,
-      while: isRateLimited
+      while: isRateLimited,
     })
-  )
-  yield* Console.log(`response: ${response.body}`)
-})
+  );
+  yield* Console.log(`response: ${response.body}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // HTTP attempt 1
 // 429 delay: 25ms
@@ -12529,69 +12695,69 @@ delay that matches that failure.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Ref, Schedule } from "effect"
+import { Console, Duration, Effect, Ref, Schedule } from "effect";
 
 type ApiError =
   | {
-    readonly _tag: "RateLimited"
-    readonly retryAfter: Duration.Duration
-  }
+      readonly _tag: "RateLimited";
+      readonly retryAfter: Duration.Duration;
+    }
   | {
-    readonly _tag: "ServiceUnavailable"
-  }
+      readonly _tag: "ServiceUnavailable";
+    }
   | {
-    readonly _tag: "BadRequest"
-    readonly reason: string
-  }
+      readonly _tag: "BadRequest";
+      readonly reason: string;
+    };
 
-const isRetryable = (error: ApiError): boolean => error._tag === "RateLimited" || error._tag === "ServiceUnavailable"
+const isRetryable = (error: ApiError): boolean =>
+  error._tag === "RateLimited" || error._tag === "ServiceUnavailable";
 
 const retryPolicy = Schedule.identity<ApiError>().pipe(
   Schedule.both(Schedule.exponential("10 millis")),
   Schedule.modifyDelay(([error], computedDelay) => {
-    const delay = error._tag === "RateLimited"
-      ? Duration.max(computedDelay, error.retryAfter)
-      : computedDelay
+    const delay =
+      error._tag === "RateLimited"
+        ? Duration.max(computedDelay, error.retryAfter)
+        : computedDelay;
 
     return Console.log(
       `delay for ${error._tag}: ${Duration.toMillis(delay)}ms`
-    ).pipe(Effect.as(delay))
+    ).pipe(Effect.as(delay));
   }),
   Schedule.both(Schedule.recurs(5))
-)
+);
 
-const callProvider = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`provider attempt ${attempt}`)
+const callProvider = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`provider attempt ${attempt}`);
 
   if (attempt === 1) {
-    return yield* Effect.fail({ _tag: "ServiceUnavailable" } as const)
+    return yield* Effect.fail({ _tag: "ServiceUnavailable" } as const);
   }
 
   if (attempt === 2) {
-    return yield* Effect.fail(
-      {
-        _tag: "RateLimited",
-        retryAfter: Duration.millis(35)
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "RateLimited",
+      retryAfter: Duration.millis(35),
+    } as const);
   }
 
-  return "provider-ok"
-})
+  return "provider-ok";
+});
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const result = yield* callProvider(attempts).pipe(
     Effect.retry({
       schedule: retryPolicy,
-      while: isRetryable
+      while: isRetryable,
     })
-  )
-  yield* Console.log(`result: ${result}`)
-})
+  );
+  yield* Console.log(`result: ${result}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // provider attempt 1
 // delay for ServiceUnavailable: 10ms
@@ -12697,50 +12863,50 @@ allowed. Compose those decisions separately:
 ##### Example
 
 ```ts runnable
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type ApiError = {
-  readonly _tag: "ServiceUnavailable"
-  readonly client: string
-  readonly attempt: number
-}
+  readonly _tag: "ServiceUnavailable";
+  readonly client: string;
+  readonly attempt: number;
+};
 
 const retryWithoutHerding = Schedule.exponential("20 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const runClient = (client: string) => {
-  let attempts = 0
+  let attempts = 0;
 
-  const fetchSharedResource = Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`${client} attempt ${attempts}`)
+  const fetchSharedResource = Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`${client} attempt ${attempts}`);
 
     if (attempts < 3) {
       return yield* Effect.fail<ApiError>({
         _tag: "ServiceUnavailable",
         client,
-        attempt: attempts
-      })
+        attempt: attempts,
+      });
     }
 
-    return `${client} loaded the resource`
-  })
+    return `${client} loaded the resource`;
+  });
 
   return fetchSharedResource.pipe(
     Effect.retry(retryWithoutHerding),
     Effect.flatMap(Console.log)
-  )
-}
+  );
+};
 
 const program = Effect.forEach(
   ["client-a", "client-b", "client-c"],
   runClient,
   { concurrency: 3, discard: true }
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: jitter and concurrent clients can change ordering
 // client-a attempt 1
 // client-b attempt 1
@@ -12821,50 +12987,47 @@ That order keeps the policy readable: exponential retry, jittered, bounded.
 ##### Example
 
 ```ts runnable
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type ClientError = {
-  readonly _tag: "ClientError"
-  readonly client: string
-  readonly attempt: number
-}
+  readonly _tag: "ClientError";
+  readonly client: string;
+  readonly attempt: number;
+};
 
 const clientRetry = Schedule.exponential("25 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const makeClientCall = (client: string) => {
-  let attempts = 0
+  let attempts = 0;
 
-  const call = Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`${client} call ${attempts}`)
+  const call = Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`${client} call ${attempts}`);
 
     if (attempts < 3) {
       return yield* Effect.fail<ClientError>({
         _tag: "ClientError",
         client,
-        attempt: attempts
-      })
+        attempt: attempts,
+      });
     }
 
-    return `${client} done`
-  })
+    return `${client} done`;
+  });
 
-  return call.pipe(
-    Effect.retry(clientRetry),
-    Effect.flatMap(Console.log)
-  )
-}
+  return call.pipe(Effect.retry(clientRetry), Effect.flatMap(Console.log));
+};
 
 const program = Effect.forEach(
   ["browser-a", "browser-b", "browser-c"],
   makeClientCall,
   { concurrency: 3, discard: true }
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: jitter and concurrent clients can change ordering
 // browser-a call 1
 // browser-b call 1
@@ -12945,52 +13108,52 @@ Build the operational shape first, then jitter it:
 ##### Example
 
 ```ts runnable
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class DependencyUnavailable extends Data.TaggedError("DependencyUnavailable")<{
-  readonly service: string
-  readonly instance: string
-  readonly attempt: number
+  readonly service: string;
+  readonly instance: string;
+  readonly attempt: number;
 }> {}
 
 const recoveryRetryPolicy = Schedule.exponential("30 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(6))
-)
+);
 
 const recoverInstance = (instance: string) => {
-  let attempts = 0
+  let attempts = 0;
 
-  const refreshFromDependency = Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`${instance} refresh attempt ${attempts}`)
+  const refreshFromDependency = Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`${instance} refresh attempt ${attempts}`);
 
     if (attempts < 3) {
       return yield* Effect.fail(
         new DependencyUnavailable({
           service: "orders-db",
           instance,
-          attempt: attempts
+          attempt: attempts,
         })
-      )
+      );
     }
 
-    return `${instance} recovered`
-  })
+    return `${instance} recovered`;
+  });
 
   return refreshFromDependency.pipe(
     Effect.retry(recoveryRetryPolicy),
     Effect.flatMap(Console.log)
-  )
-}
+  );
+};
 
 const program = Effect.forEach(
   ["instance-a", "instance-b", "instance-c"],
   recoverInstance,
   { concurrency: 3, discard: true }
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: jitter and concurrent clients can change ordering
 // instance-a refresh attempt 1
 // instance-b refresh attempt 1
@@ -13068,36 +13231,38 @@ the jittered delay.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class GatewayUnavailable extends Data.TaggedError("GatewayUnavailable")<{
-  readonly status: number
+  readonly status: number;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const callGateway: Effect.Effect<string, GatewayUnavailable> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`gateway attempt ${attempts}`)
+const callGateway: Effect.Effect<string, GatewayUnavailable> = Effect.gen(
+  function* () {
+    attempts += 1;
+    yield* Console.log(`gateway attempt ${attempts}`);
 
-  if (attempts < 4) {
-    return yield* Effect.fail(new GatewayUnavailable({ status: 503 }))
+    if (attempts < 4) {
+      return yield* Effect.fail(new GatewayUnavailable({ status: 503 }));
+    }
+
+    return "gateway response";
   }
-
-  return "gateway response"
-})
+);
 
 const jitteredBackoff = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const program = callGateway.pipe(
   Effect.retry(jitteredBackoff),
   Effect.tap((value) => Console.log(`success: ${value}`))
-)
+);
 
-Effect.runPromise(program).then(() => undefined, console.error)
+Effect.runPromise(program).then(() => undefined, console.error);
 // Output:
 // gateway attempt 1
 // gateway attempt 2
@@ -13177,57 +13342,66 @@ typed failure.
 ##### Example
 
 ```ts runnable
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class ClusterRequestError extends Data.TaggedError("ClusterRequestError")<{
-  readonly nodeId: string
-  readonly reason: "Unavailable" | "Overloaded" | "Partitioned" | "InvalidRequest"
+  readonly nodeId: string;
+  readonly reason:
+    | "Unavailable"
+    | "Overloaded"
+    | "Partitioned"
+    | "InvalidRequest";
 }> {}
 
 const isRetryableClusterError = (error: ClusterRequestError) =>
   error.reason === "Unavailable" ||
   error.reason === "Overloaded" ||
-  error.reason === "Partitioned"
+  error.reason === "Partitioned";
 
 const clusteredRetryPolicy = Schedule.exponential("15 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const heartbeatProgram = (nodeId: string) => {
-  let attempts = 0
+  let attempts = 0;
 
-  const sendHeartbeat: Effect.Effect<void, ClusterRequestError> = Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`${nodeId}: heartbeat attempt ${attempts}`)
+  const sendHeartbeat: Effect.Effect<void, ClusterRequestError> = Effect.gen(
+    function* () {
+      attempts += 1;
+      yield* Console.log(`${nodeId}: heartbeat attempt ${attempts}`);
 
-    if (attempts < 3) {
-      return yield* Effect.fail(
-        new ClusterRequestError({
-          nodeId,
-          reason: "Overloaded"
-        })
-      )
+      if (attempts < 3) {
+        return yield* Effect.fail(
+          new ClusterRequestError({
+            nodeId,
+            reason: "Overloaded",
+          })
+        );
+      }
+
+      yield* Console.log(`${nodeId}: heartbeat accepted`);
     }
-
-    yield* Console.log(`${nodeId}: heartbeat accepted`)
-  })
+  );
 
   return sendHeartbeat.pipe(
     Effect.retry({
       schedule: clusteredRetryPolicy,
-      while: isRetryableClusterError
+      while: isRetryableClusterError,
     })
-  )
-}
+  );
+};
 
-const program = Effect.all([
-  heartbeatProgram("node-a"),
-  heartbeatProgram("node-b"),
-  heartbeatProgram("node-c")
-], { concurrency: "unbounded", discard: true })
+const program = Effect.all(
+  [
+    heartbeatProgram("node-a"),
+    heartbeatProgram("node-b"),
+    heartbeatProgram("node-c"),
+  ],
+  { concurrency: "unbounded", discard: true }
+);
 
-Effect.runPromise(program).then(() => undefined, console.error)
+Effect.runPromise(program).then(() => undefined, console.error);
 // Output may vary: jitter and concurrent workers can change ordering
 // node-a: heartbeat attempt 1
 // node-b: heartbeat attempt 1
@@ -13331,43 +13505,43 @@ any one fiber or process.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Random, Ref, Schedule } from "effect"
+import { Console, Effect, Random, Ref, Schedule } from "effect";
 
 type GatewayError = {
-  readonly _tag: "GatewayError"
-  readonly attempt: number
-}
+  readonly _tag: "GatewayError";
+  readonly attempt: number;
+};
 
 const refreshPolicy = Schedule.spaced("20 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(3))
-)
+);
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
 
   const refreshCacheEntry: Effect.Effect<string, GatewayError> = Effect.gen(
-    function*() {
-      const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-      yield* Console.log(`refresh attempt ${attempt}`)
+    function* () {
+      const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+      yield* Console.log(`refresh attempt ${attempt}`);
 
       if (attempt < 3) {
-        return yield* Effect.fail({ _tag: "GatewayError", attempt } as const)
+        return yield* Effect.fail({ _tag: "GatewayError", attempt } as const);
       }
 
-      return "cache refreshed"
+      return "cache refreshed";
     }
-  )
+  );
 
   const result = yield* refreshCacheEntry.pipe(
     Effect.retry(refreshPolicy),
     Random.withSeed("cache-refresh-demo")
-  )
+  );
 
-  yield* Console.log(result)
-})
+  yield* Console.log(result);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // refresh attempt 1
 // refresh attempt 2
@@ -13457,28 +13631,28 @@ and `Schedule.recurs`, `Schedule.take`, or `Schedule.during` for visible bounds.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Ref, Schedule } from "effect"
+import { Console, Effect, Ref, Schedule } from "effect";
 
 const predictableStatusPolling = Schedule.spaced("50 millis").pipe(
   Schedule.take(3)
-)
+);
 
-const program = Effect.gen(function*() {
-  const polls = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const polls = yield* Ref.make(0);
 
   const pollUserVisibleStatus = Ref.updateAndGet(polls, (n) => n + 1).pipe(
     Effect.tap((poll) => Console.log(`poll ${poll}: status is still visible`)),
     Effect.as("visible")
-  )
+  );
 
   const finalRecurrence = yield* pollUserVisibleStatus.pipe(
     Effect.repeat(predictableStatusPolling)
-  )
+  );
 
-  yield* Console.log(`stopped after recurrence ${finalRecurrence}`)
-})
+  yield* Console.log(`stopped after recurrence ${finalRecurrence}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // poll 1: status is still visible
 // poll 2: status is still visible
@@ -13552,57 +13726,56 @@ a random value between 80% and 120% of the original delay. Add
 ##### Example
 
 ```ts runnable deterministic
-import { Data, Effect, Schedule } from "effect"
+import { Data, Effect, Schedule } from "effect";
 
-type HttpMethod = "GET" | "HEAD" | "PUT" | "DELETE" | "POST"
+type HttpMethod = "GET" | "HEAD" | "PUT" | "DELETE" | "POST";
 
 class HttpError extends Data.TaggedError("HttpError")<{
-  readonly method: HttpMethod
-  readonly status: number
-  readonly idempotencyKey?: string
+  readonly method: HttpMethod;
+  readonly status: number;
+  readonly idempotencyKey?: string;
 }> {}
 
-const isRetryableStatus = (status: number) => status === 408 || status === 429 || status >= 500
+const isRetryableStatus = (status: number) =>
+  status === 408 || status === 429 || status >= 500;
 
 const isRetrySafe = (error: HttpError) =>
   isRetryableStatus(error.status) &&
-  (
-    error.method === "GET" ||
+  (error.method === "GET" ||
     error.method === "HEAD" ||
     error.method === "PUT" ||
     error.method === "DELETE" ||
-    error.idempotencyKey !== undefined
-  )
+    error.idempotencyKey !== undefined);
 
-let attempt = 0
+let attempt = 0;
 
-const getProfile = Effect.gen(function*() {
-  attempt += 1
-  yield* Effect.sync(() => console.log(`GET /profile attempt ${attempt}`))
+const getProfile = Effect.gen(function* () {
+  attempt += 1;
+  yield* Effect.sync(() => console.log(`GET /profile attempt ${attempt}`));
 
   if (attempt < 3) {
-    return yield* Effect.fail(
-      new HttpError({ method: "GET", status: 503 })
-    )
+    return yield* Effect.fail(new HttpError({ method: "GET", status: 503 }));
   }
 
-  return { id: 123, name: "Ada" }
-})
+  return { id: 123, name: "Ada" };
+});
 
 const httpRetryPolicy = Schedule.exponential("20 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = getProfile.pipe(
   Effect.retry({
     schedule: httpRetryPolicy,
-    while: isRetrySafe
+    while: isRetrySafe,
   }),
-  Effect.tap((profile) => Effect.sync(() => console.log(`loaded ${profile.name}`)))
-)
+  Effect.tap((profile) =>
+    Effect.sync(() => console.log(`loaded ${profile.name}`))
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // GET /profile attempt 1
 // GET /profile attempt 2
@@ -13674,38 +13847,38 @@ attempt.
 ##### Example
 
 ```ts runnable deterministic
-import { Data, Duration, Effect, Schedule } from "effect"
+import { Data, Duration, Effect, Schedule } from "effect";
 
 class RedisReconnectError extends Data.TaggedError("RedisReconnectError")<{
-  readonly reason: "timeout" | "connection-refused" | "server-loading"
+  readonly reason: "timeout" | "connection-refused" | "server-loading";
 }> {}
 
-let attempt = 0
+let attempt = 0;
 
-const reconnectRedis = Effect.gen(function*() {
-  attempt += 1
-  yield* Effect.sync(() => console.log(`redis reconnect attempt ${attempt}`))
+const reconnectRedis = Effect.gen(function* () {
+  attempt += 1;
+  yield* Effect.sync(() => console.log(`redis reconnect attempt ${attempt}`));
 
   if (attempt < 4) {
     return yield* Effect.fail(
       new RedisReconnectError({ reason: "server-loading" })
-    )
+    );
   }
 
-  yield* Effect.sync(() => console.log("redis reconnected"))
-})
+  yield* Effect.sync(() => console.log("redis reconnected"));
+});
 
 const redisReconnectPolicy = Schedule.exponential("20 millis").pipe(
   Schedule.jittered,
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(120)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(120)))
+  ),
   Schedule.both(Schedule.recurs(8))
-)
+);
 
-const program = reconnectRedis.pipe(
-  Effect.retry(redisReconnectPolicy)
-)
+const program = reconnectRedis.pipe(Effect.retry(redisReconnectPolicy));
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // redis reconnect attempt 1
 // redis reconnect attempt 2
@@ -13788,7 +13961,7 @@ milliseconds to 1.2 seconds.
 ##### Example
 
 ```ts runnable deterministic
-import { Data, Duration, Effect, Schedule } from "effect"
+import { Data, Duration, Effect, Schedule } from "effect";
 
 class WebSocketConnectError extends Data.TaggedError("WebSocketConnectError")<{
   readonly reason:
@@ -13797,7 +13970,7 @@ class WebSocketConnectError extends Data.TaggedError("WebSocketConnectError")<{
     | "NetworkError"
     | "ServerOverloaded"
     | "Unauthorized"
-    | "UnsupportedProtocol"
+    | "UnsupportedProtocol";
 }> {}
 
 const isRetryableReconnectError = (error: WebSocketConnectError): boolean => {
@@ -13806,47 +13979,49 @@ const isRetryableReconnectError = (error: WebSocketConnectError): boolean => {
     case "GatewayUnavailable":
     case "NetworkError":
     case "ServerOverloaded":
-      return true
+      return true;
     case "Unauthorized":
     case "UnsupportedProtocol":
-      return false
+      return false;
   }
-}
+};
 
-let attempt = 0
+let attempt = 0;
 
-const connectWebSocket = Effect.gen(function*() {
-  attempt += 1
-  yield* Effect.sync(() => console.log(`websocket connect attempt ${attempt}`))
+const connectWebSocket = Effect.gen(function* () {
+  attempt += 1;
+  yield* Effect.sync(() => console.log(`websocket connect attempt ${attempt}`));
 
   if (attempt === 1) {
     return yield* Effect.fail(
       new WebSocketConnectError({ reason: "GatewayUnavailable" })
-    )
+    );
   }
   if (attempt === 2) {
     return yield* Effect.fail(
       new WebSocketConnectError({ reason: "NetworkError" })
-    )
+    );
   }
 
-  yield* Effect.sync(() => console.log("websocket connected"))
-})
+  yield* Effect.sync(() => console.log("websocket connected"));
+});
 
 const reconnectPolicy = Schedule.exponential("20 millis").pipe(
   Schedule.jittered,
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(100)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(100)))
+  ),
   Schedule.both(Schedule.recurs(8))
-)
+);
 
 const program = connectWebSocket.pipe(
   Effect.retry({
     schedule: reconnectPolicy,
-    while: isRetryableReconnectError
+    while: isRetryableReconnectError,
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // websocket connect attempt 1
 // websocket connect attempt 2
@@ -13941,46 +14116,46 @@ starts. The schedule controls only the recurrences after successful refreshes.
 ##### Example
 
 ```ts runnable deterministic
-import { Effect, Schedule } from "effect"
+import { Effect, Schedule } from "effect";
 
 type Config = {
-  readonly version: string
-  readonly cacheTtlMillis: number
-  readonly featureFlags: ReadonlyArray<string>
-}
+  readonly version: string;
+  readonly cacheTtlMillis: number;
+  readonly featureFlags: ReadonlyArray<string>;
+};
 
-let version = 0
+let version = 0;
 
 const loadConfig = Effect.sync((): Config => {
-  version += 1
-  console.log(`loaded config version ${version}`)
+  version += 1;
+  console.log(`loaded config version ${version}`);
   return {
     version: `v${version}`,
     cacheTtlMillis: 60_000,
-    featureFlags: ["search", "checkout"]
-  }
-})
+    featureFlags: ["search", "checkout"],
+  };
+});
 
 const replaceCachedConfig = (config: Config) =>
   Effect.sync(() => {
-    console.log(`cached ${config.version}`)
-  })
+    console.log(`cached ${config.version}`);
+  });
 
 const refreshCachedConfig = loadConfig.pipe(
   Effect.flatMap(replaceCachedConfig)
-)
+);
 
 const demoRefreshSchedule = Schedule.spaced("20 millis").pipe(
   Schedule.jittered,
   Schedule.take(3)
-)
+);
 
 const program = refreshCachedConfig.pipe(
   Effect.repeat(demoRefreshSchedule),
   Effect.tap(() => Effect.sync(() => console.log("refresh loop stopped")))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // loaded config version 1
 // cached v1
@@ -14076,39 +14251,35 @@ passes.
 ##### Example
 
 ```ts runnable deterministic
-import { Effect, Schedule } from "effect"
+import { Effect, Schedule } from "effect";
 
-type CacheKey = string
+type CacheKey = string;
 
 const hotKeys: ReadonlyArray<CacheKey> = [
   "catalog:featured",
   "pricing:default",
-  "permissions:public"
-]
+  "permissions:public",
+];
 
-const warmCacheEntry = Effect.fnUntraced(function*(key: CacheKey) {
-  yield* Effect.sync(() => console.log(`warmed ${key}`))
-})
+const warmCacheEntry = Effect.fnUntraced(function* (key: CacheKey) {
+  yield* Effect.sync(() => console.log(`warmed ${key}`));
+});
 
-const warmCacheOnce = Effect.forEach(
-  hotKeys,
-  warmCacheEntry,
-  { concurrency: 4 }
-).pipe(
-  Effect.asVoid
-)
+const warmCacheOnce = Effect.forEach(hotKeys, warmCacheEntry, {
+  concurrency: 4,
+}).pipe(Effect.asVoid);
 
 const demoWarmingSchedule = Schedule.spaced("20 millis").pipe(
   Schedule.jittered,
   Schedule.take(2)
-)
+);
 
 const program = warmCacheOnce.pipe(
   Effect.repeat(demoWarmingSchedule),
   Effect.tap(() => Effect.sync(() => console.log("cache warming stopped")))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // warmed catalog:featured
 // warmed pricing:default
@@ -14213,63 +14384,73 @@ stops the repeat and returns the latest status.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type OrderStatus =
   | { readonly state: "queued"; readonly orderId: string }
-  | { readonly state: "running"; readonly orderId: string; readonly step: string }
-  | { readonly state: "completed"; readonly orderId: string; readonly receiptId: string }
-  | { readonly state: "failed"; readonly orderId: string; readonly reason: string }
-  | { readonly state: "canceled"; readonly orderId: string }
+  | {
+      readonly state: "running";
+      readonly orderId: string;
+      readonly step: string;
+    }
+  | {
+      readonly state: "completed";
+      readonly orderId: string;
+      readonly receiptId: string;
+    }
+  | {
+      readonly state: "failed";
+      readonly orderId: string;
+      readonly reason: string;
+    }
+  | { readonly state: "canceled"; readonly orderId: string };
 
 type StatusReadError = {
-  readonly _tag: "StatusReadError"
-  readonly orderId: string
-}
+  readonly _tag: "StatusReadError";
+  readonly orderId: string;
+};
 
 const statuses: ReadonlyArray<OrderStatus> = [
   { state: "queued", orderId: "order-123" },
   { state: "running", orderId: "order-123", step: "packing" },
-  { state: "completed", orderId: "order-123", receiptId: "receipt-456" }
-]
+  { state: "completed", orderId: "order-123", receiptId: "receipt-456" },
+];
 
-let reads = 0
+let reads = 0;
 
 const readOrderStatus = (
   orderId: string
 ): Effect.Effect<OrderStatus, StatusReadError> =>
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     const index = yield* Effect.sync(() => {
-      const current = reads
-      reads += 1
-      return current
-    })
-    const status = statuses[index] ?? statuses[statuses.length - 1]!
+      const current = reads;
+      reads += 1;
+      return current;
+    });
+    const status = statuses[index] ?? statuses[statuses.length - 1]!;
 
-    yield* Console.log(`status read ${index + 1}: ${status.state}`)
-    return status
-  })
+    yield* Console.log(`status read ${index + 1}: ${status.state}`);
+    return status;
+  });
 
 const isTerminal = (status: OrderStatus): boolean =>
   status.state === "completed" ||
   status.state === "failed" ||
-  status.state === "canceled"
+  status.state === "canceled";
 
 const pollUntilTerminal = Schedule.identity<OrderStatus>().pipe(
   Schedule.bothLeft(Schedule.spaced("100 millis")),
   Schedule.while(({ output }) => !isTerminal(output))
-)
+);
 
 const waitForTerminalOrderStatus = (orderId: string) =>
-  readOrderStatus(orderId).pipe(
-    Effect.repeat(pollUntilTerminal)
-  )
+  readOrderStatus(orderId).pipe(Effect.repeat(pollUntilTerminal));
 
 const program = waitForTerminalOrderStatus("order-123").pipe(
   Effect.flatMap((status) => Console.log(`final status: ${status.state}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // status read 1: queued
 // status read 2: running
@@ -14372,51 +14553,55 @@ continues the schedule; returning `false` stops it and yields the latest output.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type DrainResult = {
-  readonly processed: number
-  readonly remaining: number
-}
+  readonly processed: number;
+  readonly remaining: number;
+};
 
 type QueueDrainError = {
-  readonly _tag: "QueueDrainError"
-  readonly message: string
-}
+  readonly _tag: "QueueDrainError";
+  readonly message: string;
+};
 
 const batches: ReadonlyArray<DrainResult> = [
   { processed: 25, remaining: 40 },
   { processed: 25, remaining: 15 },
-  { processed: 15, remaining: 0 }
-]
+  { processed: 15, remaining: 0 },
+];
 
-let drains = 0
+let drains = 0;
 
-const drainWorkQueue: Effect.Effect<DrainResult, QueueDrainError> = Effect.gen(function*() {
-  const index = yield* Effect.sync(() => {
-    const current = drains
-    drains += 1
-    return current
-  })
-  const result = batches[index] ?? batches[batches.length - 1]!
+const drainWorkQueue: Effect.Effect<DrainResult, QueueDrainError> = Effect.gen(
+  function* () {
+    const index = yield* Effect.sync(() => {
+      const current = drains;
+      drains += 1;
+      return current;
+    });
+    const result = batches[index] ?? batches[batches.length - 1]!;
 
-  yield* Console.log(
-    `drain ${index + 1}: processed=${result.processed}, remaining=${result.remaining}`
-  )
-  return result
-})
+    yield* Console.log(
+      `drain ${index + 1}: processed=${result.processed}, remaining=${result.remaining}`
+    );
+    return result;
+  }
+);
 
 const drainUntilEmpty = Schedule.identity<DrainResult>().pipe(
   Schedule.bothLeft(Schedule.spaced("100 millis")),
   Schedule.while(({ output }) => output.remaining > 0)
-)
+);
 
 const program = drainWorkQueue.pipe(
   Effect.repeat(drainUntilEmpty),
-  Effect.flatMap((result) => Console.log(`stopped with ${result.remaining} items remaining`))
-)
+  Effect.flatMap((result) =>
+    Console.log(`stopped with ${result.remaining} items remaining`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // drain 1: processed=25, remaining=40
 // drain 2: processed=25, remaining=15
@@ -14523,52 +14708,55 @@ result after the schedule stops.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type Availability<A> =
   | { readonly _tag: "Missing" }
-  | { readonly _tag: "Available"; readonly value: A }
+  | { readonly _tag: "Available"; readonly value: A };
 
 interface UserProfile {
-  readonly id: string
-  readonly displayName: string
+  readonly id: string;
+  readonly displayName: string;
 }
 
 type CacheLookupError = {
-  readonly _tag: "CacheLookupError"
-  readonly message: string
-}
+  readonly _tag: "CacheLookupError";
+  readonly message: string;
+};
 
 const observations: ReadonlyArray<Availability<UserProfile>> = [
   { _tag: "Missing" },
   { _tag: "Missing" },
   {
     _tag: "Available",
-    value: { id: "user-1", displayName: "Ada" }
-  }
-]
+    value: { id: "user-1", displayName: "Ada" },
+  },
+];
 
-let lookups = 0
+let lookups = 0;
 
 const lookupProfileCache = (
   userId: string
 ): Effect.Effect<Availability<UserProfile>, CacheLookupError> =>
-  Effect.gen(function*() {
+  Effect.gen(function* () {
     const index = yield* Effect.sync(() => {
-      const current = lookups
-      lookups += 1
-      return current
-    })
-    const observation = observations[index] ?? observations[observations.length - 1]!
+      const current = lookups;
+      lookups += 1;
+      return current;
+    });
+    const observation =
+      observations[index] ?? observations[observations.length - 1]!;
 
-    yield* Console.log(`${userId} cache lookup ${index + 1}: ${observation._tag}`)
-    return observation
-  })
+    yield* Console.log(
+      `${userId} cache lookup ${index + 1}: ${observation._tag}`
+    );
+    return observation;
+  });
 
 const pollUntilAvailable = Schedule.identity<Availability<UserProfile>>().pipe(
   Schedule.bothLeft(Schedule.spaced("100 millis")),
   Schedule.while(({ output }) => output._tag === "Missing")
-)
+);
 
 const waitForProfile = (
   userId: string
@@ -14583,13 +14771,15 @@ const waitForProfile = (
         ? Effect.succeed(availability.value)
         : Effect.fail({ _tag: "ProfileUnavailable" as const })
     )
-  )
+  );
 
 const program = waitForProfile("user-1").pipe(
-  Effect.flatMap((profile) => Console.log(`profile ready: ${profile.displayName}`))
-)
+  Effect.flatMap((profile) =>
+    Console.log(`profile ready: ${profile.displayName}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // user-1 cache lookup 1: Missing
 // user-1 cache lookup 2: Missing
@@ -14683,49 +14873,49 @@ observation in schedule state.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 interface Snapshot {
-  readonly version: string
-  readonly itemCount: number
+  readonly version: string;
+  readonly itemCount: number;
 }
 
 interface StabilityState {
-  readonly previous: Snapshot | undefined
-  readonly current: Snapshot | undefined
-  readonly stable: boolean
+  readonly previous: Snapshot | undefined;
+  readonly current: Snapshot | undefined;
+  readonly stable: boolean;
 }
 
 const snapshots: ReadonlyArray<Snapshot> = [
   { version: "v1", itemCount: 8 },
   { version: "v2", itemCount: 10 },
-  { version: "v2", itemCount: 10 }
-]
+  { version: "v2", itemCount: 10 },
+];
 
-let reads = 0
+let reads = 0;
 
-const readSnapshot: Effect.Effect<Snapshot> = Effect.gen(function*() {
+const readSnapshot: Effect.Effect<Snapshot> = Effect.gen(function* () {
   const index = yield* Effect.sync(() => {
-    const current = reads
-    reads += 1
-    return current
-  })
-  const snapshot = snapshots[index] ?? snapshots[snapshots.length - 1]!
+    const current = reads;
+    reads += 1;
+    return current;
+  });
+  const snapshot = snapshots[index] ?? snapshots[snapshots.length - 1]!;
 
   yield* Console.log(
     `snapshot ${index + 1}: version=${snapshot.version}, items=${snapshot.itemCount}`
-  )
-  return snapshot
-})
+  );
+  return snapshot;
+});
 
 const sameSnapshot = (left: Snapshot, right: Snapshot) =>
-  left.version === right.version && left.itemCount === right.itemCount
+  left.version === right.version && left.itemCount === right.itemCount;
 
 const initialState: StabilityState = {
   previous: undefined,
   current: undefined,
-  stable: false
-}
+  stable: false,
+};
 
 const untilStable = Schedule.identity<Snapshot>().pipe(
   Schedule.bothLeft(Schedule.spaced("100 millis")),
@@ -14734,11 +14924,12 @@ const untilStable = Schedule.identity<Snapshot>().pipe(
     (state, current): StabilityState => ({
       previous: state.current,
       current,
-      stable: state.current !== undefined && sameSnapshot(state.current, current)
+      stable:
+        state.current !== undefined && sameSnapshot(state.current, current),
     })
   ),
   Schedule.while(({ output }) => !output.stable)
-)
+);
 
 const program = readSnapshot.pipe(
   Effect.repeat(untilStable),
@@ -14747,9 +14938,9 @@ const program = readSnapshot.pipe(
       `stable at version ${state.current?.version} with ${state.current?.itemCount} items`
     )
   )
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // snapshot 1: version=v1, items=8
 // snapshot 2: version=v2, items=10
@@ -14838,57 +15029,61 @@ many times?", while the predicate answers "is this failure retryable?"
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
-class TransientDownstreamError extends Data.TaggedError("TransientDownstreamError")<{
-  readonly reason: "Timeout" | "Unavailable" | "RateLimited"
+class TransientDownstreamError extends Data.TaggedError(
+  "TransientDownstreamError"
+)<{
+  readonly reason: "Timeout" | "Unavailable" | "RateLimited";
 }> {}
 
 class FatalDownstreamError extends Data.TaggedError("FatalDownstreamError")<{
-  readonly reason: "BadRequest" | "Unauthorized" | "Forbidden"
+  readonly reason: "BadRequest" | "Unauthorized" | "Forbidden";
 }> {}
 
-type DownstreamError = TransientDownstreamError | FatalDownstreamError
+type DownstreamError = TransientDownstreamError | FatalDownstreamError;
 
-let attempts = 0
+let attempts = 0;
 
-const callDownstream = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`attempt ${attempts}`)
+const callDownstream = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`attempt ${attempts}`);
 
   if (attempts === 1) {
     return yield* Effect.fail(
       new TransientDownstreamError({ reason: "Timeout" })
-    )
+    );
   }
 
   return yield* Effect.fail(
     new FatalDownstreamError({ reason: "Unauthorized" })
-  )
-})
+  );
+});
 
-const isTransient = (error: DownstreamError): error is TransientDownstreamError =>
-  error._tag === "TransientDownstreamError"
+const isTransient = (
+  error: DownstreamError
+): error is TransientDownstreamError =>
+  error._tag === "TransientDownstreamError";
 
 const retryPolicy = Schedule.exponential("20 millis").pipe(
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = callDownstream.pipe(
   Effect.retry({
     schedule: retryPolicy,
-    while: isTransient
+    while: isTransient,
   }),
   Effect.matchEffect({
     onFailure: (error) =>
       Console.log(
         `stopped on ${error._tag}/${error.reason} after ${attempts} attempts`
       ),
-    onSuccess: (value) => Console.log(`succeeded with ${value}`)
+    onSuccess: (value) => Console.log(`succeeded with ${value}`),
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -14982,7 +15177,7 @@ which decides whether another retry is allowed and how long to wait.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class DownstreamError extends Data.TaggedError("DownstreamError")<{
   readonly reason:
@@ -14990,63 +15185,64 @@ class DownstreamError extends Data.TaggedError("DownstreamError")<{
     | "Unavailable"
     | "RateLimited"
     | "BadRequest"
-    | "Unauthorized"
+    | "Unauthorized";
 }> {}
 
 const classifyStatus = (status: number): DownstreamError => {
   if (status === 408) {
-    return new DownstreamError({ reason: "Timeout" })
+    return new DownstreamError({ reason: "Timeout" });
   }
   if (status === 429) {
-    return new DownstreamError({ reason: "RateLimited" })
+    return new DownstreamError({ reason: "RateLimited" });
   }
   if (status >= 500) {
-    return new DownstreamError({ reason: "Unavailable" })
+    return new DownstreamError({ reason: "Unavailable" });
   }
   if (status === 401 || status === 403) {
-    return new DownstreamError({ reason: "Unauthorized" })
+    return new DownstreamError({ reason: "Unauthorized" });
   }
-  return new DownstreamError({ reason: "BadRequest" })
-}
+  return new DownstreamError({ reason: "BadRequest" });
+};
 
-const statuses: ReadonlyArray<number> = [429, 401]
-let attempts = 0
+const statuses: ReadonlyArray<number> = [429, 401];
+let attempts = 0;
 
-const callDownstream = Effect.gen(function*() {
-  attempts += 1
-  const status = statuses[attempts - 1] ?? 200
+const callDownstream = Effect.gen(function* () {
+  attempts += 1;
+  const status = statuses[attempts - 1] ?? 200;
 
-  yield* Console.log(`downstream returned ${status}`)
+  yield* Console.log(`downstream returned ${status}`);
 
   if (status === 200) {
-    return "ok"
+    return "ok";
   }
 
-  return yield* Effect.fail(classifyStatus(status))
-})
+  return yield* Effect.fail(classifyStatus(status));
+});
 
 const isTransient = (error: DownstreamError) =>
   error.reason === "Timeout" ||
   error.reason === "Unavailable" ||
-  error.reason === "RateLimited"
+  error.reason === "RateLimited";
 
 const retryTransientFailures = Schedule.exponential("100 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const program = callDownstream.pipe(
   Effect.retry({
     schedule: retryTransientFailures,
-    while: isTransient
+    while: isTransient,
   }),
   Effect.matchEffect({
-    onFailure: (error) => Console.log(`stopped on ${error.reason} after ${attempts} attempts`),
-    onSuccess: (value) => Console.log(`succeeded with ${value}`)
+    onFailure: (error) =>
+      Console.log(`stopped on ${error.reason} after ${attempts} attempts`),
+    onSuccess: (value) => Console.log(`succeeded with ${value}`),
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // downstream returned 429
 // downstream returned 401
@@ -15141,40 +15337,40 @@ Only failures after that first execution are fed to the schedule:
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly service: string
+  readonly service: string;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const fetchInventory = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`inventory attempt ${attempts}`)
+const fetchInventory = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`inventory attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail(
-      new ServiceUnavailable({ service: "inventory" })
-    )
+    return yield* Effect.fail(new ServiceUnavailable({ service: "inventory" }));
   }
 
-  return ["sku-123", "sku-456"] as const
-})
+  return ["sku-123", "sku-456"] as const;
+});
 
 const retry5TimesWithFixedSpacing = Schedule.spaced("20 millis").pipe(
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = fetchInventory.pipe(
   Effect.retry(retry5TimesWithFixedSpacing),
   Effect.matchEffect({
-    onFailure: (error) => Console.log(`failed with ${error._tag} after ${attempts} attempts`),
-    onSuccess: (items) => Console.log(`loaded ${items.length} items after ${attempts} attempts`)
+    onFailure: (error) =>
+      Console.log(`failed with ${error._tag} after ${attempts} attempts`),
+    onSuccess: (items) =>
+      Console.log(`loaded ${items.length} items after ${attempts} attempts`),
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // inventory attempt 1
 // inventory attempt 2
@@ -15265,40 +15461,42 @@ exhausted.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type TransientError = {
-  readonly _tag: "Timeout" | "Unavailable" | "RateLimited"
-}
+  readonly _tag: "Timeout" | "Unavailable" | "RateLimited";
+};
 
-let attempts = 0
+let attempts = 0;
 
-const callDownstream = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`downstream attempt ${attempts}`)
+const callDownstream = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`downstream attempt ${attempts}`);
 
   if (attempts < 4) {
     return yield* Effect.fail({
-      _tag: attempts === 1 ? "Timeout" : "Unavailable"
-    } as TransientError)
+      _tag: attempts === 1 ? "Timeout" : "Unavailable",
+    } as TransientError);
   }
 
-  return "response body"
-})
+  return "response body";
+});
 
 const retryPolicy = Schedule.exponential("20 millis").pipe(
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = callDownstream.pipe(
   Effect.retry(retryPolicy),
   Effect.matchEffect({
-    onFailure: (error) => Console.log(`failed with ${error._tag} after ${attempts} attempts`),
-    onSuccess: (value) => Console.log(`succeeded with "${value}" after ${attempts} attempts`)
+    onFailure: (error) =>
+      Console.log(`failed with ${error._tag} after ${attempts} attempts`),
+    onSuccess: (value) =>
+      Console.log(`succeeded with "${value}" after ${attempts} attempts`),
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // downstream attempt 1
 // downstream attempt 2
@@ -15395,45 +15593,49 @@ total.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly status: number
+  readonly status: number;
 }> {}
 
-const statuses = [503, 503, 200] as const
-let attempts = 0
+const statuses = [503, 503, 200] as const;
+let attempts = 0;
 
-const callService = Effect.gen(function*() {
-  attempts += 1
-  const status = statuses[attempts - 1] ?? 200
+const callService = Effect.gen(function* () {
+  attempts += 1;
+  const status = statuses[attempts - 1] ?? 200;
 
-  yield* Console.log(`service attempt ${attempts}: ${status}`)
+  yield* Console.log(`service attempt ${attempts}: ${status}`);
 
   if (status === 200) {
-    return "ok"
+    return "ok";
   }
 
-  return yield* Effect.fail(new ServiceUnavailable({ status }))
-})
+  return yield* Effect.fail(new ServiceUnavailable({ status }));
+});
 
 const retryTenTimesWithJitteredBackoff = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(10))
-)
+);
 
 const program = callService.pipe(
   Effect.retry({
     schedule: retryTenTimesWithJitteredBackoff,
-    while: (error) => error.status === 429 || error.status >= 500
+    while: (error) => error.status === 429 || error.status >= 500,
   }),
   Effect.matchEffect({
-    onFailure: (error) => Console.log(`failed with HTTP ${error.status} after ${attempts} attempts`),
-    onSuccess: (value) => Console.log(`succeeded with ${value} after ${attempts} attempts`)
+    onFailure: (error) =>
+      Console.log(
+        `failed with HTTP ${error.status} after ${attempts} attempts`
+      ),
+    onSuccess: (value) =>
+      Console.log(`succeeded with ${value} after ${attempts} attempts`),
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // service attempt 1: 503
 // service attempt 2: 503
@@ -15524,81 +15726,89 @@ recurrence.
 ##### Example
 
 ```ts
-import { Console, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 type JobStatus =
   | { readonly _tag: "Running"; readonly jobId: string }
-  | { readonly _tag: "Completed"; readonly jobId: string; readonly resultId: string }
-  | { readonly _tag: "Failed"; readonly jobId: string; readonly reason: string }
+  | {
+      readonly _tag: "Completed";
+      readonly jobId: string;
+      readonly resultId: string;
+    }
+  | {
+      readonly _tag: "Failed";
+      readonly jobId: string;
+      readonly reason: string;
+    };
 
-type StatusReadError = { readonly _tag: "StatusReadError" }
+type StatusReadError = { readonly _tag: "StatusReadError" };
 
 type PollDeadlineExceeded = {
-  readonly _tag: "PollDeadlineExceeded"
-  readonly lastStatus: JobStatus
-}
+  readonly _tag: "PollDeadlineExceeded";
+  readonly lastStatus: JobStatus;
+};
 
-let reads = 0
+let reads = 0;
 
-const readStatus = Effect.fnUntraced(function*(jobId: string) {
-  reads += 1
+const readStatus = Effect.fnUntraced(function* (jobId: string) {
+  reads += 1;
 
-  const status: JobStatus = reads < 3
-    ? { _tag: "Running", jobId }
-    : { _tag: "Completed", jobId, resultId: "result-1" }
+  const status: JobStatus =
+    reads < 3
+      ? { _tag: "Running", jobId }
+      : { _tag: "Completed", jobId, resultId: "result-1" };
 
-  yield* Console.log(`read ${reads}: ${status._tag}`)
-  return status
-})
+  yield* Console.log(`read ${reads}: ${status._tag}`);
+  return status;
+});
 
 const cadence = Schedule.spaced("5 seconds").pipe(
   Schedule.setInputType<JobStatus>(),
   Schedule.passthrough
-)
+);
 
 const deadline = Schedule.during("2 minutes").pipe(
   Schedule.setInputType<JobStatus>()
-)
+);
 
 const pollEvery5SecondsForUpTo2Minutes = cadence.pipe(
   Schedule.while(({ output }) => output._tag === "Running"),
   Schedule.bothLeft(deadline)
-)
+);
 
-const pollJob = Effect.fnUntraced(function*(jobId: string) {
+const pollJob = Effect.fnUntraced(function* (jobId: string) {
   const status = yield* readStatus(jobId).pipe(
     Effect.repeat(pollEvery5SecondsForUpTo2Minutes)
-  )
+  );
 
   if (status._tag === "Running") {
-    return yield* Effect.fail(
-      {
-        _tag: "PollDeadlineExceeded",
-        lastStatus: status
-      } satisfies PollDeadlineExceeded
-    )
+    return yield* Effect.fail({
+      _tag: "PollDeadlineExceeded",
+      lastStatus: status,
+    } satisfies PollDeadlineExceeded);
   }
 
-  return status
-})
+  return status;
+});
 
-const program = Effect.gen(function*() {
-  const fiber = yield* pollJob("job-1").pipe(Effect.forkDetach)
-  yield* TestClock.adjust("10 seconds")
+const program = Effect.gen(function* () {
+  const fiber = yield* pollJob("job-1").pipe(Effect.forkDetach);
+  yield* TestClock.adjust("10 seconds");
 
-  const status = yield* Fiber.join(fiber)
-  yield* Console.log(`poll result: ${status._tag}`)
+  const status = yield* Fiber.join(fiber);
+  yield* Console.log(`poll result: ${status._tag}`);
 }).pipe(
   Effect.matchEffect({
-    onFailure: (error: StatusReadError | PollDeadlineExceeded) => Console.log(`poll failed with ${error._tag}`),
-    onSuccess: () => Console.log("polling finished")
+    onFailure: (error: StatusReadError | PollDeadlineExceeded) =>
+      Console.log(`poll failed with ${error._tag}`),
+    onSuccess: () => Console.log("polling finished"),
   }),
   Effect.provide(TestClock.layer()),
   Effect.scoped
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 `pollJob` performs the first read immediately. The next two reads are driven by
@@ -15709,30 +15919,34 @@ attempts may fit more retries into the same budget.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class DependencyError extends Data.TaggedError("DependencyError")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const callDependency = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`dependency attempt ${attempts}`)
-  return yield* Effect.fail(new DependencyError({ attempt: attempts }))
-})
+const callDependency = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`dependency attempt ${attempts}`);
+  return yield* Effect.fail(new DependencyError({ attempt: attempts }));
+});
 
 const retryWithinBudget = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.during("70 millis"))
-)
+);
 
 const program = callDependency.pipe(
   Effect.retry(retryWithinBudget),
-  Effect.catch((error) => Console.log(`stopped after ${attempts} attempts; last error was attempt ${error.attempt}`))
-)
+  Effect.catch((error) =>
+    Console.log(
+      `stopped after ${attempts} attempts; last error was attempt ${error.attempt}`
+    )
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // dependency attempt 1
 // dependency attempt 2
@@ -15828,37 +16042,44 @@ provides the wait time and the recurrence side provides the retry count.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Schedule } from "effect"
+import { Console, Duration, Effect, Schedule } from "effect";
 
 type TransientError = {
-  readonly _tag: "TransientError"
-  readonly attempt: number
-}
+  readonly _tag: "TransientError";
+  readonly attempt: number;
+};
 
-let attempts = 0
+let attempts = 0;
 
-const fetchMetadata = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`metadata attempt ${attempts}`)
-  return yield* Effect.fail({ _tag: "TransientError", attempt: attempts } satisfies TransientError)
-})
+const fetchMetadata = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`metadata attempt ${attempts}`);
+  return yield* Effect.fail({
+    _tag: "TransientError",
+    attempt: attempts,
+  } satisfies TransientError);
+});
 
 const retryWithCappedBackoff = Schedule.exponential("10 millis").pipe(
   Schedule.modifyDelay((_, delay) => {
-    const capped = Duration.min(delay, Duration.millis(40))
+    const capped = Duration.min(delay, Duration.millis(40));
     return Console.log(`next delay: ${Duration.toMillis(capped)}ms`).pipe(
       Effect.as(capped)
-    )
+    );
   }),
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const program = fetchMetadata.pipe(
   Effect.retry(retryWithCappedBackoff),
-  Effect.catch((error) => Console.log(`gave up after ${attempts} attempts; last error was attempt ${error.attempt}`))
-)
+  Effect.catch((error) =>
+    Console.log(
+      `gave up after ${attempts} attempts; last error was attempt ${error.attempt}`
+    )
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // metadata attempt 1
 // next delay: 10ms
@@ -15956,52 +16177,48 @@ when readiness is reached.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type Readiness =
   | { readonly _tag: "Starting" }
   | { readonly _tag: "Ready" }
-  | { readonly _tag: "Failed"; readonly reason: string }
+  | { readonly _tag: "Failed"; readonly reason: string };
 
 const observations: ReadonlyArray<Readiness> = [
   { _tag: "Starting" },
   { _tag: "Starting" },
   { _tag: "Starting" },
   { _tag: "Starting" },
-  { _tag: "Ready" }
-]
+  { _tag: "Ready" },
+];
 
-let checks = 0
+let checks = 0;
 
-const checkReadiness = Effect.gen(function*() {
-  const status = observations[Math.min(checks, observations.length - 1)]
-  checks += 1
-  yield* Console.log(`readiness check ${checks}: ${status._tag}`)
-  return status
-})
+const checkReadiness = Effect.gen(function* () {
+  const status = observations[Math.min(checks, observations.length - 1)];
+  checks += 1;
+  yield* Console.log(`readiness check ${checks}: ${status._tag}`);
+  return status;
+});
 
-const warmUp = Schedule.spaced("10 millis").pipe(
-  Schedule.take(3)
-)
+const warmUp = Schedule.spaced("10 millis").pipe(Schedule.take(3));
 
-const steadyState = Schedule.spaced("40 millis")
+const steadyState = Schedule.spaced("40 millis");
 
 const startupThenRelaxed = Schedule.andThen(warmUp, steadyState).pipe(
   Schedule.satisfiesInputType<Readiness>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag === "Starting"),
   Schedule.bothLeft(
-    Schedule.during("200 millis").pipe(
-      Schedule.satisfiesInputType<Readiness>()
-    )
+    Schedule.during("200 millis").pipe(Schedule.satisfiesInputType<Readiness>())
   )
-)
+);
 
 const program = Effect.repeat(checkReadiness, startupThenRelaxed).pipe(
   Effect.flatMap((status) => Console.log(`finished with ${status._tag}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // readiness check 1: Starting
 // readiness check 2: Starting
@@ -16103,33 +16320,34 @@ while all pieces of the policy still allow another recurrence.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type StartupCheckError =
   | { readonly _tag: "DependencyUnavailable"; readonly dependency: string }
-  | { readonly _tag: "InvalidConfiguration"; readonly message: string }
+  | { readonly _tag: "InvalidConfiguration"; readonly message: string };
 
-let databaseChecks = 0
+let databaseChecks = 0;
 
-const checkDatabase: Effect.Effect<void, StartupCheckError> = Effect.gen(function*() {
-  databaseChecks += 1
-  yield* Console.log(`database check ${databaseChecks}`)
-  if (databaseChecks < 3) {
-    return yield* Effect.fail(
-      {
+const checkDatabase: Effect.Effect<void, StartupCheckError> = Effect.gen(
+  function* () {
+    databaseChecks += 1;
+    yield* Console.log(`database check ${databaseChecks}`);
+    if (databaseChecks < 3) {
+      return yield* Effect.fail({
         _tag: "DependencyUnavailable",
-        dependency: "database"
-      } as const
-    )
+        dependency: "database",
+      } as const);
+    }
   }
-})
+);
 
-const checkMessageBroker: Effect.Effect<void, StartupCheckError> = Console.log("broker check ok")
+const checkMessageBroker: Effect.Effect<void, StartupCheckError> =
+  Console.log("broker check ok");
 
-const startupChecks = Effect.fnUntraced(function*() {
-  yield* checkDatabase
-  yield* checkMessageBroker
-})
+const startupChecks = Effect.fnUntraced(function* () {
+  yield* checkDatabase;
+  yield* checkMessageBroker;
+});
 
 const fastInitializationChecks = Schedule.spaced("20 millis").pipe(
   Schedule.satisfiesInputType<StartupCheckError>(),
@@ -16140,18 +16358,16 @@ const fastInitializationChecks = Schedule.spaced("20 millis").pipe(
       Schedule.satisfiesInputType<StartupCheckError>()
     )
   )
-)
+);
 
-const initialize = startupChecks().pipe(
-  Effect.retry(fastInitializationChecks)
-)
+const initialize = startupChecks().pipe(Effect.retry(fastInitializationChecks));
 
-const program = Effect.gen(function*() {
-  yield* initialize
-  yield* Console.log("initialized")
-})
+const program = Effect.gen(function* () {
+  yield* initialize;
+  yield* Console.log("initialized");
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // database check 1
 // database check 2
@@ -16244,47 +16460,41 @@ completes.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-type Readiness =
-  | { readonly _tag: "Starting" }
-  | { readonly _tag: "Ready" }
+type Readiness = { readonly _tag: "Starting" } | { readonly _tag: "Ready" };
 
-let probes = 0
+let probes = 0;
 
-const probeDependency = Effect.gen(function*() {
-  probes += 1
-  const status: Readiness = probes < 3
-    ? { _tag: "Starting" }
-    : { _tag: "Ready" }
-  yield* Console.log(`probe ${probes}: ${status._tag}`)
-  return status
-})
+const probeDependency = Effect.gen(function* () {
+  probes += 1;
+  const status: Readiness =
+    probes < 3 ? { _tag: "Starting" } : { _tag: "Ready" };
+  yield* Console.log(`probe ${probes}: ${status._tag}`);
+  return status;
+});
 
 const waitUntilReady = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<Readiness>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag !== "Ready")
-)
+);
 
 const backgroundCadence = Schedule.spaced("40 millis").pipe(
   Schedule.take(3),
   Schedule.satisfiesInputType<Readiness>()
-)
+);
 
 const readinessThenBackground = Schedule.andThen(
   waitUntilReady,
   backgroundCadence
-)
+);
 
-const program = Effect.repeat(
-  probeDependency,
-  readinessThenBackground
-).pipe(
+const program = Effect.repeat(probeDependency, readinessThenBackground).pipe(
   Effect.flatMap(() => Console.log("background monitoring sample finished"))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // probe 1: Starting
 // probe 2: Starting
@@ -16366,54 +16576,50 @@ schedule. The schedule starts only after a typed failure.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class GatewayError extends Data.TaggedError("GatewayError")<{
-  readonly status: number
-  readonly message: string
+  readonly status: number;
+  readonly message: string;
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const callGateway = Effect.gen(function*() {
-  attempts++
-  yield* Console.log(`gateway attempt ${attempts}`)
+const callGateway = Effect.gen(function* () {
+  attempts++;
+  yield* Console.log(`gateway attempt ${attempts}`);
 
   if (attempts <= 4) {
     return yield* Effect.fail(
       new GatewayError({
         status: 503,
-        message: `temporary failure ${attempts}`
+        message: `temporary failure ${attempts}`,
       })
-    )
+    );
   }
 
-  return `gateway succeeded on attempt ${attempts}`
-})
+  return `gateway succeeded on attempt ${attempts}`;
+});
 
 const isRetryable = (error: GatewayError) =>
-  error.status === 408 ||
-  error.status === 429 ||
-  error.status >= 500
+  error.status === 408 || error.status === 429 || error.status >= 500;
 
-const immediateRetries = Schedule.recurs(2)
+const immediateRetries = Schedule.recurs(2);
 
-const delayedBackoff = Schedule.exponential("20 millis").pipe(
-  Schedule.take(4)
-)
+const delayedBackoff = Schedule.exponential("20 millis").pipe(Schedule.take(4));
 
 const immediateThenBackoff = immediateRetries.pipe(
   Schedule.andThen(delayedBackoff),
   Schedule.satisfiesInputType<GatewayError>(),
   Schedule.while(({ input }) => isRetryable(input))
-)
+);
 
 const program = callGateway.pipe(
   Effect.retry(immediateThenBackoff),
   Effect.flatMap((result) => Console.log(result))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // gateway attempt 1
 // gateway attempt 2
@@ -16512,59 +16718,55 @@ status is observed.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type Status =
   | { readonly _tag: "Running"; readonly progress: number }
   | { readonly _tag: "Completed"; readonly resultId: string }
-  | { readonly _tag: "Failed"; readonly reason: string }
+  | { readonly _tag: "Failed"; readonly reason: string };
 
 type StatusReadError = {
-  readonly _tag: "StatusReadError"
-  readonly message: string
-}
+  readonly _tag: "StatusReadError";
+  readonly message: string;
+};
 
 const observations: ReadonlyArray<Status> = [
   { _tag: "Running", progress: 10 },
   { _tag: "Running", progress: 35 },
   { _tag: "Running", progress: 70 },
-  { _tag: "Completed", resultId: "export-123" }
-]
+  { _tag: "Completed", resultId: "export-123" },
+];
 
-let reads = 0
+let reads = 0;
 
 const readStatus = (jobId: string): Effect.Effect<Status, StatusReadError> =>
-  Effect.gen(function*() {
-    const status = observations[Math.min(reads, observations.length - 1)]
-    reads++
-    yield* Console.log(`${jobId}: read ${reads} -> ${status._tag}`)
-    return status
-  })
+  Effect.gen(function* () {
+    const status = observations[Math.min(reads, observations.length - 1)];
+    reads++;
+    yield* Console.log(`${jobId}: read ${reads} -> ${status._tag}`);
+    return status;
+  });
 
-const fastPhase = Schedule.spaced("20 millis").pipe(
-  Schedule.take(3)
-)
+const fastPhase = Schedule.spaced("20 millis").pipe(Schedule.take(3));
 
 const slowPhase = Schedule.spaced("60 millis").pipe(
   Schedule.both(Schedule.during("500 millis"))
-)
+);
 
 const fastThenSlowPolling = Schedule.andThen(fastPhase, slowPhase).pipe(
   Schedule.satisfiesInputType<Status>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag === "Running")
-)
+);
 
 export const pollJob = (jobId: string) =>
-  readStatus(jobId).pipe(
-    Effect.repeat(fastThenSlowPolling)
-  )
+  readStatus(jobId).pipe(Effect.repeat(fastThenSlowPolling));
 
 const program = pollJob("job-1").pipe(
   Effect.flatMap((status) => Console.log(`final status: ${status._tag}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // job-1: read 1 -> Running
 // job-1: read 2 -> Running
@@ -16682,78 +16884,76 @@ that cadence with constraints that apply to the whole polling policy:
 ##### Example
 
 ```ts
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type WorkflowStatus =
   | {
-    readonly _tag: "Running"
-    readonly phase: "Queued" | "Processing" | "Finalizing"
-    readonly progress: number
-  }
+      readonly _tag: "Running";
+      readonly phase: "Queued" | "Processing" | "Finalizing";
+      readonly progress: number;
+    }
   | { readonly _tag: "Completed"; readonly artifactId: string }
-  | { readonly _tag: "Failed"; readonly reason: string }
+  | { readonly _tag: "Failed"; readonly reason: string };
 
 type StatusReadError = {
-  readonly _tag: "StatusReadError"
-  readonly message: string
-}
+  readonly _tag: "StatusReadError";
+  readonly message: string;
+};
 
 const observations: ReadonlyArray<WorkflowStatus> = [
   { _tag: "Running", phase: "Queued", progress: 0 },
   { _tag: "Running", phase: "Processing", progress: 25 },
   { _tag: "Running", phase: "Processing", progress: 60 },
   { _tag: "Running", phase: "Finalizing", progress: 90 },
-  { _tag: "Completed", artifactId: "artifact-123" }
-]
+  { _tag: "Completed", artifactId: "artifact-123" },
+];
 
-let reads = 0
+let reads = 0;
 
 const readWorkflowStatus = (
   workflowId: string
 ): Effect.Effect<WorkflowStatus, StatusReadError> =>
-  Effect.gen(function*() {
-    const status = observations[Math.min(reads, observations.length - 1)]
-    reads++
-    yield* Console.log(`${workflowId}: observation ${reads} -> ${status._tag}`)
-    return status
-  })
+  Effect.gen(function* () {
+    const status = observations[Math.min(reads, observations.length - 1)];
+    reads++;
+    yield* Console.log(`${workflowId}: observation ${reads} -> ${status._tag}`);
+    return status;
+  });
 
-const responsivePhase = Schedule.spaced("20 millis").pipe(
-  Schedule.take(2)
-)
+const responsivePhase = Schedule.spaced("20 millis").pipe(Schedule.take(2));
 
 const steadyPhase = Schedule.spaced("50 millis").pipe(
   Schedule.jittered,
   Schedule.take(2)
-)
+);
 
 const watchdogPhase = Schedule.spaced("100 millis").pipe(
   Schedule.jittered,
   Schedule.take(2)
-)
+);
 
 const phasedCadence = responsivePhase.pipe(
   Schedule.andThen(steadyPhase),
   Schedule.andThen(watchdogPhase)
-)
+);
 
 const longWorkflowPolicy = phasedCadence.pipe(
   Schedule.both(Schedule.during("1 second")),
   Schedule.satisfiesInputType<WorkflowStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag === "Running")
-)
+);
 
 export const pollWorkflow = (workflowId: string) =>
-  readWorkflowStatus(workflowId).pipe(
-    Effect.repeat(longWorkflowPolicy)
-  )
+  readWorkflowStatus(workflowId).pipe(Effect.repeat(longWorkflowPolicy));
 
 const program = pollWorkflow("workflow-1").pipe(
-  Effect.flatMap((status) => Console.log(`final workflow status: ${status._tag}`))
-)
+  Effect.flatMap((status) =>
+    Console.log(`final workflow status: ${status._tag}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 `pollWorkflow` reads once immediately. If that first read returns
@@ -16866,42 +17066,40 @@ count, and also stops when the short time budget is exhausted.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type DependencyError = {
-  readonly _tag: "DependencyUnavailable"
-  readonly service: string
-}
+  readonly _tag: "DependencyUnavailable";
+  readonly service: string;
+};
 
-let attempts = 0
+let attempts = 0;
 
-const readFromDependency = Effect.gen(function*() {
-  attempts++
-  yield* Console.log(`read attempt ${attempts}`)
+const readFromDependency = Effect.gen(function* () {
+  attempts++;
+  yield* Console.log(`read attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(
-      {
-        _tag: "DependencyUnavailable",
-        service: "catalog"
-      } satisfies DependencyError
-    )
+    return yield* Effect.fail({
+      _tag: "DependencyUnavailable",
+      service: "catalog",
+    } satisfies DependencyError);
   }
 
-  return "catalog metadata"
-})
+  return "catalog metadata";
+});
 
 const tryHardButBriefly = Schedule.exponential("20 millis").pipe(
   Schedule.both(Schedule.recurs(4)),
   Schedule.both(Schedule.during("250 millis"))
-)
+);
 
 const program = readFromDependency.pipe(
   Effect.retry(tryHardButBriefly),
   Effect.flatMap((value) => Console.log(`result: ${value}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // read attempt 1
 // read attempt 2
@@ -17005,41 +17203,42 @@ to error classification, shutdown, cancellation, or a separate business rule.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class DeliveryError extends Data.TaggedError("DeliveryError")<{
-  readonly reason: "Network" | "Unavailable" | "BadRecipient" | "InvalidPayload"
+  readonly reason:
+    | "Network"
+    | "Unavailable"
+    | "BadRecipient"
+    | "InvalidPayload";
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const deliverNotification = Effect.gen(function*() {
-  attempts++
-  yield* Console.log(`delivery attempt ${attempts}`)
+const deliverNotification = Effect.gen(function* () {
+  attempts++;
+  yield* Console.log(`delivery attempt ${attempts}`);
 
   if (attempts < 4) {
-    return yield* Effect.fail(
-      new DeliveryError({ reason: "Unavailable" })
-    )
+    return yield* Effect.fail(new DeliveryError({ reason: "Unavailable" }));
   }
 
-  yield* Console.log("notification delivered")
-})
+  yield* Console.log("notification delivered");
+});
 
-const isRecoverable = (error: DeliveryError) => error.reason === "Network" || error.reason === "Unavailable"
+const isRecoverable = (error: DeliveryError) =>
+  error.reason === "Network" || error.reason === "Unavailable";
 
-const lowPressureRetry = Schedule.spaced("40 millis").pipe(
-  Schedule.jittered
-)
+const lowPressureRetry = Schedule.spaced("40 millis").pipe(Schedule.jittered);
 
 const program = deliverNotification.pipe(
   Effect.retry({
     schedule: lowPressureRetry,
-    while: isRecoverable
+    while: isRecoverable,
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // delivery attempt 1
 // delivery attempt 2
@@ -17137,46 +17336,44 @@ failure.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-type TransientError = { readonly _tag: "TransientError" }
+type TransientError = { readonly _tag: "TransientError" };
 
-let attempts = 0
+let attempts = 0;
 
-const refreshRemoteSnapshot = Effect.gen(function*() {
-  attempts++
-  yield* Console.log(`refresh attempt ${attempts}`)
+const refreshRemoteSnapshot = Effect.gen(function* () {
+  attempts++;
+  yield* Console.log(`refresh attempt ${attempts}`);
 
   if (attempts < 5) {
-    return yield* Effect.fail(
-      {
-        _tag: "TransientError"
-      } satisfies TransientError
-    )
+    return yield* Effect.fail({
+      _tag: "TransientError",
+    } satisfies TransientError);
   }
 
-  return "snapshot refreshed"
-})
+  return "snapshot refreshed";
+});
 
 const responsivePhase = Schedule.exponential("15 millis").pipe(
   Schedule.take(3)
-)
+);
 
 const conservativePhase = Schedule.exponential("80 millis").pipe(
   Schedule.take(4)
-)
+);
 
 const responsiveThenConservative = Schedule.andThen(
   responsivePhase,
   conservativePhase
-)
+);
 
 const program = refreshRemoteSnapshot.pipe(
   Effect.retry(responsiveThenConservative),
   Effect.flatMap((value) => Console.log(value))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // refresh attempt 1
 // refresh attempt 2
@@ -17271,69 +17468,69 @@ when either the retry count or elapsed budget is exhausted.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Schedule } from "effect"
+import { Console, Duration, Effect, Schedule } from "effect";
 
 type InventorySnapshot = {
-  readonly sku: string
-  readonly available: number
-}
+  readonly sku: string;
+  readonly available: number;
+};
 
 type DownstreamError =
   | { readonly _tag: "Timeout"; readonly service: string }
   | { readonly _tag: "Unavailable"; readonly service: string }
   | { readonly _tag: "RateLimited"; readonly service: string }
-  | { readonly _tag: "Rejected"; readonly service: string }
+  | { readonly _tag: "Rejected"; readonly service: string };
 
 const isRetryable = (error: DownstreamError): boolean =>
   error._tag === "Timeout" ||
   error._tag === "Unavailable" ||
-  error._tag === "RateLimited"
+  error._tag === "RateLimited";
 
-let attempts = 0
+let attempts = 0;
 
-const loadInventorySnapshot = Effect.gen(function*() {
-  attempts++
-  yield* Console.log(`inventory attempt ${attempts}`)
+const loadInventorySnapshot = Effect.gen(function* () {
+  attempts++;
+  yield* Console.log(`inventory attempt ${attempts}`);
 
   if (attempts === 1) {
-    return yield* Effect.fail(
-      {
-        _tag: "RateLimited",
-        service: "inventory"
-      } satisfies DownstreamError
-    )
+    return yield* Effect.fail({
+      _tag: "RateLimited",
+      service: "inventory",
+    } satisfies DownstreamError);
   }
   if (attempts < 4) {
-    return yield* Effect.fail(
-      {
-        _tag: "Unavailable",
-        service: "inventory"
-      } satisfies DownstreamError
-    )
+    return yield* Effect.fail({
+      _tag: "Unavailable",
+      service: "inventory",
+    } satisfies DownstreamError);
   }
 
   return {
     sku: "sku-123",
-    available: 42
-  } satisfies InventorySnapshot
-})
+    available: 42,
+  } satisfies InventorySnapshot;
+});
 
 const avoidOverloadRetryPolicy = Schedule.exponential("40 millis").pipe(
   Schedule.jittered,
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(120)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(120)))
+  ),
   Schedule.both(Schedule.recurs(8)),
   Schedule.both(Schedule.during("500 millis"))
-)
+);
 
 const program = loadInventorySnapshot.pipe(
   Effect.retry({
     schedule: avoidOverloadRetryPolicy,
-    while: isRetryable
+    while: isRetryable,
   }),
-  Effect.flatMap((snapshot) => Console.log(`${snapshot.sku}: ${snapshot.available} available`))
-)
+  Effect.flatMap((snapshot) =>
+    Console.log(`${snapshot.sku}: ${snapshot.available} available`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // inventory attempt 1
 // inventory attempt 2
@@ -17441,29 +17638,29 @@ schedule; `Effect.repeat` runs the effect once before consulting the schedule.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-type RefreshError = { readonly _tag: "RefreshError" }
+type RefreshError = { readonly _tag: "RefreshError" };
 
-let refreshes = 0
+let refreshes = 0;
 
-const refreshSearchIndex: Effect.Effect<void, RefreshError> = Effect.gen(function*() {
-  refreshes++
-  yield* Console.log(`refresh ${refreshes}`)
-})
+const refreshSearchIndex: Effect.Effect<void, RefreshError> = Effect.gen(
+  function* () {
+    refreshes++;
+    yield* Console.log(`refresh ${refreshes}`);
+  }
+);
 
-const backgroundCadence = Schedule.spaced("40 millis")
+const backgroundCadence = Schedule.spaced("40 millis");
 
-const demoCadence = backgroundCadence.pipe(
-  Schedule.take(3)
-)
+const demoCadence = backgroundCadence.pipe(Schedule.take(3));
 
 const program = refreshSearchIndex.pipe(
   Effect.repeat(demoCadence),
   Effect.flatMap(() => Console.log("demo complete"))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // refresh 1
 // refresh 2
@@ -17556,41 +17753,43 @@ limits must still allow recurrence.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 interface User {
-  readonly id: string
-  readonly name: string
+  readonly id: string;
+  readonly name: string;
 }
 
 class HttpTimeout extends Data.TaggedError("HttpTimeout")<{
-  readonly url: string
+  readonly url: string;
 }> {}
 
 class HttpStatusError extends Data.TaggedError("HttpStatusError")<{
-  readonly url: string
-  readonly status: number
+  readonly url: string;
+  readonly status: number;
 }> {}
 
 class DecodeError extends Data.TaggedError("DecodeError")<{
-  readonly message: string
+  readonly message: string;
 }> {}
 
-type GetUserError = HttpTimeout | HttpStatusError | DecodeError
+type GetUserError = HttpTimeout | HttpStatusError | DecodeError;
 
-let attempts = 0
+let attempts = 0;
 
-const httpGetJson = (url: string): Effect.Effect<unknown, HttpTimeout | HttpStatusError> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`GET ${url}, attempt ${attempts}`)
+const httpGetJson = (
+  url: string
+): Effect.Effect<unknown, HttpTimeout | HttpStatusError> =>
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`GET ${url}, attempt ${attempts}`);
 
     if (attempts <= 2) {
-      return yield* Effect.fail(new HttpTimeout({ url }))
+      return yield* Effect.fail(new HttpTimeout({ url }));
     }
 
-    return { id: "user-123", name: "Ada" }
-  })
+    return { id: "user-123", name: "Ada" };
+  });
 
 const decodeUser = (body: unknown): Effect.Effect<User, DecodeError> => {
   if (
@@ -17601,34 +17800,35 @@ const decodeUser = (body: unknown): Effect.Effect<User, DecodeError> => {
     typeof body.id === "string" &&
     typeof body.name === "string"
   ) {
-    return Effect.succeed({ id: body.id, name: body.name })
+    return Effect.succeed({ id: body.id, name: body.name });
   }
-  return Effect.fail(new DecodeError({ message: "Expected a user object" }))
-}
+  return Effect.fail(new DecodeError({ message: "Expected a user object" }));
+};
 
-const getUser = Effect.fnUntraced(function*(id: string) {
-  const url = `/users/${id}`
-  const body = yield* httpGetJson(url)
-  return yield* decodeUser(body)
-})
+const getUser = Effect.fnUntraced(function* (id: string) {
+  const url = `/users/${id}`;
+  const body = yield* httpGetJson(url);
+  return yield* decodeUser(body);
+});
 
-const isHttpTimeout = (error: GetUserError): error is HttpTimeout => error._tag === "HttpTimeout"
+const isHttpTimeout = (error: GetUserError): error is HttpTimeout =>
+  error._tag === "HttpTimeout";
 
 const retryGetTimeouts = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(3)),
   Schedule.both(Schedule.during("200 millis"))
-)
+);
 
 const program = getUser("user-123").pipe(
   Effect.retry({
     schedule: retryGetTimeouts,
-    while: isHttpTimeout
+    while: isHttpTimeout,
   }),
   Effect.tap((user) => Console.log(`loaded ${user.name}`))
-)
+);
 
-Effect.runPromise(program).then(console.log, console.error)
+Effect.runPromise(program).then(console.log, console.error);
 // Output:
 // GET /users/user-123, attempt 1
 // GET /users/user-123, attempt 2
@@ -17723,41 +17923,41 @@ which helps avoid synchronized retry waves.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
-type HttpStatus = 200 | 400 | 401 | 403 | 404 | 429 | 500 | 502 | 503 | 504
+type HttpStatus = 200 | 400 | 401 | 403 | 404 | 429 | 500 | 502 | 503 | 504;
 
 interface HttpResponse {
-  readonly status: HttpStatus
-  readonly body: string
+  readonly status: HttpStatus;
+  readonly body: string;
 }
 
 class TransportError extends Data.TaggedError("TransportError")<{
-  readonly url: string
-  readonly reason: string
+  readonly url: string;
+  readonly reason: string;
 }> {}
 
 class HttpResponseError extends Data.TaggedError("HttpResponseError")<{
-  readonly method: "GET"
-  readonly url: string
-  readonly status: Exclude<HttpStatus, 200>
+  readonly method: "GET";
+  readonly url: string;
+  readonly status: Exclude<HttpStatus, 200>;
 }> {}
 
-type GetCatalogError = TransportError | HttpResponseError
+type GetCatalogError = TransportError | HttpResponseError;
 
-let attempts = 0
+let attempts = 0;
 
 const rawGet = (url: string): Effect.Effect<HttpResponse, TransportError> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`GET ${url}, attempt ${attempts}`)
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`GET ${url}, attempt ${attempts}`);
 
     if (attempts <= 2) {
-      return { status: 503, body: "warming up" }
+      return { status: 503, body: "warming up" };
     }
 
-    return { status: 200, body: "catalog-v1" }
-  })
+    return { status: 200, body: "catalog-v1" };
+  });
 
 const classifyGetResponse = (
   url: string,
@@ -17766,38 +17966,38 @@ const classifyGetResponse = (
   response.status === 200
     ? Effect.succeed(response.body)
     : Effect.fail(
-      new HttpResponseError({
-        method: "GET",
-        url,
-        status: response.status as Exclude<HttpStatus, 200>
-      })
-    )
+        new HttpResponseError({
+          method: "GET",
+          url,
+          status: response.status as Exclude<HttpStatus, 200>,
+        })
+      );
 
 const getCatalog = (url: string): Effect.Effect<string, GetCatalogError> =>
   rawGet(url).pipe(
     Effect.flatMap((response) => classifyGetResponse(url, response))
-  )
+  );
 
 const isServiceUnavailableGet = (error: GetCatalogError): boolean =>
   error._tag === "HttpResponseError" &&
   error.method === "GET" &&
-  error.status === 503
+  error.status === 503;
 
 const retry503WithBackoff = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(4)),
   Schedule.both(Schedule.during("300 millis")),
   Schedule.jittered
-)
+);
 
 const program = getCatalog("https://api.example.test/catalog").pipe(
   Effect.retry({
     schedule: retry503WithBackoff,
-    while: isServiceUnavailableGet
+    while: isServiceUnavailableGet,
   }),
   Effect.tap((body) => Console.log(`received ${body}`))
-)
+);
 
-Effect.runPromise(program).then(console.log, console.error)
+Effect.runPromise(program).then(console.log, console.error);
 // Output:
 // GET https://api.example.test/catalog, attempt 1
 // GET https://api.example.test/catalog, attempt 2
@@ -17899,7 +18099,7 @@ total-attempt count.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class PostOrderError extends Data.TaggedError("PostOrderError")<{
   readonly reason:
@@ -17908,44 +18108,46 @@ class PostOrderError extends Data.TaggedError("PostOrderError")<{
     | "BadGateway"
     | "ServiceUnavailable"
     | "InvalidRequest"
-    | "Unauthorized"
+    | "Unauthorized";
 }> {}
 
 interface Order {
-  readonly id: string
-  readonly status: "Created" | "AlreadyCreated"
+  readonly id: string;
+  readonly status: "Created" | "AlreadyCreated";
 }
 
 interface OrderRequest {
-  readonly customerId: string
-  readonly sku: string
-  readonly quantity: number
-  readonly idempotencyKey: string
+  readonly customerId: string;
+  readonly sku: string;
+  readonly quantity: number;
+  readonly idempotencyKey: string;
 }
 
-let attempts = 0
+let attempts = 0;
 
-const postOrder = (request: OrderRequest): Effect.Effect<Order, PostOrderError> =>
-  Effect.gen(function*() {
-    attempts += 1
+const postOrder = (
+  request: OrderRequest
+): Effect.Effect<Order, PostOrderError> =>
+  Effect.gen(function* () {
+    attempts += 1;
     yield* Console.log(
       `POST /orders attempt ${attempts} with key ${request.idempotencyKey}`
-    )
+    );
 
     if (attempts === 1) {
-      return yield* Effect.fail(new PostOrderError({ reason: "Timeout" }))
+      return yield* Effect.fail(new PostOrderError({ reason: "Timeout" }));
     }
 
     return {
       id: "order-1000",
-      status: attempts === 2 ? "Created" : "AlreadyCreated"
-    }
-  })
+      status: attempts === 2 ? "Created" : "AlreadyCreated",
+    };
+  });
 
 const retryPost = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const isRetryablePostFailure = (error: PostOrderError): boolean => {
   switch (error.reason) {
@@ -17953,14 +18155,14 @@ const isRetryablePostFailure = (error: PostOrderError): boolean => {
     case "ConnectionReset":
     case "BadGateway":
     case "ServiceUnavailable":
-      return true
+      return true;
     case "InvalidRequest":
     case "Unauthorized":
-      return false
+      return false;
   }
-}
+};
 
-const submitOrder = Effect.fnUntraced(function*(
+const submitOrder = Effect.fnUntraced(function* (
   customerId: string,
   sku: string,
   quantity: number,
@@ -17969,16 +18171,16 @@ const submitOrder = Effect.fnUntraced(function*(
   return yield* postOrder({ customerId, sku, quantity, idempotencyKey }).pipe(
     Effect.retry({
       schedule: retryPost,
-      while: isRetryablePostFailure
+      while: isRetryablePostFailure,
     })
-  )
-})
+  );
+});
 
 const program = submitOrder("customer-1", "sku-1", 2, "order-key-123").pipe(
   Effect.tap((order) => Console.log(`order ${order.id}: ${order.status}`))
-)
+);
 
-Effect.runPromise(program).then(console.log, console.error)
+Effect.runPromise(program).then(console.log, console.error);
 // Output:
 // POST /orders attempt 1 with key order-key-123
 // POST /orders attempt 2 with key order-key-123
@@ -18079,34 +18281,36 @@ larger of the local backoff delay and the server-provided retry delay.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Schedule } from "effect"
+import { Console, Duration, Effect, Schedule } from "effect";
 
 type HttpError =
   | {
-    readonly _tag: "RateLimited"
-    readonly retryAfter: Duration.Duration | undefined
-  }
+      readonly _tag: "RateLimited";
+      readonly retryAfter: Duration.Duration | undefined;
+    }
   | {
-    readonly _tag: "Unauthorized" | "Forbidden" | "BadRequest" | "Unavailable"
-  }
+      readonly _tag:
+        | "Unauthorized"
+        | "Forbidden"
+        | "BadRequest"
+        | "Unavailable";
+    };
 
-let attempts = 0
+let attempts = 0;
 
-const callApi: Effect.Effect<string, HttpError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`calling API, attempt ${attempts}`)
+const callApi: Effect.Effect<string, HttpError> = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`calling API, attempt ${attempts}`);
 
   if (attempts === 1) {
-    return yield* Effect.fail(
-      {
-        _tag: "RateLimited",
-        retryAfter: Duration.millis(30)
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "RateLimited",
+      retryAfter: Duration.millis(30),
+    } as const);
   }
 
-  return "accepted"
-})
+  return "accepted";
+});
 
 const rateLimitPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
@@ -18120,13 +18324,13 @@ const rateLimitPolicy = Schedule.exponential("10 millis").pipe(
   ),
   Schedule.both(Schedule.recurs(5)),
   Schedule.while(({ input }) => input._tag === "RateLimited")
-)
+);
 
 const program = Effect.retry(callApi, rateLimitPolicy).pipe(
   Effect.tap((result) => Console.log(`result: ${result}`))
-)
+);
 
-Effect.runPromise(program).then(console.log, console.error)
+Effect.runPromise(program).then(console.log, console.error);
 // Output:
 // calling API, attempt 1
 // calling API, attempt 2
@@ -18213,55 +18417,69 @@ loop an elapsed budget.
 ##### Example
 
 ```ts runnable
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type JobStatus =
   | { readonly state: "queued"; readonly jobId: string }
-  | { readonly state: "running"; readonly jobId: string; readonly progress: number }
-  | { readonly state: "succeeded"; readonly jobId: string; readonly artifactUrl: string }
-  | { readonly state: "failed"; readonly jobId: string; readonly reason: string }
+  | {
+      readonly state: "running";
+      readonly jobId: string;
+      readonly progress: number;
+    }
+  | {
+      readonly state: "succeeded";
+      readonly jobId: string;
+      readonly artifactUrl: string;
+    }
+  | {
+      readonly state: "failed";
+      readonly jobId: string;
+      readonly reason: string;
+    };
 
 type JobStatusError = {
-  readonly _tag: "JobStatusError"
-  readonly message: string
-}
+  readonly _tag: "JobStatusError";
+  readonly message: string;
+};
 
-const isTerminal = (status: JobStatus): boolean => status.state === "succeeded" || status.state === "failed"
+const isTerminal = (status: JobStatus): boolean =>
+  status.state === "succeeded" || status.state === "failed";
 
-let polls = 0
+let polls = 0;
 
-const readJobStatus = (jobId: string): Effect.Effect<JobStatus, JobStatusError> =>
-  Effect.gen(function*() {
-    polls += 1
+const readJobStatus = (
+  jobId: string
+): Effect.Effect<JobStatus, JobStatusError> =>
+  Effect.gen(function* () {
+    polls += 1;
 
-    const status: JobStatus = polls === 1
-      ? { state: "queued", jobId }
-      : polls === 2
-      ? { state: "running", jobId, progress: 60 }
-      : { state: "succeeded", jobId, artifactUrl: "/exports/job-1.csv" }
+    const status: JobStatus =
+      polls === 1
+        ? { state: "queued", jobId }
+        : polls === 2
+          ? { state: "running", jobId, progress: 60 }
+          : { state: "succeeded", jobId, artifactUrl: "/exports/job-1.csv" };
 
-    yield* Console.log(`poll ${polls}: ${status.state}`)
-    return status
-  })
+    yield* Console.log(`poll ${polls}: ${status.state}`);
+    return status;
+  });
 
 const pollJobUntilTerminalOrDeadline = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => !isTerminal(input)),
   Schedule.bothLeft(
-    Schedule.during("200 millis").pipe(
-      Schedule.satisfiesInputType<JobStatus>()
-    )
+    Schedule.during("200 millis").pipe(Schedule.satisfiesInputType<JobStatus>())
   )
-)
+);
 
 const waitForJob = (jobId: string) =>
   readJobStatus(jobId).pipe(
     Effect.repeat(pollJobUntilTerminalOrDeadline),
     Effect.tap((status) => Console.log(`final status: ${status.state}`))
-  )
+  );
 
-Effect.runPromise(waitForJob("job-1")).then(console.log, console.error)
+Effect.runPromise(waitForJob("job-1")).then(console.log, console.error);
 // Output may vary: elapsed timing can cross the polling budget boundary differently under load
 // poll 1: queued
 // poll 2: running
@@ -18357,50 +18575,51 @@ the transient-failure budget.
 ##### Example
 
 ```ts runnable
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type ClientConfig = {
-  readonly apiBaseUrl: string
-  readonly featureFlags: ReadonlyArray<string>
-}
+  readonly apiBaseUrl: string;
+  readonly featureFlags: ReadonlyArray<string>;
+};
 
 type ConfigFetchError =
   | { readonly _tag: "NetworkUnavailable" }
   | { readonly _tag: "ServiceUnavailable" }
-  | { readonly _tag: "MalformedConfig" }
+  | { readonly _tag: "MalformedConfig" };
 
-let attempts = 0
+let attempts = 0;
 
-const fetchStartupConfig: Effect.Effect<ClientConfig, ConfigFetchError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`fetch config attempt ${attempts}`)
+const fetchStartupConfig: Effect.Effect<ClientConfig, ConfigFetchError> =
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`fetch config attempt ${attempts}`);
 
-  if (attempts <= 2) {
-    return yield* Effect.fail({ _tag: "ServiceUnavailable" } as const)
-  }
+    if (attempts <= 2) {
+      return yield* Effect.fail({ _tag: "ServiceUnavailable" } as const);
+    }
 
-  return {
-    apiBaseUrl: "https://api.example.test",
-    featureFlags: ["new-profile"]
-  }
-})
+    return {
+      apiBaseUrl: "https://api.example.test",
+      featureFlags: ["new-profile"],
+    };
+  });
 
 const isTransientConfigFailure = (error: ConfigFetchError): boolean =>
-  error._tag === "NetworkUnavailable" || error._tag === "ServiceUnavailable"
+  error._tag === "NetworkUnavailable" || error._tag === "ServiceUnavailable";
 
 const startupConfigRetryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
 const loadStartupConfig = fetchStartupConfig.pipe(
   Effect.retry({
     schedule: startupConfigRetryPolicy,
-    while: isTransientConfigFailure
+    while: isTransientConfigFailure,
   }),
   Effect.tap((config) => Console.log(`loaded config for ${config.apiBaseUrl}`))
-)
+);
 
-Effect.runPromise(loadStartupConfig).then(console.log, console.error)
+Effect.runPromise(loadStartupConfig).then(console.log, console.error);
 // Output may vary: elapsed timing can cross the monitoring budget boundary differently under load
 // fetch config attempt 1
 // fetch config attempt 2
@@ -18471,16 +18690,16 @@ error is no longer transient, or the retry count has been exhausted.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 interface Profile {
-  readonly id: string
-  readonly name: string
+  readonly id: string;
+  readonly name: string;
 }
 
 interface HttpResponse {
-  readonly status: number
-  readonly body: unknown
+  readonly status: number;
+  readonly body: unknown;
 }
 
 class ProfileLoadError extends Data.TaggedError("ProfileLoadError")<{
@@ -18489,33 +18708,51 @@ class ProfileLoadError extends Data.TaggedError("ProfileLoadError")<{
     | "Forbidden"
     | "NotFound"
     | "Offline"
-    | "ServerUnavailable"
-  readonly status?: number
-  readonly cause?: unknown
+    | "ServerUnavailable";
+  readonly status?: number;
+  readonly cause?: unknown;
 }> {}
 
 const isTransient = (error: ProfileLoadError): boolean =>
-  error.reason === "Offline" || error.reason === "ServerUnavailable"
+  error.reason === "Offline" || error.reason === "ServerUnavailable";
 
 const classifyHttpStatus = (response: HttpResponse): ProfileLoadError => {
   if (response.status === 401 || response.status === 403) {
-    return new ProfileLoadError({ reason: "Forbidden", status: response.status })
+    return new ProfileLoadError({
+      reason: "Forbidden",
+      status: response.status,
+    });
   }
   if (response.status === 404) {
-    return new ProfileLoadError({ reason: "NotFound", status: response.status })
+    return new ProfileLoadError({
+      reason: "NotFound",
+      status: response.status,
+    });
   }
-  if (response.status === 502 || response.status === 503 || response.status === 504) {
-    return new ProfileLoadError({ reason: "ServerUnavailable", status: response.status })
+  if (
+    response.status === 502 ||
+    response.status === 503 ||
+    response.status === 504
+  ) {
+    return new ProfileLoadError({
+      reason: "ServerUnavailable",
+      status: response.status,
+    });
   }
-  return new ProfileLoadError({ reason: "BadResponse", status: response.status })
-}
+  return new ProfileLoadError({
+    reason: "BadResponse",
+    status: response.status,
+  });
+};
 
 const retryTransientProfileLoad = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(3))
-)
+);
 
-const decodeProfile = (body: unknown): Effect.Effect<Profile, ProfileLoadError> => {
+const decodeProfile = (
+  body: unknown
+): Effect.Effect<Profile, ProfileLoadError> => {
   if (
     typeof body === "object" &&
     body !== null &&
@@ -18524,46 +18761,52 @@ const decodeProfile = (body: unknown): Effect.Effect<Profile, ProfileLoadError> 
     typeof body.id === "string" &&
     typeof body.name === "string"
   ) {
-    return Effect.succeed({ id: body.id, name: body.name })
+    return Effect.succeed({ id: body.id, name: body.name });
   }
-  return Effect.fail(new ProfileLoadError({ reason: "BadResponse", cause: body }))
-}
+  return Effect.fail(
+    new ProfileLoadError({ reason: "BadResponse", cause: body })
+  );
+};
 
-let attempts = 0
+let attempts = 0;
 
-const requestProfile = (userId: string): Effect.Effect<HttpResponse, ProfileLoadError> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`load profile ${userId}, attempt ${attempts}`)
+const requestProfile = (
+  userId: string
+): Effect.Effect<HttpResponse, ProfileLoadError> =>
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`load profile ${userId}, attempt ${attempts}`);
 
     if (attempts === 1) {
-      return yield* Effect.fail(new ProfileLoadError({ reason: "Offline" }))
+      return yield* Effect.fail(new ProfileLoadError({ reason: "Offline" }));
     }
     if (attempts === 2) {
-      return { status: 503, body: "service unavailable" }
+      return { status: 503, body: "service unavailable" };
     }
-    return { status: 200, body: { id: userId, name: "Ada" } }
-  })
+    return { status: 200, body: { id: userId, name: "Ada" } };
+  });
 
-const fetchProfile = (userId: string): Effect.Effect<Profile, ProfileLoadError> =>
+const fetchProfile = (
+  userId: string
+): Effect.Effect<Profile, ProfileLoadError> =>
   requestProfile(userId).pipe(
     Effect.flatMap((response) =>
       response.status === 200
         ? decodeProfile(response.body)
         : Effect.fail(classifyHttpStatus(response))
     )
-  )
+  );
 
 const loadProfile = (userId: string) =>
   fetchProfile(userId).pipe(
     Effect.retry({
       schedule: retryTransientProfileLoad,
-      while: isTransient
+      while: isTransient,
     }),
     Effect.tap((profile) => Console.log(`loaded ${profile.name}`))
-  )
+  );
 
-Effect.runPromise(loadProfile("user-123")).then(console.log, console.error)
+Effect.runPromise(loadProfile("user-123")).then(console.log, console.error);
 // Output:
 // load profile user-123, attempt 1
 // load profile user-123, attempt 2
@@ -18651,72 +18894,82 @@ soon as either limit is exhausted.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 interface Tokens {
-  readonly accessToken: string
-  readonly refreshToken: string
+  readonly accessToken: string;
+  readonly refreshToken: string;
 }
 
 class RefreshTimeout extends Data.TaggedError("RefreshTimeout")<{
-  readonly endpoint: string
+  readonly endpoint: string;
 }> {}
 
-class RefreshServiceUnavailable extends Data.TaggedError("RefreshServiceUnavailable")<{
-  readonly endpoint: string
+class RefreshServiceUnavailable extends Data.TaggedError(
+  "RefreshServiceUnavailable"
+)<{
+  readonly endpoint: string;
 }> {}
 
 class RefreshRejected extends Data.TaggedError("RefreshRejected")<{
-  readonly reason: "invalid_grant" | "revoked" | "expired"
+  readonly reason: "invalid_grant" | "revoked" | "expired";
 }> {}
 
 type RefreshError =
   | RefreshTimeout
   | RefreshServiceUnavailable
-  | RefreshRejected
+  | RefreshRejected;
 
-let attempts = 0
+let attempts = 0;
 
-const postRefreshToken = (refreshToken: string): Effect.Effect<Tokens, RefreshError> =>
-  Effect.gen(function*() {
-    attempts += 1
-    yield* Console.log(`refresh attempt ${attempts}`)
+const postRefreshToken = (
+  refreshToken: string
+): Effect.Effect<Tokens, RefreshError> =>
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`refresh attempt ${attempts}`);
 
     if (refreshToken === "revoked") {
-      return yield* Effect.fail(new RefreshRejected({ reason: "revoked" }))
+      return yield* Effect.fail(new RefreshRejected({ reason: "revoked" }));
     }
     if (attempts === 1) {
-      return yield* Effect.fail(new RefreshTimeout({ endpoint: "/oauth/token" }))
+      return yield* Effect.fail(
+        new RefreshTimeout({ endpoint: "/oauth/token" })
+      );
     }
 
     return {
       accessToken: "access-token-2",
-      refreshToken: "refresh-token-2"
-    }
-  })
+      refreshToken: "refresh-token-2",
+    };
+  });
 
 const isTransientRefreshFailure = (
   error: RefreshError
 ): error is RefreshTimeout | RefreshServiceUnavailable =>
-  error._tag === "RefreshTimeout" ||
-  error._tag === "RefreshServiceUnavailable"
+  error._tag === "RefreshTimeout" || error._tag === "RefreshServiceUnavailable";
 
 const retryTokenRefreshBriefly = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(2)),
   Schedule.both(Schedule.during("150 millis"))
-)
+);
 
 const refreshSession = (refreshToken: string) =>
   postRefreshToken(refreshToken).pipe(
     Effect.retry({
       schedule: retryTokenRefreshBriefly,
-      while: isTransientRefreshFailure
+      while: isTransientRefreshFailure,
     }),
-    Effect.tap((tokens) => Console.log(`new access token: ${tokens.accessToken}`))
-  )
+    Effect.tap((tokens) =>
+      Console.log(`new access token: ${tokens.accessToken}`)
+    )
+  );
 
-Effect.runPromise(refreshSession("refresh-token-1")).then(console.log, console.error)
+Effect.runPromise(refreshSession("refresh-token-1")).then(
+  console.log,
+  console.error
+);
 // Output:
 // refresh attempt 1
 // refresh attempt 2
@@ -18818,48 +19071,51 @@ soon as the limit stops.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class WebSocketOpenError extends Data.TaggedError("WebSocketOpenError")<{
-  readonly reason: "network" | "timeout" | "server-restarting" | "unauthorized"
+  readonly reason: "network" | "timeout" | "server-restarting" | "unauthorized";
 }> {}
 
 interface LiveSocket {
-  readonly id: string
+  readonly id: string;
 }
 
-let attempts = 0
+let attempts = 0;
 
-const openLiveSocket: Effect.Effect<LiveSocket, WebSocketOpenError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`open WebSocket attempt ${attempts}`)
+const openLiveSocket: Effect.Effect<LiveSocket, WebSocketOpenError> =
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`open WebSocket attempt ${attempts}`);
 
-  if (attempts <= 2) {
-    return yield* Effect.fail(new WebSocketOpenError({ reason: "network" }))
-  }
+    if (attempts <= 2) {
+      return yield* Effect.fail(new WebSocketOpenError({ reason: "network" }));
+    }
 
-  return { id: "live-socket-1" }
-})
+    return { id: "live-socket-1" };
+  });
 
 const isRetryableOpenError = (error: WebSocketOpenError): boolean =>
   error.reason === "network" ||
   error.reason === "timeout" ||
-  error.reason === "server-restarting"
+  error.reason === "server-restarting";
 
 const websocketReconnectPolicy = Schedule.exponential("10 millis").pipe(
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(50)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(50)))
+  ),
   Schedule.both(Schedule.recurs(8))
-)
+);
 
 const connectLiveSocket = openLiveSocket.pipe(
   Effect.retry({
     schedule: websocketReconnectPolicy,
-    while: isRetryableOpenError
+    while: isRetryableOpenError,
   }),
   Effect.tap((socket) => Console.log(`connected ${socket.id}`))
-)
+);
 
-Effect.runPromise(connectLiveSocket).then(console.log, console.error)
+Effect.runPromise(connectLiveSocket).then(console.log, console.error);
 // Output:
 // open WebSocket attempt 1
 // open WebSocket attempt 2
@@ -18976,47 +19232,60 @@ eight more attempts, each separated by the capped jittered backoff.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
-class WebSocketReconnectError extends Data.TaggedError("WebSocketReconnectError")<{
-  readonly reason: "closed" | "timeout" | "gateway-unavailable" | "unauthorized"
+class WebSocketReconnectError extends Data.TaggedError(
+  "WebSocketReconnectError"
+)<{
+  readonly reason:
+    | "closed"
+    | "timeout"
+    | "gateway-unavailable"
+    | "unauthorized";
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const reconnectWebSocket: Effect.Effect<string, WebSocketReconnectError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`reconnect attempt ${attempts}`)
+const reconnectWebSocket: Effect.Effect<string, WebSocketReconnectError> =
+  Effect.gen(function* () {
+    attempts += 1;
+    yield* Console.log(`reconnect attempt ${attempts}`);
 
-  if (attempts === 1) {
-    return yield* Effect.fail(new WebSocketReconnectError({ reason: "gateway-unavailable" }))
-  }
-  if (attempts === 2) {
-    return yield* Effect.fail(new WebSocketReconnectError({ reason: "timeout" }))
-  }
+    if (attempts === 1) {
+      return yield* Effect.fail(
+        new WebSocketReconnectError({ reason: "gateway-unavailable" })
+      );
+    }
+    if (attempts === 2) {
+      return yield* Effect.fail(
+        new WebSocketReconnectError({ reason: "timeout" })
+      );
+    }
 
-  return "socket-open"
-})
+    return "socket-open";
+  });
 
 const isRetryableReconnect = (error: WebSocketReconnectError) =>
   error.reason === "closed" ||
   error.reason === "timeout" ||
-  error.reason === "gateway-unavailable"
+  error.reason === "gateway-unavailable";
 
 const webSocketReconnectPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<WebSocketReconnectError>(),
   Schedule.jittered,
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(50)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(50)))
+  ),
   Schedule.both(Schedule.recurs(8)),
   Schedule.while(({ input }) => isRetryableReconnect(input))
-)
+);
 
 const program = reconnectWebSocket.pipe(
   Effect.retry(webSocketReconnectPolicy),
   Effect.tap((state) => Console.log(`connected: ${state}`))
-)
+);
 
-Effect.runPromise(program).then(console.log, console.error)
+Effect.runPromise(program).then(console.log, console.error);
 // Output:
 // reconnect attempt 1
 // reconnect attempt 2
@@ -19119,7 +19388,7 @@ and time schedules supply stopping conditions.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class DependencyCheckError extends Data.TaggedError("DependencyCheckError")<{
   readonly reason:
@@ -19127,43 +19396,52 @@ class DependencyCheckError extends Data.TaggedError("DependencyCheckError")<{
     | "ConnectionRefused"
     | "Timeout"
     | "BadCredentials"
-    | "SchemaMismatch"
+    | "SchemaMismatch";
 }> {}
 
-let attempts = 0
+let attempts = 0;
 
-const checkDatabase = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`database check ${attempts}`)
+const checkDatabase = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`database check ${attempts}`);
 
   if (attempts === 1) {
-    return yield* Effect.fail(new DependencyCheckError({ reason: "DnsLookup" }))
+    return yield* Effect.fail(
+      new DependencyCheckError({ reason: "DnsLookup" })
+    );
   }
   if (attempts === 2) {
-    return yield* Effect.fail(new DependencyCheckError({ reason: "Timeout" }))
+    return yield* Effect.fail(new DependencyCheckError({ reason: "Timeout" }));
   }
 
-  yield* Console.log("database reachable")
-})
+  yield* Console.log("database reachable");
+});
 
 const isRetryableStartupFailure = (error: DependencyCheckError) =>
   error.reason === "DnsLookup" ||
   error.reason === "ConnectionRefused" ||
-  error.reason === "Timeout"
+  error.reason === "Timeout";
 
 const startupDependencyPolicy = Schedule.exponential("10 millis").pipe(
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(30)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(30)))
+  ),
   Schedule.both(Schedule.recurs(5)),
   Schedule.both(Schedule.during("200 millis"))
-)
+);
 
 const program = checkDatabase.pipe(
-  Effect.retry({ schedule: startupDependencyPolicy, while: isRetryableStartupFailure }),
+  Effect.retry({
+    schedule: startupDependencyPolicy,
+    while: isRetryableStartupFailure,
+  }),
   Effect.flatMap(() => Console.log(`startup ready after ${attempts} checks`)),
-  Effect.catch((error: DependencyCheckError) => Console.log(`startup failed: ${error.reason}`))
-)
+  Effect.catch((error: DependencyCheckError) =>
+    Console.log(`startup failed: ${error.reason}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // database check 1
 // database check 2
@@ -19236,31 +19514,42 @@ The schedule controls only the follow-up checks.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
-type ServiceName = "database" | "broker" | "cache"
+type ServiceName = "database" | "broker" | "cache";
 
 type ServiceReadiness =
   | { readonly _tag: "Ready"; readonly service: ServiceName }
   | { readonly _tag: "Starting"; readonly service: ServiceName }
-  | { readonly _tag: "Failed"; readonly service: ServiceName; readonly reason: string }
+  | {
+      readonly _tag: "Failed";
+      readonly service: ServiceName;
+      readonly reason: string;
+    };
 
-type FailedServiceReadiness = Extract<ServiceReadiness, { readonly _tag: "Failed" }>
+type FailedServiceReadiness = Extract<
+  ServiceReadiness,
+  { readonly _tag: "Failed" }
+>;
 
 interface ReadinessSnapshot {
-  readonly services: ReadonlyArray<ServiceReadiness>
+  readonly services: ReadonlyArray<ServiceReadiness>;
 }
 
 class ReadinessCheckError extends Data.TaggedError("ReadinessCheckError")<{
-  readonly reason: string
+  readonly reason: string;
 }> {}
 
-class StartupDependencyFailed extends Data.TaggedError("StartupDependencyFailed")<{
-  readonly failed: ReadonlyArray<FailedServiceReadiness>
+class StartupDependencyFailed extends Data.TaggedError(
+  "StartupDependencyFailed"
+)<{
+  readonly failed: ReadonlyArray<FailedServiceReadiness>;
 }> {}
 
-class StartupReadinessTimedOut extends Data.TaggedError("StartupReadinessTimedOut")<{
-  readonly latest: ReadinessSnapshot
+class StartupReadinessTimedOut extends Data.TaggedError(
+  "StartupReadinessTimedOut"
+)<{
+  readonly latest: ReadinessSnapshot;
 }> {}
 
 const snapshots: ReadonlyArray<ReadinessSnapshot> = [
@@ -19268,47 +19557,47 @@ const snapshots: ReadonlyArray<ReadinessSnapshot> = [
     services: [
       { _tag: "Starting", service: "database" },
       { _tag: "Starting", service: "broker" },
-      { _tag: "Ready", service: "cache" }
-    ]
+      { _tag: "Ready", service: "cache" },
+    ],
   },
   {
     services: [
       { _tag: "Ready", service: "database" },
       { _tag: "Starting", service: "broker" },
-      { _tag: "Ready", service: "cache" }
-    ]
+      { _tag: "Ready", service: "cache" },
+    ],
   },
   {
     services: [
       { _tag: "Ready", service: "database" },
       { _tag: "Ready", service: "broker" },
-      { _tag: "Ready", service: "cache" }
-    ]
-  }
-]
+      { _tag: "Ready", service: "cache" },
+    ],
+  },
+];
 
-let reads = 0
+let reads = 0;
 
-const readPlatformReadiness = Effect.gen(function*() {
-  const snapshot = snapshots[Math.min(reads, snapshots.length - 1)]
-  reads += 1
+const readPlatformReadiness = Effect.gen(function* () {
+  const snapshot = snapshots[Math.min(reads, snapshots.length - 1)];
+  reads += 1;
   const summary = snapshot.services
     .map((service) => `${service.service}:${service._tag}`)
-    .join(", ")
-  yield* Console.log(
-    `readiness ${reads}: ${summary}`
-  )
-  return snapshot
-})
+    .join(", ");
+  yield* Console.log(`readiness ${reads}: ${summary}`);
+  return snapshot;
+});
 
-const allReady = (snapshot: ReadinessSnapshot) => snapshot.services.every((service) => service._tag === "Ready")
+const allReady = (snapshot: ReadinessSnapshot) =>
+  snapshot.services.every((service) => service._tag === "Ready");
 
 const failedServices = (snapshot: ReadinessSnapshot) =>
   snapshot.services.filter(
     (service): service is FailedServiceReadiness => service._tag === "Failed"
-  )
+  );
 
-const isTerminal = (snapshot: ReadinessSnapshot) => allReady(snapshot) || failedServices(snapshot).length > 0
+const isTerminal = (snapshot: ReadinessSnapshot) =>
+  allReady(snapshot) || failedServices(snapshot).length > 0;
 
 const readinessPolling = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<ReadinessSnapshot>(),
@@ -19316,29 +19605,29 @@ const readinessPolling = Schedule.spaced("10 millis").pipe(
   Schedule.while(({ input }) => !isTerminal(input)),
   Schedule.bothLeft(Schedule.during("200 millis")),
   Schedule.bothLeft(Schedule.recurs(5))
-)
+);
 
-const waitForRequiredServices = Effect.gen(function*() {
-  const latest = yield* Effect.repeat(readPlatformReadiness, readinessPolling)
-  const failed = failedServices(latest)
+const waitForRequiredServices = Effect.gen(function* () {
+  const latest = yield* Effect.repeat(readPlatformReadiness, readinessPolling);
+  const failed = failedServices(latest);
 
   if (failed.length > 0) {
-    return yield* Effect.fail(new StartupDependencyFailed({ failed }))
+    return yield* Effect.fail(new StartupDependencyFailed({ failed }));
   }
 
   if (!allReady(latest)) {
-    return yield* Effect.fail(new StartupReadinessTimedOut({ latest }))
+    return yield* Effect.fail(new StartupReadinessTimedOut({ latest }));
   }
 
-  return latest
-})
+  return latest;
+});
 
 const program = waitForRequiredServices.pipe(
   Effect.flatMap(() => Console.log("all required services are ready")),
   Effect.catch((error) => Console.log(`startup stopped: ${error._tag}`))
-)
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // readiness 1: database:Starting, broker:Starting, cache:Ready
 // readiness 2: database:Ready, broker:Starting, cache:Ready
@@ -19425,72 +19714,76 @@ does not poll forever.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type RolloutStatus =
   | {
-    readonly state: "running"
-    readonly rolloutId: string
-    readonly completedInstances: number
-    readonly totalInstances: number
-  }
+      readonly state: "running";
+      readonly rolloutId: string;
+      readonly completedInstances: number;
+      readonly totalInstances: number;
+    }
   | {
-    readonly state: "succeeded"
-    readonly rolloutId: string
-    readonly version: string
-  }
+      readonly state: "succeeded";
+      readonly rolloutId: string;
+      readonly version: string;
+    }
   | {
-    readonly state: "failed"
-    readonly rolloutId: string
-    readonly reason: string
-  }
+      readonly state: "failed";
+      readonly rolloutId: string;
+      readonly reason: string;
+    };
 
 type StatusReadError = {
-  readonly _tag: "StatusReadError"
-  readonly rolloutId: string
-}
+  readonly _tag: "StatusReadError";
+  readonly rolloutId: string;
+};
 
 type RolloutTimedOut = {
-  readonly _tag: "RolloutTimedOut"
-  readonly lastStatus: Extract<RolloutStatus, { readonly state: "running" }>
-}
+  readonly _tag: "RolloutTimedOut";
+  readonly lastStatus: Extract<RolloutStatus, { readonly state: "running" }>;
+};
 
 type RolloutFailed = {
-  readonly _tag: "RolloutFailed"
-  readonly rolloutId: string
-  readonly reason: string
-}
+  readonly _tag: "RolloutFailed";
+  readonly rolloutId: string;
+  readonly reason: string;
+};
 
 const statuses: ReadonlyArray<RolloutStatus> = [
   {
     state: "running",
     rolloutId: "rollout-42",
     completedInstances: 1,
-    totalInstances: 3
+    totalInstances: 3,
   },
   {
     state: "running",
     rolloutId: "rollout-42",
     completedInstances: 2,
-    totalInstances: 3
+    totalInstances: 3,
   },
   {
     state: "succeeded",
     rolloutId: "rollout-42",
-    version: "2026.05.17"
-  }
-]
+    version: "2026.05.17",
+  },
+];
 
-let reads = 0
+let reads = 0;
 
-const readRolloutStatus: (rolloutId: string) => Effect.Effect<RolloutStatus, StatusReadError> = Effect.fnUntraced(
-  function*(rolloutId: string) {
-    const status = statuses[Math.min(reads, statuses.length - 1)]
-    reads += 1
-    yield* Console.log(`rollout read ${reads} for ${rolloutId}: ${status.state}`)
-    return status
+const readRolloutStatus: (
+  rolloutId: string
+) => Effect.Effect<RolloutStatus, StatusReadError> = Effect.fnUntraced(
+  function* (rolloutId: string) {
+    const status = statuses[Math.min(reads, statuses.length - 1)];
+    reads += 1;
+    yield* Console.log(
+      `rollout read ${reads} for ${rolloutId}: ${status.state}`
+    );
+    return status;
   }
-)
+);
 
 const pollRolloutStatus = Schedule.spaced("10 millis").pipe(
   Schedule.jittered,
@@ -19499,45 +19792,47 @@ const pollRolloutStatus = Schedule.spaced("10 millis").pipe(
   Schedule.while(({ input }) => input.state === "running"),
   Schedule.bothLeft(Schedule.during("200 millis")),
   Schedule.bothLeft(Schedule.recurs(5))
-)
+);
 
 const waitForRollout = (rolloutId: string) =>
   readRolloutStatus(rolloutId).pipe(
     Effect.repeat(pollRolloutStatus),
-    Effect.flatMap((status): Effect.Effect<
-      Extract<RolloutStatus, { readonly state: "succeeded" }>,
-      RolloutFailed | RolloutTimedOut
-    > => {
-      switch (status.state) {
-        case "succeeded":
-          return Effect.succeed(status)
-        case "failed":
-          return Effect.fail(
-            {
+    Effect.flatMap(
+      (
+        status
+      ): Effect.Effect<
+        Extract<RolloutStatus, { readonly state: "succeeded" }>,
+        RolloutFailed | RolloutTimedOut
+      > => {
+        switch (status.state) {
+          case "succeeded":
+            return Effect.succeed(status);
+          case "failed":
+            return Effect.fail({
               _tag: "RolloutFailed",
               rolloutId: status.rolloutId,
-              reason: status.reason
-            } satisfies RolloutFailed
-          )
-        case "running":
-          return Effect.fail(
-            {
+              reason: status.reason,
+            } satisfies RolloutFailed);
+          case "running":
+            return Effect.fail({
               _tag: "RolloutTimedOut",
-              lastStatus: status
-            } satisfies RolloutTimedOut
-          )
+              lastStatus: status,
+            } satisfies RolloutTimedOut);
+        }
       }
-    })
-  )
+    )
+  );
 
 const program = waitForRollout("rollout-42").pipe(
-  Effect.flatMap((status) => Console.log(`rollout ${status.rolloutId} finished on ${status.version}`)),
+  Effect.flatMap((status) =>
+    Console.log(`rollout ${status.rolloutId} finished on ${status.version}`)
+  ),
   Effect.catch((error: RolloutFailed | RolloutTimedOut | StatusReadError) =>
     Console.log(`rollout stopped: ${error._tag}`)
   )
-)
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // rollout read 1 for rollout-42: running
 // rollout read 2 for rollout-42: running
@@ -19562,41 +19857,47 @@ timeout. For transient status-read failures, retry the read itself and then
 repeat successful statuses:
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
-type StatusReadError = { readonly _tag: "StatusReadError" }
-type RolloutStatus = { readonly state: "running" | "succeeded" }
+type StatusReadError = { readonly _tag: "StatusReadError" };
+type RolloutStatus = { readonly state: "running" | "succeeded" };
 
-let attempts = 0
+let attempts = 0;
 
-const readStatus = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`status read attempt ${attempts}`)
+const readStatus = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`status read attempt ${attempts}`);
   if (attempts === 1) {
-    return yield* Effect.fail({ _tag: "StatusReadError" } satisfies StatusReadError)
+    return yield* Effect.fail({
+      _tag: "StatusReadError",
+    } satisfies StatusReadError);
   }
-  return { state: attempts < 3 ? "running" : "succeeded" } satisfies RolloutStatus
-})
+  return {
+    state: attempts < 3 ? "running" : "succeeded",
+  } satisfies RolloutStatus;
+});
 
 const readRetry = Schedule.exponential("10 millis").pipe(
   Schedule.both(Schedule.recurs(2))
-)
+);
 
 const pollStatus = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<RolloutStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input.state === "running"),
   Schedule.bothLeft(Schedule.recurs(4))
-)
+);
 
 const program = readStatus.pipe(
   Effect.retry(readRetry),
   Effect.repeat(pollStatus),
   Effect.flatMap((status) => Console.log(`final status: ${status.state}`)),
-  Effect.catch((error: StatusReadError) => Console.log(`status read failed: ${error._tag}`))
-)
+  Effect.catch((error: StatusReadError) =>
+    Console.log(`status read failed: ${error._tag}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // status read attempt 1
 // status read attempt 2
@@ -19669,78 +19970,86 @@ Use exponential backoff with jitter, cap each sleep, and combine it with
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Duration, Effect, Schedule } from "effect"
+import { Console, Data, Duration, Effect, Schedule } from "effect";
 
 class DeploymentHookError extends Data.TaggedError("DeploymentHookError")<{
-  readonly status: number
-  readonly message: string
+  readonly status: number;
+  readonly message: string;
 }> {}
 
 interface HookReceipt {
-  readonly deploymentId: string
-  readonly hookName: string
-  readonly accepted: boolean
+  readonly deploymentId: string;
+  readonly hookName: string;
+  readonly accepted: boolean;
 }
 
-let attempts = 0
+let attempts = 0;
 
 const invokeDeploymentHook: (request: {
-  readonly deploymentId: string
-  readonly hookName: string
-  readonly idempotencyKey: string
-}) => Effect.Effect<HookReceipt, DeploymentHookError> = Effect.fnUntraced(function*(request) {
-  attempts += 1
-  yield* Console.log(`hook attempt ${attempts}: ${request.hookName}`)
+  readonly deploymentId: string;
+  readonly hookName: string;
+  readonly idempotencyKey: string;
+}) => Effect.Effect<HookReceipt, DeploymentHookError> = Effect.fnUntraced(
+  function* (request) {
+    attempts += 1;
+    yield* Console.log(`hook attempt ${attempts}: ${request.hookName}`);
 
-  if (attempts === 1) {
-    return yield* Effect.fail(
-      new DeploymentHookError({
-        status: 503,
-        message: "hook receiver unavailable"
-      })
-    )
-  }
-  if (attempts === 2) {
-    return yield* Effect.fail(
-      new DeploymentHookError({
-        status: 429,
-        message: "hook receiver is throttling"
-      })
-    )
-  }
+    if (attempts === 1) {
+      return yield* Effect.fail(
+        new DeploymentHookError({
+          status: 503,
+          message: "hook receiver unavailable",
+        })
+      );
+    }
+    if (attempts === 2) {
+      return yield* Effect.fail(
+        new DeploymentHookError({
+          status: 429,
+          message: "hook receiver is throttling",
+        })
+      );
+    }
 
-  return {
-    deploymentId: request.deploymentId,
-    hookName: request.hookName,
-    accepted: true
-  } satisfies HookReceipt
-})
+    return {
+      deploymentId: request.deploymentId,
+      hookName: request.hookName,
+      accepted: true,
+    } satisfies HookReceipt;
+  }
+);
 
 const isRetryableHookError = (error: DeploymentHookError) =>
   error.status === 408 ||
   error.status === 409 ||
   error.status === 429 ||
-  error.status >= 500
+  error.status >= 500;
 
 const deploymentHookRetryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<DeploymentHookError>(),
   Schedule.jittered,
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(40)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(40)))
+  ),
   Schedule.both(Schedule.recurs(5)),
   Schedule.while(({ input }) => isRetryableHookError(input))
-)
+);
 
 const program = invokeDeploymentHook({
   deploymentId: "deploy-2026-05-16-001",
   hookName: "post-deploy-smoke-test",
-  idempotencyKey: "deploy-2026-05-16-001:post-deploy-smoke-test"
+  idempotencyKey: "deploy-2026-05-16-001:post-deploy-smoke-test",
 }).pipe(
   Effect.retry(deploymentHookRetryPolicy),
-  Effect.flatMap((receipt) => Console.log(`hook accepted: ${receipt.deploymentId}/${receipt.hookName}`)),
-  Effect.catch((error: DeploymentHookError) => Console.log(`hook failed with status ${error.status}: ${error.message}`))
-)
+  Effect.flatMap((receipt) =>
+    Console.log(`hook accepted: ${receipt.deploymentId}/${receipt.hookName}`)
+  ),
+  Effect.catch((error: DeploymentHookError) =>
+    Console.log(`hook failed with status ${error.status}: ${error.message}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // hook attempt 1: post-deploy-smoke-test
 // hook attempt 2: post-deploy-smoke-test
@@ -19833,73 +20142,79 @@ the waits while the count and duration schedules supply stopping conditions.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class ApiTimeout extends Data.TaggedError("ApiTimeout")<{
-  readonly operation: "CreateSubnet"
+  readonly operation: "CreateSubnet";
 }> {}
 
 class ApiUnavailable extends Data.TaggedError("ApiUnavailable")<{
-  readonly status: 502 | 503 | 504
+  readonly status: 502 | 503 | 504;
 }> {}
 
 class RateLimited extends Data.TaggedError("RateLimited")<{
-  readonly retryAfterMillis?: number
+  readonly retryAfterMillis?: number;
 }> {}
 
 class InvalidRequest extends Data.TaggedError("InvalidRequest")<{
-  readonly reason: string
+  readonly reason: string;
 }> {}
 
 type InfrastructureApiError =
   | ApiTimeout
   | ApiUnavailable
   | RateLimited
-  | InvalidRequest
+  | InvalidRequest;
 
-let attempts = 0
+let attempts = 0;
 
 const createSubnet: (request: {
-  readonly vpcId: string
-  readonly cidrBlock: string
-  readonly clientToken: string
-}) => Effect.Effect<string, InfrastructureApiError> = Effect.fnUntraced(function*(request) {
-  attempts += 1
-  yield* Console.log(`create subnet attempt ${attempts} with ${request.clientToken}`)
+  readonly vpcId: string;
+  readonly cidrBlock: string;
+  readonly clientToken: string;
+}) => Effect.Effect<string, InfrastructureApiError> = Effect.fnUntraced(
+  function* (request) {
+    attempts += 1;
+    yield* Console.log(
+      `create subnet attempt ${attempts} with ${request.clientToken}`
+    );
 
-  if (attempts === 1) {
-    return yield* Effect.fail(new ApiTimeout({ operation: "CreateSubnet" }))
-  }
-  if (attempts === 2) {
-    return yield* Effect.fail(new ApiUnavailable({ status: 503 }))
-  }
+    if (attempts === 1) {
+      return yield* Effect.fail(new ApiTimeout({ operation: "CreateSubnet" }));
+    }
+    if (attempts === 2) {
+      return yield* Effect.fail(new ApiUnavailable({ status: 503 }));
+    }
 
-  return `subnet-${request.cidrBlock}`
-})
+    return `subnet-${request.cidrBlock}`;
+  }
+);
 
 const retryInfrastructureApi = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(5)),
   Schedule.both(Schedule.during("200 millis"))
-)
+);
 
 const program = createSubnet({
   vpcId: "vpc-123",
   cidrBlock: "10.0.8.0/24",
-  clientToken: "deploy-2026-05-16-subnet-10-0-8"
+  clientToken: "deploy-2026-05-16-subnet-10-0-8",
 }).pipe(
   Effect.retry({
     schedule: retryInfrastructureApi,
     while: (error) =>
       error._tag === "ApiTimeout" ||
       error._tag === "ApiUnavailable" ||
-      error._tag === "RateLimited"
+      error._tag === "RateLimited",
   }),
   Effect.flatMap((subnetId) => Console.log(`created ${subnetId}`)),
-  Effect.catch((error: InfrastructureApiError) => Console.log(`infrastructure call failed: ${error._tag}`))
-)
+  Effect.catch((error: InfrastructureApiError) =>
+    Console.log(`infrastructure call failed: ${error._tag}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // create subnet attempt 1 with deploy-2026-05-16-subnet-10-0-8
 // create subnet attempt 2 with deploy-2026-05-16-subnet-10-0-8
@@ -20001,7 +20316,7 @@ schedule's timing or count output.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type EtlStatus =
   | { readonly state: "queued" }
@@ -20009,35 +20324,37 @@ type EtlStatus =
   | { readonly state: "loading"; readonly rowsWritten: number }
   | { readonly state: "succeeded"; readonly outputTable: string }
   | { readonly state: "failed"; readonly reason: string }
-  | { readonly state: "canceled" }
+  | { readonly state: "canceled" };
 
 type StatusReadError = {
-  readonly _tag: "StatusReadError"
-  readonly message: string
-}
+  readonly _tag: "StatusReadError";
+  readonly message: string;
+};
 
 const isTerminal = (status: EtlStatus): boolean =>
   status.state === "succeeded" ||
   status.state === "failed" ||
-  status.state === "canceled"
+  status.state === "canceled";
 
 const statuses: ReadonlyArray<EtlStatus> = [
   { state: "queued" },
   { state: "extracting", rowsRead: 1_000 },
   { state: "loading", rowsWritten: 1_000 },
-  { state: "succeeded", outputTable: "analytics.daily_orders" }
-]
+  { state: "succeeded", outputTable: "analytics.daily_orders" },
+];
 
-let reads = 0
+let reads = 0;
 
-const readEtlStatus: (runId: string) => Effect.Effect<EtlStatus, StatusReadError> = Effect.fnUntraced(
-  function*(runId: string) {
-    const status = statuses[Math.min(reads, statuses.length - 1)]
-    reads += 1
-    yield* Console.log(`ETL ${runId} read ${reads}: ${status.state}`)
-    return status
-  }
-)
+const readEtlStatus: (
+  runId: string
+) => Effect.Effect<EtlStatus, StatusReadError> = Effect.fnUntraced(function* (
+  runId: string
+) {
+  const status = statuses[Math.min(reads, statuses.length - 1)];
+  reads += 1;
+  yield* Console.log(`ETL ${runId} read ${reads}: ${status.state}`);
+  return status;
+});
 
 const pollEtlStatusBudget = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<EtlStatus>(),
@@ -20045,13 +20362,13 @@ const pollEtlStatusBudget = Schedule.spaced("10 millis").pipe(
   Schedule.while(({ input }) => !isTerminal(input)),
   Schedule.bothLeft(Schedule.during("300 millis")),
   Schedule.bothLeft(Schedule.recurs(8))
-)
+);
 
 const pollEtlStatus = (runId: string) =>
   readEtlStatus(runId).pipe(
     Effect.timeout("50 millis"),
     Effect.repeat(pollEtlStatusBudget)
-  )
+  );
 
 const program = pollEtlStatus("etl-run-7").pipe(
   Effect.flatMap((status) =>
@@ -20059,10 +20376,12 @@ const program = pollEtlStatus("etl-run-7").pipe(
       ? Console.log(`ETL completed: ${status.outputTable}`)
       : Console.log(`ETL stopped while ${status.state}`)
   ),
-  Effect.catch((error) => Console.log(`ETL status read failed: ${String(error)}`))
-)
+  Effect.catch((error) =>
+    Console.log(`ETL status read failed: ${String(error)}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // ETL etl-run-7 read 1: queued
 // ETL etl-run-7 read 2: extracting
@@ -20150,82 +20469,88 @@ and jitter so export workers do not retry in lockstep.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type ExportRequest = {
-  readonly exportId: string
-  readonly accountId: string
-  readonly format: "csv" | "parquet"
-}
+  readonly exportId: string;
+  readonly accountId: string;
+  readonly format: "csv" | "parquet";
+};
 
 type ExportFile = {
-  readonly exportId: string
-  readonly location: string
-}
+  readonly exportId: string;
+  readonly location: string;
+};
 
 type ExportError =
   | { readonly _tag: "DatabaseUnavailable" }
   | { readonly _tag: "RendererBusy" }
   | { readonly _tag: "ObjectStorageUnavailable" }
   | { readonly _tag: "InvalidExportRequest"; readonly reason: string }
-  | { readonly _tag: "PermissionDenied" }
+  | { readonly _tag: "PermissionDenied" };
 
-let attempts = 0
+let attempts = 0;
 
-const generateExport: (request: ExportRequest) => Effect.Effect<ExportFile, ExportError> = Effect.fnUntraced(
-  function*(request: ExportRequest) {
-    attempts += 1
-    yield* Console.log(`export attempt ${attempts}: ${request.exportId}`)
+const generateExport: (
+  request: ExportRequest
+) => Effect.Effect<ExportFile, ExportError> = Effect.fnUntraced(function* (
+  request: ExportRequest
+) {
+  attempts += 1;
+  yield* Console.log(`export attempt ${attempts}: ${request.exportId}`);
 
-    if (attempts === 1) {
-      return yield* Effect.fail({ _tag: "RendererBusy" } satisfies ExportError)
-    }
-    if (attempts === 2) {
-      return yield* Effect.fail({ _tag: "ObjectStorageUnavailable" } satisfies ExportError)
-    }
-
-    return {
-      exportId: request.exportId,
-      location: `s3://exports/${request.accountId}/${request.exportId}.${request.format}`
-    }
+  if (attempts === 1) {
+    return yield* Effect.fail({ _tag: "RendererBusy" } satisfies ExportError);
   }
-)
+  if (attempts === 2) {
+    return yield* Effect.fail({
+      _tag: "ObjectStorageUnavailable",
+    } satisfies ExportError);
+  }
+
+  return {
+    exportId: request.exportId,
+    location: `s3://exports/${request.accountId}/${request.exportId}.${request.format}`,
+  };
+});
 
 const isTransientExportError = (error: ExportError): boolean => {
   switch (error._tag) {
     case "DatabaseUnavailable":
     case "RendererBusy":
     case "ObjectStorageUnavailable":
-      return true
+      return true;
     case "InvalidExportRequest":
     case "PermissionDenied":
-      return false
+      return false;
   }
-}
+};
 
 const retryTransientExportFailures = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(4))
-)
+);
 
 const runExport = (request: ExportRequest) =>
   generateExport(request).pipe(
     Effect.retry({
       schedule: retryTransientExportFailures,
-      while: isTransientExportError
+      while: isTransientExportError,
     })
-  )
+  );
 
 const program = runExport({
   exportId: "export-2026-05-17",
   accountId: "acct-123",
-  format: "csv"
+  format: "csv",
 }).pipe(
   Effect.flatMap((file) => Console.log(`export ready: ${file.location}`)),
-  Effect.catch((error: ExportError) => Console.log(`export failed: ${error._tag}`))
-)
+  Effect.catch((error: ExportError) =>
+    Console.log(`export failed: ${error._tag}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // export attempt 1: export-2026-05-17
 // export attempt 2: export-2026-05-17
@@ -20311,7 +20636,7 @@ allow another retry.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class UploadError extends Data.TaggedError("UploadError")<{
   readonly reason:
@@ -20320,45 +20645,49 @@ class UploadError extends Data.TaggedError("UploadError")<{
     | "Unavailable"
     | "ChecksumMismatch"
     | "Forbidden"
-    | "BadRequest"
+    | "BadRequest";
 }> {}
 
 interface UploadRequest {
-  readonly bucket: string
-  readonly key: string
-  readonly body: Uint8Array
-  readonly checksumSha256: string
-  readonly idempotencyKey: string
+  readonly bucket: string;
+  readonly key: string;
+  readonly body: Uint8Array;
+  readonly checksumSha256: string;
+  readonly idempotencyKey: string;
 }
 
-let attempts = 0
+let attempts = 0;
 
-const uploadObject: (request: UploadRequest) => Effect.Effect<void, UploadError> = Effect.fnUntraced(
-  function*(request: UploadRequest) {
-    attempts += 1
-    yield* Console.log(`upload attempt ${attempts}: ${request.bucket}/${request.key}`)
+const uploadObject: (
+  request: UploadRequest
+) => Effect.Effect<void, UploadError> = Effect.fnUntraced(function* (
+  request: UploadRequest
+) {
+  attempts += 1;
+  yield* Console.log(
+    `upload attempt ${attempts}: ${request.bucket}/${request.key}`
+  );
 
-    if (attempts === 1) {
-      return yield* Effect.fail(new UploadError({ reason: "Throttled" }))
-    }
-    if (attempts === 2) {
-      return yield* Effect.fail(new UploadError({ reason: "Timeout" }))
-    }
-
-    yield* Console.log(`stored checksum ${request.checksumSha256}`)
+  if (attempts === 1) {
+    return yield* Effect.fail(new UploadError({ reason: "Throttled" }));
   }
-)
+  if (attempts === 2) {
+    return yield* Effect.fail(new UploadError({ reason: "Timeout" }));
+  }
+
+  yield* Console.log(`stored checksum ${request.checksumSha256}`);
+});
 
 const isTransientStorageError = (error: UploadError) =>
   error.reason === "Timeout" ||
   error.reason === "Throttled" ||
-  error.reason === "Unavailable"
+  error.reason === "Unavailable";
 
 const uploadRetryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(5)),
   Schedule.both(Schedule.during("200 millis"))
-)
+);
 
 const uploadReport = (body: Uint8Array, checksumSha256: string) =>
   uploadObject({
@@ -20366,23 +20695,25 @@ const uploadReport = (body: Uint8Array, checksumSha256: string) =>
     key: `daily/${checksumSha256}.json`,
     body,
     checksumSha256,
-    idempotencyKey: checksumSha256
+    idempotencyKey: checksumSha256,
   }).pipe(
     Effect.retry({
       schedule: uploadRetryPolicy,
-      while: isTransientStorageError
+      while: isTransientStorageError,
     })
-  )
+  );
 
 const program = uploadReport(
-  new TextEncoder().encode("{\"rows\":3}"),
+  new TextEncoder().encode('{"rows":3}'),
   "sha256-demo"
 ).pipe(
   Effect.flatMap(() => Console.log("upload complete")),
-  Effect.catch((error: UploadError) => Console.log(`upload failed: ${error.reason}`))
-)
+  Effect.catch((error: UploadError) =>
+    Console.log(`upload failed: ${error.reason}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // upload attempt 1: reports/daily/sha256-demo.json
 // upload attempt 2: reports/daily/sha256-demo.json
@@ -20488,85 +20819,95 @@ retry.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 class StorageTimeout extends Data.TaggedError("StorageTimeout")<{
-  readonly importId: string
+  readonly importId: string;
 }> {}
 
-class StagingDatabaseUnavailable extends Data.TaggedError("StagingDatabaseUnavailable")<{
-  readonly importId: string
+class StagingDatabaseUnavailable extends Data.TaggedError(
+  "StagingDatabaseUnavailable"
+)<{
+  readonly importId: string;
 }> {}
 
 class InvalidImportFile extends Data.TaggedError("InvalidImportFile")<{
-  readonly importId: string
-  readonly reason: string
+  readonly importId: string;
+  readonly reason: string;
 }> {}
 
-class DuplicateExternalEventRisk extends Data.TaggedError("DuplicateExternalEventRisk")<{
-  readonly importId: string
+class DuplicateExternalEventRisk extends Data.TaggedError(
+  "DuplicateExternalEventRisk"
+)<{
+  readonly importId: string;
 }> {}
 
 type ImportError =
   | StorageTimeout
   | StagingDatabaseUnavailable
   | InvalidImportFile
-  | DuplicateExternalEventRisk
+  | DuplicateExternalEventRisk;
 
 interface ImportBatch {
-  readonly importId: string
-  readonly sourceUri: string
+  readonly importId: string;
+  readonly sourceUri: string;
 }
 
 const batch: ImportBatch = {
   importId: "import-2026-05-17",
-  sourceUri: "s3://imports/customers.csv"
-}
+  sourceUri: "s3://imports/customers.csv",
+};
 
-let attempts = 0
+let attempts = 0;
 
-const processImportBatch: (batch: ImportBatch) => Effect.Effect<void, ImportError> = Effect.fnUntraced(
-  function*(batch: ImportBatch) {
-    attempts += 1
-    yield* Console.log(`import attempt ${attempts}: ${batch.sourceUri}`)
+const processImportBatch: (
+  batch: ImportBatch
+) => Effect.Effect<void, ImportError> = Effect.fnUntraced(function* (
+  batch: ImportBatch
+) {
+  attempts += 1;
+  yield* Console.log(`import attempt ${attempts}: ${batch.sourceUri}`);
 
-    if (attempts === 1) {
-      return yield* Effect.fail(new StorageTimeout({ importId: batch.importId }))
-    }
-    if (attempts === 2) {
-      return yield* Effect.fail(new StagingDatabaseUnavailable({ importId: batch.importId }))
-    }
-
-    yield* Console.log(`imported batch ${batch.importId}`)
+  if (attempts === 1) {
+    return yield* Effect.fail(new StorageTimeout({ importId: batch.importId }));
   }
-)
+  if (attempts === 2) {
+    return yield* Effect.fail(
+      new StagingDatabaseUnavailable({ importId: batch.importId })
+    );
+  }
+
+  yield* Console.log(`imported batch ${batch.importId}`);
+});
 
 const isTransientImportError = (error: ImportError): boolean => {
   switch (error._tag) {
     case "StorageTimeout":
     case "StagingDatabaseUnavailable":
-      return true
+      return true;
     case "InvalidImportFile":
     case "DuplicateExternalEventRisk":
-      return false
+      return false;
   }
-}
+};
 
 const retryTransientImportFailure = Schedule.exponential("10 millis").pipe(
   Schedule.jittered,
   Schedule.both(Schedule.recurs(5))
-)
+);
 
 const program = processImportBatch(batch).pipe(
   Effect.retry({
     schedule: retryTransientImportFailure,
-    while: isTransientImportError
+    while: isTransientImportError,
   }),
   Effect.flatMap(() => Console.log("import finished")),
-  Effect.catch((error: ImportError) => Console.log(`import failed: ${error._tag}`))
-)
+  Effect.catch((error: ImportError) =>
+    Console.log(`import failed: ${error._tag}`)
+  )
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // import attempt 1: s3://imports/customers.csv
 // import attempt 2: s3://imports/customers.csv
@@ -20647,76 +20988,77 @@ interval, or an outer supervisor that starts the worker again.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Schedule } from "effect"
+import { Console, Data, Effect, Schedule } from "effect";
 
 type FailedRecord = {
-  readonly id: string
-  readonly payload: unknown
-}
+  readonly id: string;
+  readonly payload: unknown;
+};
 
 class ReprocessError extends Data.TaggedError("ReprocessError")<{
-  readonly recordId: string
+  readonly recordId: string;
 }> {}
 
-let pass = 0
+let pass = 0;
 const remainingAttempts = new Map([
   ["record-a", 1],
-  ["record-b", 2]
-])
+  ["record-b", 2],
+]);
 
-const loadFailedRecords = Effect.gen(function*() {
-  pass += 1
+const loadFailedRecords = Effect.gen(function* () {
+  pass += 1;
   const records = Array.from(remainingAttempts.keys()).map((id) => ({
     id,
-    payload: { id }
-  }))
-  yield* Console.log(`pass ${pass}: loaded ${records.length} failed records`)
-  return records
-})
+    payload: { id },
+  }));
+  yield* Console.log(`pass ${pass}: loaded ${records.length} failed records`);
+  return records;
+});
 
-const reprocessRecord: (record: FailedRecord) => Effect.Effect<void, ReprocessError> = Effect.fnUntraced(
-  function*(record: FailedRecord) {
-    const attemptsLeft = remainingAttempts.get(record.id) ?? 0
-    if (attemptsLeft > 1) {
-      remainingAttempts.set(record.id, attemptsLeft - 1)
-      return yield* Effect.fail(new ReprocessError({ recordId: record.id }))
-    }
-    remainingAttempts.delete(record.id)
-    yield* Console.log(`reprocessed ${record.id}`)
+const reprocessRecord: (
+  record: FailedRecord
+) => Effect.Effect<void, ReprocessError> = Effect.fnUntraced(function* (
+  record: FailedRecord
+) {
+  const attemptsLeft = remainingAttempts.get(record.id) ?? 0;
+  if (attemptsLeft > 1) {
+    remainingAttempts.set(record.id, attemptsLeft - 1);
+    return yield* Effect.fail(new ReprocessError({ recordId: record.id }));
   }
-)
+  remainingAttempts.delete(record.id);
+  yield* Console.log(`reprocessed ${record.id}`);
+});
 
-const markRecordProcessed = (id: string) => Console.log(`marked ${id} processed`)
+const markRecordProcessed = (id: string) =>
+  Console.log(`marked ${id} processed`);
 
-const markRecordStillFailed = (id: string, _error: ReprocessError) => Console.log(`kept ${id} failed for another pass`)
+const markRecordStillFailed = (id: string, _error: ReprocessError) =>
+  Console.log(`kept ${id} failed for another pass`);
 
 const reprocessFailedRecord = (record: FailedRecord) =>
   reprocessRecord(record).pipe(
     Effect.andThen(markRecordProcessed(record.id)),
-    Effect.catchTag("ReprocessError", (error) => markRecordStillFailed(record.id, error))
-  )
+    Effect.catchTag("ReprocessError", (error) =>
+      markRecordStillFailed(record.id, error)
+    )
+  );
 
-const reprocessFailedBatch = Effect.gen(function*() {
-  const records = yield* loadFailedRecords
+const reprocessFailedBatch = Effect.gen(function* () {
+  const records = yield* loadFailedRecords;
 
   yield* Effect.forEach(records, reprocessFailedRecord, {
-    concurrency: 4
-  })
-})
+    concurrency: 4,
+  });
+});
 
-const reprocessingCadence = Schedule.spaced("10 millis").pipe(
-  Schedule.take(3)
-)
+const reprocessingCadence = Schedule.spaced("10 millis").pipe(Schedule.take(3));
 
-const program = Effect.repeat(
-  reprocessFailedBatch,
-  reprocessingCadence
-).pipe(
+const program = Effect.repeat(reprocessFailedBatch, reprocessingCadence).pipe(
   Effect.flatMap(() => Console.log("reprocessing job finished")),
   Effect.catch((error) => Console.log(`reprocessing failed: ${String(error)}`))
-)
+);
 
-void Effect.runPromise(program)
+void Effect.runPromise(program);
 // Output:
 // pass 1: loaded 2 failed records
 // reprocessed record-a
@@ -20818,30 +21160,31 @@ the status is open, and also enforces a time budget.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type SettlementStatus =
   | { readonly _tag: "Pending" }
   | { readonly _tag: "Processing" }
   | { readonly _tag: "Settled"; readonly settlementId: string }
-  | { readonly _tag: "Declined"; readonly reason: string }
+  | { readonly _tag: "Declined"; readonly reason: string };
 
 const statuses: ReadonlyArray<SettlementStatus> = [
   { _tag: "Pending" },
   { _tag: "Processing" },
-  { _tag: "Settled", settlementId: "set_123" }
-]
+  { _tag: "Settled", settlementId: "set_123" },
+];
 
-let reads = 0
+let reads = 0;
 
-const fetchSettlementStatus = Effect.gen(function*() {
-  const status = statuses[Math.min(reads, statuses.length - 1)]
-  reads += 1
-  yield* Console.log(`provider status: ${status._tag}`)
-  return status
-})
+const fetchSettlementStatus = Effect.gen(function* () {
+  const status = statuses[Math.min(reads, statuses.length - 1)];
+  reads += 1;
+  yield* Console.log(`provider status: ${status._tag}`);
+  return status;
+});
 
-const isOpen = (status: SettlementStatus) => status._tag === "Pending" || status._tag === "Processing"
+const isOpen = (status: SettlementStatus) =>
+  status._tag === "Pending" || status._tag === "Processing";
 
 const pollOpenSettlements = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<SettlementStatus>(),
@@ -20852,24 +21195,24 @@ const pollOpenSettlements = Schedule.spaced("10 millis").pipe(
       Schedule.satisfiesInputType<SettlementStatus>()
     )
   )
-)
+);
 
 const program = fetchSettlementStatus.pipe(
   Effect.repeat(pollOpenSettlements),
   Effect.flatMap((status) => {
     switch (status._tag) {
       case "Settled":
-        return Console.log(`settled as ${status.settlementId}`)
+        return Console.log(`settled as ${status.settlementId}`);
       case "Declined":
-        return Console.log(`declined: ${status.reason}`)
+        return Console.log(`declined: ${status.reason}`);
       case "Pending":
       case "Processing":
-        return Console.log(`timed out while ${status._tag}`)
+        return Console.log(`timed out while ${status._tag}`);
     }
   })
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // provider status: Pending
 // provider status: Processing
@@ -20928,60 +21271,58 @@ failures.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type PaymentStatus =
   | { readonly _tag: "Pending" }
-  | { readonly _tag: "Captured" }
+  | { readonly _tag: "Captured" };
 
 type PaymentStatusFetchError = {
-  readonly _tag: "PaymentStatusFetchError"
-  readonly status: number
-}
+  readonly _tag: "PaymentStatusFetchError";
+  readonly status: number;
+};
 
-let attempts = 0
+let attempts = 0;
 
-const fetchPaymentStatus = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`status fetch attempt ${attempts}`)
+const fetchPaymentStatus = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`status fetch attempt ${attempts}`);
 
   if (attempts === 1) {
-    return yield* Effect.fail(
-      {
-        _tag: "PaymentStatusFetchError",
-        status: 503
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "PaymentStatusFetchError",
+      status: 503,
+    } as const);
   }
   if (attempts === 2) {
-    return yield* Effect.fail(
-      {
-        _tag: "PaymentStatusFetchError",
-        status: 429
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "PaymentStatusFetchError",
+      status: 429,
+    } as const);
   }
 
-  return { _tag: "Captured" } as const
-})
+  return { _tag: "Captured" } as const;
+});
 
 const isRetryableStatusFetch = (error: PaymentStatusFetchError) =>
-  error.status === 408 || error.status === 429 || error.status >= 500
+  error.status === 408 || error.status === 429 || error.status >= 500;
 
 const paymentStatusFetchRetry = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<PaymentStatusFetchError>(),
   Schedule.jittered,
   Schedule.both(Schedule.recurs(5)),
   Schedule.while(({ input }) => isRetryableStatusFetch(input)),
-  Schedule.tapInput((error) => Console.log(`retryable payment read failure: HTTP ${error.status}`))
-)
+  Schedule.tapInput((error) =>
+    Console.log(`retryable payment read failure: HTTP ${error.status}`)
+  )
+);
 
 const program = fetchPaymentStatus.pipe(
   Effect.retry(paymentStatusFetchRetry),
   Effect.flatMap((status) => Console.log(`final status: ${status._tag}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // status fetch attempt 1
 // retryable payment read failure: HTTP 503
@@ -21039,32 +21380,33 @@ latest status, `Schedule.while` to continue only for non-terminal states, and
 ##### Example
 
 ```ts runnable
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type FulfillmentStatus =
   | { readonly state: "received"; readonly orderId: string }
   | { readonly state: "picking"; readonly orderId: string }
   | { readonly state: "shipped"; readonly orderId: string }
   | { readonly state: "delivered"; readonly orderId: string }
-  | { readonly state: "canceled"; readonly orderId: string }
+  | { readonly state: "canceled"; readonly orderId: string };
 
 const statuses: ReadonlyArray<FulfillmentStatus> = [
   { state: "received", orderId: "order-123" },
   { state: "picking", orderId: "order-123" },
   { state: "shipped", orderId: "order-123" },
-  { state: "delivered", orderId: "order-123" }
-]
+  { state: "delivered", orderId: "order-123" },
+];
 
-let reads = 0
+let reads = 0;
 
 const readFulfillmentStatus = Effect.sync(() => {
-  const status = statuses[Math.min(reads, statuses.length - 1)]
-  reads += 1
-  console.log(`fulfillment status: ${status.state}`)
-  return status
-})
+  const status = statuses[Math.min(reads, statuses.length - 1)];
+  reads += 1;
+  console.log(`fulfillment status: ${status.state}`);
+  return status;
+});
 
-const isTerminal = (status: FulfillmentStatus) => status.state === "delivered" || status.state === "canceled"
+const isTerminal = (status: FulfillmentStatus) =>
+  status.state === "delivered" || status.state === "canceled";
 
 const userFacingPolling = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<FulfillmentStatus>(),
@@ -21075,7 +21417,7 @@ const userFacingPolling = Schedule.spaced("10 millis").pipe(
       Schedule.satisfiesInputType<FulfillmentStatus>()
     )
   )
-)
+);
 
 const program = readFulfillmentStatus.pipe(
   Effect.repeat(userFacingPolling),
@@ -21084,9 +21426,9 @@ const program = readFulfillmentStatus.pipe(
       ? Console.log(`terminal fulfillment state: ${status.state}`)
       : Console.log(`still in progress: ${status.state}`)
   )
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: elapsed timing can cross the user-facing polling budget boundary differently under load
 // fulfillment status: received
 // fulfillment status: picking
@@ -21138,52 +21480,54 @@ exponential backoff, jitter for fleet safety, and a small retry count.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type Notification = {
-  readonly idempotencyKey: string
-  readonly recipient: string
-  readonly body: string
-}
+  readonly idempotencyKey: string;
+  readonly recipient: string;
+  readonly body: string;
+};
 
 type DeliveryError =
   | { readonly _tag: "Timeout" }
-  | { readonly _tag: "ProviderUnavailable" }
+  | { readonly _tag: "ProviderUnavailable" };
 
 const notification: Notification = {
   idempotencyKey: "notification-01HZYX8R7P0J9PAW4Q6V7N3QYB",
   recipient: "user@example.com",
-  body: "Your export is ready."
-}
+  body: "Your export is ready.",
+};
 
-let attempts = 0
+let attempts = 0;
 
 const sendWithIdempotency = (notification: Notification) =>
-  Effect.gen(function*() {
-    attempts += 1
+  Effect.gen(function* () {
+    attempts += 1;
     yield* Console.log(
       `send attempt ${attempts} with key ${notification.idempotencyKey}`
-    )
+    );
 
     if (attempts < 3) {
-      return yield* Effect.fail({ _tag: "Timeout" } as const)
+      return yield* Effect.fail({ _tag: "Timeout" } as const);
     }
 
-    yield* Console.log(`delivered to ${notification.recipient}`)
-  })
+    yield* Console.log(`delivered to ${notification.recipient}`);
+  });
 
 const retryTransientDelivery = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<DeliveryError>(),
   Schedule.jittered,
   Schedule.both(Schedule.recurs(5)),
-  Schedule.tapInput((error) => Console.log(`delivery retry after ${error._tag}`))
-)
+  Schedule.tapInput((error) =>
+    Console.log(`delivery retry after ${error._tag}`)
+  )
+);
 
 const program = sendWithIdempotency(notification).pipe(
   Effect.retry(retryTransientDelivery)
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // send attempt 1 with key notification-01HZYX8R7P0J9PAW4Q6V7N3QYB
 // delivery retry after Timeout
@@ -21239,42 +21583,44 @@ run. The first sync starts immediately.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type SyncSummary = {
-  readonly cursor: string
-  readonly contactsUpserted: number
-  readonly companiesUpserted: number
-}
+  readonly cursor: string;
+  readonly contactsUpserted: number;
+  readonly companiesUpserted: number;
+};
 
-let pass = 0
+let pass = 0;
 
-const syncCrmOnce = Effect.gen(function*() {
-  pass += 1
+const syncCrmOnce = Effect.gen(function* () {
+  pass += 1;
   const summary = {
     cursor: `cursor-${pass}`,
     contactsUpserted: pass * 3,
-    companiesUpserted: pass
-  }
+    companiesUpserted: pass,
+  };
   yield* Console.log(
     `CRM sync ${pass}: ${summary.contactsUpserted} contacts, ` +
       `${summary.companiesUpserted} companies`
-  )
-  return summary
-})
+  );
+  return summary;
+});
 
 const demoCadence = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<SyncSummary>(),
   Schedule.passthrough,
   Schedule.take(2)
-)
+);
 
 const program = syncCrmOnce.pipe(
   Effect.repeat(demoCadence),
-  Effect.flatMap((summary) => Console.log(`last cursor written: ${summary.cursor}`))
-)
+  Effect.flatMap((summary) =>
+    Console.log(`last cursor written: ${summary.cursor}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // CRM sync 1: 3 contacts, 1 companies
 // CRM sync 2: 6 contacts, 2 companies
@@ -21330,47 +21676,45 @@ Use `Schedule.tapInput` to observe the failure fed to `Effect.retry`. Use
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Schedule } from "effect"
+import { Console, Duration, Effect, Schedule } from "effect";
 
 type RequestError =
   | { readonly _tag: "RequestTimeout"; readonly endpoint: string }
-  | { readonly _tag: "ServiceUnavailable"; readonly endpoint: string }
+  | { readonly _tag: "ServiceUnavailable"; readonly endpoint: string };
 
-let attempts = 0
+let attempts = 0;
 
-const fetchInventory = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`inventory attempt ${attempts}`)
+const fetchInventory = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`inventory attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail(
-      {
-        _tag: "RequestTimeout",
-        endpoint: "/inventory"
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "RequestTimeout",
+      endpoint: "/inventory",
+    } as const);
   }
 
-  return ["sku-1", "sku-2"]
-})
+  return ["sku-1", "sku-2"];
+});
 
 const retryInventoryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<RequestError>(),
   Schedule.both(Schedule.recurs(5)),
-  Schedule.tapInput((error) => Console.log(`retry input: ${error._tag} at ${error.endpoint}`)),
+  Schedule.tapInput((error) =>
+    Console.log(`retry input: ${error._tag} at ${error.endpoint}`)
+  ),
   Schedule.tapOutput(([delay, retry]) =>
-    Console.log(
-      `retry ${retry + 1} scheduled after ${Duration.format(delay)}`
-    )
+    Console.log(`retry ${retry + 1} scheduled after ${Duration.format(delay)}`)
   )
-)
+);
 
 const program = fetchInventory.pipe(
   Effect.retry(retryInventoryPolicy),
   Effect.flatMap((items) => Console.log(`loaded ${items.length} items`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // inventory attempt 1
 // retry input: RequestTimeout at /inventory
@@ -21425,36 +21769,38 @@ to the combinator whose output you want to observe.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Schedule } from "effect"
+import { Console, Duration, Effect, Schedule } from "effect";
 
 type RetryError = {
-  readonly _tag: "Timeout" | "Unavailable"
-}
+  readonly _tag: "Timeout" | "Unavailable";
+};
 
-let attempts = 0
+let attempts = 0;
 
-const callWebhook = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`webhook attempt ${attempts}`)
+const callWebhook = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`webhook attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail({ _tag: "Timeout" } as const)
+    return yield* Effect.fail({ _tag: "Timeout" } as const);
   }
-})
+});
 
 const retryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<RetryError>(),
-  Schedule.tapOutput((delay) => Console.log(`base retry delay: ${Duration.format(delay)}`)),
+  Schedule.tapOutput((delay) =>
+    Console.log(`base retry delay: ${Duration.format(delay)}`)
+  ),
   Schedule.jittered,
   Schedule.take(5)
-)
+);
 
 const program = callWebhook.pipe(
   Effect.retry(retryPolicy),
   Effect.flatMap(() => Console.log("webhook delivered"))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // webhook attempt 1
 // base retry delay: 10ms
@@ -21510,61 +21856,57 @@ delays and limits; elapsed time is additional output for observability.
 ##### Example
 
 ```ts runnable
-import { Console, Duration, Effect, Schedule } from "effect"
+import { Console, Duration, Effect, Schedule } from "effect";
 
 type DependencyError = {
-  readonly _tag: "DependencyError"
-  readonly status: number
-}
+  readonly _tag: "DependencyError";
+  readonly status: number;
+};
 
-let attempts = 0
+let attempts = 0;
 
-const callDependency = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`dependency attempt ${attempts}`)
+const callDependency = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`dependency attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail(
-      {
-        _tag: "DependencyError",
-        status: 503
-      } as const
-    )
+    return yield* Effect.fail({
+      _tag: "DependencyError",
+      status: 503,
+    } as const);
   }
 
-  return "ok"
-})
+  return "ok";
+});
 
-const isRetryable = (error: DependencyError) => error.status === 408 || error.status === 429 || error.status >= 500
+const isRetryable = (error: DependencyError) =>
+  error.status === 408 || error.status === 429 || error.status >= 500;
 
 const retryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<DependencyError>(),
   Schedule.both(Schedule.recurs(5)),
-  Schedule.bothWith(
-    Schedule.elapsed,
-    ([nextDelay, retryIndex], elapsed) => ({
-      elapsed,
-      nextDelay,
-      retryIndex
-    })
-  ),
+  Schedule.bothWith(Schedule.elapsed, ([nextDelay, retryIndex], elapsed) => ({
+    elapsed,
+    nextDelay,
+    retryIndex,
+  })),
   Schedule.tapOutput(({ elapsed, nextDelay, retryIndex }) =>
     Console.log(
       `retry=${retryIndex + 1} elapsed=${Duration.toMillis(elapsed)}ms ` +
         `next=${Duration.toMillis(nextDelay)}ms`
     )
   )
-)
+);
 
 const program = callDependency.pipe(
   Effect.retry({
     schedule: retryPolicy,
-    while: isRetryable
+    while: isRetryable,
   }),
   Effect.flatMap((value) => Console.log(`dependency result: ${value}`))
-)
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: measured elapsed time and selected delays depend on runtime timing
 // dependency attempt 1
 // retry=1 elapsed=0ms next=10ms
@@ -21621,57 +21963,62 @@ longer running or the budget is exhausted. Then inspect the final value.
 ##### Example
 
 ```ts runnable
-import { Console, Effect, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect";
 
 type JobStatus =
   | { readonly _tag: "Running"; readonly jobId: string }
   | { readonly _tag: "Done"; readonly jobId: string; readonly resultId: string }
-  | { readonly _tag: "Failed"; readonly jobId: string; readonly reason: string }
+  | {
+      readonly _tag: "Failed";
+      readonly jobId: string;
+      readonly reason: string;
+    };
 
 type PollTermination =
   | { readonly _tag: "Completed" }
   | { readonly _tag: "TerminalFailure"; readonly reason: string }
-  | { readonly _tag: "TimedOut"; readonly lastStatus: "Running" }
+  | { readonly _tag: "TimedOut"; readonly lastStatus: "Running" };
 
-let reads = 0
+let reads = 0;
 
 const checkJobStatus = Effect.sync((): JobStatus => {
-  reads += 1
-  const status: JobStatus = reads < 4
-    ? { _tag: "Running", jobId: "job-1" }
-    : { _tag: "Done", jobId: "job-1", resultId: "result-1" }
-  console.log(`job status: ${status._tag}`)
-  return status
-})
+  reads += 1;
+  const status: JobStatus =
+    reads < 4
+      ? { _tag: "Running", jobId: "job-1" }
+      : { _tag: "Done", jobId: "job-1", resultId: "result-1" };
+  console.log(`job status: ${status._tag}`);
+  return status;
+});
 
 const pollUntilTerminalOrBudget = Schedule.spaced("10 millis").pipe(
   Schedule.satisfiesInputType<JobStatus>(),
   Schedule.passthrough,
   Schedule.while(({ input }) => input._tag === "Running"),
   Schedule.bothLeft(
-    Schedule.during("25 millis").pipe(
-      Schedule.satisfiesInputType<JobStatus>()
-    )
+    Schedule.during("25 millis").pipe(Schedule.satisfiesInputType<JobStatus>())
   )
-)
+);
 
 const toTermination = (status: JobStatus): PollTermination => {
   switch (status._tag) {
     case "Done":
-      return { _tag: "Completed" }
+      return { _tag: "Completed" };
     case "Failed":
-      return { _tag: "TerminalFailure", reason: status.reason }
+      return { _tag: "TerminalFailure", reason: status.reason };
     case "Running":
-      return { _tag: "TimedOut", lastStatus: "Running" }
+      return { _tag: "TimedOut", lastStatus: "Running" };
   }
-}
+};
 
 const program = checkJobStatus.pipe(
   Effect.repeat(pollUntilTerminalOrBudget),
-  Effect.flatMap((status) => Console.log(`termination reason: ${toTermination(status)._tag}`))
-)
+  Effect.flatMap((status) =>
+    Console.log(`termination reason: ${toTermination(status)._tag}`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output may vary: elapsed timing can cross the polling budget boundary differently under load
 // job status: Running
 // job status: Running
@@ -21729,61 +22076,66 @@ effect that uses the policy.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Duration, Effect, Metric, Schedule } from "effect"
+import { Console, Duration, Effect, Metric, Schedule } from "effect";
 
 type InventoryError = {
-  readonly _tag: "Timeout" | "Unavailable" | "BadRequest"
-}
+  readonly _tag: "Timeout" | "Unavailable" | "BadRequest";
+};
 
-let attempts = 0
+let attempts = 0;
 
-const fetchInventory: Effect.Effect<ReadonlyArray<string>, InventoryError> = Effect.gen(function*() {
-  attempts += 1
-  yield* Console.log(`inventory attempt ${attempts}`)
+const fetchInventory: Effect.Effect<
+  ReadonlyArray<string>,
+  InventoryError
+> = Effect.gen(function* () {
+  attempts += 1;
+  yield* Console.log(`inventory attempt ${attempts}`);
 
   if (attempts < 3) {
-    return yield* Effect.fail({ _tag: "Unavailable" } as const)
+    return yield* Effect.fail({ _tag: "Unavailable" } as const);
   }
 
-  return ["sku-1", "sku-2", "sku-3"]
-})
+  return ["sku-1", "sku-2", "sku-3"];
+});
 
 const retryScheduled = Metric.counter("inventory_retry_scheduled_total", {
-  description: "Retries scheduled by the inventory retry policy"
-})
+  description: "Retries scheduled by the inventory retry policy",
+});
 
 const retryDelayMillis = Metric.histogram("inventory_retry_delay_millis", {
   description: "Base retry delay before jitter",
-  boundaries: [10, 20, 50, 100]
-})
+  boundaries: [10, 20, 50, 100],
+});
 
 const inventoryRetryPolicy = Schedule.exponential("10 millis").pipe(
   Schedule.satisfiesInputType<InventoryError>(),
   Schedule.tapOutput((delay) =>
-    Effect.gen(function*() {
-      yield* Metric.update(retryDelayMillis, Duration.toMillis(delay))
-      yield* Console.log(`observed retry delay ${Duration.toMillis(delay)}ms`)
+    Effect.gen(function* () {
+      yield* Metric.update(retryDelayMillis, Duration.toMillis(delay));
+      yield* Console.log(`observed retry delay ${Duration.toMillis(delay)}ms`);
     })
   ),
   Schedule.jittered,
   Schedule.take(5),
   Schedule.tapInput((error) =>
-    Effect.gen(function*() {
-      yield* Metric.update(retryScheduled, 1)
-      yield* Console.log(`scheduled retry after ${error._tag}`)
+    Effect.gen(function* () {
+      yield* Metric.update(retryScheduled, 1);
+      yield* Console.log(`scheduled retry after ${error._tag}`);
     })
   )
-)
+);
 
 const program = fetchInventory.pipe(
   Effect.retry({
     schedule: inventoryRetryPolicy,
-    while: (error) => error._tag !== "BadRequest"
+    while: (error) => error._tag !== "BadRequest",
   }),
-  Effect.flatMap((items) => Console.log(`inventory loaded after retry: ${items.length} items`))
-)
+  Effect.flatMap((items) =>
+    Console.log(`inventory loaded after retry: ${items.length} items`)
+  )
+);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // inventory attempt 1
 // scheduled retry after Unavailable
@@ -21851,31 +22203,31 @@ of times the effect itself was evaluated.
 ##### Example
 
 ```ts runnable deterministic
-import { Console, Effect, Exit, Ref, Schedule } from "effect"
+import { Console, Effect, Exit, Ref, Schedule } from "effect";
 
-type TestError = { readonly _tag: "TestError" }
-const testError: TestError = { _tag: "TestError" }
+type TestError = { readonly _tag: "TestError" };
+const testError: TestError = { _tag: "TestError" };
 
-const alwaysFails = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`attempt ${attempt}`)
-  return yield* Effect.fail(testError)
-})
+const alwaysFails = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`attempt ${attempt}`);
+  return yield* Effect.fail(testError);
+});
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
 
   const exit = yield* alwaysFails(attempts).pipe(
     Effect.retry(Schedule.recurs(3)),
     Effect.exit
-  )
+  );
 
-  const totalAttempts = yield* Ref.get(attempts)
-  yield* Console.log(`total attempts: ${totalAttempts}`)
-  yield* Console.log(`failed: ${Exit.isFailure(exit)}`)
-})
+  const totalAttempts = yield* Ref.get(attempts);
+  yield* Console.log(`total attempts: ${totalAttempts}`);
+  yield* Console.log(`failed: ${Exit.isFailure(exit)}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1
 // attempt 2
@@ -21941,52 +22293,52 @@ original attempt runs immediately. Each failed attempt schedules the next retry
 ##### Example
 
 ```ts
-import { Console, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 const retryPolicy = Schedule.spaced("100 millis").pipe(
   Schedule.both(Schedule.recurs(2))
-)
+);
 
-const operation = Effect.fnUntraced(function*(attempts: Ref.Ref<number>) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`attempt ${attempt}`)
+const operation = Effect.fnUntraced(function* (attempts: Ref.Ref<number>) {
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt < 3) {
-    return yield* Effect.fail("transient" as const)
+    return yield* Effect.fail("transient" as const);
   }
 
-  return "ok" as const
-})
+  return "ok" as const;
+});
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* operation(attempts).pipe(
     Effect.retry(retryPolicy),
     Effect.forkScoped
-  )
+  );
 
-  yield* Effect.yieldNow
-  const afterStart = yield* Ref.get(attempts)
-  yield* Console.log(`after start: ${afterStart}`)
+  yield* Effect.yieldNow;
+  const afterStart = yield* Ref.get(attempts);
+  yield* Console.log(`after start: ${afterStart}`);
 
-  yield* TestClock.adjust("99 millis")
-  const beforeDelay = yield* Ref.get(attempts)
-  yield* Console.log(`after 99ms: ${beforeDelay}`)
+  yield* TestClock.adjust("99 millis");
+  const beforeDelay = yield* Ref.get(attempts);
+  yield* Console.log(`after 99ms: ${beforeDelay}`);
 
-  yield* TestClock.adjust("1 millis")
-  const afterFirstDelay = yield* Ref.get(attempts)
-  yield* Console.log(`after 100ms: ${afterFirstDelay}`)
+  yield* TestClock.adjust("1 millis");
+  const afterFirstDelay = yield* Ref.get(attempts);
+  yield* Console.log(`after 100ms: ${afterFirstDelay}`);
 
-  yield* TestClock.adjust("100 millis")
-  const result = yield* Fiber.join(fiber)
-  const finalAttempts = yield* Ref.get(attempts)
+  yield* TestClock.adjust("100 millis");
+  const result = yield* Fiber.join(fiber);
+  const finalAttempts = yield* Ref.get(attempts);
 
-  yield* Console.log(`result: ${result}`)
-  yield* Console.log(`total attempts: ${finalAttempts}`)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  yield* Console.log(`result: ${result}`);
+  yield* Console.log(`total attempts: ${finalAttempts}`);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The retrying operation runs in a fiber because it sleeps after each failure.
@@ -22031,73 +22383,73 @@ row, `Effect.retry` returns the fourth failure.
 ##### Example
 
 ```ts
-import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Data, Effect, Fiber, Ref, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 class ServiceUnavailable extends Data.TaggedError("ServiceUnavailable")<{
-  readonly attempt: number
+  readonly attempt: number;
 }> {}
 
 const retryPolicy = Schedule.spaced("100 millis").pipe(
   Schedule.both(Schedule.recurs(3))
-)
+);
 
-const flakyRequest = Effect.fnUntraced(function*(
+const flakyRequest = Effect.fnUntraced(function* (
   failuresBeforeSuccess: number,
   attempts: Ref.Ref<number>
 ) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`attempt ${attempt}`)
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`attempt ${attempt}`);
 
   if (attempt <= failuresBeforeSuccess) {
-    return yield* Effect.fail(new ServiceUnavailable({ attempt }))
+    return yield* Effect.fail(new ServiceUnavailable({ attempt }));
   }
 
-  return "ok" as const
-})
+  return "ok" as const;
+});
 
-const successfulCase = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const successfulCase = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* flakyRequest(2, attempts).pipe(
     Effect.retry(retryPolicy),
     Effect.forkScoped
-  )
+  );
 
-  yield* TestClock.adjust("100 millis")
-  yield* TestClock.adjust("100 millis")
+  yield* TestClock.adjust("100 millis");
+  yield* TestClock.adjust("100 millis");
 
-  const result = yield* Fiber.join(fiber)
-  const count = yield* Ref.get(attempts)
-  yield* Console.log(`success case: ${result} after ${count} attempts`)
-})
+  const result = yield* Fiber.join(fiber);
+  const count = yield* Ref.get(attempts);
+  yield* Console.log(`success case: ${result} after ${count} attempts`);
+});
 
-const exhaustedCase = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const exhaustedCase = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
   const fiber = yield* flakyRequest(4, attempts).pipe(
     Effect.retry(retryPolicy),
     Effect.flip,
     Effect.forkScoped
-  )
+  );
 
-  yield* TestClock.adjust("100 millis")
-  yield* TestClock.adjust("100 millis")
-  yield* TestClock.adjust("100 millis")
+  yield* TestClock.adjust("100 millis");
+  yield* TestClock.adjust("100 millis");
+  yield* TestClock.adjust("100 millis");
 
-  const error = yield* Fiber.join(fiber)
-  const count = yield* Ref.get(attempts)
+  const error = yield* Fiber.join(fiber);
+  const count = yield* Ref.get(attempts);
   yield* Console.log(
     `exhausted case: ${error._tag}(${error.attempt}) after ${count} attempts`
-  )
-})
+  );
+});
 
-const program = Effect.gen(function*() {
-  yield* Console.log("recovers within budget")
-  yield* successfulCase
-  yield* Console.log("outlasts retry budget")
-  yield* exhaustedCase
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+const program = Effect.gen(function* () {
+  yield* Console.log("recovers within budget");
+  yield* successfulCase;
+  yield* Console.log("outlasts retry budget");
+  yield* exhaustedCase;
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 ##### Why this works
@@ -22142,31 +22494,32 @@ Use a schedule that would clearly retry if classification allowed it, then add a
 classification predicate to the retry options.
 
 ```ts runnable deterministic
-import { Console, Data, Effect, Ref, Schedule } from "effect"
+import { Console, Data, Effect, Ref, Schedule } from "effect";
 
 class TransientError extends Data.TaggedError("TransientError")<{
-  readonly message: string
+  readonly message: string;
 }> {}
 
 class FatalError extends Data.TaggedError("FatalError")<{
-  readonly message: string
+  readonly message: string;
 }> {}
 
-type ServiceError = TransientError | FatalError
+type ServiceError = TransientError | FatalError;
 
-const isTransient = (error: ServiceError): error is TransientError => error._tag === "TransientError"
+const isTransient = (error: ServiceError): error is TransientError =>
+  error._tag === "TransientError";
 
-const request = Effect.fnUntraced(function*(
+const request = Effect.fnUntraced(function* (
   attempts: Ref.Ref<number>,
   error: ServiceError
 ) {
-  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1)
-  yield* Console.log(`attempt ${attempt}: ${error._tag}`)
-  return yield* Effect.fail(error)
-})
+  const attempt = yield* Ref.updateAndGet(attempts, (n) => n + 1);
+  yield* Console.log(`attempt ${attempt}: ${error._tag}`);
+  return yield* Effect.fail(error);
+});
 
-const program = Effect.gen(function*() {
-  const attempts = yield* Ref.make(0)
+const program = Effect.gen(function* () {
+  const attempts = yield* Ref.make(0);
 
   const error = yield* request(
     attempts,
@@ -22174,17 +22527,17 @@ const program = Effect.gen(function*() {
   ).pipe(
     Effect.retry({
       schedule: Schedule.recurs(3),
-      while: isTransient
+      while: isTransient,
     }),
     Effect.flip
-  )
+  );
 
-  const count = yield* Ref.get(attempts)
-  yield* Console.log(`returned: ${error._tag}`)
-  yield* Console.log(`total attempts: ${count}`)
-})
+  const count = yield* Ref.get(attempts);
+  yield* Console.log(`returned: ${error._tag}`);
+  yield* Console.log(`total attempts: ${count}`);
+});
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 // Output:
 // attempt 1: FatalError
 // returned: FatalError
@@ -22257,28 +22610,32 @@ milliseconds.
 ##### Example
 
 ```ts
-import { Console, Duration, Effect, Fiber, Schedule } from "effect"
-import { TestClock } from "effect/testing"
+import { Console, Duration, Effect, Fiber, Schedule } from "effect";
+import { TestClock } from "effect/testing";
 
 const cappedBackoff = Schedule.exponential("100 millis").pipe(
-  Schedule.modifyDelay((_, delay) => Effect.succeed(Duration.min(delay, Duration.millis(250)))),
+  Schedule.modifyDelay((_, delay) =>
+    Effect.succeed(Duration.min(delay, Duration.millis(250)))
+  ),
   Schedule.delays,
-  Schedule.tapOutput((delay) => Console.log(`scheduled delay: ${Duration.toMillis(delay)}ms`)),
+  Schedule.tapOutput((delay) =>
+    Console.log(`scheduled delay: ${Duration.toMillis(delay)}ms`)
+  ),
   Schedule.take(5)
-)
+);
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const fiber = yield* Effect.void.pipe(
     Effect.repeat(cappedBackoff),
     Effect.forkScoped
-  )
+  );
 
-  yield* Effect.yieldNow
-  yield* TestClock.adjust("2 seconds")
-  yield* Fiber.join(fiber)
-}).pipe(Effect.provide(TestClock.layer()), Effect.scoped)
+  yield* Effect.yieldNow;
+  yield* TestClock.adjust("2 seconds");
+  yield* Fiber.join(fiber);
+}).pipe(Effect.provide(TestClock.layer()), Effect.scoped);
 
-Effect.runPromise(program)
+Effect.runPromise(program);
 ```
 
 The program repeats a no-op effect under the schedule, logs the computed delays,

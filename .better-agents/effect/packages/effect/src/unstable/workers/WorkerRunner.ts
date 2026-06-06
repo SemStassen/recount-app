@@ -33,10 +33,10 @@
  *
  * @since 4.0.0
  */
-import * as Context from "../../Context.ts"
-import type * as Effect from "../../Effect.ts"
-import type * as Queue from "../../Queue.ts"
-import type { WorkerError } from "./WorkerError.ts"
+import * as Context from "../../Context.ts";
+import type * as Effect from "../../Effect.ts";
+import type * as Queue from "../../Queue.ts";
+import type { WorkerError } from "./WorkerError.ts";
 
 /**
  * Platform-neutral worker runner that receives inbound messages by port ID,
@@ -48,18 +48,18 @@ import type { WorkerError } from "./WorkerError.ts"
 export interface WorkerRunner<O = unknown, I = unknown> {
   readonly run: <A, E, R>(
     handler: (portId: number, message: I) => Effect.Effect<A, E, R> | void
-  ) => Effect.Effect<void, WorkerError, R>
+  ) => Effect.Effect<void, WorkerError, R>;
   readonly send: (
     portId: number,
     message: O,
     transfers?: ReadonlyArray<unknown>
-  ) => Effect.Effect<void>
+  ) => Effect.Effect<void>;
   readonly sendUnsafe: (
     portId: number,
     message: O,
     transfers?: ReadonlyArray<unknown>
-  ) => void
-  readonly disconnects?: Queue.Dequeue<number> | undefined
+  ) => void;
+  readonly disconnects?: Queue.Dequeue<number> | undefined;
 }
 
 /**
@@ -69,7 +69,7 @@ export interface WorkerRunner<O = unknown, I = unknown> {
  * @category models
  * @since 4.0.0
  */
-export type PlatformMessage<I> = readonly [request: 0, I] | readonly [close: 1]
+export type PlatformMessage<I> = readonly [request: 0, I] | readonly [close: 1];
 
 /**
  * Context service that starts a platform-specific `WorkerRunner`.
@@ -77,6 +77,12 @@ export type PlatformMessage<I> = readonly [request: 0, I] | readonly [close: 1]
  * @category models
  * @since 4.0.0
  */
-export class WorkerRunnerPlatform extends Context.Service<WorkerRunnerPlatform, {
-  readonly start: <O = unknown, I = unknown>() => Effect.Effect<WorkerRunner<O, I>, WorkerError>
-}>()("effect/workers/WorkerRunner/WorkerRunnerPlatform") {}
+export class WorkerRunnerPlatform extends Context.Service<
+  WorkerRunnerPlatform,
+  {
+    readonly start: <O = unknown, I = unknown>() => Effect.Effect<
+      WorkerRunner<O, I>,
+      WorkerError
+    >;
+  }
+>()("effect/workers/WorkerRunner/WorkerRunnerPlatform") {}

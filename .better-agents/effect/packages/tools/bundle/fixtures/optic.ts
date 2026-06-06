@@ -1,6 +1,6 @@
-import * as Optic from "effect/Optic"
+import * as Optic from "effect/Optic";
 
-type S = { readonly a: number }
-const optic = Optic.id<S>().key("a")
+type S = { readonly a: number };
+const optic = Optic.id<S>().key("a");
 
-optic.getResult({ a: 1 })
+optic.getResult({ a: 1 });

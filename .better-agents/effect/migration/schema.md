@@ -109,32 +109,32 @@ Note: `positive`, `negative`, `nonNegative`, `nonPositive` have been removed in 
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const assertString = Schema.asserts(Schema.String)
-assertString(input)
+const assertString = Schema.asserts(Schema.String);
+assertString(input);
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-Schema.asserts(Schema.String, input)
+Schema.asserts(Schema.String, input);
 ```
 
-### validate* removal
+### validate\* removal
 
 **Migration: removed**
 
 The `validate`, `validateEither`, `validatePromise`, `validateSync`, and `validateOption` APIs have been removed. Use `Schema.decode*` + `Schema.toType` instead.
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 // v3: Schema.validateSync(Schema.String)(input)
 // v4:
-const validateSync = Schema.decodeSync(Schema.toType(Schema.String))
+const validateSync = Schema.decodeSync(Schema.toType(Schema.String));
 ```
 
 ### Data removal
@@ -150,17 +150,17 @@ const validateSync = Schema.decodeSync(Schema.toType(Schema.String))
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Literal("a", "b", "c").pipe(Schema.pickLiteral("a", "b"))
+const schema = Schema.Literal("a", "b", "c").pipe(Schema.pickLiteral("a", "b"));
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Literals(["a", "b", "c"]).pick(["a", "b"])
+const schema = Schema.Literals(["a", "b", "c"]).pick(["a", "b"]);
 ```
 
 ### TemplateLiteralParser
@@ -170,20 +170,20 @@ const schema = Schema.Literals(["a", "b", "c"]).pick(["a", "b"])
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.TemplateLiteral(Schema.String, ".", Schema.String)
-const parser = Schema.TemplateLiteralParser(Schema.String, ".", Schema.String)
+const schema = Schema.TemplateLiteral(Schema.String, ".", Schema.String);
+const parser = Schema.TemplateLiteralParser(Schema.String, ".", Schema.String);
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.TemplateLiteral([Schema.String, ".", Schema.String])
+const schema = Schema.TemplateLiteral([Schema.String, ".", Schema.String]);
 // use the `parts` property instead of repeating the template parts
-const parser = Schema.TemplateLiteralParser(schema.parts)
+const parser = Schema.TemplateLiteralParser(schema.parts);
 ```
 
 ### format
@@ -195,21 +195,21 @@ const parser = Schema.TemplateLiteralParser(schema.parts)
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-console.log(Schema.format(Schema.String))
+console.log(Schema.format(Schema.String));
 // string
 ```
 
 v4
 
 ```ts
-import { Schema, SchemaRepresentation } from "effect"
+import { Schema, SchemaRepresentation } from "effect";
 
-const doc = SchemaRepresentation.fromAST(Schema.String.ast)
-const multi = SchemaRepresentation.toMultiDocument(doc)
-const codeDoc = SchemaRepresentation.toCodeDocument(multi)
-console.log(codeDoc.codes[0].Type)
+const doc = SchemaRepresentation.fromAST(Schema.String.ast);
+const multi = SchemaRepresentation.toMultiDocument(doc);
+const codeDoc = SchemaRepresentation.toCodeDocument(multi);
+console.log(codeDoc.codes[0].Type);
 // string
 ```
 
@@ -226,19 +226,19 @@ Use `SchemaIssue.makeFormatterStandardSchemaV1()(error.issue).issues` for the v3
 v3
 
 ```ts
-import { Either, ParseResult, Schema } from "effect"
+import { Either, ParseResult, Schema } from "effect";
 
 const Person = Schema.Struct({
   name: Schema.String,
-  age: Schema.Number
-})
+  age: Schema.Number,
+});
 
-const decode = Schema.decodeUnknownEither(Person)
+const decode = Schema.decodeUnknownEither(Person);
 
-const result = decode({})
+const result = decode({});
 if (Either.isLeft(result)) {
-  console.error("Decoding failed:")
-  console.error(ParseResult.ArrayFormatter.formatErrorSync(result.left))
+  console.error("Decoding failed:");
+  console.error(ParseResult.ArrayFormatter.formatErrorSync(result.left));
 }
 /*
 Decoding failed:
@@ -249,22 +249,24 @@ Decoding failed:
 v4
 
 ```ts
-import { Schema, SchemaIssue } from "effect"
+import { Schema, SchemaIssue } from "effect";
 
 const Person = Schema.Struct({
   name: Schema.String,
-  age: Schema.Number
-})
+  age: Schema.Number,
+});
 
-const decode = Schema.decodeUnknownSync(Person)
+const decode = Schema.decodeUnknownSync(Person);
 
 try {
-  decode({})
+  decode({});
 } catch (error) {
   if (error instanceof Error) {
-    console.error("Decoding failed:")
+    console.error("Decoding failed:");
     if (SchemaIssue.isIssue(error.cause)) {
-      console.error(SchemaIssue.makeFormatterStandardSchemaV1()(error.cause).issues)
+      console.error(
+        SchemaIssue.makeFormatterStandardSchemaV1()(error.cause).issues
+      );
     }
   }
 }
@@ -281,17 +283,17 @@ Decoding failed:
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Record({ key: Schema.String, value: Schema.Number })
+const schema = Schema.Record({ key: Schema.String, value: Schema.Number });
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Record(Schema.String, Schema.Number)
+const schema = Schema.Record(Schema.String, Schema.Number);
 ```
 
 ### pick / omit
@@ -303,19 +305,27 @@ const schema = Schema.Record(Schema.String, Schema.Number)
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const picked = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(Schema.pick("a"))
-const omitted = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(Schema.omit("b"))
+const picked = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(
+  Schema.pick("a")
+);
+const omitted = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(
+  Schema.omit("b")
+);
 ```
 
 v4
 
 ```ts
-import { Schema, Struct } from "effect"
+import { Schema, Struct } from "effect";
 
-const picked = Schema.Struct({ a: Schema.String, b: Schema.Number }).mapFields(Struct.pick(["a"]))
-const omitted = Schema.Struct({ a: Schema.String, b: Schema.Number }).mapFields(Struct.omit(["b"]))
+const picked = Schema.Struct({ a: Schema.String, b: Schema.Number }).mapFields(
+  Struct.pick(["a"])
+);
+const omitted = Schema.Struct({ a: Schema.String, b: Schema.Number }).mapFields(
+  Struct.omit(["b"])
+);
 ```
 
 ### partial / partialWith
@@ -328,24 +338,25 @@ const omitted = Schema.Struct({ a: Schema.String, b: Schema.Number }).mapFields(
 - `Schema.partialWith({ exact: true })` → `mapFields(Struct.map(Schema.optionalKey))` (exact)
 
 ```ts
-import { Schema, Struct } from "effect"
+import { Schema, Struct } from "effect";
 
-const struct = Schema.Struct({ a: Schema.String, b: Schema.Number })
+const struct = Schema.Struct({ a: Schema.String, b: Schema.Number });
 
 // v3: struct.pipe(Schema.partial)
-const withUndefined = struct.mapFields(Struct.map(Schema.optional))
+const withUndefined = struct.mapFields(Struct.map(Schema.optional));
 
 // v3: struct.pipe(Schema.partialWith({ exact: true }))
-const exact = struct.mapFields(Struct.map(Schema.optionalKey))
+const exact = struct.mapFields(Struct.map(Schema.optionalKey));
 ```
 
 You can also make a subset of fields partial:
 
 ```ts
-import { Schema, Struct } from "effect"
+import { Schema, Struct } from "effect";
 
-const schema = Schema.Struct({ a: Schema.String, b: Schema.Number })
-  .mapFields(Struct.mapPick(["a"], Schema.optional))
+const schema = Schema.Struct({ a: Schema.String, b: Schema.Number }).mapFields(
+  Struct.mapPick(["a"], Schema.optional)
+);
 ```
 
 ### required
@@ -358,15 +369,15 @@ const schema = Schema.Struct({ a: Schema.String, b: Schema.Number })
 - `Schema.required`: makes `optional` fields required (removes `undefined`)
 
 ```ts
-import { Schema, Struct } from "effect"
+import { Schema, Struct } from "effect";
 
 const original = Schema.Struct({
   a: Schema.optionalKey(Schema.String),
-  b: Schema.optionalKey(Schema.Number)
-})
+  b: Schema.optionalKey(Schema.Number),
+});
 
 // v3: Schema.required(original)
-const schema = original.mapFields(Struct.map(Schema.requiredKey))
+const schema = original.mapFields(Struct.map(Schema.requiredKey));
 // { readonly a: string; readonly b: number; }
 ```
 
@@ -385,29 +396,31 @@ The pattern: start with the encoded optionality (`optionalKey` or required), pip
 v3
 
 ```ts
-import { Option, Schema } from "effect"
+import { Option, Schema } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.optionalToRequired(Schema.String, Schema.NullOr(Schema.String), {
     decode: Option.getOrElse(() => null),
-    encode: Option.liftPredicate((value) => value !== null)
-  })
-})
+    encode: Option.liftPredicate((value) => value !== null),
+  }),
+});
 ```
 
 v4
 
 ```ts
-import { Option, Schema, SchemaGetter } from "effect"
+import { Option, Schema, SchemaGetter } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.optionalKey(Schema.String).pipe(
     Schema.decodeTo(Schema.NullOr(Schema.String), {
       decode: SchemaGetter.transformOptional(Option.orElseSome(() => null)),
-      encode: SchemaGetter.transformOptional(Option.filter((value) => value !== null))
+      encode: SchemaGetter.transformOptional(
+        Option.filter((value) => value !== null)
+      ),
     })
-  )
-})
+  ),
+});
 ```
 
 **Example** (v3 `requiredToOptional`: empty string as missing value)
@@ -415,29 +428,31 @@ const schema = Schema.Struct({
 v3
 
 ```ts
-import { Option, Schema } from "effect"
+import { Option, Schema } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.requiredToOptional(Schema.String, Schema.String, {
     decode: Option.liftPredicate((s) => s !== ""),
-    encode: Option.getOrElse(() => "")
-  })
-})
+    encode: Option.getOrElse(() => ""),
+  }),
+});
 ```
 
 v4
 
 ```ts
-import { Option, Schema, SchemaGetter } from "effect"
+import { Option, Schema, SchemaGetter } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.String.pipe(
     Schema.decodeTo(Schema.optionalKey(Schema.String), {
-      decode: SchemaGetter.transformOptional(Option.filter((value) => value !== "")),
-      encode: SchemaGetter.transformOptional(Option.orElseSome(() => ""))
+      decode: SchemaGetter.transformOptional(
+        Option.filter((value) => value !== "")
+      ),
+      encode: SchemaGetter.transformOptional(Option.orElseSome(() => "")),
     })
-  )
-})
+  ),
+});
 ```
 
 ### optionalWith
@@ -469,21 +484,21 @@ Key rules:
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Struct({
-  a: Schema.optionalWith(Schema.NumberFromString, { exact: true })
-})
+  a: Schema.optionalWith(Schema.NumberFromString, { exact: true }),
+});
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Struct({
-  a: Schema.optionalKey(Schema.NumberFromString)
-})
+  a: Schema.optionalKey(Schema.NumberFromString),
+});
 ```
 
 #### Example: `{ default }`
@@ -491,21 +506,21 @@ const schema = Schema.Struct({
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Struct({
-  a: Schema.optionalWith(Schema.String, { default: () => "" })
-})
+  a: Schema.optionalWith(Schema.String, { default: () => "" }),
+});
 ```
 
 v4
 
 ```ts
-import { Effect, Schema } from "effect"
+import { Effect, Schema } from "effect";
 
 const schema = Schema.Struct({
-  a: Schema.String.pipe(Schema.withDecodingDefaultType(Effect.succeed("")))
-})
+  a: Schema.String.pipe(Schema.withDecodingDefaultType(Effect.succeed(""))),
+});
 ```
 
 #### Example: `{ exact: true, default }`
@@ -513,21 +528,21 @@ const schema = Schema.Struct({
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Struct({
-  a: Schema.optionalWith(Schema.String, { exact: true, default: () => "" })
-})
+  a: Schema.optionalWith(Schema.String, { exact: true, default: () => "" }),
+});
 ```
 
 v4
 
 ```ts
-import { Effect, Schema } from "effect"
+import { Effect, Schema } from "effect";
 
 const schema = Schema.Struct({
-  a: Schema.String.pipe(Schema.withDecodingDefaultTypeKey(Effect.succeed("")))
-})
+  a: Schema.String.pipe(Schema.withDecodingDefaultTypeKey(Effect.succeed(""))),
+});
 ```
 
 #### Example: `{ nullable: true, exact: true, default }` (most complex case)
@@ -535,28 +550,35 @@ const schema = Schema.Struct({
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Struct({
-  a: Schema.optionalWith(Schema.NumberFromString, { nullable: true, default: () => -1, exact: true })
-})
+  a: Schema.optionalWith(Schema.NumberFromString, {
+    nullable: true,
+    default: () => -1,
+    exact: true,
+  }),
+});
 ```
 
 v4
 
 ```ts
-import { Option, Predicate, Schema, SchemaGetter } from "effect"
+import { Option, Predicate, Schema, SchemaGetter } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.optionalKey(Schema.NullOr(Schema.NumberFromString)).pipe(
     Schema.decodeTo(Schema.Number, {
       decode: SchemaGetter.transformOptional((o) =>
-        o.pipe(Option.filter(Predicate.isNotNull), Option.orElseSome(() => -1))
+        o.pipe(
+          Option.filter(Predicate.isNotNull),
+          Option.orElseSome(() => -1)
+        )
       ),
-      encode: SchemaGetter.required()
+      encode: SchemaGetter.required(),
     })
-  )
-})
+  ),
+});
 ```
 
 ### pluck
@@ -568,15 +590,17 @@ const schema = Schema.Struct({
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(Schema.pluck("a"))
+const schema = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(
+  Schema.pluck("a")
+);
 ```
 
 v4
 
 ```ts
-import { Schema, SchemaGetter, Struct } from "effect"
+import { Schema, SchemaGetter, Struct } from "effect";
 
 function pluck<P extends PropertyKey>(key: P) {
   return <S extends Schema.Top>(
@@ -585,13 +609,15 @@ function pluck<P extends PropertyKey>(key: P) {
     return schema.mapFields(Struct.pick([key])).pipe(
       Schema.decodeTo(Schema.toType(schema.fields[key]), {
         decode: SchemaGetter.transform((whole: any) => whole[key]),
-        encode: SchemaGetter.transform((value) => ({ [key]: value } as any))
+        encode: SchemaGetter.transform((value) => ({ [key]: value }) as any),
       })
-    )
-  }
+    );
+  };
 }
 
-const schema = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(pluck("a"))
+const schema = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(
+  pluck("a")
+);
 ```
 
 ### extend
@@ -605,29 +631,29 @@ const schema = Schema.Struct({ a: Schema.String, b: Schema.Number }).pipe(pluck(
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.String,
-  b: Schema.Number
-}).pipe(Schema.extend(Schema.Struct({ c: Schema.Number })))
+  b: Schema.Number,
+}).pipe(Schema.extend(Schema.Struct({ c: Schema.Number })));
 ```
 
 v4
 
 ```ts
-import { Schema, Struct } from "effect"
+import { Schema, Struct } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.String,
-  b: Schema.Number
-}).mapFields(Struct.assign({ c: Schema.Number }))
+  b: Schema.Number,
+}).mapFields(Struct.assign({ c: Schema.Number }));
 
 // or more succinctly
 const schema2 = Schema.Struct({
   a: Schema.String,
-  b: Schema.Number
-}).pipe(Schema.fieldsAssign({ c: Schema.Number }))
+  b: Schema.Number,
+}).pipe(Schema.fieldsAssign({ c: Schema.Number }));
 ```
 
 #### Union extends Struct
@@ -635,23 +661,23 @@ const schema2 = Schema.Struct({
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Union(
   Schema.Struct({ a: Schema.String }),
   Schema.Struct({ b: Schema.Number })
-).pipe(Schema.extend(Schema.Struct({ c: Schema.Boolean })))
+).pipe(Schema.extend(Schema.Struct({ c: Schema.Boolean })));
 ```
 
 v4
 
 ```ts
-import { Schema, Tuple } from "effect"
+import { Schema, Tuple } from "effect";
 
 const schema = Schema.Union([
   Schema.Struct({ a: Schema.String }),
-  Schema.Struct({ b: Schema.Number })
-]).mapMembers(Tuple.map(Schema.fieldsAssign({ c: Schema.Number })))
+  Schema.Struct({ b: Schema.Number }),
+]).mapMembers(Tuple.map(Schema.fieldsAssign({ c: Schema.Number })));
 ```
 
 ### filter
@@ -661,25 +687,25 @@ const schema = Schema.Union([
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 // inline filter
-const a = Schema.String.pipe(Schema.filter((s) => s.length > 0))
+const a = Schema.String.pipe(Schema.filter((s) => s.length > 0));
 
 // refinement
-const b = Schema.Option(Schema.String).pipe(Schema.filter(Option.isSome))
+const b = Schema.Option(Schema.String).pipe(Schema.filter(Option.isSome));
 ```
 
 v4
 
 ```ts
-import { Option, Schema } from "effect"
+import { Option, Schema } from "effect";
 
 // inline filter
-const a = Schema.String.check(Schema.makeFilter((s) => s.length > 0))
+const a = Schema.String.check(Schema.makeFilter((s) => s.length > 0));
 
 // refinement
-const b = Schema.Option(Schema.String).pipe(Schema.refine(Option.isSome))
+const b = Schema.Option(Schema.String).pipe(Schema.refine(Option.isSome));
 ```
 
 In v4, a `makeFilter` predicate can return any of the shapes described by `Schema.FilterOutput`:
@@ -694,17 +720,27 @@ In v4, a `makeFilter` predicate can return any of the shapes described by `Schem
 **Example** (Failure at a nested path)
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Struct({ password: Schema.String, confirmPassword: Schema.String }).check(
+const schema = Schema.Struct({
+  password: Schema.String,
+  confirmPassword: Schema.String,
+}).check(
   Schema.makeFilter((o) =>
     o.password === o.confirmPassword
       ? undefined
       : { path: ["password"], issue: "password and confirmPassword must match" }
   )
-)
+);
 
-console.log(String(Schema.decodeUnknownExit(schema)({ password: "123456", confirmPassword: "1234567" })))
+console.log(
+  String(
+    Schema.decodeUnknownExit(schema)({
+      password: "123456",
+      confirmPassword: "1234567",
+    })
+  )
+);
 // Failure(Cause([Fail(SchemaError: password and confirmPassword must match
 //   at ["password"])]))
 ```
@@ -712,20 +748,26 @@ console.log(String(Schema.decodeUnknownExit(schema)({ password: "123456", confir
 **Example** (Reporting multiple failures at once)
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Struct({ a: Schema.Finite, b: Schema.Finite, c: Schema.Finite }).check(
+const schema = Schema.Struct({
+  a: Schema.Finite,
+  b: Schema.Finite,
+  c: Schema.Finite,
+}).check(
   Schema.makeFilter((o) => {
-    const issues: Array<Schema.FilterIssue> = []
+    const issues: Array<Schema.FilterIssue> = [];
     if (o.a > 0) {
-      if (o.b <= 0) issues.push({ path: ["b"], issue: "b must be greater than 0" })
-      if (o.c <= 0) issues.push({ path: ["c"], issue: "c must be greater than 0" })
+      if (o.b <= 0)
+        issues.push({ path: ["b"], issue: "b must be greater than 0" });
+      if (o.c <= 0)
+        issues.push({ path: ["c"], issue: "c must be greater than 0" });
     }
-    return issues
+    return issues;
   })
-)
+);
 
-console.log(String(Schema.decodeUnknownExit(schema)({ a: 1, b: 0, c: 0 })))
+console.log(String(Schema.decodeUnknownExit(schema)({ a: 1, b: 0, c: 0 })));
 // Failure(Cause([Fail(SchemaError: b must be greater than 0
 //   at ["b"]
 // c must be greater than 0
@@ -741,36 +783,40 @@ console.log(String(Schema.decodeUnknownExit(schema)({ a: 1, b: 0, c: 0 })))
 v3
 
 ```ts
-import { Effect, Schema } from "effect"
+import { Effect, Schema } from "effect";
 
 async function validateUsername(username: string) {
-  return Promise.resolve(username === "gcanti")
+  return Promise.resolve(username === "gcanti");
 }
 
 const ValidUsername = Schema.String.pipe(
   Schema.filterEffect((username) =>
-    Effect.promise(() => validateUsername(username).then((valid) => valid || "Invalid username"))
+    Effect.promise(() =>
+      validateUsername(username).then((valid) => valid || "Invalid username")
+    )
   )
-)
+);
 ```
 
 v4
 
 ```ts
-import { Effect, Result, Schema, SchemaGetter } from "effect"
+import { Effect, Result, Schema, SchemaGetter } from "effect";
 
 async function validateUsername(username: string) {
-  return Promise.resolve(username === "gcanti")
+  return Promise.resolve(username === "gcanti");
 }
 
 const ValidUsername = Schema.String.pipe(
   Schema.decode({
     decode: SchemaGetter.checkEffect((username) =>
-      Effect.promise(() => validateUsername(username).then((valid) => valid || "Invalid username"))
+      Effect.promise(() =>
+        validateUsername(username).then((valid) => valid || "Invalid username")
+      )
     ),
-    encode: SchemaGetter.passthrough()
+    encode: SchemaGetter.passthrough(),
   })
-)
+);
 ```
 
 ### transform
@@ -782,29 +828,33 @@ const ValidUsername = Schema.String.pipe(
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const BooleanFromString = Schema.transform(Schema.Literal("on", "off"), Schema.Boolean, {
-  strict: true,
-  decode: (literal) => literal === "on",
-  encode: (bool) => (bool ? "on" : "off")
-})
+const BooleanFromString = Schema.transform(
+  Schema.Literal("on", "off"),
+  Schema.Boolean,
+  {
+    strict: true,
+    decode: (literal) => literal === "on",
+    encode: (bool) => (bool ? "on" : "off"),
+  }
+);
 ```
 
 v4
 
 ```ts
-import { Schema, SchemaTransformation } from "effect"
+import { Schema, SchemaTransformation } from "effect";
 
 const BooleanFromString = Schema.Literals(["on", "off"]).pipe(
   Schema.decodeTo(
     Schema.Boolean,
     SchemaTransformation.transform({
       decode: (literal) => literal === "on",
-      encode: (bool) => (bool ? "on" : "off")
+      encode: (bool) => (bool ? "on" : "off"),
     })
   )
-)
+);
 ```
 
 ### transformOrFail
@@ -816,38 +866,47 @@ const BooleanFromString = Schema.Literals(["on", "off"]).pipe(
 v3
 
 ```ts
-import { ParseResult, Schema } from "effect"
+import { ParseResult, Schema } from "effect";
 
 const NumberFromString = Schema.transformOrFail(Schema.String, Schema.Number, {
   strict: true,
   decode: (input, _, ast) => {
-    const parsed = parseFloat(input)
+    const parsed = parseFloat(input);
     if (isNaN(parsed)) {
-      return ParseResult.fail(new ParseResult.Type(ast, input, "Failed to convert string to number"))
+      return ParseResult.fail(
+        new ParseResult.Type(ast, input, "Failed to convert string to number")
+      );
     }
-    return ParseResult.succeed(parsed)
+    return ParseResult.succeed(parsed);
   },
-  encode: (input) => ParseResult.succeed(input.toString())
-})
+  encode: (input) => ParseResult.succeed(input.toString()),
+});
 ```
 
 v4
 
 ```ts
-import { Effect, Number, Option, Schema, SchemaGetter, SchemaIssue } from "effect"
+import {
+  Effect,
+  Number,
+  Option,
+  Schema,
+  SchemaGetter,
+  SchemaIssue,
+} from "effect";
 
 const NumberFromString = Schema.String.pipe(
   Schema.decodeTo(Schema.Number, {
     decode: SchemaGetter.transformOrFail((s) => {
-      const n = Number.parse(s)
+      const n = Number.parse(s);
       if (n === undefined) {
-        return Effect.fail(new SchemaIssue.InvalidValue(Option.some(s)))
+        return Effect.fail(new SchemaIssue.InvalidValue(Option.some(s)));
       }
-      return Effect.succeed(n)
+      return Effect.succeed(n);
     }),
-    encode: SchemaGetter.String()
+    encode: SchemaGetter.String(),
   })
-)
+);
 ```
 
 ### transformLiteral / transformLiterals
@@ -857,19 +916,19 @@ const NumberFromString = Schema.String.pipe(
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const a = Schema.transformLiteral(0, "a")
-const b = Schema.transformLiterals([0, "a"], [1, "b"], [2, "c"])
+const a = Schema.transformLiteral(0, "a");
+const b = Schema.transformLiterals([0, "a"], [1, "b"], [2, "c"]);
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const a = Schema.Literal(0).transform("a")
-const b = Schema.Literals([0, 1, 2]).transform(["a", "b", "c"])
+const a = Schema.Literal(0).transform("a");
+const b = Schema.Literals([0, 1, 2]).transform(["a", "b", "c"]);
 ```
 
 ### attachPropertySignature
@@ -879,29 +938,35 @@ const b = Schema.Literals([0, 1, 2]).transform(["a", "b", "c"])
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const Circle = Schema.Struct({ radius: Schema.Number })
-const Square = Schema.Struct({ sideLength: Schema.Number })
+const Circle = Schema.Struct({ radius: Schema.Number });
+const Square = Schema.Struct({ sideLength: Schema.Number });
 
 const DiscriminatedShape = Schema.Union(
   Circle.pipe(Schema.attachPropertySignature("kind", "circle")),
   Square.pipe(Schema.attachPropertySignature("kind", "square"))
-)
+);
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const Circle = Schema.Struct({ radius: Schema.Number })
-const Square = Schema.Struct({ sideLength: Schema.Number })
+const Circle = Schema.Struct({ radius: Schema.Number });
+const Square = Schema.Struct({ sideLength: Schema.Number });
 
 const DiscriminatedShape = Schema.Union([
-  Circle.mapFields((fields) => ({ ...fields, kind: Schema.tagDefaultOmit("circle") })),
-  Square.mapFields((fields) => ({ ...fields, kind: Schema.tagDefaultOmit("square") }))
-])
+  Circle.mapFields((fields) => ({
+    ...fields,
+    kind: Schema.tagDefaultOmit("circle"),
+  })),
+  Square.mapFields((fields) => ({
+    ...fields,
+    kind: Schema.tagDefaultOmit("square"),
+  })),
+]);
 ```
 
 ### decodingFallback
@@ -911,19 +976,21 @@ const DiscriminatedShape = Schema.Union([
 v3
 
 ```ts
-import { Effect, Schema } from "effect"
+import { Effect, Schema } from "effect";
 
 const schema = Schema.String.annotations({
-  decodingFallback: () => Effect.succeed("a")
-})
+  decodingFallback: () => Effect.succeed("a"),
+});
 ```
 
 v4
 
 ```ts
-import { Effect, Schema } from "effect"
+import { Effect, Schema } from "effect";
 
-const schema = Schema.String.pipe(Schema.catchDecoding(() => Effect.succeedSome("a")))
+const schema = Schema.String.pipe(
+  Schema.catchDecoding(() => Effect.succeedSome("a"))
+);
 ```
 
 ### rename
@@ -935,24 +1002,24 @@ const schema = Schema.String.pipe(Schema.catchDecoding(() => Effect.succeedSome(
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 const schema = Schema.Struct({
   a: Schema.String,
-  b: Schema.Number
-}).pipe(Schema.rename({ a: "c" }))
+  b: Schema.Number,
+}).pipe(Schema.rename({ a: "c" }));
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 // experimental API
 const schema = Schema.Struct({
   a: Schema.String,
-  b: Schema.Number
-}).pipe(Schema.encodeKeys({ a: "c" }))
+  b: Schema.Number,
+}).pipe(Schema.encodeKeys({ a: "c" }));
 ```
 
 ### Capitalize / Lowercase / Uppercase / Uncapitalize
@@ -964,19 +1031,22 @@ const schema = Schema.Struct({
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Capitalize
+const schema = Schema.Capitalize;
 ```
 
 v4
 
 ```ts
-import { Schema, SchemaTransformation } from "effect"
+import { Schema, SchemaTransformation } from "effect";
 
 const schema = Schema.String.pipe(
-  Schema.decodeTo(Schema.String.check(Schema.isCapitalized()), SchemaTransformation.capitalize())
-)
+  Schema.decodeTo(
+    Schema.String.check(Schema.isCapitalized()),
+    SchemaTransformation.capitalize()
+  )
+);
 ```
 
 ### NonEmptyTrimmedString
@@ -986,17 +1056,17 @@ const schema = Schema.String.pipe(
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.NonEmptyTrimmedString
+const schema = Schema.NonEmptyTrimmedString;
 ```
 
 v4
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.Trimmed.check(Schema.isNonEmpty())
+const schema = Schema.Trimmed.check(Schema.isNonEmpty());
 ```
 
 ### split
@@ -1008,15 +1078,15 @@ const schema = Schema.Trimmed.check(Schema.isNonEmpty())
 v3
 
 ```ts
-import { Schema } from "effect"
+import { Schema } from "effect";
 
-const schema = Schema.split(",")
+const schema = Schema.split(",");
 ```
 
 v4
 
 ```ts
-import { Schema, SchemaTransformation } from "effect"
+import { Schema, SchemaTransformation } from "effect";
 
 function split(separator: string) {
   return Schema.String.pipe(
@@ -1024,9 +1094,9 @@ function split(separator: string) {
       Schema.Array(Schema.String),
       SchemaTransformation.transform({
         decode: (s) => s.split(separator) as ReadonlyArray<string>,
-        encode: (as) => as.join(separator)
+        encode: (as) => as.join(separator),
       })
     )
-  )
+  );
 }
 ```

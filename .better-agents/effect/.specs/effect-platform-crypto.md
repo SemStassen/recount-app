@@ -44,45 +44,60 @@ The current base `Random` service is not cryptographically secure because its de
 Add `packages/effect/src/Crypto.ts`.
 
 ```ts
-import * as Context from "./Context.ts"
-import * as Clock from "./Clock.ts"
-import type * as Effect from "./Effect.ts"
-import type { PlatformError } from "./PlatformError.ts"
-import type * as Random from "./Random.ts"
+import * as Context from "./Context.ts";
+import * as Clock from "./Clock.ts";
+import type * as Effect from "./Effect.ts";
+import type { PlatformError } from "./PlatformError.ts";
+import type * as Random from "./Random.ts";
 
-const TypeId = "~effect/platform/Crypto"
+const TypeId = "~effect/platform/Crypto";
 
-export type DigestAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512"
+export type DigestAlgorithm = "SHA-1" | "SHA-256" | "SHA-384" | "SHA-512";
 
 export interface Crypto extends Random.Random {
-  readonly [TypeId]: typeof TypeId
+  readonly [TypeId]: typeof TypeId;
 
   readonly randomBytes: (
     size: number
-  ) => Effect.Effect<Uint8Array, PlatformError>
+  ) => Effect.Effect<Uint8Array, PlatformError>;
 
   readonly digest: (
     algorithm: DigestAlgorithm,
     data: Uint8Array
-  ) => Effect.Effect<Uint8Array, PlatformError>
+  ) => Effect.Effect<Uint8Array, PlatformError>;
 
-  readonly random: Effect.Effect<number>
-  readonly randomBoolean: Effect.Effect<boolean>
-  readonly randomInt: Effect.Effect<number>
-  readonly randomBetween: (min: number, max: number) => Effect.Effect<number>
+  readonly random: Effect.Effect<number>;
+  readonly randomBoolean: Effect.Effect<boolean>;
+  readonly randomInt: Effect.Effect<number>;
+  readonly randomBetween: (min: number, max: number) => Effect.Effect<number>;
   readonly randomIntBetween: (
     min: number,
     max: number,
     options?: { readonly halfOpen?: boolean | undefined }
-  ) => Effect.Effect<number>
-  readonly randomShuffle: <A>(elements: Iterable<A>) => Effect.Effect<Array<A>>
-  readonly randomUUIDv4: Effect.Effect<string, PlatformError>
-  readonly randomUUIDv7: Effect.Effect<string, PlatformError>
+  ) => Effect.Effect<number>;
+  readonly randomShuffle: <A>(elements: Iterable<A>) => Effect.Effect<Array<A>>;
+  readonly randomUUIDv4: Effect.Effect<string, PlatformError>;
+  readonly randomUUIDv7: Effect.Effect<string, PlatformError>;
 }
 
-export const Crypto: Context.Service<Crypto, Crypto> = Context.Service("effect/platform/Crypto")
+export const Crypto: Context.Service<Crypto, Crypto> = Context.Service(
+  "effect/platform/Crypto"
+);
 
-export const make: (impl: Omit<Crypto, typeof TypeId | "random" | "randomBoolean" | "randomInt" | "randomBetween" | "randomIntBetween" | "randomShuffle" | "randomUUIDv4" | "randomUUIDv7">) => Crypto
+export const make: (
+  impl: Omit<
+    Crypto,
+    | typeof TypeId
+    | "random"
+    | "randomBoolean"
+    | "randomInt"
+    | "randomBetween"
+    | "randomIntBetween"
+    | "randomShuffle"
+    | "randomUUIDv4"
+    | "randomUUIDv7"
+  >
+) => Crypto;
 ```
 
 ## Functional Requirements

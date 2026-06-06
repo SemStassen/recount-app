@@ -45,24 +45,24 @@
  *
  * @since 2.0.0
  */
-import type * as Cause from "./Cause.ts"
-import { Clock } from "./Clock.ts"
-import * as Context from "./Context.ts"
-import * as Duration from "./Duration.ts"
-import * as Effect from "./Effect.ts"
-import type * as Exit from "./Exit.ts"
-import * as Fiber from "./Fiber.ts"
-import { dual, identity } from "./Function.ts"
-import * as Iterable from "./Iterable.ts"
-import * as Latch from "./Latch.ts"
-import { type Pipeable, pipeArguments } from "./Pipeable.ts"
-import { hasProperty } from "./Predicate.ts"
-import * as Queue from "./Queue.ts"
-import { UnhandledLogLevel } from "./References.ts"
-import * as Scope from "./Scope.ts"
-import * as Semaphore from "./Semaphore.ts"
+import type * as Cause from "./Cause.ts";
+import { Clock } from "./Clock.ts";
+import * as Context from "./Context.ts";
+import * as Duration from "./Duration.ts";
+import * as Effect from "./Effect.ts";
+import type * as Exit from "./Exit.ts";
+import * as Fiber from "./Fiber.ts";
+import { dual, identity } from "./Function.ts";
+import * as Iterable from "./Iterable.ts";
+import * as Latch from "./Latch.ts";
+import { type Pipeable, pipeArguments } from "./Pipeable.ts";
+import { hasProperty } from "./Predicate.ts";
+import * as Queue from "./Queue.ts";
+import { UnhandledLogLevel } from "./References.ts";
+import * as Scope from "./Scope.ts";
+import * as Semaphore from "./Semaphore.ts";
 
-const TypeId = "~effect/Pool"
+const TypeId = "~effect/Pool";
 
 /**
  * A `Pool<A, E>` is a pool of items of type `A`, each of which may be
@@ -84,9 +84,9 @@ const TypeId = "~effect/Pool"
  * @since 2.0.0
  */
 export interface Pool<in out A, in out E = never> extends Pipeable {
-  readonly [TypeId]: typeof TypeId
-  readonly config: Config<A, E>
-  readonly state: State<A, E>
+  readonly [TypeId]: typeof TypeId;
+  readonly config: Config<A, E>;
+  readonly state: State<A, E>;
 }
 
 /**
@@ -110,12 +110,12 @@ export interface Pool<in out A, in out E = never> extends Pipeable {
  * @since 4.0.0
  */
 export interface Config<A, E> {
-  readonly acquire: Effect.Effect<A, E, Scope.Scope>
-  readonly concurrency: number
-  readonly minSize: number
-  readonly maxSize: number
-  readonly strategy: Strategy<A, E>
-  readonly targetUtilization: number
+  readonly acquire: Effect.Effect<A, E, Scope.Scope>;
+  readonly concurrency: number;
+  readonly minSize: number;
+  readonly maxSize: number;
+  readonly strategy: Strategy<A, E>;
+  readonly targetUtilization: number;
 }
 
 /**
@@ -143,15 +143,15 @@ export interface Config<A, E> {
  * @since 4.0.0
  */
 export interface State<A, E> {
-  readonly scope: Scope.Scope
-  isShuttingDown: boolean
-  readonly semaphore: Semaphore.Semaphore
-  readonly resizeSemaphore: Semaphore.Semaphore
-  readonly items: Set<PoolItem<A, E>>
-  readonly available: Set<PoolItem<A, E>>
-  readonly availableLatch: Latch.Latch
-  readonly invalidated: Set<PoolItem<A, E>>
-  waiters: number
+  readonly scope: Scope.Scope;
+  isShuttingDown: boolean;
+  readonly semaphore: Semaphore.Semaphore;
+  readonly resizeSemaphore: Semaphore.Semaphore;
+  readonly items: Set<PoolItem<A, E>>;
+  readonly available: Set<PoolItem<A, E>>;
+  readonly availableLatch: Latch.Latch;
+  readonly invalidated: Set<PoolItem<A, E>>;
+  waiters: number;
 }
 
 /**
@@ -176,10 +176,10 @@ export interface State<A, E> {
  * @since 4.0.0
  */
 export interface PoolItem<A, E> {
-  readonly exit: Exit.Exit<A, E>
-  finalizer: Effect.Effect<void>
-  refCount: number
-  disableReclaim: boolean
+  readonly exit: Exit.Exit<A, E>;
+  finalizer: Effect.Effect<void>;
+  refCount: number;
+  disableReclaim: boolean;
 }
 
 /**
@@ -203,9 +203,11 @@ export interface PoolItem<A, E> {
  * @since 4.0.0
  */
 export interface Strategy<A, E> {
-  readonly run: (pool: Pool<A, E>) => Effect.Effect<void>
-  readonly onAcquire: (item: PoolItem<A, E>) => Effect.Effect<void>
-  readonly reclaim: (pool: Pool<A, E>) => Effect.Effect<PoolItem<A, E> | undefined>
+  readonly run: (pool: Pool<A, E>) => Effect.Effect<void>;
+  readonly onAcquire: (item: PoolItem<A, E>) => Effect.Effect<void>;
+  readonly reclaim: (
+    pool: Pool<A, E>
+  ) => Effect.Effect<PoolItem<A, E> | undefined>;
 }
 
 /**
@@ -223,7 +225,8 @@ export interface Strategy<A, E> {
  * @category refinements
  * @since 2.0.0
  */
-export const isPool = (u: unknown): u is Pool<unknown, unknown> => hasProperty(u, TypeId)
+export const isPool = (u: unknown): u is Pool<unknown, unknown> =>
+  hasProperty(u, TypeId);
 
 /**
  * Makes a new pool of the specified fixed size.
@@ -254,12 +257,17 @@ export const isPool = (u: unknown): u is Pool<unknown, unknown> => hasProperty(u
  * @since 2.0.0
  */
 export const make = <A, E, R>(options: {
-  readonly acquire: Effect.Effect<A, E, R>
-  readonly size: number
-  readonly concurrency?: number | undefined
-  readonly targetUtilization?: number | undefined
+  readonly acquire: Effect.Effect<A, E, R>;
+  readonly size: number;
+  readonly concurrency?: number | undefined;
+  readonly targetUtilization?: number | undefined;
 }): Effect.Effect<Pool<A, E>, never, R | Scope.Scope> =>
-  makeWithStrategy({ ...options, min: options.size, max: options.size, strategy: strategyNoop() })
+  makeWithStrategy({
+    ...options,
+    min: options.size,
+    max: options.size,
+    strategy: strategyNoop(),
+  });
 
 /**
  * Creates a scoped pool with minimum and maximum sizes and a time-to-live
@@ -319,20 +327,20 @@ export const make = <A, E, R>(options: {
  * @since 2.0.0
  */
 export const makeWithTTL = <A, E, R>(options: {
-  readonly acquire: Effect.Effect<A, E, R>
-  readonly min: number
-  readonly max: number
-  readonly concurrency?: number | undefined
-  readonly targetUtilization?: number | undefined
-  readonly timeToLive: Duration.Input
-  readonly timeToLiveStrategy?: "creation" | "usage" | undefined
+  readonly acquire: Effect.Effect<A, E, R>;
+  readonly min: number;
+  readonly max: number;
+  readonly concurrency?: number | undefined;
+  readonly targetUtilization?: number | undefined;
+  readonly timeToLive: Duration.Input;
+  readonly timeToLiveStrategy?: "creation" | "usage" | undefined;
 }): Effect.Effect<Pool<A, E>, never, R | Scope.Scope> =>
   Effect.flatMap(
-    options.timeToLiveStrategy === "creation" ?
-      strategyCreationTTL<A, E>(options.timeToLive) :
-      strategyUsageTTL<A, E>(options.timeToLive),
+    options.timeToLiveStrategy === "creation"
+      ? strategyCreationTTL<A, E>(options.timeToLive)
+      : strategyUsageTTL<A, E>(options.timeToLive),
     (strategy) => makeWithStrategy({ ...options, strategy })
-  )
+  );
 
 /**
  * Creates a scoped pool using a custom resizing and reclamation strategy.
@@ -355,82 +363,85 @@ export const makeWithTTL = <A, E, R>(options: {
  * @since 4.0.0
  */
 export const makeWithStrategy = <A, E, R>(options: {
-  readonly acquire: Effect.Effect<A, E, R>
-  readonly min: number
-  readonly max: number
-  readonly concurrency?: number | undefined
-  readonly targetUtilization?: number | undefined
-  readonly strategy: Strategy<A, E>
+  readonly acquire: Effect.Effect<A, E, R>;
+  readonly min: number;
+  readonly max: number;
+  readonly concurrency?: number | undefined;
+  readonly targetUtilization?: number | undefined;
+  readonly strategy: Strategy<A, E>;
 }): Effect.Effect<Pool<A, E>, never, Scope.Scope | R> =>
-  Effect.uninterruptibleMask(Effect.fnUntraced(function*(restore) {
-    const services = yield* Effect.context<R | Scope.Scope>()
-    const scope = Context.get(services, Scope.Scope)
-    const acquire = Effect.updateContext(
-      options.acquire,
-      (input) => Context.merge(services, input)
-    ) as Effect.Effect<A, E, Scope.Scope>
-    const concurrency = options.concurrency ?? 1
+  Effect.uninterruptibleMask(
+    Effect.fnUntraced(function* (restore) {
+      const services = yield* Effect.context<R | Scope.Scope>();
+      const scope = Context.get(services, Scope.Scope);
+      const acquire = Effect.updateContext(options.acquire, (input) =>
+        Context.merge(services, input)
+      ) as Effect.Effect<A, E, Scope.Scope>;
+      const concurrency = options.concurrency ?? 1;
 
-    const config: Config<A, E> = {
-      acquire,
-      concurrency,
-      minSize: options.min,
-      maxSize: options.max,
-      strategy: options.strategy,
-      targetUtilization: Math.min(Math.max(options.targetUtilization ?? 1, 0.1), 1)
-    }
-    const state: State<A, E> = {
-      scope,
-      isShuttingDown: false,
-      semaphore: Semaphore.makeUnsafe(concurrency * options.max),
-      resizeSemaphore: Semaphore.makeUnsafe(1),
-      items: new Set(),
-      available: new Set(),
-      availableLatch: Latch.makeUnsafe(false),
-      invalidated: new Set(),
-      waiters: 0
-    }
-    const self: Pool<A, E> = {
-      [TypeId]: TypeId,
-      config,
-      state,
-      pipe() {
-        return pipeArguments(this, arguments)
-      }
-    }
-    yield* Scope.addFinalizer(scope, shutdown(self))
-    yield* Effect.tap(
-      Effect.forkDetach(restore(resize(self))),
-      (fiber) => Scope.addFinalizer(scope, Fiber.interrupt(fiber))
-    )
-    yield* Effect.tap(
-      Effect.forkDetach(restore(options.strategy.run(self))),
-      (fiber) => Scope.addFinalizer(scope, Fiber.interrupt(fiber))
-    )
-    return self
-  }))
+      const config: Config<A, E> = {
+        acquire,
+        concurrency,
+        minSize: options.min,
+        maxSize: options.max,
+        strategy: options.strategy,
+        targetUtilization: Math.min(
+          Math.max(options.targetUtilization ?? 1, 0.1),
+          1
+        ),
+      };
+      const state: State<A, E> = {
+        scope,
+        isShuttingDown: false,
+        semaphore: Semaphore.makeUnsafe(concurrency * options.max),
+        resizeSemaphore: Semaphore.makeUnsafe(1),
+        items: new Set(),
+        available: new Set(),
+        availableLatch: Latch.makeUnsafe(false),
+        invalidated: new Set(),
+        waiters: 0,
+      };
+      const self: Pool<A, E> = {
+        [TypeId]: TypeId,
+        config,
+        state,
+        pipe() {
+          return pipeArguments(this, arguments);
+        },
+      };
+      yield* Scope.addFinalizer(scope, shutdown(self));
+      yield* Effect.tap(Effect.forkDetach(restore(resize(self))), (fiber) =>
+        Scope.addFinalizer(scope, Fiber.interrupt(fiber))
+      );
+      yield* Effect.tap(
+        Effect.forkDetach(restore(options.strategy.run(self))),
+        (fiber) => Scope.addFinalizer(scope, Fiber.interrupt(fiber))
+      );
+      return self;
+    })
+  );
 
-const shutdown = Effect.fnUntraced(function*<A, E>(self: Pool<A, E>) {
-  if (self.state.isShuttingDown) return
-  self.state.isShuttingDown = true
-  const size = self.state.items.size
-  const semaphore = Semaphore.makeUnsafe(size)
+const shutdown = Effect.fnUntraced(function* <A, E>(self: Pool<A, E>) {
+  if (self.state.isShuttingDown) return;
+  self.state.isShuttingDown = true;
+  const size = self.state.items.size;
+  const semaphore = Semaphore.makeUnsafe(size);
   for (const item of self.state.items) {
     if (item.refCount > 0) {
-      item.finalizer = Effect.tap(item.finalizer, semaphore.release(1))
-      self.state.invalidated.add(item)
-      yield* semaphore.take(1)
+      item.finalizer = Effect.tap(item.finalizer, semaphore.release(1));
+      self.state.invalidated.add(item);
+      yield* semaphore.take(1);
     } else {
-      self.state.items.delete(item)
-      self.state.available.delete(item)
-      self.state.invalidated.delete(item)
-      yield* item.finalizer
+      self.state.items.delete(item);
+      self.state.available.delete(item);
+      self.state.invalidated.delete(item);
+      yield* item.finalizer;
     }
   }
-  yield* semaphore.releaseAll
-  self.state.availableLatch.openUnsafe()
-  yield* semaphore.take(size)
-})
+  yield* semaphore.releaseAll;
+  self.state.availableLatch.openUnsafe();
+  yield* semaphore.take(size);
+});
 
 /**
  * Retrieves an item from the pool in a scoped effect.
@@ -457,12 +468,14 @@ const shutdown = Effect.fnUntraced(function*<A, E>(self: Pool<A, E>) {
 export const get = <A, E>(self: Pool<A, E>): Effect.Effect<A, E, Scope.Scope> =>
   Effect.suspend(() => {
     if (self.state.isShuttingDown) {
-      return Effect.interrupt
+      return Effect.interrupt;
     }
-    return Effect.flatMap(getPoolItem(self), (item) => item.exit)
-  })
+    return Effect.flatMap(getPoolItem(self), (item) => item.exit);
+  });
 
-const getPoolItem = <A, E>(self: Pool<A, E>): Effect.Effect<PoolItem<A, E>, never, Scope.Scope> =>
+const getPoolItem = <A, E>(
+  self: Pool<A, E>
+): Effect.Effect<PoolItem<A, E>, never, Scope.Scope> =>
   Effect.uninterruptibleMask((restore) =>
     restore(self.state.semaphore.take(1)).pipe(
       Effect.flatMap(() => Effect.scope),
@@ -471,57 +484,56 @@ const getPoolItem = <A, E>(self: Pool<A, E>): Effect.Effect<PoolItem<A, E>, neve
           Effect.ensuring(Effect.sync(() => self.state.waiters--)),
           Effect.tap((item) => {
             if (item.exit._tag === "Failure") {
-              self.state.items.delete(item)
-              self.state.invalidated.delete(item)
-              self.state.available.delete(item)
-              return self.state.semaphore.release(1)
+              self.state.items.delete(item);
+              self.state.invalidated.delete(item);
+              self.state.available.delete(item);
+              return self.state.semaphore.release(1);
             }
-            item.refCount++
-            self.state.available.delete(item)
+            item.refCount++;
+            self.state.available.delete(item);
             if (item.refCount < self.config.concurrency) {
-              self.state.available.add(item)
+              self.state.available.add(item);
             }
             return Scope.addFinalizerExit(scope, () =>
               Effect.flatMap(
                 Effect.suspend(() => {
-                  item.refCount--
+                  item.refCount--;
                   if (self.state.invalidated.has(item)) {
-                    return invalidatePoolItem(self, item)
+                    return invalidatePoolItem(self, item);
                   }
-                  self.state.available.add(item)
-                  return Effect.void
+                  self.state.available.add(item);
+                  return Effect.void;
                 }),
                 () => self.state.semaphore.release(1)
-              ))
+              )
+            );
           }),
           Effect.onInterrupt(() => self.state.semaphore.release(1))
         )
       )
     )
-  )
+  );
 
-const getPoolItemInner = Effect.fnUntraced(function*<A, E>(
-  self: Pool<A, E>
-) {
-  self.state.waiters++
+const getPoolItemInner = Effect.fnUntraced(function* <A, E>(self: Pool<A, E>) {
+  self.state.waiters++;
   if (self.state.isShuttingDown) {
-    return yield* Effect.interrupt
+    return yield* Effect.interrupt;
   } else if (targetSize(self) > activeSize(self)) {
     while (true) {
       yield* self.state.resizeSemaphore.withPermitsIfAvailable(1)(
         Effect.forkIn(Effect.interruptible(resize(self)), self.state.scope)
-      )
+      );
       if (self.state.isShuttingDown) {
-        return yield* Effect.interrupt
+        return yield* Effect.interrupt;
       } else if (self.state.available.size > 0) {
-        return Iterable.headUnsafe(self.state.available)
+        return Iterable.headUnsafe(self.state.available);
       }
-      self.state.availableLatch.closeUnsafe()
-      yield* self.state.availableLatch.await
+      self.state.availableLatch.closeUnsafe();
+      yield* self.state.availableLatch.await;
     }
   }
-  return Iterable.headUnsafe(self.state.available)
-})
+  return Iterable.headUnsafe(self.state.available);
+});
 
 /**
  * Invalidates the specified item so the pool can remove it and reallocate the
@@ -543,56 +555,69 @@ const getPoolItemInner = Effect.fnUntraced(function*<A, E>(
  * @since 2.0.0
  */
 export const invalidate: {
-  <A>(item: A): <E>(self: Pool<A, E>) => Effect.Effect<void, never, Scope.Scope>
-  <A, E>(self: Pool<A, E>, item: A): Effect.Effect<void, never, Scope.Scope>
-} = dual(2, <A, E>(self: Pool<A, E>, item: A): Effect.Effect<void, never, Scope.Scope> =>
-  Effect.suspend(() => {
-    if (self.state.isShuttingDown) return Effect.void
-    for (const poolItem of self.state.items) {
-      if (poolItem.exit._tag === "Success" && poolItem.exit.value === item) {
-        poolItem.disableReclaim = true
-        return Effect.uninterruptible(invalidatePoolItem(self, poolItem))
+  <A>(
+    item: A
+  ): <E>(self: Pool<A, E>) => Effect.Effect<void, never, Scope.Scope>;
+  <A, E>(self: Pool<A, E>, item: A): Effect.Effect<void, never, Scope.Scope>;
+} = dual(
+  2,
+  <A, E>(self: Pool<A, E>, item: A): Effect.Effect<void, never, Scope.Scope> =>
+    Effect.suspend(() => {
+      if (self.state.isShuttingDown) return Effect.void;
+      for (const poolItem of self.state.items) {
+        if (poolItem.exit._tag === "Success" && poolItem.exit.value === item) {
+          poolItem.disableReclaim = true;
+          return Effect.uninterruptible(invalidatePoolItem(self, poolItem));
+        }
       }
-    }
-    return Effect.void
-  }))
+      return Effect.void;
+    })
+);
 
-const invalidatePoolItem = <A, E>(self: Pool<A, E>, poolItem: PoolItem<A, E>): Effect.Effect<void> =>
+const invalidatePoolItem = <A, E>(
+  self: Pool<A, E>,
+  poolItem: PoolItem<A, E>
+): Effect.Effect<void> =>
   Effect.suspend(() => {
     if (!self.state.items.has(poolItem)) {
-      return Effect.void
+      return Effect.void;
     } else if (poolItem.refCount === 0) {
-      self.state.items.delete(poolItem)
-      self.state.available.delete(poolItem)
-      self.state.invalidated.delete(poolItem)
-      return Effect.asVoid(Effect.flatMap(
-        poolItem.finalizer,
-        () => Effect.forkIn(Effect.interruptible(resize(self)), self.state.scope)
-      ))
+      self.state.items.delete(poolItem);
+      self.state.available.delete(poolItem);
+      self.state.invalidated.delete(poolItem);
+      return Effect.asVoid(
+        Effect.flatMap(poolItem.finalizer, () =>
+          Effect.forkIn(Effect.interruptible(resize(self)), self.state.scope)
+        )
+      );
     }
-    self.state.invalidated.add(poolItem)
-    self.state.available.delete(poolItem)
-    return Effect.void
-  })
+    self.state.invalidated.add(poolItem);
+    self.state.available.delete(poolItem);
+    return Effect.void;
+  });
 
 const resize = <A, E>(self: Pool<A, E>): Effect.Effect<void> =>
-  self.state.resizeSemaphore.withPermits(1)(resizeLoop(self))
+  self.state.resizeSemaphore.withPermits(1)(resizeLoop(self));
 
 const resizeLoop = <A, E>(self: Pool<A, E>): Effect.Effect<void> =>
   Effect.suspend(() => {
-    const active = activeSize(self)
-    const target = targetSize(self)
+    const active = activeSize(self);
+    const target = targetSize(self);
     if (active >= target) {
-      return Effect.void
+      return Effect.void;
     }
-    const toAcquire = target - active
+    const toAcquire = target - active;
     return self.config.strategy.reclaim(self).pipe(
-      Effect.flatMap((item) => item ? Effect.succeed(item) : allocate(self)),
+      Effect.flatMap((item) => (item ? Effect.succeed(item) : allocate(self))),
       Effect.replicateEffect(toAcquire, { concurrency: toAcquire }),
       Effect.tap(self.state.availableLatch.open),
-      Effect.flatMap((items) => items.some((_) => _.exit._tag === "Failure") ? Effect.void : resizeLoop(self))
-    )
-  })
+      Effect.flatMap((items) =>
+        items.some((_) => _.exit._tag === "Failure")
+          ? Effect.void
+          : resizeLoop(self)
+      )
+    );
+  });
 
 const allocate = <A, E>(self: Pool<A, E>): Effect.Effect<PoolItem<A, E>> =>
   Effect.acquireUseRelease(
@@ -604,41 +629,47 @@ const allocate = <A, E>(self: Pool<A, E>): Effect.Effect<PoolItem<A, E>> =>
         Effect.flatMap((exit) => {
           const item: PoolItem<A, E> = {
             exit,
-            finalizer: Effect.catchCause(Scope.close(scope, exit), reportUnhandledError),
+            finalizer: Effect.catchCause(
+              Scope.close(scope, exit),
+              reportUnhandledError
+            ),
             refCount: 0,
-            disableReclaim: false
-          }
-          self.state.items.add(item)
-          self.state.available.add(item)
+            disableReclaim: false,
+          };
+          self.state.items.add(item);
+          self.state.available.add(item);
           return Effect.as(
             exit._tag === "Success"
               ? self.config.strategy.onAcquire(item)
-              : Effect.flatMap(item.finalizer, () => self.config.strategy.onAcquire(item)),
+              : Effect.flatMap(item.finalizer, () =>
+                  self.config.strategy.onAcquire(item)
+                ),
             item
-          )
+          );
         })
       ),
-    (scope, exit) => exit._tag === "Failure" ? Scope.close(scope, exit) : Effect.void
-  )
+    (scope, exit) =>
+      exit._tag === "Failure" ? Scope.close(scope, exit) : Effect.void
+  );
 
 const currentUsage = <A, E>(self: Pool<A, E>) => {
-  let count = self.state.waiters
+  let count = self.state.waiters;
   for (const item of self.state.items) {
-    count += item.refCount
+    count += item.refCount;
   }
-  return count
-}
+  return count;
+};
 
 const targetSize = <A, E>(self: Pool<A, E>) => {
-  if (self.state.isShuttingDown) return 0
-  const utilization = currentUsage(self) / self.config.targetUtilization
-  const target = Math.ceil(utilization / self.config.concurrency)
-  return Math.min(Math.max(self.config.minSize, target), self.config.maxSize)
-}
+  if (self.state.isShuttingDown) return 0;
+  const utilization = currentUsage(self) / self.config.targetUtilization;
+  const target = Math.ceil(utilization / self.config.concurrency);
+  return Math.min(Math.max(self.config.minSize, target), self.config.maxSize);
+};
 
 const activeSize = <A, E>(self: Pool<A, E>) => {
-  return self.state.items.size - self.state.invalidated.size
-}
+  return self.state.items.size - self.state.invalidated.size;
+};
 
 // -----------------------------------------------------------------------------
 // Strategy
@@ -647,89 +678,96 @@ const activeSize = <A, E>(self: Pool<A, E>) => {
 const strategyNoop = <A, E>(): Strategy<A, E> => ({
   run: (_) => Effect.void,
   onAcquire: (_) => Effect.void,
-  reclaim: (_) => Effect.undefined
-})
+  reclaim: (_) => Effect.undefined,
+});
 
-const strategyCreationTTL = Effect.fnUntraced(function*<A, E>(ttl: Duration.Input) {
-  const clock = yield* Clock
-  const queue = yield* Queue.unbounded<PoolItem<A, E>>()
-  const ttlMillis = Duration.toMillis(Duration.fromInputUnsafe(ttl))
-  const creationTimes = new WeakMap<PoolItem<A, E>, number>()
+const strategyCreationTTL = Effect.fnUntraced(function* <A, E>(
+  ttl: Duration.Input
+) {
+  const clock = yield* Clock;
+  const queue = yield* Queue.unbounded<PoolItem<A, E>>();
+  const ttlMillis = Duration.toMillis(Duration.fromInputUnsafe(ttl));
+  const creationTimes = new WeakMap<PoolItem<A, E>, number>();
   return identity<Strategy<A, E>>({
     run: (pool) => {
       const process = (item: PoolItem<A, E>): Effect.Effect<void> =>
         Effect.suspend(() => {
           if (!pool.state.items.has(item) || pool.state.invalidated.has(item)) {
-            return Effect.void
+            return Effect.void;
           }
-          const now = clock.currentTimeMillisUnsafe()
-          const created = creationTimes.get(item)!
-          const remaining = ttlMillis - (now - created)
+          const now = clock.currentTimeMillisUnsafe();
+          const created = creationTimes.get(item)!;
+          const remaining = ttlMillis - (now - created);
           return remaining > 0
             ? Effect.delay(process(item), remaining)
-            : invalidatePoolItem(pool, item)
-        })
+            : invalidatePoolItem(pool, item);
+        });
       return Queue.take(queue).pipe(
         Effect.tap(process),
         Effect.forever({ disableYield: true })
-      )
+      );
     },
     onAcquire: (item) =>
       Effect.suspend(() => {
-        creationTimes.set(item, clock.currentTimeMillisUnsafe())
-        return Queue.offer(queue, item)
+        creationTimes.set(item, clock.currentTimeMillisUnsafe());
+        return Queue.offer(queue, item);
       }),
-    reclaim: (_) => Effect.undefined
-  })
-})
+    reclaim: (_) => Effect.undefined,
+  });
+});
 
-const strategyUsageTTL = Effect.fnUntraced(function*<A, E>(ttl: Duration.Input) {
-  const queue = yield* Queue.unbounded<PoolItem<A, E>>()
+const strategyUsageTTL = Effect.fnUntraced(function* <A, E>(
+  ttl: Duration.Input
+) {
+  const queue = yield* Queue.unbounded<PoolItem<A, E>>();
   return identity<Strategy<A, E>>({
     run: (pool) => {
       const process: Effect.Effect<void> = Effect.suspend(() => {
-        const excess = activeSize(pool) - targetSize(pool)
-        if (excess <= 0) return Effect.void
+        const excess = activeSize(pool) - targetSize(pool);
+        if (excess <= 0) return Effect.void;
         return Queue.take(queue).pipe(
           Effect.tap((item) => invalidatePoolItem(pool, item)),
           Effect.flatMap(() => process)
-        )
-      })
+        );
+      });
       return process.pipe(
         Effect.delay(ttl),
         Effect.forever({ disableYield: true })
-      )
+      );
     },
     onAcquire: (item) => Queue.offer(queue, item),
     reclaim(pool) {
       return Effect.suspend((): Effect.Effect<PoolItem<A, E> | undefined> => {
         if (pool.state.invalidated.size === 0) {
-          return Effect.undefined
+          return Effect.undefined;
         }
         const item = Iterable.head(
-          Iterable.filter(pool.state.invalidated, (item) => !item.disableReclaim)
-        )
+          Iterable.filter(
+            pool.state.invalidated,
+            (item) => !item.disableReclaim
+          )
+        );
         if (item._tag === "None") {
-          return Effect.undefined
+          return Effect.undefined;
         }
-        pool.state.invalidated.delete(item.value)
+        pool.state.invalidated.delete(item.value);
         if (item.value.refCount < pool.config.concurrency) {
-          pool.state.available.add(item.value)
+          pool.state.available.add(item.value);
         }
-        return Effect.as(Queue.offer(queue, item.value), item.value)
-      })
-    }
-  })
-})
+        return Effect.as(Queue.offer(queue, item.value), item.value);
+      });
+    },
+  });
+});
 
 const reportUnhandledError = <E>(cause: Cause.Cause<E>) =>
   Effect.withFiber<void>((fiber) => {
-    const unhandledLogLevel = fiber.getRef(UnhandledLogLevel)
+    const unhandledLogLevel = fiber.getRef(UnhandledLogLevel);
     if (unhandledLogLevel) {
       return Effect.logWithLevel(unhandledLogLevel)(
         "Unhandled error in pool finalizer",
         cause
-      )
+      );
     }
-    return Effect.void
-  })
+    return Effect.void;
+  });

@@ -1,6 +1,7 @@
-import { mergeConfig, type ViteUserConfig } from "vitest/config"
-import shared from "../../vitest.shared.ts"
+import { mergeConfig, type ViteUserConfig } from "vitest/config";
 
-const config: ViteUserConfig = {}
+import shared from "../../vitest.shared.ts";
 
-export default mergeConfig(shared, config)
+const config: ViteUserConfig = {};
+
+export default mergeConfig(shared, config);

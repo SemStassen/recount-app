@@ -48,7 +48,7 @@
  *
  * @since 4.0.0
  */
-import * as Arr from "./Array.ts"
+import * as Arr from "./Array.ts";
 
 /**
  * A mutable linked list data structure optimized for high-throughput operations.
@@ -83,9 +83,9 @@ import * as Arr from "./Array.ts"
  * @since 2.0.0
  */
 export interface MutableList<in out A> {
-  head: MutableList.Bucket<A> | undefined
-  tail: MutableList.Bucket<A> | undefined
-  length: number
+  head: MutableList.Bucket<A> | undefined;
+  tail: MutableList.Bucket<A> | undefined;
+  length: number;
 }
 
 /**
@@ -164,10 +164,10 @@ export declare namespace MutableList {
    * @since 4.0.0
    */
   export interface Bucket<A> {
-    readonly array: Array<A>
-    mutable: boolean
-    offset: number
-    next: Bucket<A> | undefined
+    readonly array: Array<A>;
+    mutable: boolean;
+    offset: number;
+    next: Bucket<A> | undefined;
   }
 }
 
@@ -213,7 +213,7 @@ export declare namespace MutableList {
  * @category symbols
  * @since 4.0.0
  */
-export const Empty: unique symbol = Symbol.for("effect/MutableList/Empty")
+export const Empty: unique symbol = Symbol.for("effect/MutableList/Empty");
 
 /**
  * The type of the Empty symbol, used for type checking when taking elements from a MutableList.
@@ -263,7 +263,7 @@ export const Empty: unique symbol = Symbol.for("effect/MutableList/Empty")
  * @category symbols
  * @since 4.0.0
  */
-export type Empty = typeof Empty
+export type Empty = typeof Empty;
 
 /**
  * Creates an empty MutableList.
@@ -294,15 +294,15 @@ export type Empty = typeof Empty
 export const make = <A>(): MutableList<A> => ({
   head: undefined,
   tail: undefined,
-  length: 0
-})
+  length: 0,
+});
 
 const emptyBucket = <A = never>(): MutableList.Bucket<A> => ({
   array: [],
   mutable: true,
   offset: 0,
-  next: undefined
-})
+  next: undefined,
+});
 
 /**
  * Appends an element to the end of the MutableList.
@@ -338,14 +338,14 @@ const emptyBucket = <A = never>(): MutableList.Bucket<A> => ({
  */
 export const append = <A>(self: MutableList<A>, message: A): void => {
   if (!self.tail) {
-    self.head = self.tail = emptyBucket()
+    self.head = self.tail = emptyBucket();
   } else if (!self.tail.mutable) {
-    self.tail.next = emptyBucket()
-    self.tail = self.tail.next
+    self.tail.next = emptyBucket();
+    self.tail = self.tail.next;
   }
-  self.tail!.array.push(message)
-  self.length++
-}
+  self.tail!.array.push(message);
+  self.length++;
+};
 
 /**
  * Prepends an element to the beginning of the MutableList.
@@ -384,10 +384,10 @@ export const prepend = <A>(self: MutableList<A>, message: A): void => {
     array: [message],
     mutable: true,
     offset: 0,
-    next: self.head
-  }
-  self.length++
-}
+    next: self.head,
+  };
+  self.length++;
+};
 
 /**
  * Prepends all elements from an iterable to the beginning of the MutableList.
@@ -420,8 +420,11 @@ export const prepend = <A>(self: MutableList<A>, message: A): void => {
  * @category mutations
  * @since 4.0.0
  */
-export const prependAll = <A>(self: MutableList<A>, messages: Iterable<A>): void =>
-  prependAllUnsafe(self, Arr.fromIterable(messages), !Array.isArray(messages))
+export const prependAll = <A>(
+  self: MutableList<A>,
+  messages: Iterable<A>
+): void =>
+  prependAllUnsafe(self, Arr.fromIterable(messages), !Array.isArray(messages));
 
 /**
  * Prepends all elements from a ReadonlyArray to the beginning of the MutableList.
@@ -461,15 +464,19 @@ export const prependAll = <A>(self: MutableList<A>, messages: Iterable<A>): void
  * @category mutations
  * @since 4.0.0
  */
-export const prependAllUnsafe = <A>(self: MutableList<A>, messages: ReadonlyArray<A>, mutable = false): void => {
+export const prependAllUnsafe = <A>(
+  self: MutableList<A>,
+  messages: ReadonlyArray<A>,
+  mutable = false
+): void => {
   self.head = {
     array: messages as Array<A>,
     mutable,
     offset: 0,
-    next: self.head
-  }
-  self.length += self.head.array.length
-}
+    next: self.head,
+  };
+  self.length += self.head.array.length;
+};
 
 /**
  * Appends all elements from an iterable to the end of the MutableList.
@@ -509,8 +516,11 @@ export const prependAllUnsafe = <A>(self: MutableList<A>, messages: ReadonlyArra
  * @category mutations
  * @since 4.0.0
  */
-export const appendAll = <A>(self: MutableList<A>, messages: Iterable<A>): number =>
-  appendAllUnsafe(self, Arr.fromIterable(messages), !Array.isArray(messages))
+export const appendAll = <A>(
+  self: MutableList<A>,
+  messages: Iterable<A>
+): number =>
+  appendAllUnsafe(self, Arr.fromIterable(messages), !Array.isArray(messages));
 
 /**
  * Appends all elements from a ReadonlyArray to the end of the MutableList.
@@ -556,24 +566,28 @@ export const appendAll = <A>(self: MutableList<A>, messages: Iterable<A>): numbe
  * @category mutations
  * @since 4.0.0
  */
-export const appendAllUnsafe = <A>(self: MutableList<A>, messages: ReadonlyArray<A>, mutable = false): number => {
+export const appendAllUnsafe = <A>(
+  self: MutableList<A>,
+  messages: ReadonlyArray<A>,
+  mutable = false
+): number => {
   if (messages.length === 0) {
-    return 0
+    return 0;
   }
   const chunk: MutableList.Bucket<A> = {
     array: messages as Array<A>,
     mutable,
     offset: 0,
-    next: undefined
-  }
+    next: undefined,
+  };
   if (self.head) {
-    self.tail = self.tail!.next = chunk
+    self.tail = self.tail!.next = chunk;
   } else {
-    self.head = self.tail = chunk
+    self.head = self.tail = chunk;
   }
-  self.length += messages.length
-  return messages.length
-}
+  self.length += messages.length;
+  return messages.length;
+};
 
 /**
  * Removes all elements from the MutableList, resetting it to an empty state.
@@ -610,9 +624,9 @@ export const appendAllUnsafe = <A>(self: MutableList<A>, messages: ReadonlyArray
  * @since 4.0.0
  */
 export const clear = <A>(self: MutableList<A>): void => {
-  self.head = self.tail = undefined
-  self.length = 0
-}
+  self.head = self.tail = undefined;
+  self.length = 0;
+};
 
 /**
  * Takes up to N elements from the beginning of the MutableList and returns them as an array.
@@ -657,33 +671,33 @@ export const clear = <A>(self: MutableList<A>): void => {
  * @since 4.0.0
  */
 export const takeN = <A>(self: MutableList<A>, n: number): Array<A> => {
-  if (n <= 0 || !self.head) return []
-  n = Math.min(n, self.length)
+  if (n <= 0 || !self.head) return [];
+  n = Math.min(n, self.length);
   if (n === self.length && self.head?.offset === 0 && !self.head.next) {
-    const array = self.head.array
-    clear(self)
-    return array
+    const array = self.head.array;
+    clear(self);
+    return array;
   }
-  const array = new Array<A>(n)
-  let index = 0
-  let chunk: MutableList.Bucket<A> | undefined = self.head
+  const array = new Array<A>(n);
+  let index = 0;
+  let chunk: MutableList.Bucket<A> | undefined = self.head;
   while (chunk) {
     while (chunk.offset < chunk.array.length) {
-      array[index++] = chunk.array[chunk.offset]
-      if (chunk.mutable) chunk.array[chunk.offset] = undefined as any
-      chunk.offset++
+      array[index++] = chunk.array[chunk.offset];
+      if (chunk.mutable) chunk.array[chunk.offset] = undefined as any;
+      chunk.offset++;
       if (index === n) {
-        self.head = chunk
-        self.length -= n
-        if (self.length === 0) clear(self)
-        return array
+        self.head = chunk;
+        self.length -= n;
+        if (self.length === 0) clear(self);
+        return array;
       }
     }
-    chunk = chunk.next
+    chunk = chunk.next;
   }
-  clear(self)
-  return array
-}
+  clear(self);
+  return array;
+};
 
 /**
  * Removes up to `n` elements from the beginning of the `MutableList` without
@@ -707,28 +721,28 @@ export const takeN = <A>(self: MutableList<A>, n: number): Array<A> => {
  * @since 4.0.0
  */
 export const takeNVoid = <A>(self: MutableList<A>, n: number): void => {
-  if (n <= 0 || !self.head) return
-  n = Math.min(n, self.length)
+  if (n <= 0 || !self.head) return;
+  n = Math.min(n, self.length);
   if (n === self.length && self.head?.offset === 0 && !self.head.next) {
-    clear(self)
-    return
+    clear(self);
+    return;
   }
-  let count = 0
-  let chunk: MutableList.Bucket<A> | undefined = self.head
+  let count = 0;
+  let chunk: MutableList.Bucket<A> | undefined = self.head;
   while (chunk) {
-    const size = chunk.array.length - chunk.offset
+    const size = chunk.array.length - chunk.offset;
     if (count + size > n) {
-      chunk.offset += n - count
-      self.head = chunk
-      self.length -= n
-      return
+      chunk.offset += n - count;
+      self.head = chunk;
+      self.length -= n;
+      return;
     }
-    count += size
-    chunk = chunk.next
+    count += size;
+    chunk = chunk.next;
   }
-  clear(self)
-  return
-}
+  clear(self);
+  return;
+};
 
 /**
  * Takes all elements from the MutableList and returns them as an array.
@@ -772,7 +786,8 @@ export const takeNVoid = <A>(self: MutableList<A>, n: number): void => {
  * @category elements
  * @since 4.0.0
  */
-export const takeAll = <A>(self: MutableList<A>): Array<A> => takeN(self, self.length)
+export const takeAll = <A>(self: MutableList<A>): Array<A> =>
+  takeN(self, self.length);
 
 /**
  * Takes a single element from the beginning of the MutableList.
@@ -824,20 +839,20 @@ export const takeAll = <A>(self: MutableList<A>): Array<A> => takeN(self, self.l
  * @since 4.0.0
  */
 export const take = <A>(self: MutableList<A>): Empty | A => {
-  if (!self.head) return Empty
-  const message = self.head.array[self.head.offset]
-  if (self.head.mutable) self.head.array[self.head.offset] = undefined as any
-  self.head.offset++
-  self.length--
+  if (!self.head) return Empty;
+  const message = self.head.array[self.head.offset];
+  if (self.head.mutable) self.head.array[self.head.offset] = undefined as any;
+  self.head.offset++;
+  self.length--;
   if (self.head.offset === self.head.array.length) {
     if (self.head.next) {
-      self.head = self.head.next
+      self.head = self.head.next;
     } else {
-      clear(self)
+      clear(self);
     }
   }
-  return message
-}
+  return message;
+};
 
 /**
  * Copies up to `n` elements from the beginning of the `MutableList` into a new
@@ -854,19 +869,19 @@ export const take = <A>(self: MutableList<A>): Empty | A => {
  * @since 4.0.0
  */
 export const toArrayN = <A>(self: MutableList<A>, n: number): Array<A> => {
-  const length = Math.min(n, self.length)
-  const out = new Array<A>(length)
-  let index = 0
-  let bucket = self.head
+  const length = Math.min(n, self.length);
+  const out = new Array<A>(length);
+  let index = 0;
+  let bucket = self.head;
   while (bucket) {
     for (let i = bucket.offset; i < bucket.array.length; i++) {
-      out[index++] = bucket.array[i]
-      if (index === length) return out
+      out[index++] = bucket.array[i];
+      if (index === length) return out;
     }
-    bucket = bucket.next
+    bucket = bucket.next;
   }
-  return out
-}
+  return out;
+};
 
 /**
  * Copies all current elements of the `MutableList` into a new array without
@@ -882,7 +897,8 @@ export const toArrayN = <A>(self: MutableList<A>, n: number): Array<A> => {
  * @category elements
  * @since 4.0.0
  */
-export const toArray = <A>(self: MutableList<A>): Array<A> => toArrayN(self, self.length)
+export const toArray = <A>(self: MutableList<A>): Array<A> =>
+  toArrayN(self, self.length);
 
 /**
  * Filters the MutableList in place, keeping only elements that satisfy the predicate.
@@ -928,25 +944,28 @@ export const toArray = <A>(self: MutableList<A>): Array<A> => toArrayN(self, sel
  * @category mutations
  * @since 4.0.0
  */
-export const filter = <A>(self: MutableList<A>, f: (value: A, i: number) => boolean): void => {
-  const array: Array<A> = []
-  let chunk: MutableList.Bucket<A> | undefined = self.head
+export const filter = <A>(
+  self: MutableList<A>,
+  f: (value: A, i: number) => boolean
+): void => {
+  const array: Array<A> = [];
+  let chunk: MutableList.Bucket<A> | undefined = self.head;
   while (chunk) {
     for (let i = chunk.offset; i < chunk.array.length; i++) {
       if (f(chunk.array[i], i)) {
-        array.push(chunk.array[i])
+        array.push(chunk.array[i]);
       }
     }
-    chunk = chunk.next
+    chunk = chunk.next;
   }
   self.head = self.tail = {
     array,
     mutable: true,
     offset: 0,
-    next: undefined
-  }
-  self.length = array.length
-}
+    next: undefined,
+  };
+  self.length = array.length;
+};
 
 /**
  * Removes all occurrences of a value from the `MutableList` using JavaScript
@@ -1004,4 +1023,5 @@ export const filter = <A>(self: MutableList<A>, f: (value: A, i: number) => bool
  * @category mutations
  * @since 4.0.0
  */
-export const remove = <A>(self: MutableList<A>, value: A): void => filter(self, (v) => v !== value)
+export const remove = <A>(self: MutableList<A>, value: A): void =>
+  filter(self, (v) => v !== value);

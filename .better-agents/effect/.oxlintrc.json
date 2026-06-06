@@ -14,12 +14,16 @@
     ".specs/**/*"
   ],
   "jsPlugins": ["@effect/oxc/oxlint"],
-  "overrides": [{
-    "files": ["**/{test,typetest,examples,ai-docs,benchmark,bundle,scripts,scratchpad}/**"],
-    "rules": {
-      "effect/no-bigint-literals": "off",
-      "eslint/no-console": "off",
-      "effect/no-import-from-barrel-package": "off"
+  "overrides": [
+    {
+      "files": [
+        "**/{test,typetest,examples,ai-docs,benchmark,bundle,scripts,scratchpad}/**"
+      ],
+      "rules": {
+        "effect/no-bigint-literals": "off",
+        "eslint/no-console": "off",
+        "effect/no-import-from-barrel-package": "off"
+      }
     }
-  }]
+  ]
 }

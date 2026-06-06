@@ -83,26 +83,26 @@
  *
  * @since 2.0.0
  */
-import * as Array from "./Array.ts"
-import type * as Cause from "./Cause.ts"
-import type * as Context from "./Context.ts"
-import type * as Duration from "./Duration.ts"
-import type * as Effect from "./Effect.ts"
-import type * as Fiber from "./Fiber.ts"
-import * as FileSystem from "./FileSystem.ts"
-import * as Formatter from "./Formatter.ts"
-import { dual } from "./Function.ts"
-import { isEffect, withFiber } from "./internal/core.ts"
-import * as effect from "./internal/effect.ts"
-import * as Layer from "./Layer.ts"
-import type * as LogLevel from "./LogLevel.ts"
-import type { Pipeable } from "./Pipeable.ts"
-import type { PlatformError } from "./PlatformError.ts"
-import * as Predicate from "./Predicate.ts"
-import { CurrentLogAnnotations, CurrentLogSpans } from "./References.ts"
-import type * as Scope from "./Scope.ts"
+import * as Array from "./Array.ts";
+import type * as Cause from "./Cause.ts";
+import type * as Context from "./Context.ts";
+import type * as Duration from "./Duration.ts";
+import type * as Effect from "./Effect.ts";
+import type * as Fiber from "./Fiber.ts";
+import * as FileSystem from "./FileSystem.ts";
+import * as Formatter from "./Formatter.ts";
+import { dual } from "./Function.ts";
+import { isEffect, withFiber } from "./internal/core.ts";
+import * as effect from "./internal/effect.ts";
+import * as Layer from "./Layer.ts";
+import type * as LogLevel from "./LogLevel.ts";
+import type { Pipeable } from "./Pipeable.ts";
+import type { PlatformError } from "./PlatformError.ts";
+import * as Predicate from "./Predicate.ts";
+import { CurrentLogAnnotations, CurrentLogSpans } from "./References.ts";
+import type * as Scope from "./Scope.ts";
 
-const TypeId = "~effect/Logger"
+const TypeId = "~effect/Logger";
 
 /**
  * A logger that transforms a runtime log event into an output value.
@@ -138,8 +138,8 @@ const TypeId = "~effect/Logger"
  * @since 2.0.0
  */
 export interface Logger<in Message, out Output> extends Pipeable {
-  readonly [TypeId]: typeof TypeId
-  log(options: Options<Message>): Output
+  readonly [TypeId]: typeof TypeId;
+  log(options: Options<Message>): Output;
 }
 
 /**
@@ -175,11 +175,11 @@ export interface Logger<in Message, out Output> extends Pipeable {
  * @since 2.0.0
  */
 export interface Options<out Message> {
-  readonly message: Message
-  readonly logLevel: LogLevel.LogLevel
-  readonly cause: Cause.Cause<unknown>
-  readonly fiber: Fiber.Fiber<unknown, unknown>
-  readonly date: Date
+  readonly message: Message;
+  readonly logLevel: LogLevel.LogLevel;
+  readonly cause: Cause.Cause<unknown>;
+  readonly fiber: Fiber.Fiber<unknown, unknown>;
+  readonly date: Date;
 }
 
 /**
@@ -202,7 +202,8 @@ export interface Options<out Message> {
  * @category guards
  * @since 4.0.0
  */
-export const isLogger = (u: unknown): u is Logger<unknown, unknown> => Predicate.hasProperty(u, TypeId)
+export const isLogger = (u: unknown): u is Logger<unknown, unknown> =>
+  Predicate.hasProperty(u, TypeId);
 
 /**
  * Context reference containing the active loggers for the current fiber.
@@ -237,7 +238,9 @@ export const isLogger = (u: unknown): u is Logger<unknown, unknown> => Predicate
  * @category references
  * @since 4.0.0
  */
-export const CurrentLoggers: Context.Reference<ReadonlySet<Logger<unknown, any>>> = effect.CurrentLoggers
+export const CurrentLoggers: Context.Reference<
+  ReadonlySet<Logger<unknown, any>>
+> = effect.CurrentLoggers;
 
 /**
  * Context reference that routes the built-in default logger and TTY pretty
@@ -260,7 +263,7 @@ export const CurrentLoggers: Context.Reference<ReadonlySet<Logger<unknown, any>>
  * @category references
  * @since 4.0.0
  */
-export const LogToStderr: Context.Reference<boolean> = effect.LogToStderr
+export const LogToStderr: Context.Reference<boolean> = effect.LogToStderr;
 
 /**
  * Transforms the output of a `Logger` using the provided function.
@@ -301,14 +304,12 @@ export const LogToStderr: Context.Reference<boolean> = effect.LogToStderr
 export const map = dual<
   <Output, Output2>(
     f: (output: Output) => Output2
-  ) => <Message>(
-    self: Logger<Message, Output>
-  ) => Logger<Message, Output2>,
+  ) => <Message>(self: Logger<Message, Output>) => Logger<Message, Output2>,
   <Message, Output, Output2>(
     self: Logger<Message, Output>,
     f: (output: Output) => Output2
   ) => Logger<Message, Output2>
->(2, (self, f) => effect.loggerMake((options) => f(self.log(options))))
+>(2, (self, f) => effect.loggerMake((options) => f(self.log(options))));
 
 /**
  * Returns a new `Logger` that writes all output of the specified `Logger` to
@@ -344,9 +345,9 @@ export const withConsoleLog = <Message, Output>(
   self: Logger<Message, Output>
 ): Logger<Message, void> =>
   effect.loggerMake((options) => {
-    const console = options.fiber.getRef(effect.ConsoleRef)
-    return console.log(self.log(options))
-  })
+    const console = options.fiber.getRef(effect.ConsoleRef);
+    return console.log(self.log(options));
+  });
 /**
  * Returns a new `Logger` that writes all output of the specified `Logger` to
  * the console using `console.error`.
@@ -381,9 +382,9 @@ export const withConsoleError = <Message, Output>(
   self: Logger<Message, Output>
 ): Logger<Message, void> =>
   effect.loggerMake((options) => {
-    const console = options.fiber.getRef(effect.ConsoleRef)
-    return console.error(self.log(options))
-  })
+    const console = options.fiber.getRef(effect.ConsoleRef);
+    return console.error(self.log(options));
+  });
 /**
  * Returns a new `Logger` that writes all output of the specified `Logger` to
  * the console.
@@ -425,40 +426,41 @@ export const withLeveledConsole = <Message, Output>(
   self: Logger<Message, Output>
 ): Logger<Message, void> =>
   effect.loggerMake((options) => {
-    const console = options.fiber.getRef(effect.ConsoleRef)
-    const output = self.log(options)
+    const console = options.fiber.getRef(effect.ConsoleRef);
+    const output = self.log(options);
     switch (options.logLevel) {
       case "Debug":
-        return console.debug(output)
+        return console.debug(output);
       case "Info":
-        return console.info(output)
+        return console.info(output);
       case "Trace":
-        return console.trace(output)
+        return console.trace(output);
       case "Warn":
-        return console.warn(output)
+        return console.warn(output);
       case "Error":
       case "Fatal":
-        return console.error(output)
+        return console.error(output);
       default:
-        return console.log(output)
+        return console.log(output);
     }
-  })
+  });
 
 /**
  * Match strings that do not contain any whitespace characters, double quotes,
  * or equal signs.
  */
-const textOnly = /^[^\s"=]*$/
+const textOnly = /^[^\s"=]*$/;
 
 /**
  * Escapes double quotes in a string.
  */
-const escapeDoubleQuotes = (s: string) => `"${s.replace(/\\([\s\S])|(")/g, "\\$1$2")}"`
+const escapeDoubleQuotes = (s: string) =>
+  `"${s.replace(/\\([\s\S])|(")/g, "\\$1$2")}"`;
 
 /**
  * Formats the identifier of a `Fiber` by prefixing it with a hash tag.
  */
-const formatFiberId = (fiberId: number) => `#${fiberId}`
+const formatFiberId = (fiberId: number) => `#${fiberId}`;
 
 /**
  * Used by both {@link formatSimple} and {@link formatLogFmt} to render a log
@@ -466,43 +468,44 @@ const formatFiberId = (fiberId: number) => `#${fiberId}`
  *
  * @internal
  */
-const format = (
-  quoteValue: (s: string) => string,
-  space?: number | string | undefined
-) =>
-({ cause, date, fiber, logLevel, message }: Options<unknown>): string => {
-  const formatUnknown = (value: unknown): string =>
-    typeof value === "string" ? value : Formatter.format(value, { space })
-  const formatValue = (value: string): string => value.match(textOnly) ? value : quoteValue(value)
-  const format = (label: string, value: string): string => `${effect.formatLabel(label)}=${formatValue(value)}`
-  const append = (label: string, value: string): string => " " + format(label, value)
+const format =
+  (quoteValue: (s: string) => string, space?: number | string | undefined) =>
+  ({ cause, date, fiber, logLevel, message }: Options<unknown>): string => {
+    const formatUnknown = (value: unknown): string =>
+      typeof value === "string" ? value : Formatter.format(value, { space });
+    const formatValue = (value: string): string =>
+      value.match(textOnly) ? value : quoteValue(value);
+    const format = (label: string, value: string): string =>
+      `${effect.formatLabel(label)}=${formatValue(value)}`;
+    const append = (label: string, value: string): string =>
+      " " + format(label, value);
 
-  let out = format("timestamp", date.toISOString())
-  out += append("level", logLevel)
-  out += append("fiber", formatFiberId(fiber.id))
+    let out = format("timestamp", date.toISOString());
+    out += append("level", logLevel);
+    out += append("fiber", formatFiberId(fiber.id));
 
-  const messages = Array.ensure(message)
-  for (let i = 0; i < messages.length; i++) {
-    out += append("message", formatUnknown(messages[i]))
-  }
+    const messages = Array.ensure(message);
+    for (let i = 0; i < messages.length; i++) {
+      out += append("message", formatUnknown(messages[i]));
+    }
 
-  if (cause.reasons.length > 0) {
-    out += append("cause", effect.causePretty(cause))
-  }
+    if (cause.reasons.length > 0) {
+      out += append("cause", effect.causePretty(cause));
+    }
 
-  const now = date.getTime()
-  const spans = fiber.getRef(CurrentLogSpans)
-  for (const span of spans) {
-    out += " " + effect.formatLogSpan(span, now)
-  }
+    const now = date.getTime();
+    const spans = fiber.getRef(CurrentLogSpans);
+    for (const span of spans) {
+      out += " " + effect.formatLogSpan(span, now);
+    }
 
-  const annotations = fiber.getRef(CurrentLogAnnotations)
-  for (const [label, value] of Object.entries(annotations)) {
-    out += append(label, formatUnknown(value))
-  }
+    const annotations = fiber.getRef(CurrentLogAnnotations);
+    for (const [label, value] of Object.entries(annotations)) {
+      out += append(label, formatUnknown(value));
+    }
 
-  return out
-}
+    return out;
+  };
 
 /**
  * Creates a new `Logger` from a log function.
@@ -549,7 +552,7 @@ const format = (
  */
 export const make: <Message, Output>(
   log: (options: Options<Message>) => Output
-) => Logger<Message, Output> = effect.loggerMake
+) => Logger<Message, Output> = effect.loggerMake;
 
 /**
  * The default logging implementation used by the Effect runtime.
@@ -580,7 +583,7 @@ export const make: <Message, Output>(
  * @category constructors
  * @since 2.0.0
  */
-export const defaultLogger: Logger<unknown, void> = effect.defaultLogger
+export const defaultLogger: Logger<unknown, void> = effect.defaultLogger;
 
 /**
  * A `Logger` which outputs logs as a string.
@@ -615,7 +618,7 @@ export const defaultLogger: Logger<unknown, void> = effect.defaultLogger
  * @category constructors
  * @since 4.0.0
  */
-export const formatSimple = effect.loggerMake(format(escapeDoubleQuotes))
+export const formatSimple = effect.loggerMake(format(escapeDoubleQuotes));
 
 /**
  * A `Logger` which outputs logs using the [logfmt](https://brandur.org/logfmt)
@@ -654,7 +657,7 @@ export const formatSimple = effect.loggerMake(format(escapeDoubleQuotes))
  * @category constructors
  * @since 4.0.0
  */
-export const formatLogFmt = effect.loggerMake(format(JSON.stringify, 0))
+export const formatLogFmt = effect.loggerMake(format(JSON.stringify, 0));
 
 /**
  * A `Logger` which outputs logs using a structured format.
@@ -697,42 +700,46 @@ export const formatLogFmt = effect.loggerMake(format(JSON.stringify, 0))
  * @category constructors
  * @since 4.0.0
  */
-export const formatStructured: Logger<unknown, {
-  readonly level: string
-  readonly fiberId: string
-  readonly timestamp: string
-  readonly message: unknown
-  readonly cause: string | undefined
-  readonly annotations: Record<string, unknown>
-  readonly spans: Record<string, number>
-}> = effect.loggerMake(({ cause, date, fiber, logLevel, message }) => {
-  const annotationsObj: Record<string, unknown> = {}
-  const spansObj: Record<string, number> = {}
+export const formatStructured: Logger<
+  unknown,
+  {
+    readonly level: string;
+    readonly fiberId: string;
+    readonly timestamp: string;
+    readonly message: unknown;
+    readonly cause: string | undefined;
+    readonly annotations: Record<string, unknown>;
+    readonly spans: Record<string, number>;
+  }
+> = effect.loggerMake(({ cause, date, fiber, logLevel, message }) => {
+  const annotationsObj: Record<string, unknown> = {};
+  const spansObj: Record<string, number> = {};
 
-  const annotations = fiber.getRef(CurrentLogAnnotations)
+  const annotations = fiber.getRef(CurrentLogAnnotations);
   for (const [key, value] of Object.entries(annotations)) {
-    annotationsObj[key] = effect.structuredMessage(value)
+    annotationsObj[key] = effect.structuredMessage(value);
   }
 
-  const now = date.getTime()
-  const spans = fiber.getRef(CurrentLogSpans)
+  const now = date.getTime();
+  const spans = fiber.getRef(CurrentLogSpans);
   for (const [label, timestamp] of spans) {
-    spansObj[label] = now - timestamp
+    spansObj[label] = now - timestamp;
   }
 
-  const messageArr = Array.ensure(message)
+  const messageArr = Array.ensure(message);
   return {
-    message: messageArr.length === 1
-      ? effect.structuredMessage(messageArr[0])
-      : messageArr.map(effect.structuredMessage),
+    message:
+      messageArr.length === 1
+        ? effect.structuredMessage(messageArr[0])
+        : messageArr.map(effect.structuredMessage),
     level: logLevel.toUpperCase(),
     timestamp: date.toISOString(),
     cause: cause.reasons.length > 0 ? effect.causePretty(cause) : undefined,
     annotations: annotationsObj,
     spans: spansObj,
-    fiberId: formatFiberId(fiber.id)
-  }
-})
+    fiberId: formatFiberId(fiber.id),
+  };
+});
 
 /**
  * A `Logger` which outputs logs using a structured format serialized as JSON
@@ -780,7 +787,7 @@ export const formatStructured: Logger<unknown, {
  * @category constructors
  * @since 4.0.0
  */
-export const formatJson = map(formatStructured, Formatter.formatJson)
+export const formatJson = map(formatStructured, Formatter.formatJson);
 
 /**
  * Creates a scoped logger that batches the output of another logger.
@@ -837,54 +844,60 @@ export const formatJson = map(formatStructured, Formatter.formatJson)
  */
 export const batched = dual<
   <Output>(options: {
-    readonly window: Duration.Input
-    readonly flush: (messages: Array<NoInfer<Output>>) => Effect.Effect<void>
+    readonly window: Duration.Input;
+    readonly flush: (messages: Array<NoInfer<Output>>) => Effect.Effect<void>;
   }) => <Message>(
     self: Logger<Message, Output>
   ) => Effect.Effect<Logger<Message, void>, never, Scope.Scope>,
   <Message, Output>(
     self: Logger<Message, Output>,
     options: {
-      readonly window: Duration.Input
-      readonly flush: (messages: Array<NoInfer<Output>>) => Effect.Effect<void>
+      readonly window: Duration.Input;
+      readonly flush: (messages: Array<NoInfer<Output>>) => Effect.Effect<void>;
     }
   ) => Effect.Effect<Logger<Message, void>, never, Scope.Scope>
->(2, <Message, Output>(
-  self: Logger<Message, Output>,
-  options: {
-    readonly window: Duration.Input
-    readonly flush: (messages: Array<NoInfer<Output>>) => Effect.Effect<void>
-  }
-): Effect.Effect<Logger<Message, void>, never, Scope.Scope> =>
-  effect.flatMap(effect.scope, (scope) => {
-    let buffer: Array<Output> = []
-    const flush = effect.suspend(() => {
-      if (buffer.length === 0) {
-        return effect.void
-      }
-      const arr = buffer
-      buffer = []
-      return options.flush(arr)
-    })
+>(
+  2,
+  <Message, Output>(
+    self: Logger<Message, Output>,
+    options: {
+      readonly window: Duration.Input;
+      readonly flush: (messages: Array<NoInfer<Output>>) => Effect.Effect<void>;
+    }
+  ): Effect.Effect<Logger<Message, void>, never, Scope.Scope> =>
+    effect.flatMap(effect.scope, (scope) => {
+      let buffer: Array<Output> = [];
+      const flush = effect.suspend(() => {
+        if (buffer.length === 0) {
+          return effect.void;
+        }
+        const arr = buffer;
+        buffer = [];
+        return options.flush(arr);
+      });
 
-    return effect.uninterruptibleMask((restore) =>
-      restore(
-        effect.sleep(options.window).pipe(
-          effect.andThen(flush),
-          effect.forever
+      return effect.uninterruptibleMask((restore) =>
+        restore(
+          effect
+            .sleep(options.window)
+            .pipe(effect.andThen(flush), effect.forever)
+        ).pipe(
+          effect.forkDetach,
+          effect.flatMap((fiber) =>
+            effect.scopeAddFinalizerExit(scope, () =>
+              effect.fiberInterrupt(fiber)
+            )
+          ),
+          effect.andThen(effect.addFinalizer(() => flush)),
+          effect.as(
+            effect.loggerMake((options) => {
+              buffer.push(self.log(options));
+            })
+          )
         )
-      ).pipe(
-        effect.forkDetach,
-        effect.flatMap((fiber) => effect.scopeAddFinalizerExit(scope, () => effect.fiberInterrupt(fiber))),
-        effect.andThen(effect.addFinalizer(() => flush)),
-        effect.as(
-          effect.loggerMake((options) => {
-            buffer.push(self.log(options))
-          })
-        )
-      )
-    )
-  }))
+      );
+    })
+);
 
 /**
  * A `Logger` which outputs logs in a "pretty" format and writes them to the
@@ -932,14 +945,12 @@ export const batched = dual<
  * @category constructors
  * @since 4.0.0
  */
-export const consolePretty: (
-  options?: {
-    readonly colors?: "auto" | boolean | undefined
-    readonly stderr?: boolean | undefined
-    readonly formatDate?: ((date: Date) => string) | undefined
-    readonly mode?: "browser" | "tty" | "auto" | undefined
-  }
-) => Logger<unknown, void> = effect.consolePretty
+export const consolePretty: (options?: {
+  readonly colors?: "auto" | boolean | undefined;
+  readonly stderr?: boolean | undefined;
+  readonly formatDate?: ((date: Date) => string) | undefined;
+  readonly mode?: "browser" | "tty" | "auto" | undefined;
+}) => Logger<unknown, void> = effect.consolePretty;
 
 /**
  * A `Logger` which outputs logs using the [logfmt](https://brandur.org/logfmt)
@@ -984,7 +995,8 @@ export const consolePretty: (
  * @category constructors
  * @since 4.0.0
  */
-export const consoleLogFmt: Logger<unknown, void> = withConsoleLog(formatLogFmt)
+export const consoleLogFmt: Logger<unknown, void> =
+  withConsoleLog(formatLogFmt);
 
 /**
  * A `Logger` which outputs logs using a structured format and writes them to
@@ -1040,7 +1052,8 @@ export const consoleLogFmt: Logger<unknown, void> = withConsoleLog(formatLogFmt)
  * @category constructors
  * @since 4.0.0
  */
-export const consoleStructured: Logger<unknown, void> = withConsoleLog(formatStructured)
+export const consoleStructured: Logger<unknown, void> =
+  withConsoleLog(formatStructured);
 
 /**
  * A `Logger` which outputs logs using a structured format serialized as JSON
@@ -1099,7 +1112,7 @@ export const consoleStructured: Logger<unknown, void> = withConsoleLog(formatStr
  * @category constructors
  * @since 4.0.0
  */
-export const consoleJson: Logger<unknown, void> = withConsoleLog(formatJson)
+export const consoleJson: Logger<unknown, void> = withConsoleLog(formatJson);
 
 /**
  * A `Logger` which includes log messages as tracer span events.
@@ -1155,7 +1168,7 @@ export const consoleJson: Logger<unknown, void> = withConsoleLog(formatJson)
  * @category constructors
  * @since 2.0.0
  */
-export const tracerLogger: Logger<unknown, void> = effect.tracerLogger
+export const tracerLogger: Logger<unknown, void> = effect.tracerLogger;
 
 /**
  * Creates a `Layer` which will overwrite the current set of loggers with the
@@ -1202,7 +1215,9 @@ export const tracerLogger: Logger<unknown, void> = effect.tracerLogger
  * @since 4.0.0
  */
 export const layer = <
-  const Loggers extends ReadonlyArray<Logger<unknown, unknown> | Effect.Effect<Logger<unknown, unknown>, any, any>>
+  const Loggers extends ReadonlyArray<
+    Logger<unknown, unknown> | Effect.Effect<Logger<unknown, unknown>, any, any>
+  >,
 >(
   loggers: Loggers,
   options?: { readonly mergeWithExisting?: boolean | undefined } | undefined
@@ -1216,14 +1231,20 @@ export const layer = <
 > =>
   Layer.effect(
     CurrentLoggers,
-    withFiber(effect.fnUntraced(function*(fiber) {
-      const currentLoggers = new Set(options?.mergeWithExisting === true ? fiber.getRef(effect.CurrentLoggers) : [])
-      for (const logger of loggers) {
-        currentLoggers.add(isEffect(logger) ? yield* logger : logger)
-      }
-      return currentLoggers
-    }))
-  )
+    withFiber(
+      effect.fnUntraced(function* (fiber) {
+        const currentLoggers = new Set(
+          options?.mergeWithExisting === true
+            ? fiber.getRef(effect.CurrentLoggers)
+            : []
+        );
+        for (const logger of loggers) {
+          currentLoggers.add(isEffect(logger) ? yield* logger : logger);
+        }
+        return currentLoggers;
+      })
+    )
+  );
 
 /**
  * Creates a scoped logger that writes string logger output to a file.
@@ -1326,33 +1347,48 @@ export const layer = <
 export const toFile = dual<
   (
     path: string,
-    options?: {
-      readonly flag?: FileSystem.OpenFlag | undefined
-      readonly mode?: number | undefined
-      readonly batchWindow?: Duration.Input | undefined
-    } | undefined
+    options?:
+      | {
+          readonly flag?: FileSystem.OpenFlag | undefined;
+          readonly mode?: number | undefined;
+          readonly batchWindow?: Duration.Input | undefined;
+        }
+      | undefined
   ) => <Message>(
     self: Logger<Message, string>
-  ) => Effect.Effect<Logger<Message, void>, PlatformError, Scope.Scope | FileSystem.FileSystem>,
+  ) => Effect.Effect<
+    Logger<Message, void>,
+    PlatformError,
+    Scope.Scope | FileSystem.FileSystem
+  >,
   <Message>(
     self: Logger<Message, string>,
     path: string,
-    options?: {
-      readonly flag?: FileSystem.OpenFlag | undefined
-      readonly mode?: number | undefined
-      readonly batchWindow?: Duration.Input | undefined
-    } | undefined
-  ) => Effect.Effect<Logger<Message, void>, PlatformError, Scope.Scope | FileSystem.FileSystem>
+    options?:
+      | {
+          readonly flag?: FileSystem.OpenFlag | undefined;
+          readonly mode?: number | undefined;
+          readonly batchWindow?: Duration.Input | undefined;
+        }
+      | undefined
+  ) => Effect.Effect<
+    Logger<Message, void>,
+    PlatformError,
+    Scope.Scope | FileSystem.FileSystem
+  >
 >(
   (args) => isLogger(args[0]),
   (self, path, options) =>
-    effect.gen(function*() {
-      const fs = yield* FileSystem.FileSystem
-      const logFile = yield* fs.open(path, { flag: "a+", ...options })
-      const encoder = new TextEncoder()
+    effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      const logFile = yield* fs.open(path, { flag: "a+", ...options });
+      const encoder = new TextEncoder();
       return yield* batched(self, {
         window: options?.batchWindow ?? 1000,
-        flush: (output) => effect.ignore(logFile.write(encoder.encode(output.join("\n") + "\n")))
-      })
+        flush: (output) =>
+          effect.ignore(
+            logFile.write(encoder.encode(output.join("\n") + "\n"))
+          ),
+      });
     })
-)
+);

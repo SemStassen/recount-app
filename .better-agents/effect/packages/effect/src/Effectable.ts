@@ -36,9 +36,9 @@
  *
  * @since 4.0.0
  */
-import type * as Effect from "./Effect.ts"
-import type * as Fiber from "./Fiber.ts"
-import { evaluate, makePrimitiveProto } from "./internal/core.ts"
+import type * as Effect from "./Effect.ts";
+import type * as Fiber from "./Fiber.ts";
+import { evaluate, makePrimitiveProto } from "./internal/core.ts";
 
 /**
  * Create a low-level `Effect` prototype.
@@ -59,27 +59,27 @@ import { evaluate, makePrimitiveProto } from "./internal/core.ts"
  * @since 4.0.0
  */
 export const Prototype = <A extends Effect.Effect<any, any, any>>(options: {
-  readonly label: string
+  readonly label: string;
   readonly evaluate: (
     this: A,
     fiber: Fiber.Fiber<any, any>
-  ) => Effect.Effect<Effect.Success<A>, Effect.Error<A>, Effect.Services<A>>
+  ) => Effect.Effect<Effect.Success<A>, Effect.Error<A>, Effect.Services<A>>;
 }): Effect.Effect<Effect.Success<A>, Effect.Error<A>, Effect.Services<A>> =>
   makePrimitiveProto({
     op: options.label,
-    [evaluate]: options.evaluate
-  }) as any
+    [evaluate]: options.evaluate,
+  }) as any;
 
-const Base: new<A, E, R>() => Effect.Effect<A, E, R> = (() => {
-  const Base = function() {}
+const Base: new <A, E, R>() => Effect.Effect<A, E, R> = (() => {
+  const Base = function () {};
   Base.prototype = Prototype({
     label: "Effectable",
     evaluate(_) {
-      return this
-    }
-  })
-  return Base as any
-})()
+      return this;
+    },
+  });
+  return Base as any;
+})();
 
 /**
  * Provides an abstract class that can be extended to create an `Effect`.
@@ -94,5 +94,5 @@ const Base: new<A, E, R>() => Effect.Effect<A, E, R> = (() => {
  * @since 2.0.0
  */
 export abstract class Class<A, E = never, R = never> extends Base<A, E, R> {
-  abstract override: Effect.Effect<A, E, R>
+  abstract override: Effect.Effect<A, E, R>;
 }

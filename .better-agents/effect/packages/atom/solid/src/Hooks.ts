@@ -22,18 +22,30 @@
  *
  * @since 4.0.0
  */
-import * as Cause from "effect/Cause"
-import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
-import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
-import * as Atom from "effect/unstable/reactivity/Atom"
-import type * as AtomRef from "effect/unstable/reactivity/AtomRef"
-import * as AtomRegistry from "effect/unstable/reactivity/AtomRegistry"
-import type { Accessor, ResourceOptions, ResourceReturn } from "solid-js"
-import { createComputed, createEffect, createMemo, createResource, createSignal, onCleanup, useContext } from "solid-js"
-import { RegistryContext } from "./RegistryContext.ts"
+import * as Cause from "effect/Cause";
+import * as Effect from "effect/Effect";
+import * as Exit from "effect/Exit";
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult";
+import * as Atom from "effect/unstable/reactivity/Atom";
+import type * as AtomRef from "effect/unstable/reactivity/AtomRef";
+import * as AtomRegistry from "effect/unstable/reactivity/AtomRegistry";
+import type { Accessor, ResourceOptions, ResourceReturn } from "solid-js";
+import {
+  createComputed,
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  onCleanup,
+  useContext,
+} from "solid-js";
 
-const initialValuesSet = new WeakMap<AtomRegistry.AtomRegistry, WeakSet<Atom.Atom<any>>>()
+import { RegistryContext } from "./RegistryContext.ts";
+
+const initialValuesSet = new WeakMap<
+  AtomRegistry.AtomRegistry,
+  WeakSet<Atom.Atom<any>>
+>();
 
 /**
  * Seeds initial atom values in the current Solid atom registry.
@@ -52,20 +64,22 @@ const initialValuesSet = new WeakMap<AtomRegistry.AtomRegistry, WeakSet<Atom.Ato
  * @category hooks
  * @since 4.0.0
  */
-export const useAtomInitialValues = (initialValues: Iterable<readonly [Atom.Atom<any>, any]>): void => {
-  const registry = useContext(RegistryContext)
-  let set = initialValuesSet.get(registry)
+export const useAtomInitialValues = (
+  initialValues: Iterable<readonly [Atom.Atom<any>, any]>
+): void => {
+  const registry = useContext(RegistryContext);
+  let set = initialValuesSet.get(registry);
   if (set === undefined) {
-    set = new WeakSet()
-    initialValuesSet.set(registry, set)
+    set = new WeakSet();
+    initialValuesSet.set(registry, set);
   }
   for (const [atom, value] of initialValues) {
     if (!set.has(atom)) {
-      set.add(atom)
-      ;(registry as any).ensureNode(atom).setValue(value)
+      set.add(atom);
+      (registry as any).ensureNode(atom).setValue(value);
     }
   }
-}
+};
 
 /**
  * Subscribes to an atom in the current Solid registry and returns its value as
@@ -75,64 +89,87 @@ export const useAtomInitialValues = (initialValues: Iterable<readonly [Atom.Atom
  * @since 4.0.0
  */
 export const useAtomValue: {
-  <A>(atom: () => Atom.Atom<A>): Accessor<A>
-  <A, B>(atom: () => Atom.Atom<A>, f: (_: A) => B): Accessor<B>
+  <A>(atom: () => Atom.Atom<A>): Accessor<A>;
+  <A, B>(atom: () => Atom.Atom<A>, f: (_: A) => B): Accessor<B>;
 } = <A>(atom: () => Atom.Atom<A>, f?: (_: A) => A): Accessor<A> => {
-  const registry = useContext(RegistryContext)
-  return createAtomAccessor(registry, f ? () => Atom.map(atom(), f) : atom)
-}
+  const registry = useContext(RegistryContext);
+  return createAtomAccessor(registry, f ? () => Atom.map(atom(), f) : atom);
+};
 
-function createAtomAccessor<A>(registry: AtomRegistry.AtomRegistry, atom: () => Atom.Atom<A>): Accessor<A> {
-  const [value, setValue] = createSignal<A>(null as any)
+function createAtomAccessor<A>(
+  registry: AtomRegistry.AtomRegistry,
+  atom: () => Atom.Atom<A>
+): Accessor<A> {
+  const [value, setValue] = createSignal<A>(null as any);
   createComputed(() => {
-    onCleanup(registry.subscribe(atom(), setValue as any, constImmediate))
-  })
-  return value
+    onCleanup(registry.subscribe(atom(), setValue as any, constImmediate));
+  });
+  return value;
 }
 
-const constImmediate = { immediate: true }
+const constImmediate = { immediate: true };
 
-function mountAtom<A>(registry: AtomRegistry.AtomRegistry, atom: () => Atom.Atom<A>): void {
+function mountAtom<A>(
+  registry: AtomRegistry.AtomRegistry,
+  atom: () => Atom.Atom<A>
+): void {
   createComputed(() => {
-    onCleanup(registry.mount(atom()))
-  })
+    onCleanup(registry.mount(atom()));
+  });
 }
 
-function setAtom<R, W, Mode extends "value" | "promise" | "promiseExit" = never>(
+function setAtom<
+  R,
+  W,
+  Mode extends "value" | "promise" | "promiseExit" = never,
+>(
   registry: AtomRegistry.AtomRegistry,
   atom: () => Atom.Writable<R, W>,
   options?: {
-    readonly mode?: ([R] extends [AsyncResult.AsyncResult<any, any>] ? Mode : "value") | undefined
+    readonly mode?:
+      | ([R] extends [AsyncResult.AsyncResult<any, any>] ? Mode : "value")
+      | undefined;
   }
-): "promise" extends Mode ? (
-    (value: W) => Promise<AsyncResult.AsyncResult.Success<R>>
-  ) :
-  "promiseExit" extends Mode ? (
-      (value: W) => Promise<Exit.Exit<AsyncResult.AsyncResult.Success<R>, AsyncResult.AsyncResult.Failure<R>>>
-    ) :
-  ((value: W | ((value: R) => W)) => void)
-{
-  const memo = createMemo(atom)
+): "promise" extends Mode
+  ? (value: W) => Promise<AsyncResult.AsyncResult.Success<R>>
+  : "promiseExit" extends Mode
+    ? (
+        value: W
+      ) => Promise<
+        Exit.Exit<
+          AsyncResult.AsyncResult.Success<R>,
+          AsyncResult.AsyncResult.Failure<R>
+        >
+      >
+    : (value: W | ((value: R) => W)) => void {
+  const memo = createMemo(atom);
   if (options?.mode === "promise" || options?.mode === "promiseExit") {
     return ((value: W) => {
-      registry.set(memo(), value)
+      registry.set(memo(), value);
       const promise = Effect.runPromiseExit(
-        AtomRegistry.getResult(registry, memo() as Atom.Atom<AsyncResult.AsyncResult<any, any>>, {
-          suspendOnWaiting: true
-        })
-      )
-      return options!.mode === "promise" ? promise.then(flattenExit) : promise
-    }) as any
+        AtomRegistry.getResult(
+          registry,
+          memo() as Atom.Atom<AsyncResult.AsyncResult<any, any>>,
+          {
+            suspendOnWaiting: true,
+          }
+        )
+      );
+      return options!.mode === "promise" ? promise.then(flattenExit) : promise;
+    }) as any;
   }
   return ((value: W | ((value: R) => W)) => {
-    registry.set(memo(), typeof value === "function" ? (value as any)(registry.get(memo())) : value)
-  }) as any
+    registry.set(
+      memo(),
+      typeof value === "function" ? (value as any)(registry.get(memo())) : value
+    );
+  }) as any;
 }
 
 const flattenExit = <A, E>(exit: Exit.Exit<A, E>): A => {
-  if (Exit.isSuccess(exit)) return exit.value
-  throw Cause.squash(exit.cause)
-}
+  if (Exit.isSuccess(exit)) return exit.value;
+  throw Cause.squash(exit.cause);
+};
 
 /**
  * Mounts an atom in the current Solid registry for the lifetime of the current
@@ -156,9 +193,9 @@ const flattenExit = <A, E>(exit: Exit.Exit<A, E>): A => {
  * @since 4.0.0
  */
 export const useAtomMount = <A>(atom: () => Atom.Atom<A>): void => {
-  const registry = useContext(RegistryContext)
-  mountAtom(registry, atom)
-}
+  const registry = useContext(RegistryContext);
+  mountAtom(registry, atom);
+};
 
 /**
  * Returns a setter for a writable atom without subscribing to its value.
@@ -169,24 +206,30 @@ export const useAtomMount = <A>(atom: () => Atom.Atom<A>): void => {
 export const useAtomSet = <
   R,
   W,
-  Mode extends "value" | "promise" | "promiseExit" = never
+  Mode extends "value" | "promise" | "promiseExit" = never,
 >(
   atom: () => Atom.Writable<R, W>,
   options?: {
-    readonly mode?: ([R] extends [AsyncResult.AsyncResult<any, any>] ? Mode : "value") | undefined
+    readonly mode?:
+      | ([R] extends [AsyncResult.AsyncResult<any, any>] ? Mode : "value")
+      | undefined;
   }
-): "promise" extends Mode ? (
-    (value: W) => Promise<AsyncResult.AsyncResult.Success<R>>
-  ) :
-  "promiseExit" extends Mode ? (
-      (value: W) => Promise<Exit.Exit<AsyncResult.AsyncResult.Success<R>, AsyncResult.AsyncResult.Failure<R>>>
-    ) :
-  ((value: W | ((value: R) => W)) => void) =>
-{
-  const registry = useContext(RegistryContext)
-  mountAtom(registry, atom)
-  return setAtom(registry, atom, options)
-}
+): "promise" extends Mode
+  ? (value: W) => Promise<AsyncResult.AsyncResult.Success<R>>
+  : "promiseExit" extends Mode
+    ? (
+        value: W
+      ) => Promise<
+        Exit.Exit<
+          AsyncResult.AsyncResult.Success<R>,
+          AsyncResult.AsyncResult.Failure<R>
+        >
+      >
+    : (value: W | ((value: R) => W)) => void => {
+  const registry = useContext(RegistryContext);
+  mountAtom(registry, atom);
+  return setAtom(registry, atom, options);
+};
 
 /**
  * Mounts an atom and returns a callback that refreshes the current atom.
@@ -194,12 +237,12 @@ export const useAtomSet = <
  * @category hooks
  * @since 4.0.0
  */
-export const useAtomRefresh = <A>(atom: () => Atom.Atom<A>): () => void => {
-  const registry = useContext(RegistryContext)
-  mountAtom(registry, atom)
-  const memo = createMemo(atom)
-  return () => registry.refresh(memo())
-}
+export const useAtomRefresh = <A>(atom: () => Atom.Atom<A>): (() => void) => {
+  const registry = useContext(RegistryContext);
+  mountAtom(registry, atom);
+  const memo = createMemo(atom);
+  return () => registry.refresh(memo());
+};
 
 /**
  * Returns a Solid accessor for a writable atom together with a setter for
@@ -222,27 +265,38 @@ export const useAtomRefresh = <A>(atom: () => Atom.Atom<A>): () => void => {
  * @category hooks
  * @since 4.0.0
  */
-export const useAtom = <R, W, const Mode extends "value" | "promise" | "promiseExit" = never>(
+export const useAtom = <
+  R,
+  W,
+  const Mode extends "value" | "promise" | "promiseExit" = never,
+>(
   atom: () => Atom.Writable<R, W>,
   options?: {
-    readonly mode?: ([R] extends [AsyncResult.AsyncResult<any, any>] ? Mode : "value") | undefined
+    readonly mode?:
+      | ([R] extends [AsyncResult.AsyncResult<any, any>] ? Mode : "value")
+      | undefined;
   }
 ): readonly [
   value: Accessor<R>,
-  write: "promise" extends Mode ? (
-      (value: W) => Promise<AsyncResult.AsyncResult.Success<R>>
-    ) :
-    "promiseExit" extends Mode ? (
-        (value: W) => Promise<Exit.Exit<AsyncResult.AsyncResult.Success<R>, AsyncResult.AsyncResult.Failure<R>>>
-      ) :
-    ((value: W | ((value: R) => W)) => void)
+  write: "promise" extends Mode
+    ? (value: W) => Promise<AsyncResult.AsyncResult.Success<R>>
+    : "promiseExit" extends Mode
+      ? (
+          value: W
+        ) => Promise<
+          Exit.Exit<
+            AsyncResult.AsyncResult.Success<R>,
+            AsyncResult.AsyncResult.Failure<R>
+          >
+        >
+      : (value: W | ((value: R) => W)) => void,
 ] => {
-  const registry = useContext(RegistryContext)
+  const registry = useContext(RegistryContext);
   return [
     createAtomAccessor(registry, atom),
-    setAtom(registry, atom, options)
-  ] as const
-}
+    setAtom(registry, atom, options),
+  ] as const;
+};
 
 /**
  * Subscribes a callback to an atom in the current Solid registry.
@@ -255,11 +309,11 @@ export const useAtomSubscribe = <A>(
   f: (_: A) => void,
   options?: { readonly immediate?: boolean }
 ): void => {
-  const registry = useContext(RegistryContext)
+  const registry = useContext(RegistryContext);
   createEffect(() => {
-    onCleanup(registry.subscribe(atom(), f, options))
-  })
-}
+    onCleanup(registry.subscribe(atom(), f, options));
+  });
+};
 
 /**
  * Converts an `AsyncResult` atom into a Solid resource.
@@ -270,21 +324,24 @@ export const useAtomSubscribe = <A>(
 export const useAtomResource = <A, E>(
   atom: () => Atom.Atom<AsyncResult.AsyncResult<A, E>>,
   options?: ResourceOptions<A> & {
-    readonly suspendOnWaiting?: boolean | undefined
+    readonly suspendOnWaiting?: boolean | undefined;
   }
 ): ResourceReturn<A, void> => {
-  const result = useAtomValue(atom)
+  const result = useAtomValue(atom);
   return createResource(result, (result) => {
-    if (AsyncResult.isInitial(result) || (options?.suspendOnWaiting && result.waiting)) {
-      return constUnresolvedPromise
+    if (
+      AsyncResult.isInitial(result) ||
+      (options?.suspendOnWaiting && result.waiting)
+    ) {
+      return constUnresolvedPromise;
     } else if (AsyncResult.isSuccess(result)) {
-      return Promise.resolve(result.value)
+      return Promise.resolve(result.value);
     }
-    return Promise.reject(Cause.squash(result.cause))
-  })
-}
+    return Promise.reject(Cause.squash(result.cause));
+  });
+};
 
-const constUnresolvedPromise = new Promise<never>(() => {})
+const constUnresolvedPromise = new Promise<never>(() => {});
 
 /**
  * Subscribes to an atom ref and returns its value as a Solid accessor.
@@ -307,15 +364,17 @@ const constUnresolvedPromise = new Promise<never>(() => {})
  * @category hooks
  * @since 4.0.0
  */
-export const useAtomRef = <A>(ref: () => AtomRef.ReadonlyRef<A>): Accessor<A> => {
-  const [value, setValue] = createSignal(null as A)
+export const useAtomRef = <A>(
+  ref: () => AtomRef.ReadonlyRef<A>
+): Accessor<A> => {
+  const [value, setValue] = createSignal(null as A);
   createComputed(() => {
-    const r = ref()
-    setValue(r.value as any)
-    onCleanup(r.subscribe(setValue))
-  })
-  return value
-}
+    const r = ref();
+    setValue(r.value as any);
+    onCleanup(r.subscribe(setValue));
+  });
+  return value;
+};
 
 /**
  * Returns a Solid accessor for a property ref derived from an atom ref.
@@ -344,7 +403,7 @@ export const useAtomRef = <A>(ref: () => AtomRef.ReadonlyRef<A>): Accessor<A> =>
 export const useAtomRefProp = <A, K extends keyof A>(
   ref: () => AtomRef.AtomRef<A>,
   prop: K
-): Accessor<AtomRef.AtomRef<A[K]>> => createMemo(() => ref().prop(prop))
+): Accessor<AtomRef.AtomRef<A[K]>> => createMemo(() => ref().prop(prop));
 
 /**
  * Returns a Solid accessor for the value of a property ref derived from an atom
@@ -371,5 +430,7 @@ export const useAtomRefProp = <A, K extends keyof A>(
  * @category hooks
  * @since 4.0.0
  */
-export const useAtomRefPropValue = <A, K extends keyof A>(ref: () => AtomRef.AtomRef<A>, prop: K): Accessor<A[K]> =>
-  useAtomRef(useAtomRefProp(ref, prop))
+export const useAtomRefPropValue = <A, K extends keyof A>(
+  ref: () => AtomRef.AtomRef<A>,
+  prop: K
+): Accessor<A[K]> => useAtomRef(useAtomRefProp(ref, prop));

@@ -1,15 +1,16 @@
-import { mergeConfig } from "vitest/config"
-import shared from "../../../vitest.shared.ts"
+import { mergeConfig } from "vitest/config";
+
+import shared from "../../../vitest.shared.ts";
 
 export default mergeConfig(shared, {
   resolve: {
-    conditions: ["browser"]
+    conditions: ["browser"],
   },
   esbuild: {
-    target: "es2022"
+    target: "es2022",
   },
   test: {
     environment: "jsdom",
-    setupFiles: ["./vitest.setup.ts"]
-  }
-})
+    setupFiles: ["./vitest.setup.ts"],
+  },
+});

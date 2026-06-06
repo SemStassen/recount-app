@@ -19,10 +19,10 @@
  *
  * @since 4.0.0
  */
-import * as Context from "effect/Context"
-import * as Effect from "effect/Effect"
-import { dual } from "effect/Function"
-import type { HttpClient } from "effect/unstable/http/HttpClient"
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import { dual } from "effect/Function";
+import type { HttpClient } from "effect/unstable/http/HttpClient";
 
 /**
  * Service tag for Anthropic client configuration overrides, such as transformations applied to the generated HTTP client.
@@ -46,10 +46,11 @@ export class AnthropicConfig extends Context.Service<
    *
    * @since 4.0.0
    */
-  static readonly getOrUndefined: Effect.Effect<typeof AnthropicConfig.Service | undefined> = Effect.map(
-    Effect.context<never>(),
-    (services) => services.mapUnsafe.get(AnthropicConfig.key)
-  )
+  static readonly getOrUndefined: Effect.Effect<
+    typeof AnthropicConfig.Service | undefined
+  > = Effect.map(Effect.context<never>(), (services) =>
+    services.mapUnsafe.get(AnthropicConfig.key)
+  );
 }
 
 /**
@@ -69,7 +70,7 @@ export declare namespace AnthropicConfig {
    * @since 4.0.0
    */
   export interface Service {
-    readonly transformClient?: ((client: HttpClient) => HttpClient) | undefined
+    readonly transformClient?: ((client: HttpClient) => HttpClient) | undefined;
   }
 }
 
@@ -85,13 +86,23 @@ export declare namespace AnthropicConfig {
  * @since 4.0.0
  */
 export const withClientTransform: {
-  (transform: (client: HttpClient) => HttpClient): <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
-  <A, E, R>(self: Effect.Effect<A, E, R>, transform: (client: HttpClient) => HttpClient): Effect.Effect<A, E, R>
-} = dual(2, <A, E, R>(
-  self: Effect.Effect<A, E, R>,
-  transformClient: (client: HttpClient) => HttpClient
-) =>
-  Effect.flatMap(
-    AnthropicConfig.getOrUndefined,
-    (config) => Effect.provideService(self, AnthropicConfig, { ...config, transformClient })
-  ))
+  (
+    transform: (client: HttpClient) => HttpClient
+  ): <A, E, R>(self: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>;
+  <A, E, R>(
+    self: Effect.Effect<A, E, R>,
+    transform: (client: HttpClient) => HttpClient
+  ): Effect.Effect<A, E, R>;
+} = dual(
+  2,
+  <A, E, R>(
+    self: Effect.Effect<A, E, R>,
+    transformClient: (client: HttpClient) => HttpClient
+  ) =>
+    Effect.flatMap(AnthropicConfig.getOrUndefined, (config) =>
+      Effect.provideService(self, AnthropicConfig, {
+        ...config,
+        transformClient,
+      })
+    )
+);

@@ -20,8 +20,8 @@
  *
  * @since 2.0.0
  */
-import * as Context from "./Context.ts"
-import type * as Fiber from "./Fiber.ts"
+import * as Context from "./Context.ts";
+import type * as Fiber from "./Fiber.ts";
 
 /**
  * A scheduler manages the execution of Effect fibers by controlling when queued
@@ -41,9 +41,9 @@ import type * as Fiber from "./Fiber.ts"
  * @since 2.0.0
  */
 export interface Scheduler {
-  readonly executionMode: "sync" | "async"
-  shouldYield(fiber: Fiber.Fiber<unknown, unknown>): boolean
-  makeDispatcher(): SchedulerDispatcher
+  readonly executionMode: "sync" | "async";
+  shouldYield(fiber: Fiber.Fiber<unknown, unknown>): boolean;
+  makeDispatcher(): SchedulerDispatcher;
 }
 
 /**
@@ -66,8 +66,8 @@ export interface Scheduler {
  * @since 4.0.0
  */
 export interface SchedulerDispatcher {
-  scheduleTask(task: () => void, priority: number): void
-  flush(): void
+  scheduleTask(task: () => void, priority: number): void;
+  flush(): void;
 }
 
 /**
@@ -86,47 +86,49 @@ export interface SchedulerDispatcher {
  * @category references
  * @since 2.0.0
  */
-export const Scheduler: Context.Reference<Scheduler> = Context.Reference<Scheduler>("effect/Scheduler", {
-  defaultValue: () => new MixedScheduler()
-})
+export const Scheduler: Context.Reference<Scheduler> =
+  Context.Reference<Scheduler>("effect/Scheduler", {
+    defaultValue: () => new MixedScheduler(),
+  });
 
-const setImmediate = "setImmediate" in globalThis
-  ? (f: () => void) => {
-    // @ts-ignore
-    const timer = globalThis.setImmediate(f)
-    // @ts-ignore
-    return (): void => globalThis.clearImmediate(timer)
-  }
-  : (f: () => void) => {
-    const timer = setTimeout(f, 0)
-    return (): void => clearTimeout(timer)
-  }
+const setImmediate =
+  "setImmediate" in globalThis
+    ? (f: () => void) => {
+        // @ts-ignore
+        const timer = globalThis.setImmediate(f);
+        // @ts-ignore
+        return (): void => globalThis.clearImmediate(timer);
+      }
+    : (f: () => void) => {
+        const timer = setTimeout(f, 0);
+        return (): void => clearTimeout(timer);
+      };
 
 class PriorityBuckets {
-  buckets: Array<[priority: number, tasks: Array<() => void>]> = []
+  buckets: Array<[priority: number, tasks: Array<() => void>]> = [];
 
   scheduleTask(task: () => void, priority: number): void {
-    const buckets = this.buckets
-    const len = buckets.length
-    let bucket: [number, Array<() => void>] | undefined
-    let index = 0
+    const buckets = this.buckets;
+    const len = buckets.length;
+    let bucket: [number, Array<() => void>] | undefined;
+    let index = 0;
     for (; index < len; index++) {
-      if (buckets[index][0] > priority) break
-      bucket = buckets[index]
+      if (buckets[index][0] > priority) break;
+      bucket = buckets[index];
     }
     if (bucket && bucket[0] === priority) {
-      bucket[1].push(task)
+      bucket[1].push(task);
     } else if (index === len) {
-      buckets.push([priority, [task]])
+      buckets.push([priority, [task]]);
     } else {
-      buckets.splice(index, 0, [priority, [task]])
+      buckets.splice(index, 0, [priority, [task]]);
     }
   }
 
   drain() {
-    const buckets = this.buckets
-    this.buckets = []
-    return buckets
+    const buckets = this.buckets;
+    this.buckets = [];
+    return buckets;
   }
 }
 
@@ -150,15 +152,15 @@ class PriorityBuckets {
  * @since 2.0.0
  */
 export class MixedScheduler implements Scheduler {
-  readonly executionMode: "sync" | "async"
-  readonly setImmediate: (f: () => void) => () => void
+  readonly executionMode: "sync" | "async";
+  readonly setImmediate: (f: () => void) => () => void;
 
   constructor(
     executionMode: "sync" | "async" = "async",
     setImmediateFn: (f: () => void) => () => void = setImmediate
   ) {
-    this.executionMode = executionMode
-    this.setImmediate = setImmediateFn
+    this.executionMode = executionMode;
+    this.setImmediate = setImmediateFn;
   }
 
   /**
@@ -172,7 +174,7 @@ export class MixedScheduler implements Scheduler {
    * @since 2.0.0
    */
   shouldYield(fiber: Fiber.Fiber<unknown, unknown>) {
-    return fiber.currentOpCount >= fiber.maxOpsBeforeYield
+    return fiber.currentOpCount >= fiber.maxOpsBeforeYield;
   }
 
   /**
@@ -186,28 +188,26 @@ export class MixedScheduler implements Scheduler {
    * @since 4.0.0
    */
   makeDispatcher() {
-    return new MixedSchedulerDispatcher(this.setImmediate)
+    return new MixedSchedulerDispatcher(this.setImmediate);
   }
 }
 
 class MixedSchedulerDispatcher implements SchedulerDispatcher {
-  private tasks = new PriorityBuckets()
-  private running: (() => void) | undefined = undefined
-  readonly setImmediate: (f: () => void) => () => void
+  private tasks = new PriorityBuckets();
+  private running: (() => void) | undefined = undefined;
+  readonly setImmediate: (f: () => void) => () => void;
 
-  constructor(
-    setImmediateFn: (f: () => void) => () => void = setImmediate
-  ) {
-    this.setImmediate = setImmediateFn
+  constructor(setImmediateFn: (f: () => void) => () => void = setImmediate) {
+    this.setImmediate = setImmediateFn;
   }
 
   /**
    * @since 2.0.0
    */
   scheduleTask(task: () => void, priority: number) {
-    this.tasks.scheduleTask(task, priority)
+    this.tasks.scheduleTask(task, priority);
     if (this.running === undefined) {
-      this.running = this.setImmediate(this.afterScheduled)
+      this.running = this.setImmediate(this.afterScheduled);
     }
   }
 
@@ -215,19 +215,19 @@ class MixedSchedulerDispatcher implements SchedulerDispatcher {
    * @since 2.0.0
    */
   afterScheduled = () => {
-    this.running = undefined
-    this.runTasks()
-  }
+    this.running = undefined;
+    this.runTasks();
+  };
 
   /**
    * @since 2.0.0
    */
   runTasks() {
-    const buckets = this.tasks.drain()
+    const buckets = this.tasks.drain();
     for (let i = 0; i < buckets.length; i++) {
-      const toRun = buckets[i][1]
+      const toRun = buckets[i][1];
       for (let j = 0; j < toRun.length; j++) {
-        toRun[j]()
+        toRun[j]();
       }
     }
   }
@@ -238,10 +238,10 @@ class MixedSchedulerDispatcher implements SchedulerDispatcher {
   flush() {
     while (this.tasks.buckets.length > 0) {
       if (this.running !== undefined) {
-        this.running()
-        this.running = undefined
+        this.running();
+        this.running = undefined;
       }
-      this.runTasks()
+      this.runTasks();
     }
   }
 }
@@ -266,9 +266,12 @@ class MixedSchedulerDispatcher implements SchedulerDispatcher {
  * @category references
  * @since 4.0.0
  */
-export const MaxOpsBeforeYield = Context.Reference<number>("effect/Scheduler/MaxOpsBeforeYield", {
-  defaultValue: () => 2048
-})
+export const MaxOpsBeforeYield = Context.Reference<number>(
+  "effect/Scheduler/MaxOpsBeforeYield",
+  {
+    defaultValue: () => 2048,
+  }
+);
 
 /**
  * Context reference that controls whether the runtime should bypass scheduler
@@ -291,6 +294,9 @@ export const MaxOpsBeforeYield = Context.Reference<number>("effect/Scheduler/Max
  * @category references
  * @since 4.0.0
  */
-export const PreventSchedulerYield = Context.Reference<boolean>("effect/Scheduler/PreventSchedulerYield", {
-  defaultValue: () => false
-})
+export const PreventSchedulerYield = Context.Reference<boolean>(
+  "effect/Scheduler/PreventSchedulerYield",
+  {
+    defaultValue: () => false,
+  }
+);

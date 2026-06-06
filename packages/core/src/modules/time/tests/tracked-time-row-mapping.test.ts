@@ -1,4 +1,4 @@
-import { DateTime, Option } from "effect";
+import { DateTime, Option, Result } from "effect";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -40,7 +40,7 @@ describe("Tracked Time mapping", () => {
   it("maps completed Tracked Time to a Time Entry", () => {
     const row = makeTrackedTimeRow();
 
-    const timeEntry = timeEntryFromTrackedTimeRow(row);
+    const timeEntry = Result.getOrThrow(timeEntryFromTrackedTimeRow(row));
 
     expect(timeEntry).toBeInstanceOf(TimeEntry);
     expect(timeEntry.stoppedAt).toBe(stoppedAt);
@@ -49,7 +49,7 @@ describe("Tracked Time mapping", () => {
   it("maps running Tracked Time to a Timer", () => {
     const row = makeTrackedTimeRow({ stoppedAt: Option.none() });
 
-    const timeEntry = timerFromTrackedTimeRow(row);
+    const timeEntry = Result.getOrThrow(timerFromTrackedTimeRow(row));
 
     expect(timeEntry).toBeInstanceOf(Timer);
     expect("stoppedAt" in timeEntry).toBe(false);
@@ -57,20 +57,48 @@ describe("Tracked Time mapping", () => {
 
   it("classifies Tracked Time by stoppedAt", () => {
     expect(
-      trackedTimeStateFromTrackedTimeRow(makeTrackedTimeRow())
+      Result.getOrThrow(
+        trackedTimeStateFromTrackedTimeRow(makeTrackedTimeRow())
+      )
     ).toBeInstanceOf(TimeEntry);
     expect(
-      trackedTimeStateFromTrackedTimeRow(
-        makeTrackedTimeRow({ stoppedAt: Option.none() })
+      Result.getOrThrow(
+        trackedTimeStateFromTrackedTimeRow(
+          makeTrackedTimeRow({ stoppedAt: Option.none() })
+        )
       )
     ).toBeInstanceOf(Timer);
   });
 
+  it("returns a typed failure when mapping to the wrong Tracked Time state", () => {
+    const timeEntryRow = makeTrackedTimeRow();
+    const timerRow = makeTrackedTimeRow({ stoppedAt: Option.none() });
+    const timerResult = timerFromTrackedTimeRow(timeEntryRow);
+    const timeEntryResult = timeEntryFromTrackedTimeRow(timerRow);
+
+    expect(Result.isFailure(timerResult)).toBe(true);
+    expect(Result.isFailure(timeEntryResult)).toBe(true);
+    if (Result.isFailure(timerResult)) {
+      expect(timerResult.failure).toMatchObject({
+        _tag: "time/TrackedTimeRowStateMismatchError",
+        trackedTimeId: timeEntryRow.id,
+        expectedState: "timer",
+      });
+    }
+    if (Result.isFailure(timeEntryResult)) {
+      expect(timeEntryResult.failure).toMatchObject({
+        _tag: "time/TrackedTimeRowStateMismatchError",
+        trackedTimeId: timerRow.id,
+        expectedState: "time-entry",
+      });
+    }
+  });
+
   it("maps API-shaped Time Entries back to Tracked Time", () => {
     const row = makeTrackedTimeRow();
-    const timeEntry = timeEntryFromTrackedTimeRow(row);
-    const timer = timerFromTrackedTimeRow(
-      makeTrackedTimeRow({ stoppedAt: Option.none() })
+    const timeEntry = Result.getOrThrow(timeEntryFromTrackedTimeRow(row));
+    const timer = Result.getOrThrow(
+      timerFromTrackedTimeRow(makeTrackedTimeRow({ stoppedAt: Option.none() }))
     );
 
     expect(trackedTimeRowFromTimeEntry(timeEntry).stoppedAt).toEqual(
