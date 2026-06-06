@@ -25,7 +25,7 @@ An optional project-scoped subdivision of work that time can be tracked against.
 _Avoid_: Todo, issue
 
 **Tracked Time**:
-A work interval recorded by a workspace member, with one lifecycle identity that is either active as a timer or completed as a time entry.
+A work interval recorded by a workspace member against a project and optional task.
 _Avoid_: Time record, time log, timesheet row
 
 **Time Entry**:
@@ -116,18 +116,6 @@ _Avoid_: Full replacement, overwrite, merge
 - Updating **Tracked Time** validates the effective **Tracked Time Target** after applying the **Partial Update**
 - Changing the **Task** of **Tracked Time** does not implicitly change its **Project**
 - A **Time Entry** belongs to exactly one **Workspace Member**
-- A **Time Entry** stops at or after it starts
-- A **Time Entry** has one **Duration**
-- A **Timer** does not have a final **Duration**
-- A **Timer** start time does not change after the timer starts
-- A **Workspace Member** can have at most one **Timer** in a **Workspace**
-- A **Current Timer** is the active **Timer** role for one **Workspace Member** in one **Workspace**
-- Starting a **Timer** fails if the **Workspace Member** already has one in the workspace
-- Stopping a **Timer** completes the **Tracked Time** as a **Time Entry**
-- A **Time Entry** cannot become a **Timer** again
-- A **Time Entry** start time can be corrected after completion
-- **Time Entries** for the same **Workspace Member** may overlap
-- Overlapping **Time Entries** count as separate tracked durations, not unique elapsed clock time
 - An **Archived** project or task can still be referenced by historical **Time Entries**
 - An **Archived** project or task cannot be chosen when starting or updating a **Timer**, creating a **Time Entry**, or correcting a **Time Entry**
 - A **Timer** can stop after its project or task becomes **Archived**
