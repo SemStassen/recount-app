@@ -26,6 +26,12 @@ _Avoid_: Hours, billable time
 
 ## Relationships
 
+- **Tracked Time** is recorded against exactly one **Tracked Time Target**
+- **Tracked Time** is either a **Timer** or a **Time Entry**
+- A **Tracked Time Target** has exactly one **Project** and may have one **Task**
+- A **Time Entry** belongs to exactly one **Workspace Member**
+- Updating **Tracked Time** validates the effective **Tracked Time Target** after applying the **Partial Update**
+- Changing the **Task** of **Tracked Time** does not implicitly change its **Project**
 - A **Time Entry** stops at or after it starts
 - A **Time Entry** has one **Duration**
 - A **Timer** does not have a final **Duration**
@@ -38,3 +44,11 @@ _Avoid_: Hours, billable time
 - A **Time Entry** start time can be corrected after completion
 - **Time Entries** for the same **Workspace Member** may overlap
 - Overlapping **Time Entries** count as separate tracked durations, not unique elapsed clock time
+- An **Archived** project or task cannot be chosen when starting or updating a **Timer**, creating a **Time Entry**, or correcting a **Time Entry**
+- A **Timer** can stop after its project or task becomes **Archived**
+
+## Flagged ambiguities
+
+- **Timer** describes active tracking behavior, not completed historical work.
+- **Tracked Time** is the umbrella term for active and completed tracked work intervals; use **Timer** or **Time Entry** when the lifecycle state matters.
+- **Time Entry** describes completed historical work, not active tracking.
