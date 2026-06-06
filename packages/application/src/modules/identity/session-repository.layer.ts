@@ -1,4 +1,5 @@
-import { Session, SessionRepository } from "@recount/core/modules/identity";
+import { Session } from "@recount/core/modules/identity";
+import { SessionRepository } from "@recount/core/modules/identity/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { eq } from "drizzle-orm";

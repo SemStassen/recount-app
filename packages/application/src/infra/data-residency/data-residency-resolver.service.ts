@@ -1,7 +1,5 @@
-import {
-  WorkspaceNotFoundError,
-  WorkspaceRepository,
-} from "@recount/core/modules/workspace";
+import { WorkspaceNotFoundError } from "@recount/core/modules/workspace";
+import { WorkspaceRepository } from "@recount/core/modules/workspace/persistence";
 import type { DataResidencyRegion } from "@recount/core/shared/data-residency";
 import type { RepositoryError } from "@recount/core/shared/repository";
 import type { WorkspaceId } from "@recount/core/shared/schemas";

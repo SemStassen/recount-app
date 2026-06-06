@@ -2,12 +2,12 @@ import { Effect, Layer, Option } from "effect";
 
 import type { Workspace } from "./domain/workspace.entity";
 import * as workspaceTransitions from "./domain/workspace.transitions";
+import { WorkspaceRepository } from "./persistence";
 import {
   WorkspaceModule,
   WorkspaceNotFoundError,
   WorkspaceSlugAlreadyExistsError,
 } from "./workspace-module.service";
-import { WorkspaceRepository } from "./workspace-repository.service";
 
 export const WorkspaceModuleLayer = Layer.effect(
   WorkspaceModule,

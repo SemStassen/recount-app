@@ -3,7 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import type { UserSettings } from "./domain/user-settings.entity";
+import type { UserSettings } from "../domain/user-settings.entity";
 
 export interface UserSettingsRepositoryShape {
   readonly insert: (

@@ -1,4 +1,5 @@
-import { Task, TaskRepository } from "@recount/core/modules/project";
+import { Task } from "@recount/core/modules/project";
+import { TaskRepository } from "@recount/core/modules/project/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { eq, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option } from "effect";

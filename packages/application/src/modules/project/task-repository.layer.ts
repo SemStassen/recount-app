@@ -1,4 +1,5 @@
-import { Task, TaskRepository } from "@recount/core/modules/project";
+import { Task } from "@recount/core/modules/project";
+import { TaskRepository } from "@recount/core/modules/project/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq } from "drizzle-orm";

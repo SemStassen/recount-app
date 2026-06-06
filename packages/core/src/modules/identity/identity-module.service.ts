@@ -2,7 +2,7 @@ import { Schema, Context } from "effect";
 import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
-import { SessionId, UserId, UserSettingsId } from "#shared/schemas/index";
+import { SessionId, UserId } from "#shared/schemas/index";
 
 import type { Session } from "./domain/session.entity";
 import type { UserSettings } from "./domain/user-settings.entity";

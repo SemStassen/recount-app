@@ -1,7 +1,5 @@
-import {
-  WorkspaceInvitation,
-  WorkspaceInvitationRepository,
-} from "@recount/core/modules/workspace-invitation";
+import { WorkspaceInvitation } from "@recount/core/modules/workspace-invitation";
+import { WorkspaceInvitationRepository } from "@recount/core/modules/workspace-invitation/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq, gt } from "drizzle-orm";

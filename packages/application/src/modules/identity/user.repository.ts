@@ -1,4 +1,5 @@
-import { User, UserRepository } from "@recount/core/modules/identity";
+import { User } from "@recount/core/modules/identity";
+import { UserRepository } from "@recount/core/modules/identity/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { eq } from "drizzle-orm";

@@ -3,7 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import type { Task } from "./domain/task.entity";
+import type { Task } from "../domain/task.entity";
 
 export interface TaskRepositoryShape {
   readonly insertMany: (

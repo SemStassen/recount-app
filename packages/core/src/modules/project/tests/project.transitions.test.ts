@@ -4,13 +4,13 @@ import { describe, expect, it } from "vitest";
 import { HexColor, ProjectId, WorkspaceId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
-import { Project } from "./project.entity";
+import { Project } from "../domain/project.entity";
 import {
   archiveProject,
   createProject,
   unarchiveProject,
   updateProject,
-} from "./project.transitions";
+} from "../domain/project.transitions";
 
 const makeProject = (overrides: Partial<Project> = {}) =>
   Project.make({

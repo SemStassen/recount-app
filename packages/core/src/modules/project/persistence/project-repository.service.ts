@@ -3,7 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import type { Project } from "./domain/project.entity";
+import type { Project } from "../domain/project.entity";
 
 export interface ProjectRepositoryShape {
   readonly insertMany: (

@@ -1,7 +1,5 @@
-import {
-  UserSettings,
-  UserSettingsRepository,
-} from "@recount/core/modules/identity";
+import { UserSettings } from "@recount/core/modules/identity";
+import { UserSettingsRepository } from "@recount/core/modules/identity/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { eq } from "drizzle-orm";

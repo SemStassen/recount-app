@@ -10,4 +10,3 @@ export {
   WorkspaceInvitationModule,
   WorkspaceInvitationNotFoundError,
 } from "./workspace-invitation-module.service";
-export { WorkspaceInvitationRepository } from "./workspace-invitation-repository.service";

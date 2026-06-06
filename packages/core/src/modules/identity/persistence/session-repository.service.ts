@@ -3,7 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import type { Session } from "./domain/session.entity";
+import type { Session } from "../domain/session.entity";
 
 export interface SessionRepositoryShape {
   readonly update: (params: {

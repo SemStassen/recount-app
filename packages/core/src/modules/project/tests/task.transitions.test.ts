@@ -9,15 +9,15 @@ import {
 } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
 
-import { Project } from "./project.entity";
-import { ProjectArchivedError } from "./project.errors";
-import { Task } from "./task.entity";
+import { Project } from "../domain/project.entity";
+import { ProjectArchivedError } from "../domain/project.errors";
+import { Task } from "../domain/task.entity";
 import {
   archiveTask,
   createTask,
   unarchiveTask,
   updateTask,
-} from "./task.transitions";
+} from "../domain/task.transitions";
 
 const workspaceId = () => WorkspaceId.make(generateUUID());
 const projectId = () => ProjectId.make(generateUUID());

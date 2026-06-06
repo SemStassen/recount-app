@@ -4,12 +4,12 @@ import type { UserId, WorkspaceId } from "#shared/schemas/index";
 
 import type { WorkspaceMember } from "./domain/workspace-member.entity";
 import * as workspaceMemberTransitions from "./domain/workspace-member.transitions";
+import { WorkspaceMemberRepository } from "./persistence";
 import {
   WorkspaceMemberAlreadyExistsError,
   WorkspaceMemberModule,
   WorkspaceMemberNotFoundError,
 } from "./workspace-member-module.service";
-import { WorkspaceMemberRepository } from "./workspace-member-repository.service";
 
 export const WorkspaceMemberModuleLayer = Layer.effect(
   WorkspaceMemberModule,

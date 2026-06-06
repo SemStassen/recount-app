@@ -3,7 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import type { User } from "./domain/user.entity";
+import type { User } from "../domain/user.entity";
 
 export interface UserRepositoryShape {
   readonly update: (params: {

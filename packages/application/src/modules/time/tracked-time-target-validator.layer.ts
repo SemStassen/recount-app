@@ -1,7 +1,7 @@
 import {
   ProjectRepository,
   TaskRepository,
-} from "@recount/core/modules/project";
+} from "@recount/core/modules/project/persistence";
 import {
   TargetProjectNotFoundError,
   TargetTaskNotFoundError,

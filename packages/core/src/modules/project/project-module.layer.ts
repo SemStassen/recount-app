@@ -4,13 +4,12 @@ import type { Project } from "./domain/project.entity";
 import * as projectTransitions from "./domain/project.transitions";
 import type { Task } from "./domain/task.entity";
 import * as taskTransitions from "./domain/task.transitions";
+import { ProjectRepository, TaskRepository } from "./persistence";
 import {
   ProjectModule,
   ProjectNotFoundError,
   TaskNotFoundError,
 } from "./project-module.service";
-import { ProjectRepository } from "./project-repository.service";
-import { TaskRepository } from "./task-repository.service";
 
 export const ProjectModuleLayer = Layer.effect(
   ProjectModule,

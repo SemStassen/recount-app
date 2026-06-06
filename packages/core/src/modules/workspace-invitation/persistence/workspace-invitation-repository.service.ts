@@ -3,7 +3,7 @@ import type { Effect, Option } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
 
-import type { WorkspaceInvitation } from "./domain/workspace-invitation.entity";
+import type { WorkspaceInvitation } from "../domain/workspace-invitation.entity";
 
 export interface WorkspaceInvitationRepositoryShape {
   readonly insert: (
