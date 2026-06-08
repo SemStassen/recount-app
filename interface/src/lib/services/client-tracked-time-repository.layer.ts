@@ -128,10 +128,8 @@ export function createClientTrackedTimeRepositoryLayer(
     findCurrentTimer: (params) =>
       Effect.try({
         try: () =>
-          Option.map(
-            findCurrentTrackedTimeRow(params),
-            (trackedTimeRow) =>
-              Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
+          Option.map(findCurrentTrackedTimeRow(params), (trackedTimeRow) =>
+            Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
           ),
         catch: toRepositoryError,
       }),

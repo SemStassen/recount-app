@@ -5,6 +5,9 @@ ruleDirs:
   - ast-grep/rules/ui # UI component and accessibility patterns
   - ast-grep/rules/effect # Effect library patterns
 
+ignores:
+  - .better-agents/**
+
 # Test configuration
 testConfigs:
   - testDir: ast-grep/rule-tests/shared

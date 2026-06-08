@@ -13,6 +13,7 @@
     "lint": "turbo lint",
     "lint:ast": "ast-grep scan",
     "lint:ast:test": "ast-grep test",
+    "prepare": "lefthook install",
     "typecheck": "turbo typecheck",
     "subtree:create:effect": "git subtree add --prefix=.better-agents/effect https://github.com/Effect-TS/effect-smol main --squash",
     "subtree:update:effect": "git subtree pull --prefix=.better-agents/effect https://github.com/Effect-TS/effect-smol main --squash",
