@@ -1,4 +1,5 @@
 import { Workspace } from "@recount/core/modules/workspace";
+import { DataResidencyRegion } from "@recount/core/shared/data-residency";
 import { slugify } from "@recount/core/shared/utils";
 import { FieldControl } from "@recount/ui/field";
 import {
@@ -29,6 +30,7 @@ function RouteComponent() {
     defaultValues: {
       name: "",
       slug: "",
+      dataResidencyRegion: DataResidencyRegion.schema.literals[0],
     } satisfies typeof schema.validator.Encoded,
     validationLogic: defaultValidationLogic,
     validators: {
@@ -43,6 +45,7 @@ function RouteComponent() {
           const res = yield* client("Workspace.Create", {
             name: value.name,
             slug: value.slug,
+            dataResidencyRegion: value.dataResidencyRegion,
           });
 
           navigate({
@@ -123,6 +126,29 @@ function RouteComponent() {
             },
           }}
           name="slug"
+        />
+        <form.AppField
+          children={(field) => (
+            <field.SelectField
+              direction="vertical"
+              label={{
+                children: "Region",
+              }}
+              select={{
+                items: [
+                  {
+                    label: "Global",
+                    value: DataResidencyRegion.schema.literals[0],
+                  },
+                  {
+                    label: "European Union",
+                    value: DataResidencyRegion.schema.literals[1],
+                  },
+                ],
+              }}
+            />
+          )}
+          name="dataResidencyRegion"
         />
         <form.AppForm>
           <form.SubmitButton className="w-full" size="lg">

@@ -12,10 +12,12 @@ export const Route = createFileRoute("/_app/$workspaceSlug/settings")({
 });
 
 function RouteComponent() {
+  // @ts-expect-error: Temp fix
   const matches = useRouterState({ select: (s) => s.matches });
 
+  // @ts-expect-error: Temp fix
   const matchWithTitle = [...matches]
-    .reverse()
+    .toReversed()
     .find((d) => "getTitle" in d.context);
 
   const title =

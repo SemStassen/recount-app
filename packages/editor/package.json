@@ -4,7 +4,7 @@
   "scripts": {
     "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
     "format": "oxfmt --write .",
-    "lint": "oxlint -A import/no-namespace -c ../../.oxlintrc.json .",
+    "lint": "oxlint -A import/no-namespace .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
