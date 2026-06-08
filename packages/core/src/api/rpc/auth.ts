@@ -29,6 +29,7 @@ export const AuthRpcGroup = RpcGroup.make(
     success: SetLastActiveWorkspaceResult,
     error: Schema.Union([
       WorkspaceMemberNotFoundError,
+      HttpApiError.Unauthorized,
       HttpApiError.InternalServerError,
     ]),
   }).middleware(RpcSessionMiddleware)

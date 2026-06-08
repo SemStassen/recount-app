@@ -19,7 +19,7 @@ export const WorkspaceRpcGroupLayer = WorkspaceRpcGroup.toLayer(
       Effect.catchTags({
         RepositoryError: () =>
           Effect.fail(new HttpApiError.InternalServerError()),
-        "infra/DatabaseError": () =>
+        "db/DatabaseError": () =>
           Effect.fail(new HttpApiError.InternalServerError()),
       })
     ),

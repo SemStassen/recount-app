@@ -4,7 +4,7 @@ import type { Effect } from "effect";
 import type { Pool } from "pg";
 
 export class DatabaseError extends Schema.TaggedErrorClass<DatabaseError>()(
-  "infra/DatabaseError",
+  "db/DatabaseError",
   {
     cause: Schema.Unknown,
   }
