@@ -4,8 +4,8 @@ import * as React from "react";
 import { cn } from "#utils/cn";
 
 import { Icons } from "../icons";
-import { Input } from '../input';
-import type { InputProps } from '../input';
+import { Input } from "../input";
+import type { InputProps } from "../input";
 import { ScrollArea } from "../scroll-area";
 
 export const ComboboxContext: React.Context<{
