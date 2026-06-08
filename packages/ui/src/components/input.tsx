@@ -59,6 +59,8 @@ export function Input({
   unstyled = false,
   ...props
 }: InputProps): React.ReactElement {
+  const { render: _render, style, ...nativeInputProps } = props;
+
   const inputClassName = cn(
     inputVariants({
       size: size,
@@ -79,7 +81,8 @@ export function Input({
         <input
           className={inputClassName}
           data-slot="input"
-          {...(props as React.ComponentProps<"input">)}
+          style={typeof style === "function" ? undefined : style}
+          {...nativeInputProps}
         />
       ) : (
         <InputPrimitive
