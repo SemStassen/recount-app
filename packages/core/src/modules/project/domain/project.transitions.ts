@@ -1,4 +1,5 @@
-import { DateTime, Option, Result } from "effect";
+import type { DateTime} from "effect";
+import { Option, Result } from "effect";
 
 import { HexColor, ProjectId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";

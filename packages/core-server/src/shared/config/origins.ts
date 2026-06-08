@@ -7,10 +7,10 @@ export class InvalidFrontendOriginsError extends Schema.TaggedErrorClass<Invalid
 
 // Matches patterns like https://*.example.com or https://preview*.example.com:3000
 const wildcardPatternRegex =
-  /^(https?):\/\/([A-Za-z0-9-]*)\*\.([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)(?::(\d+))?$/i;
+  /^(https?):\/\/([A-Za-z0-9-]*)\*\.([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)(?::(\d+))?$/iu;
 
 const escapeRegex = (value: string) =>
-  value.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
+  value.replaceAll(/[|\\{}()[\]^$+?.]/gu, "\\$&");
 
 // ------------------------------------------------------------------
 // Matching
@@ -21,15 +21,15 @@ export const matchesAllowedOrigin = (
   patterns: ReadonlyArray<string>
 ) =>
   patterns.some((pattern) => {
-    if (!pattern.includes("*")) return origin === pattern;
+    if (!pattern.includes("*")) {return origin === pattern;}
 
     const match = pattern.match(wildcardPatternRegex);
-    if (!match) return false;
+    if (!match) {return false;}
 
     const [, protocol, prefix, hostname, port] = match;
     const regex = new RegExp(
       `^${protocol}:\\/\\/${escapeRegex(prefix)}[^.]+\\.${escapeRegex(hostname)}${port ? `:${port}` : ""}$`,
-      "i"
+      "iu"
     );
 
     return regex.test(origin);

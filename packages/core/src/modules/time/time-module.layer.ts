@@ -1,6 +1,6 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
-import { Timer } from "./domain/tracked-time.entity";
+import type { Timer } from "./domain/tracked-time.entity";
 import {
   TimerNotFoundError,
   TimerAlreadyRunningError,

@@ -7,7 +7,8 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "./combobox.coss";
-import { InputTime, type InputTimeProps } from "./input-time";
+import { InputTime } from './input-time';
+import type { InputTimeProps } from './input-time';
 
 export interface TimePickerProps extends InputTimeProps {
   step?: 5 | 10 | 15 | 20 | 30;

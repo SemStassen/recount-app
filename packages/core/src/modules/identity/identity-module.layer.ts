@@ -38,7 +38,7 @@ export const IdentityModuleLayer = Layer.effect(
 
           const { entity, changes } = yield* Effect.fromResult(
             sessionTransitions.updateSessionLastActiveWorkspace({
-              session: session,
+              session,
               lastActiveWorkspaceId: params.workspaceId,
             })
           );
@@ -77,7 +77,7 @@ export const IdentityModuleLayer = Layer.effect(
 
         const { entity, changes } = yield* Effect.fromResult(
           userTransitions.updateUser({
-            user: user,
+            user,
             data: params.data,
           })
         );
@@ -110,7 +110,7 @@ export const IdentityModuleLayer = Layer.effect(
 
           const { entity, changes } = yield* Effect.fromResult(
             userSettingsTransitions.updateUserSettings({
-              userSettings: userSettings,
+              userSettings,
               data: params.data,
             })
           );

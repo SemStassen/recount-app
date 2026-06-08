@@ -1,7 +1,8 @@
-import { PlainApiKey } from "@recount/core/shared/schemas";
-import { Context, Effect, Option } from "effect";
+import type { PlainApiKey } from "@recount/core/shared/schemas";
+import type { Effect, Option } from "effect";
+import { Context } from "effect";
 
-import { IntegrationError } from "./errors";
+import type { IntegrationError } from "./errors";
 
 export interface ExternalProject {
   readonly externalId: string;

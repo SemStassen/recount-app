@@ -26,11 +26,11 @@ const mockState = vi.hoisted(() => ({
 }));
 
 vi.mock("@effect/sql-pg", async () => {
-  const { Effect, Layer } = await import("effect");
+  const { Effect: MockEffect, Layer } = await import("effect");
 
   return {
     PgClient: {
-      fromPool: vi.fn(() => Effect.succeed({})),
+      fromPool: vi.fn(() => MockEffect.succeed({})),
       layerFrom: vi.fn(() => Layer.empty),
     },
   };
@@ -43,12 +43,12 @@ vi.mock("pg", () => ({
 }));
 
 vi.mock("drizzle-orm/effect-postgres", async () => {
-  const { Effect, Layer } = await import("effect");
+  const { Effect: MockEffect, Layer } = await import("effect");
 
   return {
     DefaultServices: Layer.empty,
     make: vi.fn(() =>
-      Effect.succeed({
+      MockEffect.succeed({
         select: () => ({
           from: () => ({
             execute: mockState.rootExecute,

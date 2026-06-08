@@ -1,5 +1,5 @@
-import * as PgDrizzle from "drizzle-orm/effect-postgres";
-import { Schema, Context } from "effect";
+import type * as PgDrizzle from "drizzle-orm/effect-postgres";
+import { Context, Schema } from "effect";
 import type { Effect } from "effect";
 import type { Pool } from "pg";
 

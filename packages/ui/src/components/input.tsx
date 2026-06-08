@@ -63,7 +63,7 @@ export function Input({
 
   const inputClassName = cn(
     inputVariants({
-      size: size,
+      size,
     }),
     props.type === "file" &&
       "text-muted-foreground file:me-3 file:bg-transparent file:font-medium file:text-foreground file:text-sm",

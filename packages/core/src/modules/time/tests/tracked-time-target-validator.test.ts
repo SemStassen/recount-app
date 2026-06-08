@@ -90,33 +90,37 @@ const makeTargetValidatorLayer = (params: {
   readonly tasks: ReadonlyMap<TaskId, ProjectId>;
 }) =>
   Layer.succeed(TrackedTimeTargetValidator, {
-    validate: ({ workspaceId, projectId, taskId }) =>
+    validate: ({
+      workspaceId: targetWorkspaceId,
+      projectId: targetProjectId,
+      taskId: targetTaskId,
+    }) =>
       Effect.gen(function* () {
-        if (!params.projects.has(projectId)) {
+        if (!params.projects.has(targetProjectId)) {
           return yield* new TargetProjectNotFoundError({
-            workspaceId,
-            projectId,
+            workspaceId: targetWorkspaceId,
+            projectId: targetProjectId,
           });
         }
 
-        if (Option.isNone(taskId)) {
+        if (Option.isNone(targetTaskId)) {
           return;
         }
 
-        const taskProjectId = params.tasks.get(taskId.value);
+        const taskProjectId = params.tasks.get(targetTaskId.value);
 
         if (!taskProjectId) {
           return yield* new TargetTaskNotFoundError({
-            workspaceId,
-            taskId: taskId.value,
+            workspaceId: targetWorkspaceId,
+            taskId: targetTaskId.value,
           });
         }
 
-        if (taskProjectId !== projectId) {
+        if (taskProjectId !== targetProjectId) {
           return yield* new TargetTaskProjectMismatchError({
-            workspaceId,
-            projectId,
-            taskId: taskId.value,
+            workspaceId: targetWorkspaceId,
+            projectId: targetProjectId,
+            taskId: targetTaskId.value,
           });
         }
       }),

@@ -101,7 +101,7 @@ export const WorkspaceMemberModuleLayer = Layer.effect(
           });
         }
       }),
-      assertUserNotWorkspaceMember: assertUserNotWorkspaceMember,
+      assertUserNotWorkspaceMember,
       listByUserId: Effect.fn("workspace-member.listByUserId")(
         function* (userId) {
           const workspaceMembers =
