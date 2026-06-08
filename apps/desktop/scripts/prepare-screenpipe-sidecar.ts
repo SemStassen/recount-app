@@ -1,3 +1,5 @@
+// ast-grep-ignore: no-direct-fs-import, no-bare-new-error, no-console-log
+
 import { chmod, copyFile, mkdir } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
