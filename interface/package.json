@@ -48,8 +48,7 @@
     "react-colorful": "^5.7.0",
     "react-dom": "catalog:frontend",
     "react-hotkeys-hook": "^5.1.0",
-    "vite": "catalog:dev",
-    "zod": "^4.4.1"
+    "vite": "catalog:dev"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",
