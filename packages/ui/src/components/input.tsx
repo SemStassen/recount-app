@@ -6,9 +6,6 @@ import type * as React from "react";
 import { cn } from "#utils/cn";
 
 export const inputControlVariants = cva([], {
-  defaultVariants: {
-    unstyled: false,
-  },
   variants: {
     unstyled: {
       false: [
@@ -23,6 +20,9 @@ export const inputControlVariants = cva([], {
       true: "",
     },
   },
+  defaultVariants: {
+    unstyled: false,
+  },
 });
 
 export const inputVariants = cva(
@@ -33,45 +33,40 @@ export const inputVariants = cva(
     "sm:h-7.5 sm:leading-7.5",
   ],
   {
-    defaultVariants: {
-      size: "default",
-      type: "default",
-    },
     variants: {
-      type: {
-        default: "",
-        file: "text-muted-foreground file:me-3 file:bg-transparent file:font-medium file:text-foreground file:text-sm",
-        search:
-          "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none",
-      },
       size: {
         default: "",
         lg: "h-9.5 leading-9.5 sm:h-8.5 sm:leading-8.5",
         sm: "h-7.5 px-[calc(--spacing(2.5)-1px)] leading-7.5 sm:h-6.5 sm:leading-6.5",
       },
     },
+    defaultVariants: {
+      size: "default",
+    },
   }
 );
 
 export type InputProps = Omit<InputPrimitive.Props, "size"> &
+  VariantProps<typeof inputControlVariants> &
   VariantProps<typeof inputVariants> & {
     nativeInput?: boolean;
-    unstyled?: boolean;
   };
 
 export function Input({
   className,
   nativeInput = false,
   size,
-  type,
   unstyled = false,
   ...props
 }: InputProps): React.ReactElement {
   const inputClassName = cn(
     inputVariants({
-      size,
-      type,
-    })
+      size: size,
+    }),
+    props.type === "file" &&
+      "text-muted-foreground file:me-3 file:bg-transparent file:font-medium file:text-foreground file:text-sm",
+    props.type === "search" &&
+      "[&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none [&::-webkit-search-results-button]:appearance-none [&::-webkit-search-results-decoration]:appearance-none"
   );
 
   return (
@@ -84,14 +79,12 @@ export function Input({
         <input
           className={inputClassName}
           data-slot="input"
-          type={type}
           {...(props as React.ComponentProps<"input">)}
         />
       ) : (
         <InputPrimitive
           className={inputClassName}
           data-slot="input"
-          type={type}
           {...props}
         />
       )}
