@@ -1,7 +1,6 @@
 import { Project } from "@recount/core/modules/project";
 import { ProjectRepository } from "@recount/core/modules/project/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
-import { eq, inArray, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option } from "effect";
 
 import {
@@ -12,7 +11,6 @@ import {
 
 import {
   type ClientRepositoryCollection,
-  toQueryableCollection,
   updateCollectionItem,
 } from "./client-repository-collection";
 
@@ -26,11 +24,6 @@ const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
 export function createClientProjectRepositoryLayer(
   projectsCollection: ProjectCollection
 ) {
-  const queryableProjectsCollection = toQueryableCollection<
-    ProjectCollectionRow,
-    ProjectCollectionInsert
-  >(projectsCollection);
-
   return Layer.succeed(ProjectRepository, {
     insertMany: (data) =>
       Effect.try({
@@ -43,20 +36,15 @@ export function createClientProjectRepositoryLayer(
         catch: toRepositoryError,
       }),
     update: ({ id, update }) =>
-      Effect.tryPromise({
-        try: async () => {
+      Effect.try({
+        try: () => {
           updateCollectionItem<ProjectCollectionRow, ProjectCollectionInsert>(
             projectsCollection,
             id,
             update
           );
 
-          const project = await queryOnce((q) =>
-            q
-              .from({ project: queryableProjectsCollection })
-              .where(({ project }) => eq(project.id, id))
-              .findOne()
-          );
+          const project = projectsCollection.get(id);
 
           if (!project) {
             throw new Error(`Project ${id} was not found after local write`);
@@ -67,14 +55,9 @@ export function createClientProjectRepositoryLayer(
         catch: toRepositoryError,
       }),
     findById: ({ workspaceId, id }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const project = await queryOnce((q) =>
-            q
-              .from({ project: queryableProjectsCollection })
-              .where(({ project }) => eq(project.id, id))
-              .findOne()
-          );
+      Effect.try({
+        try: () => {
+          const project = projectsCollection.get(id);
 
           if (!project || project.workspaceId !== workspaceId) {
             return Option.none<Project>();
@@ -85,15 +68,11 @@ export function createClientProjectRepositoryLayer(
         catch: toRepositoryError,
       }),
     findManyByIds: ({ workspaceId, ids }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const projects = await queryOnce((q) =>
-            q
-              .from({ project: queryableProjectsCollection })
-              .where(({ project }) => inArray(project.id, [...ids]))
-          );
-
-          return projects
+      Effect.try({
+        try: () => {
+          return ids
+            .map((id) => projectsCollection.get(id))
+            .filter((project) => project !== undefined)
             .filter((project) => project.workspaceId === workspaceId)
             .map(toProjectEntity);
         },

@@ -5,7 +5,7 @@ export type ClientRepositoryCollection<
   InsertInput extends object = Row,
 > = Pick<
   Collection<any, string | number, Record<string, any>, any, any>,
-  "delete" | "update"
+  "delete" | "get" | "update" | "values"
 > & {
   readonly __insertInput?: InsertInput;
   readonly __row?: Row;

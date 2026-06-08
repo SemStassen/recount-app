@@ -5,7 +5,6 @@ import {
 } from "@recount/core/modules/time";
 import { TrackedTimeTargetValidator } from "@recount/core/modules/time/ports";
 import { RepositoryError } from "@recount/core/shared/repository";
-import { and, eq, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option } from "effect";
 
 import type {
@@ -15,10 +14,7 @@ import type {
   TaskCollectionRow,
 } from "~/db/workspace/workspace-collection-codecs";
 
-import {
-  type ClientRepositoryCollection,
-  toQueryableCollection,
-} from "./client-repository-collection";
+import type { ClientRepositoryCollection } from "./client-repository-collection";
 
 type ProjectCollection = ClientRepositoryCollection<
   ProjectCollectionRow,
@@ -36,32 +32,13 @@ export function createClientTrackedTimeTargetValidatorLayer(params: {
   readonly projectsCollection: ProjectCollection;
   readonly tasksCollection: TaskCollection;
 }) {
-  const queryableProjectsCollection = toQueryableCollection<
-    ProjectCollectionRow,
-    ProjectCollectionInsert
-  >(params.projectsCollection);
-  const queryableTasksCollection = toQueryableCollection<
-    TaskCollectionRow,
-    TaskCollectionInsert
-  >(params.tasksCollection);
-
   return Layer.succeed(TrackedTimeTargetValidator, {
     validate: ({ workspaceId, projectId, taskId }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const project = await queryOnce((q) =>
-            q
-              .from({ project: queryableProjectsCollection })
-              .where(({ project }) =>
-                and(
-                  eq(project.workspaceId, workspaceId),
-                  eq(project.id, projectId)
-                )
-              )
-              .findOne()
-          );
+      Effect.try({
+        try: () => {
+          const project = params.projectsCollection.get(projectId);
 
-          if (!project) {
+          if (!project || project.workspaceId !== workspaceId) {
             throw new TargetProjectNotFoundError({
               workspaceId,
               projectId,
@@ -72,19 +49,9 @@ export function createClientTrackedTimeTargetValidatorLayer(params: {
             return;
           }
 
-          const task = await queryOnce((q) =>
-            q
-              .from({ task: queryableTasksCollection })
-              .where(({ task }) =>
-                and(
-                  eq(task.workspaceId, workspaceId),
-                  eq(task.id, taskId.value)
-                )
-              )
-              .findOne()
-          );
+          const task = params.tasksCollection.get(taskId.value);
 
-          if (!task) {
+          if (!task || task.workspaceId !== workspaceId) {
             throw new TargetTaskNotFoundError({
               workspaceId,
               taskId: taskId.value,

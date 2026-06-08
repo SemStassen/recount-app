@@ -1,7 +1,6 @@
 import { Task } from "@recount/core/modules/project";
 import { TaskRepository } from "@recount/core/modules/project/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
-import { eq, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option } from "effect";
 
 import {
@@ -13,7 +12,6 @@ import {
 
 import {
   type ClientRepositoryCollection,
-  toQueryableCollection,
   updateCollectionItem,
 } from "./client-repository-collection";
 
@@ -27,11 +25,6 @@ const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
 export function createClientTaskRepositoryLayer(
   tasksCollection: TaskCollection
 ) {
-  const queryableTasksCollection = toQueryableCollection<
-    TaskCollectionRow,
-    TaskCollectionInsert
-  >(tasksCollection);
-
   return Layer.succeed(TaskRepository, {
     insertMany: (data) =>
       Effect.try({
@@ -44,20 +37,15 @@ export function createClientTaskRepositoryLayer(
         catch: toRepositoryError,
       }),
     update: ({ id, update }) =>
-      Effect.tryPromise({
-        try: async () => {
+      Effect.try({
+        try: () => {
           updateCollectionItem<TaskCollectionRow, TaskCollectionInsert>(
             tasksCollection,
             id,
             update
           );
 
-          const task = await queryOnce((q) =>
-            q
-              .from({ task: queryableTasksCollection })
-              .where(({ task }) => eq(task.id, id))
-              .findOne()
-          );
+          const task = tasksCollection.get(id);
 
           if (!task) {
             throw new Error(`Task ${id} was not found after local write`);
@@ -68,14 +56,9 @@ export function createClientTaskRepositoryLayer(
         catch: toRepositoryError,
       }),
     findById: ({ workspaceId, id }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const task = await queryOnce((q) =>
-            q
-              .from({ task: queryableTasksCollection })
-              .where(({ task }) => eq(task.id, id))
-              .findOne()
-          );
+      Effect.try({
+        try: () => {
+          const task = tasksCollection.get(id);
 
           if (!task || task.workspaceId !== workspaceId) {
             return Option.none<Task>();

@@ -9,7 +9,6 @@ import {
   trackedTimeUpdateFromTimeEntryChanges,
 } from "@recount/core/modules/time/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
-import { and, eq, queryOnce } from "@tanstack/react-db";
 import { Effect, Layer, Option, Result } from "effect";
 
 import {
@@ -22,7 +21,6 @@ import {
 import {
   deleteCollectionItems,
   type ClientRepositoryCollection,
-  toQueryableCollection,
   updateCollectionItem,
 } from "./client-repository-collection";
 
@@ -36,39 +34,24 @@ const toRepositoryError = (cause: unknown) => new RepositoryError({ cause });
 export function createClientTrackedTimeRepositoryLayer(
   timeEntriesCollection: TrackedTimeCollection
 ) {
-  const queryableTimeEntriesCollection = toQueryableCollection<
-    TrackedTimeCollectionRow,
-    TrackedTimeCollectionInsert
-  >(timeEntriesCollection);
-
-  const findCurrentTrackedTimeRow = async ({
+  const findCurrentTrackedTimeRow = ({
     workspaceId,
     workspaceMemberId,
   }: {
     workspaceId: TrackedTimeRow["workspaceId"];
     workspaceMemberId: TrackedTimeRow["workspaceMemberId"];
   }) => {
-    const timeEntry = await queryOnce((q) =>
-      q
-        .from({ timeEntry: queryableTimeEntriesCollection })
-        .where(({ timeEntry }) =>
-          and(
-            eq(timeEntry.workspaceMemberId, workspaceMemberId),
-            eq(timeEntry.stoppedAt, Option.none())
-          )
-        )
-        .findOne()
-    );
-
-    if (
-      !timeEntry ||
-      timeEntry.workspaceId !== workspaceId ||
-      Option.isSome(timeEntry.stoppedAt)
-    ) {
-      return Option.none<TrackedTimeRow>();
+    for (const timeEntry of timeEntriesCollection.values()) {
+      if (
+        timeEntry.workspaceId === workspaceId &&
+        timeEntry.workspaceMemberId === workspaceMemberId &&
+        Option.isNone(timeEntry.stoppedAt)
+      ) {
+        return Option.some(toTrackedTimeRow(timeEntry));
+      }
     }
 
-    return Option.some(toTrackedTimeRow(timeEntry));
+    return Option.none<TrackedTimeRow>();
   };
 
   return Layer.succeed(TrackedTimeRepository, {
@@ -87,8 +70,8 @@ export function createClientTrackedTimeRepositoryLayer(
         catch: toRepositoryError,
       }),
     updateTimeEntry: ({ workspaceId, id, data }) =>
-      Effect.tryPromise({
-        try: async () => {
+      Effect.try({
+        try: () => {
           updateCollectionItem<
             TrackedTimeCollectionRow,
             TrackedTimeCollectionInsert
@@ -98,12 +81,7 @@ export function createClientTrackedTimeRepositoryLayer(
             trackedTimeUpdateFromTimeEntryChanges(data)
           );
 
-          const timeEntry = await queryOnce((q) =>
-            q
-              .from({ timeEntry: queryableTimeEntriesCollection })
-              .where(({ timeEntry }) => eq(timeEntry.id, id))
-              .findOne()
-          );
+          const timeEntry = timeEntriesCollection.get(id);
 
           if (
             !timeEntry ||
@@ -127,14 +105,9 @@ export function createClientTrackedTimeRepositoryLayer(
         catch: toRepositoryError,
       }),
     findTimeEntry: ({ workspaceId, id }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const timeEntry = await queryOnce((q) =>
-            q
-              .from({ timeEntry: queryableTimeEntriesCollection })
-              .where(({ timeEntry }) => eq(timeEntry.id, id))
-              .findOne()
-          );
+      Effect.try({
+        try: () => {
+          const timeEntry = timeEntriesCollection.get(id);
 
           if (
             !timeEntry ||
@@ -153,19 +126,19 @@ export function createClientTrackedTimeRepositoryLayer(
         catch: toRepositoryError,
       }),
     findCurrentTimer: (params) =>
-      Effect.tryPromise({
-        try: async () =>
+      Effect.try({
+        try: () =>
           Option.map(
-            await findCurrentTrackedTimeRow(params),
+            findCurrentTrackedTimeRow(params),
             (trackedTimeRow) =>
               Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
           ),
         catch: toRepositoryError,
       }),
     insertCurrentTimer: (timer) =>
-      Effect.tryPromise({
-        try: async () => {
-          const currentTimer = await findCurrentTrackedTimeRow({
+      Effect.try({
+        try: () => {
+          const currentTimer = findCurrentTrackedTimeRow({
             workspaceId: timer.workspaceId,
             workspaceMemberId: timer.workspaceMemberId,
           });
@@ -190,9 +163,9 @@ export function createClientTrackedTimeRepositoryLayer(
             : toRepositoryError(cause),
       }),
     updateCurrentTimer: ({ workspaceId, workspaceMemberId, data }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const currentTimer = await findCurrentTrackedTimeRow({
+      Effect.try({
+        try: () => {
+          const currentTimer = findCurrentTrackedTimeRow({
             workspaceId,
             workspaceMemberId,
           });
@@ -206,7 +179,7 @@ export function createClientTrackedTimeRepositoryLayer(
             TrackedTimeCollectionInsert
           >(timeEntriesCollection, currentTimer.value.id, data);
 
-          const updatedTimer = await findCurrentTrackedTimeRow({
+          const updatedTimer = findCurrentTrackedTimeRow({
             workspaceId,
             workspaceMemberId,
           });
@@ -218,9 +191,9 @@ export function createClientTrackedTimeRepositoryLayer(
         catch: toRepositoryError,
       }),
     completeCurrentTimer: ({ workspaceId, workspaceMemberId, timeEntry }) =>
-      Effect.tryPromise({
-        try: async () => {
-          const currentTimer = await findCurrentTrackedTimeRow({
+      Effect.try({
+        try: () => {
+          const currentTimer = findCurrentTrackedTimeRow({
             workspaceId,
             workspaceMemberId,
           });
@@ -240,11 +213,8 @@ export function createClientTrackedTimeRepositoryLayer(
             })
           );
 
-          const completedTimeEntry = await queryOnce((q) =>
-            q
-              .from({ timeEntry: queryableTimeEntriesCollection })
-              .where(({ timeEntry }) => eq(timeEntry.id, currentTimer.value.id))
-              .findOne()
+          const completedTimeEntry = timeEntriesCollection.get(
+            currentTimer.value.id
           );
 
           if (
