@@ -137,7 +137,11 @@ function RouteComponent() {
             />
             {/*<h1 className="text-2xl font-semibold">{project.name}</h1>*/}
           </div>
-          <RichTextEditor content={project.notes} onChange={(value) => {}} />
+          <RichTextEditor
+            content={project.notes}
+            onChange={(value) => {}}
+            placeholder="Notes..."
+          />
           <Separator orientation="horizontal" />
           <section>
             <h3>Tasks</h3>

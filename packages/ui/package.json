@@ -19,7 +19,6 @@
     "react-day-picker": "^9.9.0",
     "react-dom": "catalog:frontend",
     "react-dropzone": "^15.0.0",
-    "react-resizable-panels": "^4.11.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
@@ -59,7 +58,7 @@
     "./input-group": "./src/components/old/input-group.coss.tsx",
     "./input-otp": "./src/components/old/input-otp.coss.tsx",
     "./input-time": "./src/components/old/input-time.tsx",
-    "./input": "./src/components/old/input.coss.tsx",
+    "./input": "./src/components/input.tsx",
     "./kbd": "./src/components/old/kbd.coss.tsx",
     "./label": "./src/components/old/label.coss.tsx",
     "./list": "./src/components/old/list.tsx",

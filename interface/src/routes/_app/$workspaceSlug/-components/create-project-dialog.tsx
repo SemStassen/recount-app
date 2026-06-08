@@ -134,6 +134,9 @@ function CreateProjectDialogContent({
                   <field.EditorField
                     direction="vertical"
                     label={{ children: m.project_form_notes_label() }}
+                    editor={{
+                      placeholder: "Notes...",
+                    }}
                   />
                 )}
                 name="notes"

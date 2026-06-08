@@ -1,10 +1,16 @@
 {
   "extends": "@recount/config/package.tsconfig.json",
-  "include": ["src", "../___db"],
-  "exclude": ["dist"],
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "dist"
+  ],
   "compilerOptions": {
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": [
+        "./src/*"
+      ]
     }
   }
 }

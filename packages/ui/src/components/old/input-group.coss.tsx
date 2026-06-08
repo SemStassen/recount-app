@@ -4,10 +4,10 @@ import type * as React from "react";
 
 import { cn } from "#utils/cn";
 
+import { Input } from "../input";
+import type { InputProps } from "../input";
 import { Textarea } from "../textarea";
 import type { TextareaProps } from "../textarea";
-import { Input } from "./input.coss";
-import type { InputProps } from "./input.coss";
 
 const inputGroupAddonVariants = cva(
   "flex h-auto cursor-text select-none items-center justify-center gap-2 leading-none [&>kbd]:rounded-[calc(var(--radius)-5px)] in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4.5 sm:in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4 [&_svg]:-mx-0.5 not-has-[button]:**:[svg:not([class*='opacity-'])]:opacity-80",

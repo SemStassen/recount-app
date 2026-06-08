@@ -7,25 +7,39 @@ import { cn } from "#utils/cn";
 
 import { FieldPrimitive } from "./old/field.coss";
 
-export const textareaVariants = cva(
-  [
-    "field-sizing-content min-h-17.5 w-full border px-3 py-1.5 text-base text-foreground",
-    "outline-none",
-    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-    "disabled:pointer-events-none disabled:opacity-64",
-  ],
-  {
-    defaultVariants: {
+export const textareaVariants = cva([], {
+  defaultVariants: {
+    unstyled: false,
+    variant: "default",
+  },
+  variants: {
+    unstyled: {
+      false: [
+        "field-sizing-content min-h-17.5 w-full border px-3 py-1.5 text-base text-foreground",
+        "outline-none",
+        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+        "disabled:pointer-events-none disabled:opacity-64",
+      ],
+      true: "",
+    },
+    variant: {
+      default: "",
+      ghost: "",
+    },
+  },
+  compoundVariants: [
+    {
+      className: "border-input bg-background",
+      unstyled: false,
       variant: "default",
     },
-    variants: {
-      variant: {
-        default: "border-input bg-background",
-        ghost: "border-transparent bg-transparent",
-      },
+    {
+      className: "border-transparent bg-transparent",
+      unstyled: false,
+      variant: "ghost",
     },
-  }
-);
+  ],
+});
 
 export interface TextareaProps
   extends
@@ -35,6 +49,7 @@ export interface TextareaProps
 export function Textarea({
   ref,
   className,
+  unstyled,
   variant,
   ...props
 }: TextareaProps): React.ReactElement {
@@ -49,7 +64,7 @@ export function Textarea({
       render={(defaultProps: React.ComponentProps<"textarea">) => (
         <textarea
           data-slot="textarea"
-          className={cn(textareaVariants({ variant, className }))}
+          className={cn(textareaVariants({ unstyled, variant, className }))}
           {...mergeProps(defaultProps, props)}
         />
       )}
