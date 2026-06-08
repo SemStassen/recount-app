@@ -49,28 +49,18 @@ export function Calendar({
     weekday:
       "size-(--cell-size) p-0 text-xs font-medium text-muted-foreground/72",
   };
-  const mergedClassNames: typeof defaultClassNames = Object.keys(
-    defaultClassNames
-  ).reduce(
-    (acc, key) => {
-      const userClass = classNames?.[key as keyof typeof classNames];
-      const baseClass =
-        defaultClassNames[key as keyof typeof defaultClassNames];
-
-      acc[key as keyof typeof defaultClassNames] = userClass
-        ? cn(baseClass, userClass)
-        : baseClass;
-
-      return acc;
-    },
-    { ...defaultClassNames } as typeof defaultClassNames
-  );
+  const mergedClassNames = Object.fromEntries(
+    Object.entries(defaultClassNames).map(([key, baseClass]) => [
+      key,
+      cn(baseClass, classNames?.[key as keyof typeof classNames]),
+    ])
+  ) as typeof defaultClassNames;
 
   const defaultComponents = {
     Chevron: ({
-      className,
+      className: iconClassName,
       orientation,
-      ...props
+      ...iconProps
     }: {
       className?: string;
       orientation?: "left" | "right" | "up" | "down";
@@ -78,8 +68,8 @@ export function Calendar({
       if (orientation === "left") {
         return (
           <Icons.ChevronLeft
-            className={cn(className, "rtl:rotate-180")}
-            {...props}
+            className={cn(iconClassName, "rtl:rotate-180")}
+            {...iconProps}
             aria-hidden="true"
           />
         );
@@ -88,8 +78,8 @@ export function Calendar({
       if (orientation === "right") {
         return (
           <Icons.ChevronRight
-            className={cn(className, "rtl:rotate-180")}
-            {...props}
+            className={cn(iconClassName, "rtl:rotate-180")}
+            {...iconProps}
             aria-hidden="true"
           />
         );
@@ -97,8 +87,8 @@ export function Calendar({
 
       return (
         <Icons.ChevronsUpDown
-          className={className}
-          {...props}
+          className={iconClassName}
+          {...iconProps}
           aria-hidden="true"
         />
       );
@@ -110,26 +100,22 @@ export function Calendar({
     ...userComponents,
   };
 
-  const dayPickerProps = {
-    className: cn(
-      "w-fit [--cell-size:--spacing(10)] sm:[--cell-size:--spacing(9)]",
-      className
-    ),
-    classNames: mergedClassNames,
-    components: mergedComponents,
-    "data-slot": "calendar",
-    formatters: {
-      formatMonthDropdown: (date: Date) =>
-        date.toLocaleString("default", { month: "short" }),
-    } as React.ComponentProps<typeof DayPicker>["formatters"],
-    mode,
-    showOutsideDays,
-    ...props,
-  };
-
   return (
     <DayPicker
-      {...(dayPickerProps as React.ComponentProps<typeof DayPicker>)}
+      className={cn(
+        "w-fit [--cell-size:--spacing(10)] sm:[--cell-size:--spacing(9)]",
+        className
+      )}
+      classNames={mergedClassNames}
+      components={mergedComponents}
+      data-slot="calendar"
+      formatters={{
+        formatMonthDropdown: (date: Date) =>
+          date.toLocaleString("default", { month: "short" }),
+      }}
+      mode={mode}
+      showOutsideDays={showOutsideDays}
+      {...(props as React.ComponentProps<typeof DayPicker>)}
     />
   );
 }
