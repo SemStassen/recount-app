@@ -6,18 +6,15 @@ import {
   HttpServerResponse,
 } from "effect/unstable/http";
 
-export const BetterAuthRoutesLayer = HttpRouter.add(
-  "*",
-  "/api/auth/*",
-  (request) =>
-    Effect.gen(function* () {
-      const betterAuth = yield* BetterAuth;
+export const BetterAuthRoutesLayer = HttpRouter.add("*", "/api/auth/*", (request) =>
+  Effect.gen(function* () {
+    const betterAuth = yield* BetterAuth;
 
-      const webRequest = yield* HttpServerRequest.toWeb(request);
-      const webResponse = yield* betterAuth.use((client) =>
-        client.handler(webRequest)
-      );
+    const webRequest = yield* HttpServerRequest.toWeb(request);
+    const webResponse = yield* betterAuth.use((client) =>
+      client.handler(webRequest)
+    );
 
-      return HttpServerResponse.fromWeb(webResponse);
-    })
+    return HttpServerResponse.fromWeb(webResponse);
+  })
 );
