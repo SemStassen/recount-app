@@ -21,10 +21,14 @@ export const matchesAllowedOrigin = (
   patterns: ReadonlyArray<string>
 ) =>
   patterns.some((pattern) => {
-    if (!pattern.includes("*")) {return origin === pattern;}
+    if (!pattern.includes("*")) {
+      return origin === pattern;
+    }
 
     const match = pattern.match(wildcardPatternRegex);
-    if (!match) {return false;}
+    if (!match) {
+      return false;
+    }
 
     const [, protocol, prefix, hostname, port] = match;
     const regex = new RegExp(

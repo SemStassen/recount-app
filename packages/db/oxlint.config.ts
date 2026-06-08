@@ -6,13 +6,5 @@ export default defineConfig({
   extends: [rootConfig],
   rules: {
     "oxc/no-barrel-file": "off",
-    "unicorn/filename-case": [
-      "error",
-      {
-        cases: {
-          kebabCase: true,
-        },
-      },
-    ],
   },
 });
