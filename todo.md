@@ -1,3 +1,0 @@
-- [] Switch to bearer tokens
-- [] Implement image-text-to-text model
-- [] Create projects view
