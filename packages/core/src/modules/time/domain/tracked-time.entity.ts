@@ -22,11 +22,7 @@ export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
   {
     ...timeEntryBaseFields,
     id: EntityModel.CreateOptional(TimeEntryId),
-    startedAt: EntityModel.Field({
-      json: Schema.DateTimeUtcFromDate,
-      jsonCreate: Schema.optionalKey(Schema.DateTimeUtcFromDate),
-      jsonUpdate: Schema.optionalKey(Schema.DateTimeUtcFromDate),
-    }),
+    startedAt: EntityModel.CreateUpdate(Schema.DateTimeUtcFromDate),
     stoppedAt: EntityModel.CreateUpdate(Schema.DateTimeUtcFromDate),
   },
   {
@@ -40,7 +36,7 @@ export class Timer extends EntityModel.Class<Timer>("Timer")(
   {
     ...timeEntryBaseFields,
     id: EntityModel.CreateOptional(TimerId),
-    startedAt: EntityModel.ReadOnly(Schema.DateTimeUtcFromDate),
+    startedAt: EntityModel.CreateOptional(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "Timer",

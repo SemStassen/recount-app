@@ -1,7 +1,5 @@
-import {
-  type ElectricCollectionUtils,
-  isChangeMessage,
-} from "@tanstack/electric-db-collection";
+import type { ElectricCollectionUtils } from "@tanstack/electric-db-collection";
+import { isChangeMessage } from "@tanstack/electric-db-collection";
 import type { Row } from "@tanstack/react-db";
 
 type ElectricOperation = "insert" | "update" | "delete";
@@ -53,8 +51,8 @@ function awaitCollectionChanges<Id>(params: {
     params.ids.map((id) =>
       awaitCollectionChange({
         collection: params.collection,
-        operation: params.operation,
         id,
+        operation: params.operation,
       })
     )
   );
@@ -90,13 +88,13 @@ export function deletedRecords<RemoteResult, Id>(params: {
   };
 }
 
-export function awaitBackendReconciliation<RemoteResult>(params: {
+export async function awaitBackendReconciliation<RemoteResult>(params: {
   readonly target: AnyBackendReconciliationTarget<RemoteResult>;
   readonly remoteResult: RemoteResult;
-}) {
-  return awaitCollectionChanges({
+}): Promise<void> {
+  await awaitCollectionChanges({
     collection: params.target.collection,
-    operation: params.target.operation,
     ids: params.target.getIds(params.remoteResult),
-  }).then(() => {});
+    operation: params.target.operation,
+  });
 }

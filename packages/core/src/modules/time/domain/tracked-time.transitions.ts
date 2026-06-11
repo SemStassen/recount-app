@@ -18,16 +18,14 @@ export const createTimeEntry = (params: {
   workspaceId: TimeEntry["workspaceId"];
   workspaceMemberId: TimeEntry["workspaceMemberId"];
   data: typeof TimeEntry.jsonCreate.Type;
-  now: DateTime.Utc;
 }): Result.Result<TimeEntry, TimeEntryStoppedAtBeforeStartedAtError> =>
   Result.gen(function* () {
-    const { id, startedAt, ...rest } = params.data;
+    const { id, ...rest } = params.data;
 
     const createdTimeEntry = TimeEntry.make({
-      id: Option.getOrElse(id, () => TimeEntryId.make(generateUUID())),
+      id: id ?? TimeEntryId.make(generateUUID()),
       workspaceId: params.workspaceId,
       workspaceMemberId: params.workspaceMemberId,
-      startedAt: startedAt ?? params.now,
       taskId: Option.none(),
       notes: Option.none(),
       ...rest,
@@ -68,20 +66,20 @@ export const updateTimeEntry = (params: {
 export const startTimer = (params: {
   workspaceId: Timer["workspaceId"];
   workspaceMemberId: Timer["workspaceMemberId"];
-  data: typeof Timer.jsonCreate.Type;
-  now: DateTime.Utc;
+  data: typeof Timer.jsonCreate.Type & {
+    startedAt: DateTime.Utc;
+  };
 }): Result.Result<Timer, never> =>
   Result.succeed(
     (() => {
       const { id, ...data } = params.data;
 
       return Timer.make({
-        id: Option.getOrElse(id, () => TimerId.make(generateUUID())),
+        id: id ?? TimerId.make(generateUUID()),
         taskId: Option.none(),
         notes: Option.none(),
         workspaceId: params.workspaceId,
         workspaceMemberId: params.workspaceMemberId,
-        startedAt: params.now,
         ...data,
       });
     })()
@@ -107,7 +105,7 @@ export const updateTimer = (params: {
 
 export const stopTimer = (params: {
   timer: Timer;
-  now: DateTime.Utc;
+  stoppedAt: DateTime.Utc;
 }): Result.Result<
   { entity: TimeEntry; changes: typeof TimeEntry.jsonUpdate.Type },
   TimeEntryStoppedAtBeforeStartedAtError
@@ -116,15 +114,15 @@ export const stopTimer = (params: {
     const timeEntry = TimeEntry.make({
       ...params.timer,
       id: TimeEntryId.make(params.timer.id),
-      stoppedAt: params.now,
+      stoppedAt: params.stoppedAt,
     });
 
-    yield* ensureValidDateRange(timeEntry.startedAt, params.now);
+    yield* ensureValidDateRange(timeEntry.startedAt, timeEntry.stoppedAt);
 
     return {
       entity: timeEntry,
       changes: {
-        stoppedAt: params.now,
+        stoppedAt: params.stoppedAt,
       },
     };
   });

@@ -1,18 +1,16 @@
-import { Project, ProjectModule, Task } from "@recount/core/modules/project";
+import type { Project, Task } from "@recount/core/modules/project";
+import { ProjectModule } from "@recount/core/modules/project";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { WorkspaceId } from "@recount/core/shared/schemas";
 import { ProjectId, TaskId } from "@recount/core/shared/schemas";
 import { generateUUID } from "@recount/core/shared/utils";
 import { Effect, Option } from "effect";
 
+import type { ReconciledCollection } from "~/db/synced-collections";
+import { insertedRecords, updatedRecords } from "~/db/synced-collections";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
-import {
-  insertedRecords,
-  type ReconciledCollection,
-  updatedRecords,
-} from "./electric-reconciliation";
-import { runSyncedWorkspaceAction } from "./optimistic-workspace-action";
+import { runElectricReconciledWorkspaceAction } from "./optimistic-workspace-action";
 import type { WorkspaceRuntime } from "./workspace-runtime";
 
 interface CreateProjectActionsParams {
@@ -26,19 +24,19 @@ export function createProjectActions(params: CreateProjectActionsParams) {
   const workspaceIdHeader = params.workspaceId;
 
   const archiveProject = (id: Project["id"]) =>
-    runSyncedWorkspaceAction<void, void>({
+    runElectricReconciledWorkspaceAction({
       mutateLocal: () =>
         params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             yield* projectModule.archiveProject({
-              workspaceId: params.workspaceId,
               id,
+              workspaceId: params.workspaceId,
             });
           })
         ),
-      persistRemote: async () =>
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
@@ -69,28 +67,27 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       id: Option.some(id),
     };
 
-    return runSyncedWorkspaceAction<Project, Project>({
-      mutateLocal: () => {
-        const project = params.workspaceRuntime.runSync(
+    return runElectricReconciledWorkspaceAction<Project, Project>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             const [project] = yield* projectModule.createProjects({
-              workspaceId: params.workspaceId,
               data: [data],
+              workspaceId: params.workspaceId,
             });
+
+            if (!project) {
+              return yield* Effect.die(
+                "Project was not created in local state"
+              );
+            }
 
             return project;
           })
-        );
-
-        if (!project) {
-          throw new Error("Project was not created in local state");
-        }
-
-        return project;
-      },
-      persistRemote: async () =>
+        ),
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
@@ -113,23 +110,20 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     id: Project["id"],
     data: typeof Project.jsonUpdate.Type
   ) =>
-    runSyncedWorkspaceAction<Project, Project>({
-      mutateLocal: () => {
-        const project = params.workspaceRuntime.runSync(
+    runElectricReconciledWorkspaceAction<Project, Project>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             return yield* projectModule.updateProject({
-              workspaceId: params.workspaceId,
-              id,
               data,
+              id,
+              workspaceId: params.workspaceId,
             });
           })
-        );
-
-        return project;
-      },
-      persistRemote: async () =>
+        ),
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
@@ -137,8 +131,8 @@ export function createProjectActions(params: CreateProjectActionsParams) {
             return yield* client(
               "Project.Update",
               {
-                id,
                 data,
+                id,
               },
               {
                 headers: {
@@ -155,19 +149,19 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     });
 
   const unarchiveProject = (id: Project["id"]) =>
-    runSyncedWorkspaceAction<void, void>({
+    runElectricReconciledWorkspaceAction({
       mutateLocal: () =>
         params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             yield* projectModule.unarchiveProject({
-              workspaceId: params.workspaceId,
               id,
+              workspaceId: params.workspaceId,
             });
           })
         ),
-      persistRemote: async () =>
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
@@ -196,28 +190,25 @@ export function createProjectActions(params: CreateProjectActionsParams) {
       id: Option.some(id),
     };
 
-    return runSyncedWorkspaceAction<Task, Task>({
-      mutateLocal: () => {
-        const task = params.workspaceRuntime.runSync(
+    return runElectricReconciledWorkspaceAction<Task, Task>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             const [task] = yield* projectModule.createTasks({
-              workspaceId: params.workspaceId,
               data: [data],
+              workspaceId: params.workspaceId,
             });
+
+            if (!task) {
+              return yield* Effect.die("Task was not created in local state");
+            }
 
             return task;
           })
-        );
-
-        if (!task) {
-          throw new Error("Task was not created in local state");
-        }
-
-        return task;
-      },
-      persistRemote: async () =>
+        ),
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
@@ -237,23 +228,20 @@ export function createProjectActions(params: CreateProjectActionsParams) {
   };
 
   const updateTask = (id: Task["id"], data: typeof Task.jsonUpdate.Type) =>
-    runSyncedWorkspaceAction<Task, Task>({
-      mutateLocal: () => {
-        const task = params.workspaceRuntime.runSync(
+    runElectricReconciledWorkspaceAction<Task, Task>({
+      mutateLocal: () =>
+        params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             return yield* projectModule.updateTask({
-              workspaceId: params.workspaceId,
-              id,
               data,
+              id,
+              workspaceId: params.workspaceId,
             });
           })
-        );
-
-        return task;
-      },
-      persistRemote: async () =>
+        ),
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
@@ -261,8 +249,8 @@ export function createProjectActions(params: CreateProjectActionsParams) {
             return yield* client(
               "Task.Update",
               {
-                id,
                 data,
+                id,
               },
               {
                 headers: {
@@ -279,19 +267,19 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     });
 
   const archiveTask = (id: Task["id"]) =>
-    runSyncedWorkspaceAction<void, void>({
+    runElectricReconciledWorkspaceAction({
       mutateLocal: () =>
         params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             yield* projectModule.archiveTask({
-              workspaceId: params.workspaceId,
               id,
+              workspaceId: params.workspaceId,
             });
           })
         ),
-      persistRemote: async () =>
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
@@ -314,19 +302,19 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     });
 
   const unarchiveTask = (id: Task["id"]) =>
-    runSyncedWorkspaceAction<void, void>({
+    runElectricReconciledWorkspaceAction({
       mutateLocal: () =>
         params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const projectModule = yield* ProjectModule;
 
             yield* projectModule.unarchiveTask({
-              workspaceId: params.workspaceId,
               id,
+              workspaceId: params.workspaceId,
             });
           })
         ),
-      persistRemote: async () =>
+      persistRemote: () =>
         params.workspaceRuntime.runPromise(
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;

@@ -1,19 +1,11 @@
 import { defineConfig } from "oxlint";
-import core from "ultracite/oxlint/core";
-import react from "ultracite/oxlint/react";
+import ultraciteCoreConfig from "ultracite/oxlint/core";
+import ultraciteReactConfig from "ultracite/oxlint/react";
 
 export default defineConfig({
-  ...core,
-  env: {
-    ...core.env,
-    ...react.env,
-  },
-  ignorePatterns: [...(core.ignorePatterns ?? []), ".better-agents/**"],
-  overrides: [...(core.overrides ?? []), ...(react.overrides ?? [])],
-  plugins: [...new Set([...(core.plugins ?? []), ...(react.plugins ?? [])])],
+  extends: [ultraciteCoreConfig, ultraciteReactConfig],
+  ignorePatterns: [".better-agents/**"],
   rules: {
-    ...core.rules,
-    ...react.rules,
     "func-style": [
       "error",
       "declaration",
@@ -30,6 +22,7 @@ export default defineConfig({
     ],
     "eslint/max-classes-per-file": "off",
     "eslint/sort-keys": "off",
+    "sort-keys": "off",
     "eslint/no-inline-comments": "off",
     "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
     "import/namespace": "off",
@@ -67,9 +60,5 @@ export default defineConfig({
         ],
       },
     ],
-  },
-  settings: {
-    ...core.settings,
-    ...react.settings,
   },
 });

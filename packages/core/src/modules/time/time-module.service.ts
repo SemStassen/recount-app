@@ -51,9 +51,7 @@ interface TimeModuleShape {
   readonly startTimer: (params: {
     workspaceId: Timer["workspaceId"];
     workspaceMemberId: Timer["workspaceMemberId"];
-    data: typeof Timer.jsonCreate.Type & {
-      startedAt?: Timer["startedAt"];
-    };
+    data: typeof Timer.jsonCreate.Type;
   }) => Effect.Effect<
     Timer,
     | TimerAlreadyRunningError

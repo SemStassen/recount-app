@@ -44,9 +44,7 @@ describe("Time Entry transitions", () => {
       createTimeEntry({
         workspaceId: workspaceId(),
         workspaceMemberId: workspaceMemberId(),
-        now,
         data: {
-          id: Option.none(),
           projectId: projectId(),
           startedAt,
           stoppedAt,
@@ -63,10 +61,9 @@ describe("Time Entry transitions", () => {
       startTimer({
         workspaceId: workspaceId(),
         workspaceMemberId: workspaceMemberId(),
-        now,
         data: {
-          id: Option.none(),
           projectId: projectId(),
+          startedAt: now,
         },
       })
     );
@@ -98,7 +95,7 @@ describe("Time Entry transitions", () => {
     const result = Result.getOrThrow(
       stopTimer({
         timer,
-        now,
+        stoppedAt: now,
       })
     );
 

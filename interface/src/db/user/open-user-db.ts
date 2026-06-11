@@ -1,10 +1,10 @@
 import { snakeCamelMapper } from "@electric-sql/client";
+import type { UserId } from "@recount/core/shared/schemas";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import { createCollection } from "@tanstack/react-db";
 
+import { userSyncedCollections } from "~/db/synced-collections";
 import { authFetch } from "~/lib/auth";
-
-import { userShapes } from "../sync-shapes";
 
 export type UserDb = ReturnType<typeof openUserDb>;
 
@@ -12,7 +12,7 @@ const fetchWithPreconnect = fetch as typeof fetch & {
   preconnect?: typeof fetch;
 };
 
-export function openUserDb(userId: string) {
+export function openUserDb(userId: UserId) {
   const abortController = new AbortController();
   const userFetchClient: typeof fetch = Object.assign(
     (url: RequestInfo | URL, options?: RequestInit) =>
@@ -30,15 +30,15 @@ export function openUserDb(userId: string) {
 
   const userSettingsCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId(userShapes.userSettings.name),
-      schema: userShapes.userSettings.schema,
-      getKey: userShapes.userSettings.getKey,
+      id: createCollectionId(userSyncedCollections.userSettings.name),
+      getKey: userSyncedCollections.userSettings.getKey,
+      schema: userSyncedCollections.userSettings.schema,
       shapeOptions: {
-        url: userShapes.userSettings.url,
         columnMapper: snakeCamelMapper(),
-        transformer: userShapes.userSettings.decodeRow,
         fetchClient: userFetchClient,
         signal: abortController.signal,
+        transformer: userSyncedCollections.userSettings.decodeElectricRow,
+        url: userSyncedCollections.userSettings.url,
       },
     })
   );
@@ -49,9 +49,11 @@ export function openUserDb(userId: string) {
     collections: {
       userSettingsCollection,
     },
-    preload: async () => {
+    preload: () => {
       if (!preloadPromise) {
+        // oxlint-disable-next-line no-single-promise-in-promise-methods prefer-await-to-then
         preloadPromise = Promise.all([userSettingsCollection.preload()]).then(
+          // oxlint-disable-next-line  no-empty-function
           () => {}
         );
       }

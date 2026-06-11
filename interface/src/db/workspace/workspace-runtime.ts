@@ -1,11 +1,10 @@
-import {
-  ProjectModule,
-  ProjectModuleLayer,
-} from "@recount/core/modules/project";
-import { TimeModule, TimeModuleLayer } from "@recount/core/modules/time";
+import type { ProjectModule } from "@recount/core/modules/project";
+import { ProjectModuleLayer } from "@recount/core/modules/project";
+import type { TimeModule } from "@recount/core/modules/time";
+import { TimeModuleLayer } from "@recount/core/modules/time";
 import { Layer, ManagedRuntime } from "effect";
 
-import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import type { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 import { appRuntimeLayer } from "~/lib/runtime";
 import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
 import type { ClientRepositoryCollection } from "~/lib/services/client-repository-collection";
@@ -20,7 +19,7 @@ import type {
   TaskCollectionRow,
   TrackedTimeCollectionInsert,
   TrackedTimeCollectionRow,
-} from "./workspace-collection-codecs";
+} from "../synced-collections";
 
 type WorkspaceProjectCollection = ClientRepositoryCollection<
   ProjectCollectionRow,

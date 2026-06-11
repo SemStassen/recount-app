@@ -1,9 +1,9 @@
 import { TimerAlreadyRunningError } from "@recount/core/modules/time";
+import type { TrackedTimeRow } from "@recount/core/modules/time/persistence";
 import {
   timerFromTrackedTimeRow,
   timeEntryFromTrackedTimeRow,
   TrackedTimeRepository,
-  TrackedTimeRow,
   trackedTimeRowFromTimeEntry,
   trackedTimeRowFromTimer,
   trackedTimeUpdateFromTimeEntryChanges,
@@ -11,16 +11,19 @@ import {
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Effect, Layer, Option, Result } from "effect";
 
+import type {
+  TrackedTimeCollectionInsert,
+  TrackedTimeCollectionRow,
+} from "~/db/synced-collections";
 import {
-  type TrackedTimeCollectionInsert,
-  type TrackedTimeCollectionRow,
   toTrackedTimeCollectionInsert,
+  toTrackedTimeCollectionPatch,
   toTrackedTimeRow,
-} from "~/db/workspace/workspace-collection-codecs";
+} from "~/db/synced-collections";
 
+import type { ClientRepositoryCollection } from "./client-repository-collection";
 import {
   deleteCollectionItems,
-  type ClientRepositoryCollection,
   updateCollectionItem,
 } from "./client-repository-collection";
 
@@ -45,7 +48,7 @@ export function createClientTrackedTimeRepositoryLayer(
       if (
         timeEntry.workspaceId === workspaceId &&
         timeEntry.workspaceMemberId === workspaceMemberId &&
-        Option.isNone(timeEntry.stoppedAt)
+        timeEntry.stoppedAt === null
       ) {
         return Option.some(toTrackedTimeRow(timeEntry));
       }
@@ -55,64 +58,65 @@ export function createClientTrackedTimeRepositoryLayer(
   };
 
   return Layer.succeed(TrackedTimeRepository, {
-    insertTimeEntries: (timeEntries) =>
+    completeCurrentTimer: ({ workspaceId, workspaceMemberId, timeEntry }) =>
       Effect.try({
-        try: () => {
-          const trackedTimeRows = timeEntries.map(trackedTimeRowFromTimeEntry);
-          timeEntriesCollection.insert(
-            trackedTimeRows.map(toTrackedTimeCollectionInsert)
-          );
-
-          return trackedTimeRows.map((trackedTimeRow) =>
-            Result.getOrThrow(timeEntryFromTrackedTimeRow(trackedTimeRow))
-          );
-        },
         catch: toRepositoryError,
-      }),
-    updateTimeEntry: ({ workspaceId, id, data }) =>
-      Effect.try({
         try: () => {
+          const currentTimer = findCurrentTrackedTimeRow({
+            workspaceId,
+            workspaceMemberId,
+          });
+
+          if (Option.isNone(currentTimer)) {
+            return Option.none();
+          }
+
           updateCollectionItem<
             TrackedTimeCollectionRow,
             TrackedTimeCollectionInsert
           >(
             timeEntriesCollection,
-            id,
-            trackedTimeUpdateFromTimeEntryChanges(data)
+            currentTimer.value.id,
+            toTrackedTimeCollectionPatch(
+              trackedTimeUpdateFromTimeEntryChanges({
+                stoppedAt: timeEntry.stoppedAt,
+              })
+            )
           );
 
-          const timeEntry = timeEntriesCollection.get(id);
+          const completedTimeEntry = timeEntriesCollection.get(
+            currentTimer.value.id
+          );
 
-          if (
-            !timeEntry ||
-            timeEntry.workspaceId !== workspaceId ||
-            Option.isNone(timeEntry.stoppedAt)
-          ) {
-            throw new Error(`Time entry ${id} was not found after local write`);
+          if (!completedTimeEntry || completedTimeEntry.stoppedAt === null) {
+            return Option.none();
           }
 
-          return Result.getOrThrow(
-            timeEntryFromTrackedTimeRow(toTrackedTimeRow(timeEntry))
+          return Option.some(
+            Result.getOrThrow(
+              timeEntryFromTrackedTimeRow(toTrackedTimeRow(completedTimeEntry))
+            )
           );
         },
-        catch: toRepositoryError,
       }),
-    hardDeleteMany: ({ ids }) =>
+    findCurrentTimer: (params) =>
       Effect.try({
-        try: () => {
-          deleteCollectionItems(timeEntriesCollection, ids);
-        },
         catch: toRepositoryError,
+        try: () =>
+          Option.map(findCurrentTrackedTimeRow(params), (trackedTimeRow) =>
+            Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
+          ),
       }),
     findTimeEntry: ({ workspaceId, id }) =>
       Effect.try({
+        catch: toRepositoryError,
         try: () => {
           const timeEntry = timeEntriesCollection.get(id);
 
           if (
             !timeEntry ||
             timeEntry.workspaceId !== workspaceId ||
-            Option.isNone(timeEntry.stoppedAt)
+            timeEntry.stoppedAt === null
           ) {
             return Option.none();
           }
@@ -123,18 +127,20 @@ export function createClientTrackedTimeRepositoryLayer(
             )
           );
         },
-        catch: toRepositoryError,
       }),
-    findCurrentTimer: (params) =>
+    hardDeleteMany: ({ ids }) =>
       Effect.try({
-        try: () =>
-          Option.map(findCurrentTrackedTimeRow(params), (trackedTimeRow) =>
-            Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
-          ),
         catch: toRepositoryError,
+        try: () => {
+          deleteCollectionItems(timeEntriesCollection, ids);
+        },
       }),
     insertCurrentTimer: (timer) =>
       Effect.try({
+        catch: (cause) =>
+          cause instanceof TimerAlreadyRunningError
+            ? cause
+            : toRepositoryError(cause),
         try: () => {
           const currentTimer = findCurrentTrackedTimeRow({
             workspaceId: timer.workspaceId,
@@ -155,41 +161,24 @@ export function createClientTrackedTimeRepositoryLayer(
 
           return Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow));
         },
-        catch: (cause) =>
-          cause instanceof TimerAlreadyRunningError
-            ? cause
-            : toRepositoryError(cause),
+      }),
+    insertTimeEntries: (timeEntries) =>
+      Effect.try({
+        catch: toRepositoryError,
+        try: () => {
+          const trackedTimeRows = timeEntries.map(trackedTimeRowFromTimeEntry);
+          timeEntriesCollection.insert(
+            trackedTimeRows.map(toTrackedTimeCollectionInsert)
+          );
+
+          return trackedTimeRows.map((trackedTimeRow) =>
+            Result.getOrThrow(timeEntryFromTrackedTimeRow(trackedTimeRow))
+          );
+        },
       }),
     updateCurrentTimer: ({ workspaceId, workspaceMemberId, data }) =>
       Effect.try({
-        try: () => {
-          const currentTimer = findCurrentTrackedTimeRow({
-            workspaceId,
-            workspaceMemberId,
-          });
-
-          if (Option.isNone(currentTimer)) {
-            return Option.none();
-          }
-
-          updateCollectionItem<
-            TrackedTimeCollectionRow,
-            TrackedTimeCollectionInsert
-          >(timeEntriesCollection, currentTimer.value.id, data);
-
-          const updatedTimer = findCurrentTrackedTimeRow({
-            workspaceId,
-            workspaceMemberId,
-          });
-
-          return Option.map(updatedTimer, (trackedTimeRow) =>
-            Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
-          );
-        },
         catch: toRepositoryError,
-      }),
-    completeCurrentTimer: ({ workspaceId, workspaceMemberId, timeEntry }) =>
-      Effect.try({
         try: () => {
           const currentTimer = findCurrentTrackedTimeRow({
             workspaceId,
@@ -206,29 +195,48 @@ export function createClientTrackedTimeRepositoryLayer(
           >(
             timeEntriesCollection,
             currentTimer.value.id,
-            trackedTimeUpdateFromTimeEntryChanges({
-              stoppedAt: timeEntry.stoppedAt,
-            })
+            toTrackedTimeCollectionPatch(data)
           );
 
-          const completedTimeEntry = timeEntriesCollection.get(
-            currentTimer.value.id
-          );
+          const updatedTimer = findCurrentTrackedTimeRow({
+            workspaceId,
+            workspaceMemberId,
+          });
 
-          if (
-            !completedTimeEntry ||
-            Option.isNone(completedTimeEntry.stoppedAt)
-          ) {
-            return Option.none();
-          }
-
-          return Option.some(
-            Result.getOrThrow(
-              timeEntryFromTrackedTimeRow(toTrackedTimeRow(completedTimeEntry))
-            )
+          return Option.map(updatedTimer, (trackedTimeRow) =>
+            Result.getOrThrow(timerFromTrackedTimeRow(trackedTimeRow))
           );
         },
+      }),
+    updateTimeEntry: ({ workspaceId, id, data }) =>
+      Effect.try({
         catch: toRepositoryError,
+        try: () => {
+          updateCollectionItem<
+            TrackedTimeCollectionRow,
+            TrackedTimeCollectionInsert
+          >(
+            timeEntriesCollection,
+            id,
+            toTrackedTimeCollectionPatch(
+              trackedTimeUpdateFromTimeEntryChanges(data)
+            )
+          );
+
+          const timeEntry = timeEntriesCollection.get(id);
+
+          if (
+            !timeEntry ||
+            timeEntry.workspaceId !== workspaceId ||
+            timeEntry.stoppedAt === null
+          ) {
+            throw new Error(`Time entry ${id} was not found after local write`);
+          }
+
+          return Result.getOrThrow(
+            timeEntryFromTrackedTimeRow(toTrackedTimeRow(timeEntry))
+          );
+        },
       }),
   });
 }

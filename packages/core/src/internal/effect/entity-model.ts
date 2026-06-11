@@ -54,7 +54,7 @@ export interface CreateOptional<
   S extends Schema.Top,
 > extends VariantSchema.Field<{
   readonly json: S;
-  readonly jsonCreate: Schema.OptionFromOptionalKey<S>;
+  readonly jsonCreate: Schema.optionalKey<S>;
 }> {}
 
 export const CreateOptional = <S extends Schema.Top>(
@@ -62,7 +62,7 @@ export const CreateOptional = <S extends Schema.Top>(
 ): CreateOptional<S> =>
   Field({
     json: schema,
-    jsonCreate: Schema.OptionFromOptionalKey(schema),
+    jsonCreate: Schema.optionalKey(schema),
   });
 
 export interface CreateUpdate<

@@ -42,15 +42,12 @@ export const TimeModuleLayer = Layer.effect(
             return [];
           }
 
-          const now = yield* DateTime.now;
-
           const timeEntries = yield* Effect.forEach(params.data, (data) =>
             Effect.fromResult(
               timeEntryTransitions.createTimeEntry({
                 workspaceId: params.workspaceId,
                 workspaceMemberId: params.workspaceMemberId,
                 data,
-                now,
               })
             )
           );
@@ -104,7 +101,7 @@ export const TimeModuleLayer = Layer.effect(
         });
       }),
       startTimer: Effect.fn("time.startTimer")(function* (params) {
-        const startedAt = params.data.startedAt ?? (yield* DateTime.now);
+        const now = yield* DateTime.now;
 
         yield* ensureNoCurrentTimer({
           workspaceId: params.workspaceId,
@@ -115,8 +112,10 @@ export const TimeModuleLayer = Layer.effect(
           timeEntryTransitions.startTimer({
             workspaceId: params.workspaceId,
             workspaceMemberId: params.workspaceMemberId,
-            data: params.data,
-            now: startedAt,
+            data: {
+              ...params.data,
+              startedAt: params.data.startedAt ?? now,
+            },
           })
         );
 
@@ -170,7 +169,7 @@ export const TimeModuleLayer = Layer.effect(
         return persistedTimer.value;
       }),
       stopTimer: Effect.fn("time.stopTimer")(function* (params) {
-        const stoppedAt = params.data.stoppedAt ?? (yield* DateTime.now);
+        const now = yield* DateTime.now;
         const currentTimer = yield* trackedTimeRepo.findCurrentTimer({
           workspaceId: params.workspaceId,
           workspaceMemberId: params.workspaceMemberId,
@@ -186,7 +185,7 @@ export const TimeModuleLayer = Layer.effect(
         const { entity } = yield* Effect.fromResult(
           timeEntryTransitions.stopTimer({
             timer: currentTimer.value,
-            now: stoppedAt,
+            stoppedAt: params.data.stoppedAt ?? now,
           })
         );
 

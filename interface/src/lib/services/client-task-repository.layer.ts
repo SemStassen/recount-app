@@ -3,17 +3,18 @@ import { TaskRepository } from "@recount/core/modules/project/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Effect, Layer, Option } from "effect";
 
+import type {
+  TaskCollectionInsert,
+  TaskCollectionRow,
+} from "~/db/synced-collections";
 import {
-  type TaskCollectionInsert,
-  type TaskCollectionRow,
   toTaskCollectionInsert,
+  toTaskCollectionPatch,
   toTaskEntity,
-} from "~/db/workspace/workspace-collection-codecs";
+} from "~/db/synced-collections";
 
-import {
-  type ClientRepositoryCollection,
-  updateCollectionItem,
-} from "./client-repository-collection";
+import type { ClientRepositoryCollection } from "./client-repository-collection";
+import { updateCollectionItem } from "./client-repository-collection";
 
 type TaskCollection = ClientRepositoryCollection<
   TaskCollectionRow,
@@ -26,23 +27,37 @@ export function createClientTaskRepositoryLayer(
   tasksCollection: TaskCollection
 ) {
   return Layer.succeed(TaskRepository, {
+    findById: ({ workspaceId, id }) =>
+      Effect.try({
+        catch: toRepositoryError,
+        try: () => {
+          const task = tasksCollection.get(id);
+
+          if (!task || task.workspaceId !== workspaceId) {
+            return Option.none<Task>();
+          }
+
+          return Option.some(toTaskEntity(task));
+        },
+      }),
     insertMany: (data) =>
       Effect.try({
+        catch: toRepositoryError,
         try: () => {
-          const tasks = data.map(toTaskEntity);
+          const tasks = data.map((task) => Task.make(task));
           tasksCollection.insert(tasks.map(toTaskCollectionInsert));
 
           return tasks;
         },
-        catch: toRepositoryError,
       }),
     update: ({ id, update }) =>
       Effect.try({
+        catch: toRepositoryError,
         try: () => {
           updateCollectionItem<TaskCollectionRow, TaskCollectionInsert>(
             tasksCollection,
             id,
-            update
+            toTaskCollectionPatch(update)
           );
 
           const task = tasksCollection.get(id);
@@ -53,20 +68,6 @@ export function createClientTaskRepositoryLayer(
 
           return toTaskEntity(task);
         },
-        catch: toRepositoryError,
-      }),
-    findById: ({ workspaceId, id }) =>
-      Effect.try({
-        try: () => {
-          const task = tasksCollection.get(id);
-
-          if (!task || task.workspaceId !== workspaceId) {
-            return Option.none<Task>();
-          }
-
-          return Option.some(toTaskEntity(task));
-        },
-        catch: toRepositoryError,
       }),
   });
 }

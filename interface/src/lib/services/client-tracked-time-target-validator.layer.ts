@@ -12,7 +12,7 @@ import type {
   ProjectCollectionRow,
   TaskCollectionInsert,
   TaskCollectionRow,
-} from "~/db/workspace/workspace-collection-codecs";
+} from "~/db/synced-collections";
 
 import type { ClientRepositoryCollection } from "./client-repository-collection";
 
@@ -35,13 +35,19 @@ export function createClientTrackedTimeTargetValidatorLayer(params: {
   return Layer.succeed(TrackedTimeTargetValidator, {
     validate: ({ workspaceId, projectId, taskId }) =>
       Effect.try({
+        catch: (cause) =>
+          cause instanceof TargetProjectNotFoundError ||
+          cause instanceof TargetTaskNotFoundError ||
+          cause instanceof TargetTaskProjectMismatchError
+            ? cause
+            : toRepositoryError(cause),
         try: () => {
           const project = params.projectsCollection.get(projectId);
 
           if (!project || project.workspaceId !== workspaceId) {
             throw new TargetProjectNotFoundError({
-              workspaceId,
               projectId,
+              workspaceId,
             });
           }
 
@@ -53,25 +59,19 @@ export function createClientTrackedTimeTargetValidatorLayer(params: {
 
           if (!task || task.workspaceId !== workspaceId) {
             throw new TargetTaskNotFoundError({
-              workspaceId,
               taskId: taskId.value,
+              workspaceId,
             });
           }
 
           if (task.projectId !== projectId) {
             throw new TargetTaskProjectMismatchError({
-              workspaceId,
               projectId,
               taskId: taskId.value,
+              workspaceId,
             });
           }
         },
-        catch: (cause) =>
-          cause instanceof TargetProjectNotFoundError ||
-          cause instanceof TargetTaskNotFoundError ||
-          cause instanceof TargetTaskProjectMismatchError
-            ? cause
-            : toRepositoryError(cause),
       }),
   });
 }

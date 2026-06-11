@@ -16,6 +16,14 @@ _Avoid_: Server-only workspace data, offline source of truth
 The process where authoritative backend state replaces or confirms local workspace state after a local action.
 _Avoid_: Conflict resolution, sync merge
 
+**Optimistic Action Command**:
+The command accepted by an optimistic WorkspaceDb action before backend confirmation. It should match the backend RPC command shape as closely as possible while allowing local enrichment such as generated IDs or current timestamps.
+_Avoid_: Local mutation payload, collection row input
+
+**Local Repository Parity**:
+Local optimistic repository behavior matches server repository behavior for accepted writes, role filters, and not-found semantics so backend reconciliation does not undo locally accepted impossible states.
+_Avoid_: Best-effort local mock, UI-only behavior
+
 ## Relationships
 
 - **Local Workspace State** may decide optimistic **Project**, **Task**, and **Time Entry** changes before backend confirmation
@@ -26,6 +34,9 @@ _Avoid_: Conflict resolution, sync merge
 - **Local Workspace State** should support brief offline tolerance, not weeks of divergent offline work
 - Future local persistence should make unpersisted **Optimistic Workspace Data** visible without forcing callers to await **Backend Reconciliation** for local acceptance
 - Optimistic **WorkspaceDb** actions should return local acceptance synchronously; server-only workspace concerns should stay asynchronous because they wait for backend authority
+- **Optimistic Action Commands** are RPC-shaped at the action boundary; domain and collection row adaptation stays behind that boundary
+- **Local Repository Parity** keeps local optimistic acceptance aligned with backend acceptance
+- **Local Workspace State** rows use the domain field's source representation for domain codec fields, such as local Dates and nullable values, rather than storing decoded domain wrappers
 - Workspace routes should preload **WorkspaceDb** before rendering optimistic interactions; missing required local data after preload is a local state error, not a normal loading path
 - **Backend Reconciliation** should preserve backend authority over permissions, validation, and persisted workspace data
 
