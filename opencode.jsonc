@@ -7,8 +7,8 @@
       "repository": "github.com/Effect-TS/effect-smol",
     },
     "plane": {
-      "repository": "github.com/makeplane/plane"
-    }
+      "repository": "github.com/makeplane/plane",
+    },
   },
   "mcp": {
     "uidotsh": {

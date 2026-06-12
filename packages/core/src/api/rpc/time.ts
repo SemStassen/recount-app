@@ -2,21 +2,6 @@ import { Schema } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";
 import { Rpc, RpcGroup } from "effect/unstable/rpc";
 
-import { AuthorizationError } from "#shared/authorization/index";
-
-import {
-  RpcSessionMiddleware,
-  RpcWorkspaceMiddleware,
-} from "../../../api/rpc/middleware";
-import {
-  TargetProjectNotFoundError,
-  TargetTaskNotFoundError,
-  TargetTaskProjectMismatchError,
-  TimeEntryNotFoundError,
-  TimeEntryStoppedAtBeforeStartedAtError,
-  TimerAlreadyRunningError,
-  TimerNotFoundError,
-} from "../index";
 import {
   CreateTimeEntryResult,
   CreateTimeEntryRpcCommand,
@@ -30,7 +15,19 @@ import {
   UpdateTimeEntryResult,
   UpdateTimerCommand,
   UpdateTimerResult,
-} from "./contracts";
+} from "#modules/time/api";
+import {
+  TargetProjectNotFoundError,
+  TargetTaskNotFoundError,
+  TargetTaskProjectMismatchError,
+  TimeEntryNotFoundError,
+  TimeEntryStoppedAtBeforeStartedAtError,
+  TimerAlreadyRunningError,
+  TimerNotFoundError,
+} from "#modules/time/index";
+import { AuthorizationError } from "#shared/authorization/index";
+
+import { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
 
 export const TimeRpcGroup = RpcGroup.make(
   Rpc.make("TimeEntry.Create", {

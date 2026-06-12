@@ -1,0 +1,77 @@
+import { Schema } from "effect";
+import { HttpApiError } from "effect/unstable/httpapi";
+import { Rpc, RpcGroup } from "effect/unstable/rpc";
+
+import {
+  ArchiveTaskCommand,
+  ArchiveTaskResult,
+  CreateTaskResult,
+  CreateTaskRpcCommand,
+  UnarchiveTaskCommand,
+  UnarchiveTaskResult,
+  UpdateTaskCommand,
+  UpdateTaskResult,
+} from "#modules/project/api";
+import {
+  ProjectArchivedError,
+  ProjectNotFoundError,
+  TaskNotFoundError,
+} from "#modules/project/index";
+import { AuthorizationError } from "#shared/authorization/index";
+
+import { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
+
+export const TaskRpcGroup = RpcGroup.make(
+  Rpc.make("Task.Create", {
+    payload: CreateTaskRpcCommand,
+    success: CreateTaskResult,
+    error: Schema.Union([
+      AuthorizationError,
+      ProjectNotFoundError,
+      ProjectArchivedError,
+      HttpApiError.InternalServerError,
+    ]),
+  })
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
+
+  Rpc.make("Task.Update", {
+    payload: UpdateTaskCommand,
+    success: UpdateTaskResult,
+    error: Schema.Union([
+      AuthorizationError,
+      TaskNotFoundError,
+      ProjectNotFoundError,
+      ProjectArchivedError,
+      HttpApiError.InternalServerError,
+    ]),
+  })
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
+
+  Rpc.make("Task.Archive", {
+    payload: ArchiveTaskCommand,
+    success: ArchiveTaskResult,
+    error: Schema.Union([
+      AuthorizationError,
+      TaskNotFoundError,
+      HttpApiError.InternalServerError,
+    ]),
+  })
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware),
+
+  Rpc.make("Task.Unarchive", {
+    payload: UnarchiveTaskCommand,
+    success: UnarchiveTaskResult,
+    error: Schema.Union([
+      AuthorizationError,
+      TaskNotFoundError,
+      ProjectNotFoundError,
+      ProjectArchivedError,
+      HttpApiError.InternalServerError,
+    ]),
+  })
+    .middleware(RpcWorkspaceMiddleware)
+    .middleware(RpcSessionMiddleware)
+);
