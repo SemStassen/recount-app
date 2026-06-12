@@ -15,7 +15,7 @@ import { workspaceSyncedCollections } from "~/db/synced-collections";
 import { authFetch } from "~/lib/auth";
 
 import { createProjectActions } from "./project-actions";
-import { createTimeEntryActions } from "./time-entry-actions";
+import { createTimeEntryActions } from "./tracked-time-actions";
 import { createWorkspaceRuntime } from "./workspace-runtime";
 
 export type WorkspaceDb = Awaited<ReturnType<typeof openWorkspaceDb>>;

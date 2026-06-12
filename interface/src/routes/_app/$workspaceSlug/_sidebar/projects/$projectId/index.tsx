@@ -109,7 +109,9 @@ function RouteComponent() {
             <ColorPicker
               value={project.color}
               onValueChange={(color) => {
-                if (!color || color === project.color) return;
+                if (!color || color === project.color) {
+                  return;
+                }
 
                 workspaceDb.actions.updateProject(project.id, {
                   color: HexColor.make(color),

@@ -4,7 +4,7 @@ import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { WorkspaceId } from "@recount/core/shared/schemas";
 import { ProjectId, TaskId } from "@recount/core/shared/schemas";
 import { generateUUID } from "@recount/core/shared/utils";
-import { Effect, Option } from "effect";
+import { Effect } from "effect";
 
 import type { ReconciledCollection } from "~/db/synced-collections";
 import { insertedRecords, updatedRecords } from "~/db/synced-collections";
@@ -59,12 +59,10 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     });
 
   const createProject = (payload: typeof Project.jsonCreate.Type) => {
-    const id = Option.getOrElse(payload.id, () =>
-      ProjectId.make(generateUUID())
-    );
+    const id = payload.id ?? ProjectId.make(generateUUID());
     const data = {
       ...payload,
-      id: Option.some(id),
+      id,
     };
 
     return runElectricReconciledWorkspaceAction<Project, Project>({
@@ -184,10 +182,14 @@ export function createProjectActions(params: CreateProjectActionsParams) {
     });
 
   const createTask = (payload: typeof Task.jsonCreate.Type) => {
-    const id = Option.getOrElse(payload.id, () => TaskId.make(generateUUID()));
+    const id = payload.id ?? TaskId.make(generateUUID());
     const data = {
       ...payload,
-      id: Option.some(id),
+      id,
+    };
+    const command = {
+      ...payload,
+      id,
     };
 
     return runElectricReconciledWorkspaceAction<Task, Task>({
@@ -213,7 +215,7 @@ export function createProjectActions(params: CreateProjectActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("Task.Create", data, {
+            return yield* client("Task.Create", command, {
               headers: {
                 [WORKSPACE_ID_HEADER]: workspaceIdHeader,
               },

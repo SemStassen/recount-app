@@ -1,8 +1,14 @@
 import type { Timer, TimeEntry } from "@recount/core/modules/time";
 import { TimeModule } from "@recount/core/modules/time";
+import type {
+  CreateTimeEntryRpcCommand,
+  StartTimerRpcCommand,
+} from "@recount/core/modules/time/api";
 import type { WorkspaceMember } from "@recount/core/modules/workspace-member";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
 import type { UserId, WorkspaceId } from "@recount/core/shared/schemas";
+import { TimerId, TimeEntryId } from "@recount/core/shared/schemas";
+import { generateUUID } from "@recount/core/shared/utils";
 import { DateTime, Effect } from "effect";
 
 import type { ReconciledCollection } from "~/db/synced-collections";
@@ -19,8 +25,6 @@ import type { WorkspaceRuntime } from "./workspace-runtime";
 interface WorkspaceMemberCollection {
   values: () => Iterable<typeof WorkspaceMember.json.Type>;
 }
-
-type TimeEntryResult = typeof TimeEntry.json.Type;
 
 interface CreateTimeEntryActionsParams {
   readonly userId: UserId;
@@ -66,7 +70,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
 
             return yield* client(
               "TimeEntry.Delete",
-              { timeEntryId: id },
+              { id },
               {
                 headers: {
                   [WORKSPACE_ID_HEADER]: workspaceIdHeader,
@@ -81,18 +85,24 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
       }),
     });
 
-  const createTimeEntry = (payload: typeof TimeEntry.jsonCreate.Type) =>
-    runElectricReconciledWorkspaceAction<TimeEntryResult, TimeEntry>({
+  const createTimeEntry = (payload: typeof TimeEntry.jsonCreate.Type) => {
+    const command: typeof CreateTimeEntryRpcCommand.Type = {
+      ...payload,
+      id: payload.id ?? TimeEntryId.make(generateUUID()),
+    };
+
+    return runElectricReconciledWorkspaceAction<TimeEntry, TimeEntry>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
           userId: params.userId,
           workspaceMembersCollection: params.workspaceMembersCollection,
         });
+
         const timeEntry = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const timeModule = yield* TimeModule;
             const [createdTimeEntry] = yield* timeModule.createTimeEntries({
-              data: [payload],
+              data: [command],
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
             });
@@ -112,7 +122,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("TimeEntry.Create", payload, {
+            return yield* client("TimeEntry.Create", command, {
               headers: {
                 [WORKSPACE_ID_HEADER]: workspaceIdHeader,
               },
@@ -124,9 +134,15 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
         getIds: (remoteResult) => [remoteResult.id],
       }),
     });
+  };
 
   const startTimer = (payload: typeof Timer.jsonCreate.Type) => {
     const startedAt = params.workspaceRuntime.runSync(DateTime.now);
+    const command: typeof StartTimerRpcCommand.Type = {
+      ...payload,
+      id: payload.id ?? TimerId.make(generateUUID()),
+      startedAt,
+    };
 
     return runElectricReconciledWorkspaceAction<Timer, Timer>({
       mutateLocal: () => {
@@ -140,10 +156,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
             const timeModule = yield* TimeModule;
 
             return yield* timeModule.startTimer({
-              data: {
-                ...payload,
-                startedAt,
-              },
+              data: command,
               workspaceId: params.workspaceId,
               workspaceMemberId: workspaceMember.id,
             });
@@ -155,7 +168,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
           Effect.gen(function* () {
             const client = yield* BackendAtomRpcClient;
 
-            return yield* client("Timer.Start", payload, {
+            return yield* client("Timer.Start", command, {
               headers: {
                 [WORKSPACE_ID_HEADER]: workspaceIdHeader,
               },
@@ -210,10 +223,7 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
   const stopTimer = () => {
     const stoppedAt = params.workspaceRuntime.runSync(DateTime.now);
 
-    return runElectricReconciledWorkspaceAction<
-      TimeEntryResult,
-      TimeEntryResult
-    >({
+    return runElectricReconciledWorkspaceAction<TimeEntry, TimeEntry>({
       mutateLocal: () => {
         const workspaceMember = getCurrentWorkspaceMember({
           userId: params.userId,
@@ -259,16 +269,16 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
     id: TimeEntry["id"],
     data: typeof TimeEntry.jsonUpdate.Type
   ) =>
-    runElectricReconciledWorkspaceAction<TimeEntryResult, TimeEntryResult>({
+    runElectricReconciledWorkspaceAction<TimeEntry, TimeEntry>({
       mutateLocal: () => {
         const timeEntry = params.workspaceRuntime.runSync(
           Effect.gen(function* () {
             const timeModule = yield* TimeModule;
 
             return yield* timeModule.updateTimeEntry({
-              data,
-              id,
               workspaceId: params.workspaceId,
+              id,
+              data,
             });
           })
         );
@@ -283,8 +293,8 @@ export function createTimeEntryActions(params: CreateTimeEntryActionsParams) {
             return yield* client(
               "TimeEntry.Update",
               {
+                id,
                 data,
-                timeEntryId: id,
               },
               {
                 headers: {

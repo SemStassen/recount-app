@@ -2,7 +2,6 @@ import { Atom } from "effect/unstable/reactivity";
 
 import { atomRegistry } from "~/atoms/registry";
 
-import { defaultCommands } from "./default-commands";
 import type {
   Command,
   CommandRegistration,
@@ -15,9 +14,7 @@ export const commandMenuOpenAtom = Atom.make(false);
 
 export const commandMenuSearchQueryAtom = Atom.make("");
 
-export const commandRegistryAtom = Atom.make<CommandRegistryState>({
-  "default-commands": defaultCommands,
-});
+export const commandRegistryAtom = Atom.make<CommandRegistryState>({});
 
 export const commandRegistrationsAtom = Atom.map(
   commandRegistryAtom,

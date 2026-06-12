@@ -1,4 +1,3 @@
-import type { Project } from "@recount/core/modules/project";
 import type { ProjectId } from "@recount/core/shared/schemas";
 import { Button } from "@recount/ui/button";
 import {
@@ -30,9 +29,10 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMemo, useRef } from "react";
 
+import type { ProjectCollectionRow } from "~/db/synced-collections";
 import { useWorkspaceDb } from "~/db/workspace/context";
 
-const columnHelper = createColumnHelper<Project>();
+const columnHelper = createColumnHelper<ProjectCollectionRow>();
 
 const createColumns = () => [
   columnHelper.accessor("color", {
@@ -99,7 +99,7 @@ export function ArchivedProjectsList() {
   const columns = useMemo(() => createColumns(), []);
 
   const table = useReactTable({
-    data: projects ?? [],
+    data: projects,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -121,7 +121,7 @@ export function ArchivedProjectsList() {
     .map((col) => (col.columnDef.meta?.grow ? "1fr" : `${col.getSize()}px`))
     .join(" ");
 
-  return projects && projects.length > 0 ? (
+  return projects.length > 0 ? (
     <List style={{ gridTemplateColumns }}>
       <ListHeader>
         {table.getHeaderGroups().map((headerGroup) => (
