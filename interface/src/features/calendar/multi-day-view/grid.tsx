@@ -7,9 +7,10 @@ import { getDraggedTimeEntry } from "../dnd/adapter";
 import { GRID_DROPPABLE_ID, SELECTION_DRAGGABLE_ID } from "../dnd/types";
 import {
   closeTimeEntryEditor,
-  type EditingPreview,
   openUpdateTimeEntryEditor,
 } from "../state/atoms";
+import type { EditingPreview } from "../state/atoms";
+import type { TimeRange } from "../state/time-range";
 import { useDragSelection } from "../state/use-drag-selection";
 import { CurrentTimeLine } from "./current-time-line";
 import { DayColumn } from "./day-column";
@@ -19,29 +20,37 @@ import {
   getPointFromEvent,
   getRangeKey,
   getSelectionRange,
-  type Point,
 } from "./grid-interactions";
-import { getSlotFromPoint, type Slot } from "./layout";
+import type { Point } from "./grid-interactions";
+import type { Slot } from "./layout";
+import { getSlotFromPoint } from "./layout";
 import { TimeEntryDragOverlay } from "./time-entry-drag-overlay";
-import type { TimeEntry } from "./types";
 
 import styles from "./grid.module.css";
 
-type GridGeometry = {
+interface GridGeometry {
   left: number;
   top: number;
   width: number;
   height: number;
-};
+}
 
-type GridProps = {
+interface CalendarTimeEntry extends TimeRange {
+  id: string;
+  project: null | {
+    name: string;
+    color: string;
+  };
+}
+
+interface GridProps {
   currentTime: Date;
   preview: EditingPreview;
   projects: Array<{ id: string; name: string; color: string }>;
   showCurrentTimeLine: boolean;
-  timeEntries: Array<TimeEntry>;
+  timeEntries: Array<CalendarTimeEntry>;
   weekdays: Array<Date>;
-};
+}
 
 function getScrollViewport(element: HTMLElement) {
   return element.closest<HTMLElement>("[data-slot='scroll-area-viewport']");
@@ -100,7 +109,7 @@ export function Grid({
   const lastTimeEntryDropPreviewKeyRef = useRef<string | null>(null);
   const pendingClickSlotRef = useRef<Slot | null>(null);
   const [timeEntryDropPreview, setTimeEntryDropPreview] =
-    useState<TimeEntry | null>(null);
+    useState<CalendarTimeEntry | null>(null);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
   const openUpdateEditor = useAtomSet(openUpdateTimeEntryEditor);
   const { ref: draggableRef } = useDraggable({
@@ -279,7 +288,7 @@ export function Grid({
 
   useDragDropMonitor({
     onDragStart(event) {
-      const source = event.operation.source;
+      const { source } = event.operation;
 
       if (source?.data.kind !== "calendar-selection") {
         return;
@@ -311,7 +320,7 @@ export function Grid({
         return;
       }
 
-      const current = event.operation.position.current;
+      const { current } = event.operation.position;
       updateSelectionFromPoint({ clientX: current.x, clientY: current.y });
     },
     onDragEnd(event) {
@@ -321,7 +330,7 @@ export function Grid({
           return;
         }
 
-        const current = event.operation.position.current;
+        const { current } = event.operation.position;
         updateSelectionFromPoint({ clientX: current.x, clientY: current.y });
         commitDragSelection();
         resetSelectionDrag();

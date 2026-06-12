@@ -22,7 +22,6 @@ function MultiDayView() {
   const preview = useAtomValue(editingPreviewAtom);
   const workspaceDb = useWorkspaceDb();
   const timeEntries = useTimeEntries({
-    currentTime,
     replacingTimeEntryId: preview?.replacingTimeEntryId,
   });
   const showCurrentTimeLine = weekdays.some((day) =>

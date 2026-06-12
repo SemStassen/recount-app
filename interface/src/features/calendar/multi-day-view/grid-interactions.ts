@@ -1,10 +1,21 @@
 import type { TimeEntryId } from "@recount/core/shared/schemas";
 
 import type { TimeRange } from "../state/time-range";
-import { getRangeFromSlots, moveTimeRangeToSlot, type Slot } from "./layout";
-import type { TimeEntry } from "./types";
+import type { Slot } from "./layout";
+import { getRangeFromSlots, moveTimeRangeToSlot } from "./layout";
 
-export type Point = { clientX: number; clientY: number };
+export interface Point {
+  clientX: number;
+  clientY: number;
+}
+
+interface TimeEntryDropPreview extends TimeRange {
+  id: string;
+  project: null | {
+    name: string;
+    color: string;
+  };
+}
 
 export function getPointFromEvent(event: Event | undefined): Point | null {
   return event && "clientX" in event && "clientY" in event
@@ -16,7 +27,7 @@ export function getRangeKey(range: TimeRange) {
   return `${range.startedAt.getTime()}-${range.stoppedAt.getTime()}`;
 }
 
-export function getDropPreviewKey(dropPreview: TimeEntry | null) {
+export function getDropPreviewKey(dropPreview: TimeEntryDropPreview | null) {
   return dropPreview ? `${dropPreview.id}-${getRangeKey(dropPreview)}` : null;
 }
 
@@ -38,14 +49,14 @@ export function getMovedTimeEntryPreview({
 }: {
   slot: Slot | null;
   timeEntryId: TimeEntryId;
-  timeRange: Pick<TimeEntry, "startedAt" | "stoppedAt" | "project">;
-}): TimeEntry | null {
+  timeRange: TimeRange & Pick<TimeEntryDropPreview, "project">;
+}): TimeEntryDropPreview | null {
   if (!slot) {
     return null;
   }
 
   return {
-    id: String(timeEntryId),
+    id: timeEntryId,
     project: timeRange.project,
     ...moveTimeRangeToSlot(timeRange, slot),
   };

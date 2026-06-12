@@ -2,13 +2,22 @@ import { useAtomSet } from "@effect/atom-react";
 import type { TimeEntryId } from "@recount/core/shared/schemas";
 
 import { DraggableTimeEntry } from "../dnd/draggable-time-entry";
-import { type EditingPreview, openUpdateTimeEntryEditor } from "../state/atoms";
+import type { EditingPreview } from "../state/atoms";
+import { openUpdateTimeEntryEditor } from "../state/atoms";
+import type { TimeRange } from "../state/time-range";
 import { DragSelectionHighlight } from "./drag-selection-highlight";
 import { getDayTimeEntryFrames } from "./layout";
 import { TimeEntryContent, TimeEntryFrame } from "./time-entry";
 import { TimeEntryDropPreview } from "./time-entry-drop-preview";
 import { TimeEntryPreview } from "./time-entry-preview";
-import type { TimeEntry } from "./types";
+
+interface CalendarTimeEntry extends TimeRange {
+  id: string;
+  project: null | {
+    name: string;
+    color: string;
+  };
+}
 
 export function DayColumn({
   currentTime,
@@ -22,8 +31,8 @@ export function DayColumn({
   day: Date;
   preview: EditingPreview;
   projects: Array<{ id: string; name: string; color: string }>;
-  timeEntryDropPreview: TimeEntry | null;
-  timeEntries: Array<TimeEntry>;
+  timeEntryDropPreview: CalendarTimeEntry | null;
+  timeEntries: Array<CalendarTimeEntry>;
 }) {
   const openUpdateEditor = useAtomSet(openUpdateTimeEntryEditor);
   const timeEntryFrames = getDayTimeEntryFrames({ day, timeEntries });
