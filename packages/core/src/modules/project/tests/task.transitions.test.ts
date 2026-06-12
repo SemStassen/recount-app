@@ -55,7 +55,6 @@ describe("Task transitions", () => {
       createTask({
         project,
         data: {
-          id: Option.none(),
           projectId: submittedProjectId,
           name: "New Task",
         },
@@ -73,7 +72,6 @@ describe("Task transitions", () => {
     const result = createTask({
       project,
       data: {
-        id: Option.none(),
         projectId: project.id,
         name: "New Task",
       },

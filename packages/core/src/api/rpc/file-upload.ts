@@ -5,7 +5,7 @@ import { Rpc, RpcGroup } from "effect/unstable/rpc";
 import {
   PrepareFileUploadCommand,
   PrepareFileUploadResult,
-} from "#api/contracts/index";
+} from "#modules/file-upload/api";
 import {
   FileUploadTooLargeError,
   UnsupportedFileUploadContentTypeError,

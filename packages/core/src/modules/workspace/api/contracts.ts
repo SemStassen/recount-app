@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Workspace } from "#modules/workspace/index";
+import { Workspace } from "../index";
 
 export const CreateWorkspaceCommand = Workspace.jsonCreate;
 export const CreateWorkspaceResult = Workspace.json;

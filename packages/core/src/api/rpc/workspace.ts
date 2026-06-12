@@ -2,6 +2,7 @@ import { Schema } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";
 import { Rpc, RpcGroup } from "effect/unstable/rpc";
 
+import { SessionNotFoundError } from "#modules/identity/identity-module.service";
 import {
   CheckWorkspaceSlugIsUniqueCommand,
   CheckWorkspaceSlugIsUniqueResult,
@@ -11,8 +12,7 @@ import {
   ListWorkspacesResult,
   UpdateWorkspaceCommand,
   UpdateWorkspaceResult,
-} from "#api/contracts/index";
-import { SessionNotFoundError } from "#modules/identity/identity-module.service";
+} from "#modules/workspace/api";
 import {
   WorkspaceNotFoundError,
   WorkspaceSlugAlreadyExistsError,

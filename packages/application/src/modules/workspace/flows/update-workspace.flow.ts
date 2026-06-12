@@ -1,8 +1,8 @@
+import { WorkspaceModule } from "@recount/core/modules/workspace";
 import type {
   UpdateWorkspaceCommand,
   UpdateWorkspaceResult,
-} from "@recount/core/contracts";
-import { WorkspaceModule } from "@recount/core/modules/workspace";
+} from "@recount/core/modules/workspace/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";

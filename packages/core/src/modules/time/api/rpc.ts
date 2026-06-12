@@ -2,36 +2,39 @@ import { Schema } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";
 import { Rpc, RpcGroup } from "effect/unstable/rpc";
 
+import { AuthorizationError } from "#shared/authorization/index";
+
 import {
-  CreateTimeEntryCommand,
-  CreateTimeEntryResult,
-  DeleteTimeEntryCommand,
-  DeleteTimeEntryResult,
-  StartTimerCommand,
-  StartTimerResult,
-  StopTimerCommand,
-  StopTimerResult,
-  UpdateTimerCommand,
-  UpdateTimerResult,
-  UpdateTimeEntryCommand,
-  UpdateTimeEntryResult,
-} from "#api/contracts/index";
+  RpcSessionMiddleware,
+  RpcWorkspaceMiddleware,
+} from "../../../api/rpc/middleware";
 import {
-  TimerNotFoundError,
-  TimerAlreadyRunningError,
-  TimeEntryNotFoundError,
-  TimeEntryStoppedAtBeforeStartedAtError,
   TargetProjectNotFoundError,
   TargetTaskNotFoundError,
   TargetTaskProjectMismatchError,
-} from "#modules/time/index";
-import { AuthorizationError } from "#shared/authorization/index";
+  TimeEntryNotFoundError,
+  TimeEntryStoppedAtBeforeStartedAtError,
+  TimerAlreadyRunningError,
+  TimerNotFoundError,
+} from "../index";
+import {
+  CreateTimeEntryResult,
+  CreateTimeEntryRpcCommand,
+  DeleteTimeEntryCommand,
+  DeleteTimeEntryResult,
+  StartTimerResult,
+  StartTimerRpcCommand,
+  StopTimerCommand,
+  StopTimerResult,
+  UpdateTimeEntryCommand,
+  UpdateTimeEntryResult,
+  UpdateTimerCommand,
+  UpdateTimerResult,
+} from "./contracts";
 
-import { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
-
-export const TimeEntryRpcGroup = RpcGroup.make(
+export const TimeRpcGroup = RpcGroup.make(
   Rpc.make("TimeEntry.Create", {
-    payload: CreateTimeEntryCommand,
+    payload: CreateTimeEntryRpcCommand,
     success: CreateTimeEntryResult,
     error: Schema.Union([
       AuthorizationError,
@@ -74,7 +77,7 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     .middleware(RpcSessionMiddleware),
 
   Rpc.make("Timer.Start", {
-    payload: StartTimerCommand,
+    payload: StartTimerRpcCommand,
     success: StartTimerResult,
     error: Schema.Union([
       AuthorizationError,
@@ -116,3 +119,5 @@ export const TimeEntryRpcGroup = RpcGroup.make(
     .middleware(RpcWorkspaceMiddleware)
     .middleware(RpcSessionMiddleware)
 );
+
+export const TimeEntryRpcGroup = TimeRpcGroup;

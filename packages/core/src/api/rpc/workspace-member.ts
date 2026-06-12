@@ -5,7 +5,7 @@ import { Rpc, RpcGroup } from "effect/unstable/rpc";
 import {
   UpdateWorkspaceMemberCommand,
   UpdateWorkspaceMemberResult,
-} from "#api/contracts/workspace-member";
+} from "#modules/workspace-member/api";
 import { WorkspaceMemberNotFoundError } from "#modules/workspace-member/workspace-member-module.service";
 import { AuthorizationError } from "#shared/authorization/index";
 

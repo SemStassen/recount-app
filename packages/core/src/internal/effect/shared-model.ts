@@ -30,19 +30,23 @@ const optionalNullableOptionKey = <S extends Schema.Top>(schema: S) =>
   Schema.optionalKey(Schema.OptionFromNullOr(schema));
 
 /**
- * Named helpers cover the common matrix of same-shape record and entity
- * contracts.
+ * Named helpers compose RecordModel persistence variants with EntityModel JSON
+ * variants. Keep the variant semantics aligned with those two leading models:
+ * record variants mirror `record-model.ts`; JSON variants mirror
+ * `entity-model.ts`.
  *
  * Reach for `Field(...)` directly when a field has asymmetric behavior across
  * variants, such as different DB/JSON schemas or omitted JSON read variants.
  *
  * Naming rules:
- * - Start with record mutability: `Immutable` or `Mutable`.
- * - Add entity API operation inclusion: `ReadOnly`, `Create`, or
+ * - Start with record persistence mutability: `Immutable` or `Mutable`.
+ * - Add JSON operation inclusion: `ReadOnly`, `Create`, or
  *   `CreateUpdate`.
  * - Append modifiers last: `Nullable`, `CreateOptional`.
  * - `Nullable` means the field value can be absent/null and decodes to Option.
- * - `Optional` means the input key may be omitted.
+ * - `Optional` means the input key may be omitted, matching EntityModel's
+ *   `Schema.optionalKey` behavior. Omitted keys stay omitted; they do not
+ *   decode to Option.
  * - `Update` always means Partial Update semantics: omitted update keys are not
  *   updates; present nullable `Option.none` values clear the field.
  * - If the name starts to describe transport quirks instead of the core
@@ -50,6 +54,12 @@ const optionalNullableOptionKey = <S extends Schema.Top>(schema: S) =>
  *
  * Grammar:
  * `<Record mutability><API inclusion><modifier>`
+ *
+ * Alignment examples:
+ * - `ImmutableCreateOptional` = RecordModel.Immutable +
+ *   EntityModel.CreateOptional
+ * - `MutableCreateUpdateNullable` = RecordModel.MutableNullable +
+ *   EntityModel.CreateUpdateNullable
  */
 
 // ---------------------------------------------------------------------------
@@ -156,7 +166,7 @@ export interface ImmutableCreateOptional<
   readonly select: S;
   readonly insert: S;
   readonly json: S;
-  readonly jsonCreate: Schema.OptionFromOptionalKey<S>;
+  readonly jsonCreate: Schema.optionalKey<S>;
 }> {}
 
 /**
@@ -165,8 +175,8 @@ export interface ImmutableCreateOptional<
  * Useful for IDs that can be client-supplied for optimistic writes and
  * server-generated when omitted.
  *
- * Omitted create keys decode to `Option.none` so the service layer must
- * explicitly choose or generate the inserted value.
+ * Omitted create keys stay omitted so the service layer can choose or generate
+ * the inserted value without exposing Option at the create command interface.
  *
  * @example
  * id: ImmutableCreateOptional(ProjectId)
@@ -178,7 +188,7 @@ export const ImmutableCreateOptional = <S extends Schema.Top>(
     select: schema,
     insert: schema,
     json: schema,
-    jsonCreate: Schema.OptionFromOptionalKey(schema),
+    jsonCreate: Schema.optionalKey(schema),
   });
 
 // ---------------------------------------------------------------------------

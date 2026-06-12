@@ -1,8 +1,8 @@
+import { IdentityModule } from "@recount/core/modules/identity";
 import type {
   UpdateMeUserSettingsCommand,
   UpdateMeUserSettingsResult,
-} from "@recount/core/contracts";
-import { IdentityModule } from "@recount/core/modules/identity";
+} from "@recount/core/modules/identity/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";

@@ -5,6 +5,9 @@
   "references": {
     "effect": {
       "repository": "github.com/Effect-TS/effect-smol",
+    },
+    "plane": {
+      "repository": "github.com/makeplane/plane"
     }
   },
   "mcp": {
@@ -13,8 +16,8 @@
       "url": "https://ui.sh/mcp?agent=opencode",
       "enabled": true,
       "headers": {
-        "Authorization": "Bearer {env:UIDOTSH_TOKEN}"
-      }
-    }
-  }
+        "Authorization": "Bearer {env:UIDOTSH_TOKEN}",
+      },
+    },
+  },
 }

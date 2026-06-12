@@ -1,8 +1,8 @@
-import type { PrepareFileUploadCommand } from "@recount/core/contracts";
 import {
   FileUploadTooLargeError,
   UnsupportedFileUploadContentTypeError,
 } from "@recount/core/modules/file-upload";
+import type { PrepareFileUploadCommand } from "@recount/core/modules/file-upload/api";
 import { Effect } from "effect";
 
 const megabytes = (value: number) => value * 1024 * 1024;

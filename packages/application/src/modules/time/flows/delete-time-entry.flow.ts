@@ -1,8 +1,8 @@
+import { TimeModule } from "@recount/core/modules/time";
 import type {
   DeleteTimeEntryCommand,
   DeleteTimeEntryResult,
-} from "@recount/core/contracts";
-import { TimeModule } from "@recount/core/modules/time";
+} from "@recount/core/modules/time/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
@@ -18,7 +18,7 @@ export const deleteTimeEntryFlow = Effect.fn("flows.deleteTimeEntryFlow")(
 
     yield* timeModule.hardDeleteTimeEntries({
       workspaceId: workspace.id,
-      ids: [request.timeEntryId],
+      ids: [request.id],
     });
 
     return undefined satisfies typeof DeleteTimeEntryResult.Type;

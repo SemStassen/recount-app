@@ -1,8 +1,8 @@
+import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
 import type {
   RejectWorkspaceInvitationCommand,
   RejectWorkspaceInvitationResult,
-} from "@recount/core/contracts";
-import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
+} from "@recount/core/modules/workspace-invitation/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";

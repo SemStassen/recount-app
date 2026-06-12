@@ -1,9 +1,9 @@
+import { IdentityModule } from "@recount/core/modules/identity";
+import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
 import type {
   CreateWorkspaceInvitationCommand,
   CreateWorkspaceInvitationResult,
-} from "@recount/core/contracts";
-import { IdentityModule } from "@recount/core/modules/identity";
-import { WorkspaceInvitationModule } from "@recount/core/modules/workspace-invitation";
+} from "@recount/core/modules/workspace-invitation/api";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
 import { Mailer } from "@recount/notifications/mailer";
 import { Effect, Option } from "effect";

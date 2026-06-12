@@ -5,7 +5,7 @@ import { Rpc, RpcGroup } from "effect/unstable/rpc";
 import {
   SetLastActiveWorkspaceCommand,
   SetLastActiveWorkspaceResult,
-} from "#api/contracts/index";
+} from "#modules/identity/api";
 import { Session, User } from "#modules/identity/index";
 import { WorkspaceMemberNotFoundError } from "#modules/workspace-member/workspace-member-module.service";
 

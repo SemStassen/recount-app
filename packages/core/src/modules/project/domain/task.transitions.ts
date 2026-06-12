@@ -19,7 +19,7 @@ export const createTask = (params: {
     const { id, projectId: _resolvedProjectId, ...rest } = params.data;
 
     return Task.make({
-      id: Option.getOrElse(id, () => TaskId.make(generateUUID())),
+      id: id ?? TaskId.make(generateUUID()),
       workspaceId: params.project.workspaceId,
       archivedAt: Option.none(),
       projectId: params.project.id,

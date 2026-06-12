@@ -1,9 +1,8 @@
 export { AuthRpcGroup } from "./auth";
 export { FileUploadRpcGroup } from "./file-upload";
 export { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
-export { ProjectRpcGroup } from "./project";
-export { TaskRpcGroup } from "./task";
-export { TimeEntryRpcGroup } from "./time-entry";
+export { ProjectRpcGroup, TaskRpcGroup } from "#modules/project/api/rpc";
+export { TimeEntryRpcGroup, TimeRpcGroup } from "#modules/time/api/rpc";
 export { UserSettingsRpcGroup } from "./user-settings";
 export { UserRpcGroup } from "./user";
 export { WorkspaceRpcGroup } from "./workspace";

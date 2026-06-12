@@ -1,8 +1,8 @@
+import { TimeModule } from "@recount/core/modules/time";
 import type {
   UpdateTimerCommand,
   UpdateTimerResult,
-} from "@recount/core/contracts";
-import { TimeModule } from "@recount/core/modules/time";
+} from "@recount/core/modules/time/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";

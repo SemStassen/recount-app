@@ -1,8 +1,8 @@
+import { ProjectModule } from "@recount/core/modules/project";
 import type {
   UnarchiveTaskCommand,
   UnarchiveTaskResult,
-} from "@recount/core/contracts";
-import { ProjectModule } from "@recount/core/modules/project";
+} from "@recount/core/modules/project/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";

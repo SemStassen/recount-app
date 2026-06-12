@@ -1,9 +1,9 @@
+import { WorkspaceModule } from "@recount/core/modules/workspace";
+import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
 import type {
   ListWorkspacesCommand,
   ListWorkspacesResult,
-} from "@recount/core/contracts";
-import { WorkspaceModule } from "@recount/core/modules/workspace";
-import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
+} from "@recount/core/modules/workspace/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";

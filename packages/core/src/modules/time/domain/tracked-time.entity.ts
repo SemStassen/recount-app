@@ -10,7 +10,7 @@ import {
   WorkspaceMemberId,
 } from "#shared/schemas/index";
 
-const timeEntryBaseFields = {
+const trackedTimeBaseFields = {
   workspaceId: EntityModel.ReadOnly(WorkspaceId),
   workspaceMemberId: EntityModel.ReadOnly(WorkspaceMemberId),
   projectId: EntityModel.CreateUpdate(ProjectId),
@@ -20,7 +20,7 @@ const timeEntryBaseFields = {
 
 export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
   {
-    ...timeEntryBaseFields,
+    ...trackedTimeBaseFields,
     id: EntityModel.CreateOptional(TimeEntryId),
     startedAt: EntityModel.CreateUpdate(Schema.DateTimeUtcFromDate),
     stoppedAt: EntityModel.CreateUpdate(Schema.DateTimeUtcFromDate),
@@ -34,7 +34,7 @@ export class TimeEntry extends EntityModel.Class<TimeEntry>("TimeEntry")(
 
 export class Timer extends EntityModel.Class<Timer>("Timer")(
   {
-    ...timeEntryBaseFields,
+    ...trackedTimeBaseFields,
     id: EntityModel.CreateOptional(TimerId),
     startedAt: EntityModel.CreateOptional(Schema.DateTimeUtcFromDate),
   },

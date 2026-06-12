@@ -85,7 +85,6 @@ describe("Project transitions", () => {
       createProject({
         workspaceId,
         data: {
-          id: Option.none(),
           name: "Project",
         },
       })
@@ -102,7 +101,6 @@ describe("Project transitions", () => {
       createProject({
         workspaceId,
         data: {
-          id: Option.none(),
           name: "Project",
           color: HexColor.make("#ff0000"),
           isBillable: true,

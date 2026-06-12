@@ -1,4 +1,4 @@
-import { WorkspaceMember } from "#modules/workspace-member/index";
+import { WorkspaceMember } from "../index";
 
 export const UpdateWorkspaceMemberCommand = WorkspaceMember.jsonUpdate;
 export const UpdateWorkspaceMemberResult = WorkspaceMember.json;

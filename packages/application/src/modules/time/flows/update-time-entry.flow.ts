@@ -1,8 +1,8 @@
+import { TimeModule } from "@recount/core/modules/time";
 import type {
   UpdateTimeEntryCommand,
   UpdateTimeEntryResult,
-} from "@recount/core/contracts";
-import { TimeModule } from "@recount/core/modules/time";
+} from "@recount/core/modules/time/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
@@ -17,7 +17,7 @@ export const updateTimeEntryFlow = Effect.fn("flows.updateTimeEntryFlow")(
     );
 
     const updatedTimeEntry = yield* timeModule.updateTimeEntry({
-      id: request.timeEntryId,
+      id: request.id,
       workspaceId: workspace.id,
       data: request.data,
     });

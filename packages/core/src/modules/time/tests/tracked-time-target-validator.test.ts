@@ -168,7 +168,6 @@ describe("Time Module target validation", () => {
         workspaceMemberId: workspaceMemberId(),
         data: [
           {
-            id: Option.none(),
             projectId: missingProjectId,
             startedAt,
             stoppedAt,
@@ -199,7 +198,6 @@ describe("Time Module target validation", () => {
         workspaceId: workspaceId(),
         workspaceMemberId: workspaceMemberId(),
         data: {
-          id: Option.none(),
           projectId: existingProjectId,
           taskId: Option.some(missingTaskId),
           startedAt,
@@ -268,7 +266,6 @@ describe("Time Module target validation", () => {
         workspaceId: timer.workspaceId,
         workspaceMemberId: timer.workspaceMemberId,
         data: {
-          id: Option.none(),
           projectId: existingProjectId,
         },
       });

@@ -20,16 +20,17 @@
   "imports": {
     "#api/*": "./src/api/*.ts",
     "#internal/*": "./src/internal/*.ts",
+    "#modules/*/api": "./src/modules/*/api/index.ts",
     "#modules/*": "./src/modules/*.ts",
     "#shared/*": "./src/shared/*.ts"
   },
   "exports": {
-    "./contracts": "./src/api/contracts/index.ts",
     "./http": "./src/api/http/index.ts",
     "./rpc": "./src/api/rpc/index.ts",
+    "./modules/*/api": "./src/modules/*/api/index.ts",
     "./modules/*": "./src/modules/*/index.ts",
     "./modules/*/persistence": "./src/modules/*/persistence/index.ts",
-    "./modules/time/ports": "./src/modules/time/ports/index.ts",
+    "./modules/*/ports": "./src/modules/*/ports/index.ts",
     "./shared/*": "./src/shared/*/index.ts",
     "./shared/headers": "./src/shared/headers.ts"
   }

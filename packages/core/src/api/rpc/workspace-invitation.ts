@@ -11,7 +11,7 @@ import {
   CreateWorkspaceInvitationResult,
   RejectWorkspaceInvitationCommand,
   RejectWorkspaceInvitationResult,
-} from "#api/contracts/index";
+} from "#modules/workspace-invitation/api";
 import {
   WorkspaceInvitationEmailMismatchError,
   WorkspaceInvitationExpiredError,

@@ -1,8 +1,8 @@
+import { IdentityModule } from "@recount/core/modules/identity";
 import type {
   SetLastActiveWorkspaceCommand,
   SetLastActiveWorkspaceResult,
-} from "@recount/core/contracts";
-import { IdentityModule } from "@recount/core/modules/identity";
+} from "@recount/core/modules/identity/api";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
 import { Effect, Option } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";

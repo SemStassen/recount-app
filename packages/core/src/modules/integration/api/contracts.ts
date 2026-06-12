@@ -1,4 +1,4 @@
-import { WorkspaceIntegrationConnection } from "#modules/integration/index";
+import { WorkspaceIntegrationConnection } from "../index";
 
 export const CreateWorkspaceIntegrationConnectionCommand =
   WorkspaceIntegrationConnection.jsonCreate;

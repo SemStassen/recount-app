@@ -1,7 +1,7 @@
 import type {
   PrepareFileUploadCommand,
   PrepareFileUploadResult,
-} from "@recount/core/contracts";
+} from "@recount/core/modules/file-upload/api";
 import { Effect } from "effect";
 
 import { FileUploadKeyPolicy, ObjectStorage } from "#infra/storage";
