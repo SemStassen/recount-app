@@ -98,7 +98,9 @@ export function moveTimeRangeToSlot(
   };
 }
 
-function groupTimeEntries<TEntry extends TimeRange>(timeEntries: Array<TEntry>) {
+function groupTimeEntries<TEntry extends TimeRange>(
+  timeEntries: Array<TEntry>
+) {
   const sortedTimeEntries = timeEntries.toSorted(
     (a, b) => a.startedAt.getTime() - b.startedAt.getTime()
   );
