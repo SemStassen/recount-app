@@ -9,6 +9,9 @@
     "plane": {
       "repository": "github.com/makeplane/plane",
     },
+    "screenpipe": {
+      "repository": "https://github.com/screenpipe/screenpipe"
+    }
   },
   "mcp": {
     "uidotsh": {

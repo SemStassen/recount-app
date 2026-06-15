@@ -23,7 +23,7 @@
     "@tauri-apps/plugin-stronghold": "^2.3.1",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
-    "screenpipe": "^0.3.341"
+    "screenpipe": "0.4.15"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",
@@ -32,9 +32,9 @@
     "vite": "catalog:dev"
   },
   "optionalDependencies": {
-    "@screenpipe/cli-darwin-arm64": "0.3.341",
-    "@screenpipe/cli-darwin-x64": "0.3.341",
-    "@screenpipe/cli-linux-x64": "0.3.341",
-    "@screenpipe/cli-win32-x64": "0.3.341"
+    "@screenpipe/cli-darwin-arm64": "0.4.15",
+    "@screenpipe/cli-darwin-x64": "0.4.15",
+    "@screenpipe/cli-linux-x64": "0.4.15",
+    "@screenpipe/cli-win32-x64": "0.4.15"
   }
 }
