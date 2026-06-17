@@ -21,7 +21,10 @@ import { isNavigationSidebarOpenAtom } from "~/atoms/ui-atoms";
 interface PageProps extends React.ComponentProps<"div"> {}
 export function Page({ children, className, ...props }: PageProps) {
   return (
-    <div className={cn("flex flex-row w-full h-full", className)} {...props}>
+    <div
+      className={cn("grid h-full w-full grid-cols-[minmax(0,1fr)]", className)}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -30,7 +33,13 @@ export function Page({ children, className, ...props }: PageProps) {
 interface PageMainProps extends React.ComponentProps<"div"> {}
 export function PageMain({ children, className, ...props }: PageMainProps) {
   return (
-    <div className={cn("flex flex-col w-full", className)} {...props}>
+    <div
+      className={cn(
+        "grid grid-rows-[auto_minmax(0,1fr)] overflow-hidden",
+        className
+      )}
+      {...props}
+    >
       {children}
     </div>
   );

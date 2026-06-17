@@ -7,6 +7,9 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 
+import { AskRecountPopover } from "../-components/ask-recount-popover";
+import { WorkspaceAppShell } from "../_sidebar/-components/app-shell";
+
 export const Route = createFileRoute("/_app/$workspaceSlug/settings")({
   component: RouteComponent,
 });
@@ -26,69 +29,75 @@ function RouteComponent() {
       : "Settings";
 
   return (
-    <div className="flex flex-1">
-      <aside className="w-[240px] p-4">
-        <Button
-          render={(props) => (
-            <Link
-              from="/$workspaceSlug/settings"
-              to="/$workspaceSlug"
-              {...props}
-            >
-              <Icons.ChevronLeft />
-              Back to app
-            </Link>
-          )}
-          variant="ghost"
-        />
-        <div>
+    <WorkspaceAppShell
+      footer={<AskRecountPopover />}
+      sidebar={
+        <aside className="w-[240px] border-r p-4">
           <Button
             render={(props) => (
               <Link
                 from="/$workspaceSlug/settings"
-                to="/$workspaceSlug/settings"
+                to="/$workspaceSlug"
                 {...props}
               >
-                <Icons.Slider />
-                Preferences
+                <Icons.ChevronLeft />
+                Back to app
               </Link>
             )}
             variant="ghost"
           />
-          <Button
-            render={(props) => (
-              <Link
-                from="/$workspaceSlug/settings"
-                to="/$workspaceSlug/settings/profile"
-                {...props}
-              >
-                <Icons.User />
-                Profile
-              </Link>
-            )}
-            variant="ghost"
-          />
-          <Button
-            render={(props) => (
-              <Link
-                from="/$workspaceSlug/settings"
-                to="/$workspaceSlug/settings/integrations"
-                {...props}
-              >
-                <Icons.Plugs />
-                Integrations
-              </Link>
-            )}
-            variant="ghost"
-          />
-        </div>
-      </aside>
-      <div className="relative m-1 flex-1 overflow-y-scroll rounded-lg border bg-card p-4">
-        <div className="mx-auto mt-16 max-w-2xl space-y-8">
-          <h1 className="font-medium text-2xl">{title}</h1>
-          <Outlet />
+          <div>
+            <Button
+              render={(props) => (
+                <Link
+                  from="/$workspaceSlug/settings"
+                  to="/$workspaceSlug/settings"
+                  {...props}
+                >
+                  <Icons.Slider />
+                  Preferences
+                </Link>
+              )}
+              variant="ghost"
+            />
+            <Button
+              render={(props) => (
+                <Link
+                  from="/$workspaceSlug/settings"
+                  to="/$workspaceSlug/settings/profile"
+                  {...props}
+                >
+                  <Icons.User />
+                  Profile
+                </Link>
+              )}
+              variant="ghost"
+            />
+            <Button
+              render={(props) => (
+                <Link
+                  from="/$workspaceSlug/settings"
+                  to="/$workspaceSlug/settings/integrations"
+                  {...props}
+                >
+                  <Icons.Plugs />
+                  Integrations
+                </Link>
+              )}
+              variant="ghost"
+            />
+          </div>
+        </aside>
+      }
+    >
+      <div className="h-full p-1">
+        <div className="relative h-full overflow-y-scroll rounded-lg border bg-card p-4">
+          <div className="mx-auto mt-16 max-w-2xl space-y-8">
+            <h1 className="font-medium text-2xl">{title}</h1>
+            <Outlet />
+          </div>
         </div>
       </div>
-    </div>
+    </WorkspaceAppShell>
   );
 }

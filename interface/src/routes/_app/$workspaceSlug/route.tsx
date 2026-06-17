@@ -3,7 +3,6 @@ import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 import { getWorkspaceDb } from "~/db/workspace/get-workspace-db";
 import { CommandMenu } from "~/features/command-menu";
 
-import { AskRecountPopover } from "./-components/ask-recount-popover";
 import { CreateProjectDialog } from "./-components/create-project-dialog";
 import { CreateTaskDialog } from "./-components/create-task-dialog";
 import { DebugSheet } from "./-components/debug-sheet";
@@ -36,15 +35,8 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
 function WorkspaceLayout() {
   return (
     <WorkspaceProviders>
-      <div className="flex flex-row w-full h-full min-h-full items-stretch">
-        <div className="flex flex-col flex-1">
-          <main className="flex flex-1">
-            <Outlet />
-          </main>
-          <footer className="h-7">
-            <AskRecountPopover />
-          </footer>
-        </div>
+      <div className="grid h-full w-full overflow-hidden">
+        <Outlet />
         <CommandMenu />
         {/* Dialogs */}
         <CreateProjectDialog />
