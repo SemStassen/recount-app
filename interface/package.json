@@ -25,6 +25,7 @@
     "@rolldown/plugin-babel": "catalog:dev",
     "@t3-oss/env-core": "^0.13.8",
     "@tailwindcss/vite": "catalog:dev",
+    "@tanstack/ai-react": "^0.15.8",
     "@tanstack/devtools-vite": "^0.7.0",
     "@tanstack/electric-db-collection": "^0.3.5",
     "@tanstack/react-db": "^0.1.85",

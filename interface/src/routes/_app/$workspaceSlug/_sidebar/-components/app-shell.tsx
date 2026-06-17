@@ -15,15 +15,17 @@ export function WorkspaceAppShell({
   return (
     <div
       className={cn(
-        "grid h-full w-full grid-cols-[auto_minmax(0,1fr)] overflow-hidden",
+        "flex h-dvh w-dvw overflow-hidden overscroll-none",
         className
       )}
       {...props}
     >
-      {sidebar}
-      <div className="grid min-w-0 grid-rows-[minmax(0,1fr)_auto] overflow-hidden">
-        <main className="overflow-hidden">{children}</main>
-        <footer className="flex h-7 items-center justify-end border-t bg-background px-2">
+      <div className="h-full shrink-0">{sidebar}</div>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto overscroll-contain">
+          {children}
+        </main>
+        <footer className="flex h-7 shrink-0 items-center justify-end border-t bg-background px-2">
           {footer}
         </footer>
       </div>

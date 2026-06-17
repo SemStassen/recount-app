@@ -14,7 +14,7 @@ function Layout() {
     <WorkspaceAppShell
       footer={<AskRecountPopover />}
       sidebar={
-        <div className="relative overflow-hidden">
+        <div className="relative h-full">
           <NavigationSidebar />
           <div className="absolute top-1.5 left-1.5">
             <NavigationSidebarToggle />

@@ -37,7 +37,11 @@ export function PopoverPositioner({
 }: PopoverPrimitive.Positioner.Props): React.ReactElement {
   return (
     <PopoverPrimitive.Positioner
-      className={cn("z-50 max-h-(--available-height)", className)}
+      className={cn(
+        "z-50 h-(--positioner-height) w-(--positioner-width) max-w-(--available-width)",
+        "transition-[top,left,right,bottom,transform] data-instant:transition-none",
+        className
+      )}
       data-slot="popover-positioner"
       {...props}
     />
@@ -52,7 +56,7 @@ export function PopoverPopup({
     <PopoverPrimitive.Popup
       className={cn(
         "origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground outline-none",
-        "transition-[scale,opacity] duration-150 ease-out",
+        "transition-[width,height,scale,opacity] duration-150 ease-out",
         "data-ending-style:scale-98 data-starting-style:scale-98",
         "data-ending-style:opacity-0 data-starting-style:opacity-0",
         className

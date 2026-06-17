@@ -11,7 +11,11 @@ export function AskRecountPopover() {
   return (
     <Popover>
       <PopoverTrigger render={<Button variant="ghost">Ask Recount</Button>} />
-      <PopoverContent className="w-100 h-125" align="end" side="top">
+      <PopoverContent
+        align="end"
+        className="h-125 w-100 max-h-[calc(100dvh-3rem)] max-w-[calc(100dvw-1rem)]"
+        side="top"
+      >
         <div className="flex flex-row justify-between gap-2">
           <div>
             <span>New chat</span>
