@@ -59,6 +59,7 @@
   },
   "exports": {
     ".": "./src/exports.ts",
+    "./screen-context": "./src/screen-context/index.ts",
     "./vite": "./vite.config.ts"
   }
 }

@@ -10,7 +10,13 @@
       "repository": "github.com/makeplane/plane",
     },
     "screenpipe": {
-      "repository": "https://github.com/screenpipe/screenpipe"
+      "repository": "https://github.com/screenpipe/screenpipe",
+    },
+    "shadow": {
+      "repository": "https://github.com/ghostwright/shadow"
+    },
+    "ghost-os": {
+      "repository": "https://github.com/ghostwright/ghost-os"
     }
   },
   "mcp": {

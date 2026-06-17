@@ -2,8 +2,7 @@
 
 import { chmod, copyFile, mkdir } from "node:fs/promises";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 
 const require = createRequire(import.meta.url);
 
@@ -31,15 +30,15 @@ if (!packageName || !targetTriple) {
 
 const packageJsonPath = require.resolve(`${packageName}/package.json`);
 const binaryExtension = process.platform === "win32" ? ".exe" : "";
-const sourcePath = join(
-  dirname(packageJsonPath),
+const sourcePath = path.join(
+  path.dirname(packageJsonPath),
   "bin",
   `screenpipe${binaryExtension}`
 );
 
-const scriptDir = dirname(fileURLToPath(import.meta.url));
-const binariesDir = join(scriptDir, "..", "src-tauri", "binaries");
-const destinationPath = join(
+const scriptDir = import.meta.dirname;
+const binariesDir = path.join(scriptDir, "..", "src-tauri", "binaries");
+const destinationPath = path.join(
   binariesDir,
   `screenpipe-${targetTriple}${binaryExtension}`
 );

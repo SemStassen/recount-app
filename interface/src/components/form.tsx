@@ -19,7 +19,7 @@ import type {
 import { Icons } from "@recount/ui/icons";
 import { Input } from "@recount/ui/input";
 import type { InputProps } from "@recount/ui/input";
-import { Popover, PopoverPopup, PopoverTrigger } from "@recount/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@recount/ui/popover";
 import {
   Select,
   SelectContent,
@@ -27,12 +27,14 @@ import {
   SelectItemText,
   SelectTrigger,
   SelectValue,
-  type SelectValueProps,
 } from "@recount/ui/select";
+import type { SelectValueProps } from "@recount/ui/select";
 import { Switch } from "@recount/ui/switch";
 import type { SwitchProps } from "@recount/ui/switch";
-import { Textarea, type TextareaProps } from "@recount/ui/textarea";
-import { TimePicker, type TimePickerProps } from "@recount/ui/time-picker";
+import { Textarea } from "@recount/ui/textarea";
+import type { TextareaProps } from "@recount/ui/textarea";
+import { TimePicker } from "@recount/ui/time-picker";
+import type { TimePickerProps } from "@recount/ui/time-picker";
 import { cn } from "@recount/ui/utils";
 import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
 import { cva } from "class-variance-authority";
@@ -327,13 +329,13 @@ function DatePickerField({ ...props }: DatePickerFieldProps) {
             </Button>
           }
         />
-        <PopoverPopup align="start">
+        <PopoverContent align="start">
           <Calendar
             mode="single"
             selected={fieldCtx.state.value ?? undefined}
             onSelect={(date) => fieldCtx.handleChange(date ?? null)}
           />
-        </PopoverPopup>
+        </PopoverContent>
       </Popover>
     </BaseField>
   );
@@ -363,7 +365,7 @@ function TimePickerField({ timePicker, ...props }: TimePickerFieldProps) {
 }
 
 export interface ColorPickerFieldProps extends BaseFieldProps {
-  colorPicker?: {};
+  colorPicker?: Record<string, never>;
 }
 function ColorPickerField({ ...props }: ColorPickerFieldProps) {
   const fieldCtx = useFieldContext<string | null>();
