@@ -13,11 +13,11 @@
       "repository": "https://github.com/screenpipe/screenpipe",
     },
     "shadow": {
-      "repository": "https://github.com/ghostwright/shadow"
+      "repository": "https://github.com/ghostwright/shadow",
     },
     "ghost-os": {
-      "repository": "https://github.com/ghostwright/ghost-os"
-    }
+      "repository": "https://github.com/ghostwright/ghost-os",
+    },
   },
   "mcp": {
     "uidotsh": {

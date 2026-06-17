@@ -106,9 +106,7 @@ const normalizeSearchItem = (item: unknown) => ({
   metadata: item,
 });
 
-const normalizeSearchResponse = (
-  response: unknown
-) => {
+const normalizeSearchResponse = (response: unknown) => {
   const data =
     typeof response === "object" && response !== null && "data" in response
       ? (response as { readonly data: unknown }).data
