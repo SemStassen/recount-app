@@ -1,10 +1,10 @@
 import { Project } from "@recount/core/modules/project";
 import {
   Dialog,
+  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogPanel,
-  DialogPopup,
   DialogPrimitive,
   DialogTitle,
 } from "@recount/ui/dialog";
@@ -84,7 +84,7 @@ function CreateProjectDialogContent({
   });
 
   return (
-    <DialogPopup
+    <DialogContent
       render={
         <FormPrimitive
           onSubmit={(e) => {
@@ -150,6 +150,6 @@ function CreateProjectDialogContent({
           <form.SubmitButton>{m.project_create_submit()}</form.SubmitButton>
         </form.AppForm>
       </DialogFooter>
-    </DialogPopup>
+    </DialogContent>
   );
 }

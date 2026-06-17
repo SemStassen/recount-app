@@ -55,7 +55,7 @@ export function PopoverPopup({
   return (
     <PopoverPrimitive.Popup
       className={cn(
-        "origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground outline-none",
+        "flex h-(--popup-height,auto) w-(--popup-width,auto) origin-(--transform-origin) rounded-lg border bg-popover text-popover-foreground outline-none",
         "transition-[width,height,scale,opacity] duration-150 ease-out",
         "data-ending-style:scale-98 data-starting-style:scale-98",
         "data-ending-style:opacity-0 data-starting-style:opacity-0",
@@ -74,8 +74,15 @@ export function PopoverViewport({
   return (
     <PopoverPrimitive.Viewport
       className={cn(
-        "relative size-full max-h-(--available-height) overflow-y-auto p-4",
+        "relative size-full max-h-(--available-height) overflow-clip px-(--viewport-inline-padding) py-4 [--viewport-inline-padding:--spacing(4)] data-instant:transition-none",
+        "not-data-transitioning:overflow-y-auto",
         "has-data-[slot=calendar]:p-2",
+        "**:data-current:data-ending-style:opacity-0 **:data-current:data-starting-style:opacity-0",
+        "**:data-previous:data-ending-style:opacity-0 **:data-previous:data-starting-style:opacity-0",
+        "**:data-current:w-[calc(var(--popup-width)-2*var(--viewport-inline-padding)-2px)]",
+        "**:data-previous:w-[calc(var(--popup-width)-2*var(--viewport-inline-padding)-2px)]",
+        "**:data-current:opacity-100 **:data-previous:opacity-100",
+        "**:data-current:transition-opacity **:data-previous:transition-opacity",
         className
       )}
       data-slot="popover-viewport"

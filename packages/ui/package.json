@@ -47,7 +47,7 @@
     "./combobox": "./src/components/old/combobox.coss.tsx",
     "./command": "./src/components/old/command.coss.tsx",
     "./context-menu": "./src/components/context-menu.tsx",
-    "./dialog": "./src/components/old/dialog.coss.tsx",
+    "./dialog": "./src/components/dialog.tsx",
     "./dropzone": "./src/components/old/dropzone.kibo.tsx",
     "./empty": "./src/components/old/empty.coss.tsx",
     "./field": "./src/components/old/field.coss.tsx",

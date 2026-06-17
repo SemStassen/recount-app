@@ -2,10 +2,10 @@ import { Task } from "@recount/core/modules/project";
 import { ProjectId, TaskId } from "@recount/core/shared/schemas";
 import {
   Dialog,
+  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogPanel,
-  DialogPopup,
   DialogPrimitive,
   DialogTitle,
 } from "@recount/ui/dialog";
@@ -44,14 +44,14 @@ export function CreateTaskDialog() {
 
   return (
     <Dialog handle={createTaskDialogHandle}>
-      {({ payload }) => <CreateTaskDialogPopup payload={payload} />}
+      {({ payload }) => <CreateTaskDialogContent payload={payload} />}
     </Dialog>
   );
 }
 
 const schema = createSchemaForm(Task.jsonCreate);
 
-function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
+function CreateTaskDialogContent({ payload }: { payload: Payload | undefined }) {
   const navigate = useNavigate();
 
   const workspaceDb = useWorkspaceDb();
@@ -98,7 +98,7 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
   }
 
   return (
-    <DialogPopup
+    <DialogContent
       render={
         <FormPrimitive
           onSubmit={(e) => {
@@ -147,7 +147,7 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
           <form.SubmitButton>Create task</form.SubmitButton>
         </form.AppForm>
       </DialogFooter>
-    </DialogPopup>
+    </DialogContent>
   );
 }
 
