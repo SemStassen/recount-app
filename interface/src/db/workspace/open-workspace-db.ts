@@ -13,6 +13,7 @@ import type { Collection } from "@tanstack/react-db";
 import type { TimeEntryViewRow, TimerViewRow } from "~/db/synced-collections";
 import { workspaceSyncedCollections } from "~/db/synced-collections";
 import { authFetch } from "~/lib/auth";
+import type { AppRuntimeLayer } from "~/lib/runtime";
 
 import { createProjectActions } from "./project-actions";
 import { createTimeEntryActions } from "./tracked-time-actions";
@@ -28,7 +29,8 @@ const fetchWithPreconnect = fetch as typeof fetch & {
 /* oxlint-disable-next-line require-await */
 export async function openWorkspaceDb(
   workspaceId: WorkspaceId,
-  userId: UserId
+  userId: UserId,
+  runtimeLayer: AppRuntimeLayer
 ) {
   const abortController = new AbortController();
   const workspaceFetchClient: typeof fetch = Object.assign(
@@ -178,6 +180,7 @@ export async function openWorkspaceDb(
   >;
 
   const workspaceRuntime = createWorkspaceRuntime({
+    runtimeLayer,
     allProjectsCollection,
     allTasksCollection,
     timeEntriesCollection: allTrackedTimeCollection,

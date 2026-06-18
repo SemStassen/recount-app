@@ -212,7 +212,4 @@ export function DialogPanel({
   );
 }
 
-export {
-  DialogPrimitive,
-  DialogBackdrop as DialogOverlay,
-};
+export { DialogPrimitive };

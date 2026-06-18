@@ -51,7 +51,11 @@ export function CreateTaskDialog() {
 
 const schema = createSchemaForm(Task.jsonCreate);
 
-function CreateTaskDialogContent({ payload }: { payload: Payload | undefined }) {
+function CreateTaskDialogContent({
+  payload,
+}: {
+  payload: Payload | undefined;
+}) {
   const navigate = useNavigate();
 
   const workspaceDb = useWorkspaceDb();
@@ -78,8 +82,8 @@ function CreateTaskDialogContent({ payload }: { payload: Payload | undefined }) 
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(({ value: payload }) => {
-      const task = workspaceDb.actions.createTask(payload);
+    onSubmit: schema.handleSubmit(({ value }) => {
+      const task = workspaceDb.actions.createTask(value);
 
       navigate({
         from: "/$workspaceSlug/",

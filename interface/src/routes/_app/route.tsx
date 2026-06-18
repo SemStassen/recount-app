@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AtomRegistry } from "effect/unstable/reactivity";
 
 import { workspacesAtom } from "~/atoms/auth.atoms";
-import { getUserDb } from "~/db/user/get-user-db";
+import { userDatabases } from "~/db/user/user-databases";
 
 import { AppProviders } from "./-app-providers";
 
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_app")({
       })
     );
 
-    const userDb = await getUserDb(user.id);
+    const userDb = await userDatabases.get(user.id);
 
     if (!user.fullName) {
       if (!location.pathname.startsWith("/profile")) {

@@ -1,13 +1,12 @@
 import { scheduleTask } from "@effect/atom-react";
-import { AtomRegistry } from "effect/unstable/reactivity";
+import { Atom, AtomRegistry } from "effect/unstable/reactivity";
 
-import type { AppRuntimeLayerOptions } from "~/lib/runtime";
-import { makeAppAtomRuntime } from "./runtime";
+import type { AppRuntimeLayer } from "~/lib/runtime";
 
-export const makeAppAtomRegistry = (options: AppRuntimeLayerOptions) => {
+export const makeAppAtomRegistry = (runtimeLayer: AppRuntimeLayer) => {
   const registry = AtomRegistry.make({ scheduleTask });
 
-  registry.mount(makeAppAtomRuntime(options));
+  registry.mount(Atom.runtime(runtimeLayer));
 
   return registry;
 };

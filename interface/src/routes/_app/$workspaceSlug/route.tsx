@@ -1,6 +1,5 @@
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 
-import { getWorkspaceDb } from "~/db/workspace/get-workspace-db";
 import { CommandMenu } from "~/features/command-menu";
 
 import { CreateProjectDialog } from "./-components/create-project-dialog";
@@ -18,7 +17,10 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
       throw notFound();
     }
 
-    const workspaceDb = await getWorkspaceDb(workspace.id, context.user.id);
+    const workspaceDb = await context.app.workspaceDatabases.get({
+      userId: context.user.id,
+      workspaceId: workspace.id,
+    });
 
     return {
       workspace,

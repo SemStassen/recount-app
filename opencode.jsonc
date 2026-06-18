@@ -19,8 +19,8 @@
       "repository": "https://github.com/ghostwright/ghost-os",
     },
     "maple": {
-      "repository": "https://github.com/Makisuo/maple"
-    }
+      "repository": "https://github.com/Makisuo/maple",
+    },
   },
   "mcp": {
     "uidotsh": {
