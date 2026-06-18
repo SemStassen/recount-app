@@ -1,7 +1,5 @@
 import { Atom } from "effect/unstable/reactivity";
 
-import { atomRegistry } from "~/atoms/registry";
-
 import type {
   Command,
   CommandRegistration,
@@ -29,22 +27,3 @@ export const commandsAtom = Atom.map(
   (registrations) =>
     registrations.flatMap((registration) => registration.commands)
 );
-
-export function registerCommands(
-  id: CommandRegistrationId,
-  commands: Array<Command>
-) {
-  atomRegistry.update(commandRegistryAtom, (registry) => ({
-    ...registry,
-    [id]: commands,
-  }));
-
-  return () => unregisterCommands(id);
-}
-
-function unregisterCommands(id: CommandRegistrationId) {
-  atomRegistry.update(commandRegistryAtom, (registry) => {
-    const { [id]: _commands, ...nextRegistry } = registry;
-    return nextRegistry;
-  });
-}

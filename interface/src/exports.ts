@@ -1,1 +1,5 @@
-export { renderRecountInterface } from "./index";
+export {
+  renderRecountInterface,
+  type RecountInterfacePlatform,
+  type RecountInterfaceRuntime,
+} from "./index";

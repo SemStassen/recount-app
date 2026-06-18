@@ -2,9 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AtomRegistry } from "effect/unstable/reactivity";
 
 import { workspacesAtom } from "~/atoms/auth.atoms";
-import { atomRegistry } from "~/atoms/registry";
 import { getUserDb } from "~/db/user/get-user-db";
-import { appRuntime } from "~/lib/runtime";
 
 import { AppProviders } from "./-app-providers";
 
@@ -16,8 +14,8 @@ export const Route = createFileRoute("/_app")({
       throw redirect({ to: "/sign-up" });
     }
 
-    const workspaces = await appRuntime.runPromise(
-      AtomRegistry.getResult(atomRegistry, workspacesAtom, {
+    const workspaces = await context.app.runtime.runPromise(
+      AtomRegistry.getResult(context.app.atomRegistry, workspacesAtom, {
         suspendOnWaiting: true,
       })
     );

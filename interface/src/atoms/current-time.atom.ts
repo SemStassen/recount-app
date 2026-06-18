@@ -1,28 +1,30 @@
 import { startOfMinute } from "date-fns";
 import { Atom } from "effect/unstable/reactivity";
 
-import { atomRegistry } from "./registry";
-
 const ONE_MINUTE_IN_MS = 60 * 1000;
 
-export const currentTimeAtom = Atom.make(startOfMinute(new Date())).pipe(
-  Atom.keepAlive
-);
+export const currentTimeAtom = Atom.writable(
+  (get) => {
+    const tick = () => get.setSelf(startOfMinute(new Date()));
+    const delay = ONE_MINUTE_IN_MS - (Date.now() % ONE_MINUTE_IN_MS);
+    let interval: ReturnType<typeof setInterval> | undefined;
 
-export function setCurrentTime(currentTime: Date) {
-  atomRegistry.set(currentTimeAtom, startOfMinute(currentTime));
-}
+    const timeout = setTimeout(() => {
+      tick();
+      interval = setInterval(tick, ONE_MINUTE_IN_MS);
+    }, delay);
 
-// Keep the app clock aligned to real minute boundaries while still allowing
-// manual overrides through direct writes in dev tools.
-(() => {
-  const delay = ONE_MINUTE_IN_MS - (Date.now() % ONE_MINUTE_IN_MS);
+    get.addFinalizer(() => {
+      clearTimeout(timeout);
 
-  setTimeout(() => {
-    setCurrentTime(new Date());
+      if (interval !== undefined) {
+        clearInterval(interval);
+      }
+    });
 
-    setInterval(() => {
-      setCurrentTime(new Date());
-    }, ONE_MINUTE_IN_MS);
-  }, delay);
-})();
+    return startOfMinute(new Date());
+  },
+  (ctx, currentTime: Date) => {
+    ctx.setSelf(startOfMinute(currentTime));
+  }
+).pipe(Atom.keepAlive);

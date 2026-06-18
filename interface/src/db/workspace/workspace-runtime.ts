@@ -5,7 +5,7 @@ import { TimeModuleLayer } from "@recount/core/modules/time";
 import { Layer, ManagedRuntime } from "effect";
 
 import type { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
-import { appRuntimeLayer } from "~/lib/runtime";
+import type { AppRuntimeLayer } from "~/lib/runtime";
 import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
 import type { ClientRepositoryCollection } from "~/lib/services/client-repository-collection";
 import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
@@ -42,6 +42,7 @@ export type WorkspaceRuntime = ManagedRuntime.ManagedRuntime<
 >;
 
 export function createWorkspaceRuntime(params: {
+  readonly runtimeLayer: AppRuntimeLayer;
   readonly allProjectsCollection: WorkspaceProjectCollection;
   readonly allTasksCollection: WorkspaceTaskCollection;
   readonly timeEntriesCollection: WorkspaceTrackedTimeCollection;
@@ -63,7 +64,7 @@ export function createWorkspaceRuntime(params: {
 
   return ManagedRuntime.make(
     Layer.mergeAll(
-      appRuntimeLayer,
+      params.runtimeLayer,
       ProjectModuleLayer.pipe(
         Layer.provide(projectRepositoryLayer),
         Layer.provide(taskRepositoryLayer)
