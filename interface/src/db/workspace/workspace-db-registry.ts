@@ -23,8 +23,7 @@ export const makeWorkspaceDbRegistry = (runtimeLayer: AppRuntimeLayer) =>
 
       return workspaceDb;
     },
-    equals: (a, b) =>
-      a.workspaceId === b.workspaceId && a.userId === b.userId,
+    equals: (a, b) => a.workspaceId === b.workspaceId && a.userId === b.userId,
   });
 
 export type WorkspaceDbRegistry = ReturnType<typeof makeWorkspaceDbRegistry>;

@@ -74,14 +74,15 @@ export interface ScreenContextProviderShape {
     ReadonlyArray<ScreenContextObservation>,
     ScreenContextError
   >;
-  readonly query: (query: ScreenContextQuery) => Effect.Effect<
+  readonly query: (
+    query: ScreenContextQuery
+  ) => Effect.Effect<
     ReadonlyArray<ScreenContextObservation>,
     ScreenContextError
   >;
-  readonly summarize: (query: ScreenContextQuery) => Effect.Effect<
-    ScreenContextSummary,
-    ScreenContextError
-  >;
+  readonly summarize: (
+    query: ScreenContextQuery
+  ) => Effect.Effect<ScreenContextSummary, ScreenContextError>;
 }
 
 export class ScreenContextProvider extends Context.Service<

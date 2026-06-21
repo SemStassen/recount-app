@@ -1,8 +1,4 @@
-function BootstrapShell({
-  children,
-}: {
-  readonly children: React.ReactNode;
-}) {
+function BootstrapShell({ children }: { readonly children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-background p-6 text-foreground">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,hsl(var(--primary)/0.14),transparent_32rem)]" />
@@ -39,18 +35,12 @@ export function BootstrapScreen() {
       >
         <div className="h-full w-1/2 animate-pulse rounded-full bg-primary" />
       </div>
-      <output className="sr-only">
-        Recount is starting.
-      </output>
+      <output className="sr-only">Recount is starting.</output>
     </BootstrapShell>
   );
 }
 
-export function BootstrapErrorScreen({
-  error,
-}: {
-  readonly error: unknown;
-}) {
+export function BootstrapErrorScreen({ error }: { readonly error: unknown }) {
   const message =
     error instanceof Error ? error.message : "Unknown bootstrap failure";
 
