@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo && cargo clean --manifest-path src-tauri/Cargo.toml",
     "prepare:screenpipe": "bun run scripts/prepare-screenpipe-sidecar.ts",
     "prepare:shadow": "bun run scripts/prepare-shadow-sidecar.ts",
     "prepare:sidecars": "bun run prepare:screenpipe && bun run prepare:shadow",

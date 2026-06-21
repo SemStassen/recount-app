@@ -3,7 +3,7 @@
   "packageManager": "bun@1.3.0",
   "scripts": {
     "build": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide && turbo build",
-    "clean": "turbo clean --parallel && rm -rf .turbo/cache node_modules",
+    "clean": "bun scripts/clean.ts",
     "dev": "bun run dev:web",
     "dev:all": "turbo run dev //#dev:caddy --parallel --filter=@recount/backend --filter=@recount/electric-proxy --filter=@recount/web --filter=@recount/desktop",
     "dev:caddy": "caddy run --config Caddyfile",

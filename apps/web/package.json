@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
     "dev": "vite dev",
     "format": "oxfmt --write .",
     "lint": "oxlint .",
