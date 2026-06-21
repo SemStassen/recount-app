@@ -4,7 +4,6 @@ import ultraciteReactConfig from "ultracite/oxlint/react";
 
 export default defineConfig({
   extends: [ultraciteCoreConfig, ultraciteReactConfig],
-  ignorePatterns: [".better-agents/**"],
   rules: {
     "func-style": [
       "error",

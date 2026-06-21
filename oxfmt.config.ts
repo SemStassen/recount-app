@@ -15,7 +15,6 @@ export default defineConfig({
   bracketSameLine: false,
   arrowParens: "always",
   endOfLine: "lf",
-  ignorePatterns: [".better-agents/**"],
   experimentalSortPackageJson: false,
   experimentalSortImports: {
     ignoreCase: true,

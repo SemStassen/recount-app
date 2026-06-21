@@ -8,6 +8,47 @@ import { Icons } from "../icons";
 const buttonClassNames =
   "relative flex size-(--cell-size) text-base sm:text-sm items-center justify-center rounded-lg text-foreground not-in-data-selected:hover:bg-accent disabled:pointer-events-none disabled:opacity-64 [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0";
 
+function CalendarChevron({
+  className: iconClassName,
+  orientation,
+  ...iconProps
+}: {
+  className?: string;
+  orientation?: "left" | "right" | "up" | "down";
+}): React.ReactElement {
+  if (orientation === "left") {
+    return (
+      <Icons.ChevronLeft
+        className={cn(iconClassName, "rtl:rotate-180")}
+        {...iconProps}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  if (orientation === "right") {
+    return (
+      <Icons.ChevronRight
+        className={cn(iconClassName, "rtl:rotate-180")}
+        {...iconProps}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  return (
+    <Icons.ChevronsUpDown
+      className={iconClassName}
+      {...iconProps}
+      aria-hidden="true"
+    />
+  );
+}
+
+const defaultComponents = {
+  Chevron: CalendarChevron,
+};
+
 export function Calendar({
   className,
   classNames,
@@ -55,45 +96,6 @@ export function Calendar({
       cn(baseClass, classNames?.[key as keyof typeof classNames]),
     ])
   ) as typeof defaultClassNames;
-
-  const defaultComponents = {
-    Chevron: ({
-      className: iconClassName,
-      orientation,
-      ...iconProps
-    }: {
-      className?: string;
-      orientation?: "left" | "right" | "up" | "down";
-    }): React.ReactElement => {
-      if (orientation === "left") {
-        return (
-          <Icons.ChevronLeft
-            className={cn(iconClassName, "rtl:rotate-180")}
-            {...iconProps}
-            aria-hidden="true"
-          />
-        );
-      }
-
-      if (orientation === "right") {
-        return (
-          <Icons.ChevronRight
-            className={cn(iconClassName, "rtl:rotate-180")}
-            {...iconProps}
-            aria-hidden="true"
-          />
-        );
-      }
-
-      return (
-        <Icons.ChevronsUpDown
-          className={iconClassName}
-          {...iconProps}
-          aria-hidden="true"
-        />
-      );
-    },
-  };
 
   const mergedComponents = {
     ...defaultComponents,

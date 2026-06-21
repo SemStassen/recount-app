@@ -6,7 +6,7 @@
       "name": "recount",
       "dependencies": {
         "@effect/platform-bun": "catalog:",
-        "@effect/platform-node": "^4.0.0-beta.78",
+        "@effect/platform-node": "catalog:",
         "alchemy": "2.0.0-beta.38",
         "effect": "catalog:",
       },
@@ -222,6 +222,7 @@
     "packages/config": {
       "name": "@recount/config",
       "devDependencies": {
+        "typescript": "catalog:dev",
         "vite": "catalog:dev",
       },
     },
@@ -366,6 +367,7 @@
     "@effect/atom-react": "^4.0.0-beta.78",
     "@effect/opentelemetry": "^4.0.0-beta.78",
     "@effect/platform-bun": "^4.0.0-beta.78",
+    "@effect/platform-node": "^4.0.0-beta.78",
     "@effect/sql-pg": "^4.0.0-beta.78",
     "better-auth": "^1.6.14",
     "drizzle-orm": "1.0.0-rc.2",

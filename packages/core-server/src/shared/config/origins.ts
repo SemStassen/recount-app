@@ -7,7 +7,7 @@ export class InvalidFrontendOriginsError extends Schema.TaggedErrorClass<Invalid
 
 // Matches patterns like https://*.example.com or https://preview*.example.com:3000
 const wildcardPatternRegex =
-  /^(https?):\/\/([A-Za-z0-9-]*)\*\.([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)(?::(\d+))?$/iu;
+  /^(?<protocol>https?):\/\/(?<prefix>[A-Za-z0-9-]*)\*\.(?<hostname>[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*)(?::(?<port>\d+))?$/iu;
 
 const escapeRegex = (value: string) =>
   value.replaceAll(/[|\\{}()[\]^$+?.]/gu, "\\$&");

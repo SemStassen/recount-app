@@ -42,6 +42,9 @@ export const prepareFileUploadFlow = Effect.fn("flows.prepareFileUploadFlow")(
 
           return { key, workspace };
         }
+        default: {
+          return yield* Effect.die("Unsupported file upload target");
+        }
       }
     });
 

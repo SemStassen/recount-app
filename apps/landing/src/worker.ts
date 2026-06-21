@@ -1,7 +1,7 @@
 import type { LandingWorkerEnv } from "./worker-env";
 
 export default {
-  async fetch(request: Request, env: LandingWorkerEnv) {
+  fetch(request: Request, env: LandingWorkerEnv) {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/waitlist") {

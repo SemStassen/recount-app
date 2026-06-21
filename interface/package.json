@@ -9,7 +9,7 @@
     "lint": "oxlint .",
     "test": "vitest run --config ./vitest.config.ts",
     "typecheck": "tsc --noEmit",
-    "paraglide:compile": "npx @inlang/paraglide-js compile --project ../project.inlang --outdir ./src/paraglide"
+    "paraglide:compile": "bunx @inlang/paraglide-js compile --project ../project.inlang --outdir ./src/paraglide"
   },
   "dependencies": {
     "@base-ui/react": "catalog:frontend",

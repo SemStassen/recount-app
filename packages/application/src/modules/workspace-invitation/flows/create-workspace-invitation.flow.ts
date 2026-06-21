@@ -45,7 +45,7 @@ export const createWorkspaceInvitationFlow = Effect.fn(
 
   yield* mailer.sendWorkspaceInvitation({
     email: request.email,
-    workspace: workspace,
+    workspace,
     inviterName: user.fullName,
     invitationId: createdWorkspaceInvitation.id,
   });

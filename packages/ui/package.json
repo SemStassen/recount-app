@@ -1,6 +1,7 @@
 {
   "name": "@recount/ui",
   "private": true,
+  "type": "module",
   "scripts": {
     "format": "oxfmt --write .",
     "lint": "oxlint -A import/no-namespace .",

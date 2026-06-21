@@ -7,8 +7,7 @@
     "dev": "vite dev",
     "format": "oxfmt --write .",
     "lint": "oxlint .",
-    "typecheck": "tsc --noEmit",
-    "machine-translate": "inlang machine translate --project project.inlang"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@recount/interface": "workspace:*",

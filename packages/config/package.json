@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "typescript": "catalog:dev",
     "vite": "catalog:dev"
   }
 }

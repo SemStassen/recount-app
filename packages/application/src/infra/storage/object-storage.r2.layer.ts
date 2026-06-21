@@ -74,14 +74,17 @@ export const ObjectStorageR2Layer = Layer.effect(
     const resolveRegionalStorageLocation = (region: DataResidencyRegion) =>
       Effect.gen(function* () {
         switch (region) {
-          case "eu":
+          case "eu": {
             return regionalStorageLocations.eu;
-          case "global":
+          }
+          case "global": {
             return regionalStorageLocations.global;
-          default:
+          }
+          default: {
             return yield* new ObjectStorageError({
               cause: `Invalid region: ${region}`,
             });
+          }
         }
       });
 
@@ -118,7 +121,7 @@ export const ObjectStorageR2Layer = Layer.effect(
 
           return {
             uploadUrl: putUrl,
-            assetUrl: assetUrl,
+            assetUrl,
           };
         }
       ),

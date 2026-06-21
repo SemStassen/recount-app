@@ -37,6 +37,7 @@ vi.mock("@effect/sql-pg", async () => {
 });
 
 vi.mock("pg", () => ({
+  // eslint-disable-next-line prefer-arrow-callback -- Pool is called with `new`.
   Pool: vi.fn(function Pool() {
     return mockState.pool;
   }),

@@ -7,7 +7,6 @@ import "@fontsource/geist-mono/400.css";
 import "../styles/global.css";
 import { siteConfig } from "~/lib/site";
 
-
 interface Props {
   title?: string;
   description?: string;
@@ -20,16 +19,14 @@ const { title = siteConfig.name, description = siteConfig.description, ogImage }
 const resolvedOgImage = `${siteConfig.url}${ogImage || siteConfig.ogImage}`;
 
 // Generate breadcrumb based on current path
-const pathname = Astro.url.pathname;
-const pathSegments = pathname.split('/').filter(Boolean);
-const breadcrumbItems = [
-  { name: "Home", url: siteConfig.url }
-];
+const { pathname } = Astro.url;
+const pathSegments = pathname.split("/").filter(Boolean);
+const breadcrumbItems = [{ name: "Home", url: siteConfig.url }];
 if (pathSegments.length > 0) {
-  let currentPath = '';
+  let currentPath = "";
   for (const segment of pathSegments) {
     currentPath += `/${segment}`;
-    const name = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+    const name = `${segment.charAt(0).toUpperCase()}${segment.slice(1).replaceAll("-", " ")}`;
     breadcrumbItems.push({ name, url: `${siteConfig.url}${currentPath}` });
   }
 }
@@ -58,10 +55,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:site_name" content={siteConfig.name} />
-    <meta
-      property="og:image"
-      content={resolvedOgImage}
-    />
+    <meta property="og:image" content={resolvedOgImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Recount - Time tracking for focus" />
@@ -69,9 +63,8 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.url).href;
 
     <!-- Additional head content from pages -->
     <slot name="head" />
-
   </head>
   <body class="antialiased font-sans bg-background text-foreground">
-      <slot />
+    <slot />
   </body>
 </html>

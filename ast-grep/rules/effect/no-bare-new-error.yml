@@ -57,6 +57,7 @@ ignores:
   - "interface/**"
   - "packages/ui/**"
   - "packages/editor/**"
+  - "**/drizzle.config.ts"
   - "**/*.test.ts"
   - "**/*.spec.ts"
   - "**/node_modules/**"
