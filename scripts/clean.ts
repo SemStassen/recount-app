@@ -2,12 +2,7 @@ import { readdir, rm } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const targets = [
-  "node_modules",
-  "dist",
-  ".turbo",
-  "tsconfig.tsbuildinfo",
-];
+const targets = ["node_modules", "dist", ".turbo", "tsconfig.tsbuildinfo"];
 const workspaceDirs = ["apps", "packages"];
 const standalonePackageDirs = ["interface"];
 const extraTargets = [path.join("apps", "desktop", "src-tauri", "target")];

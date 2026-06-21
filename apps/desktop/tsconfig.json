@@ -1,6 +1,10 @@
 {
   "extends": "@recount/config/base.tsconfig.json",
-  "include": ["src", "../../interface/src/globals.d.ts"],
+  "include": [
+    "src",
+    "scripts",
+    "../../interface/src/globals.d.ts"
+  ],
   "exclude": ["dist"],
   "compilerOptions": {
     "paths": {

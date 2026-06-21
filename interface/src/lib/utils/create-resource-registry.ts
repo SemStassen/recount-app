@@ -63,7 +63,6 @@ export function createCurrentResourceRegistry<TKey, TValue extends Disposable>({
 
     if (currentValuePromise !== nextValuePromise) {
       await nextValue.dispose();
-      // ast-grep-ignore: no-bare-new-error
       throw new Error("Resource registry load superseded");
     }
 

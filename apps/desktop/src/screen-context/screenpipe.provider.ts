@@ -3,11 +3,17 @@ import {
   ScreenContextQueryError,
 } from "@recount/interface/screen-context";
 import type {
+  ScreenContextObservation,
   ScreenContextQuery,
   ScreenContextSignal,
+  ScreenContextSummary,
 } from "@recount/interface/screen-context";
-import { fetch } from "@tauri-apps/plugin-http";
 import { Effect, Layer } from "effect";
+import {
+  FetchHttpClient,
+  HttpClient,
+  HttpClientRequest,
+} from "effect/unstable/http";
 
 const screenpipeBaseUrl = "http://localhost:3030";
 
@@ -19,20 +25,8 @@ const screenpipeContentTypes: Partial<Record<ScreenContextSignal, string>> = {
   ocr: "ocr",
 };
 
-const fetchJson = (url: URL) =>
-  Effect.tryPromise({
-    try: async () => {
-      const response = await fetch(url.toString());
-
-      if (!response.ok) {
-        throw new Error(`screenpipe request failed with ${response.status}`);
-      }
-
-      return response.json() as Promise<unknown>;
-    },
-    catch: (cause) =>
-      new ScreenContextQueryError({ provider: "screenpipe", cause }),
-  });
+const toQueryError = (cause: unknown) =>
+  new ScreenContextQueryError({ provider: "screenpipe", cause });
 
 const parseDate = (value: unknown): Date => {
   if (typeof value === "string" || typeof value === "number") {
@@ -82,7 +76,7 @@ const inferSignal = (item: unknown): ScreenContextSignal => {
   return "ocr";
 };
 
-const normalizeSearchItem = (item: unknown) => ({
+const normalizeSearchItem = (item: unknown): ScreenContextObservation => ({
   provider: "screenpipe" as const,
   signal: inferSignal(item),
   capturedAt: parseDate(
@@ -104,7 +98,9 @@ const normalizeSearchItem = (item: unknown) => ({
   metadata: item,
 });
 
-const normalizeSearchResponse = (response: unknown) => {
+const normalizeSearchResponse = (
+  response: unknown
+): ReadonlyArray<ScreenContextObservation> => {
   const data =
     typeof response === "object" && response !== null && "data" in response
       ? (response as { readonly data: unknown }).data
@@ -117,51 +113,66 @@ const normalizeSearchResponse = (response: unknown) => {
   return data.map(normalizeSearchItem);
 };
 
-const search = (query: ScreenContextQuery) => {
-  const url = new URL("/search", screenpipeBaseUrl);
-  const contentTypes = query.signals
-    ?.map((signal) => screenpipeContentTypes[signal])
-    .filter((signal): signal is string => typeof signal === "string");
+const makeScreenpipeProvider = Effect.gen(function* () {
+  const httpClient = (yield* HttpClient.HttpClient).pipe(
+    HttpClient.mapRequest(HttpClientRequest.acceptJson),
+    HttpClient.filterStatusOk,
+    HttpClient.retryTransient({
+      times: 3,
+    })
+  );
 
-  url.searchParams.set("content_type", contentTypes?.[0] ?? "all");
-  url.searchParams.set("limit", String(query.limit ?? 50));
-  url.searchParams.set("start_time", query.interval.startedAt.toISOString());
-  url.searchParams.set("end_time", query.interval.stoppedAt.toISOString());
+  const search = (query: ScreenContextQuery) => {
+    const url = new URL("/search", screenpipeBaseUrl);
+    const contentTypes = query.signals
+      ?.map((signal) => screenpipeContentTypes[signal])
+      .filter((signal): signal is string => typeof signal === "string");
 
-  return Effect.map(fetchJson(url), normalizeSearchResponse);
-};
+    url.searchParams.set("content_type", contentTypes?.[0] ?? "all");
+    url.searchParams.set("limit", String(query.limit ?? 50));
+    url.searchParams.set("start_time", query.interval.startedAt.toISOString());
+    url.searchParams.set("end_time", query.interval.stoppedAt.toISOString());
 
-const summarize = (query: ScreenContextQuery) => {
-  const url = new URL("/activity-summary", screenpipeBaseUrl);
+    return httpClient.get(url).pipe(
+      Effect.flatMap((response) => response.json),
+      Effect.map(normalizeSearchResponse),
+      Effect.mapError(toQueryError)
+    );
+  };
 
-  url.searchParams.set("start_time", query.interval.startedAt.toISOString());
-  url.searchParams.set("end_time", query.interval.stoppedAt.toISOString());
+  const summarize = (query: ScreenContextQuery) => {
+    const url = new URL("/activity-summary", screenpipeBaseUrl);
 
-  return Effect.map(fetchJson(url), (metadata) => {
-    const topApps = Array.isArray(
-      (metadata as { readonly app_usage?: unknown })?.app_usage
-    )
-      ? (metadata as { readonly app_usage: Array<unknown> }).app_usage
-          .map((item) => getNestedString(item, ["app_name"]))
-          .filter((app): app is string => app !== null)
-      : [];
+    url.searchParams.set("start_time", query.interval.startedAt.toISOString());
+    url.searchParams.set("end_time", query.interval.stoppedAt.toISOString());
 
-    return {
-      provider: "screenpipe" as const,
-      interval: query.interval,
-      summary: JSON.stringify(metadata),
-      topApps,
-      observations: [],
-    };
-  });
-};
+    return httpClient.get(url).pipe(
+      Effect.flatMap((response) => response.json),
+      Effect.map((metadata): ScreenContextSummary => {
+        const topApps = Array.isArray(
+          (metadata as { readonly app_usage?: unknown })?.app_usage
+        )
+          ? (metadata as { readonly app_usage: Array<unknown> }).app_usage
+              .map((item) => getNestedString(item, ["app_name"]))
+              .filter((app): app is string => app !== null)
+          : [];
 
-export const ScreenpipeScreenContextProviderLayer = Layer.succeed(
-  ScreenContextProvider,
-  {
+        return {
+          provider: "screenpipe" as const,
+          interval: query.interval,
+          summary: JSON.stringify(metadata),
+          topApps,
+          observations: [],
+        };
+      }),
+      Effect.mapError(toQueryError)
+    );
+  };
+
+  return ScreenContextProvider.of({
     provider: "screenpipe",
     isAvailable: Effect.match(
-      fetchJson(new URL("/health", screenpipeBaseUrl)),
+      httpClient.get(new URL("/health", screenpipeBaseUrl)),
       {
         onFailure: () => false,
         onSuccess: () => true,
@@ -176,5 +187,14 @@ export const ScreenpipeScreenContextProviderLayer = Layer.succeed(
     }),
     query: search,
     summarize,
-  }
+  });
+});
+
+const ScreenpipeHttpClientLayer = FetchHttpClient.layer.pipe(
+  Layer.provide(Layer.succeed(HttpClient.TracerPropagationEnabled, false))
 );
+
+export const ScreenpipeScreenContextProviderLayer: Layer.Layer<ScreenContextProvider> =
+  Layer.effect(ScreenContextProvider, makeScreenpipeProvider).pipe(
+    Layer.provide(ScreenpipeHttpClientLayer)
+  );

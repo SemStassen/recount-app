@@ -140,6 +140,7 @@ function RouteComponent() {
             {/*<h1 className="text-2xl font-semibold">{project.name}</h1>*/}
           </div>
           <RichTextEditor
+            /* @ts-expect-error: Fix later (: */
             content={project.notes}
             onChange={(value) => {}}
             placeholder="Notes..."

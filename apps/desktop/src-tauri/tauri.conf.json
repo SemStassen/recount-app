@@ -7,7 +7,7 @@
     "beforeDevCommand": "bun run dev:vite",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "bun run build",
-    "frontendDist": "./../src/dist"
+    "frontendDist": "./../dist"
   },
   "app": {
     "withGlobalTauri": true,
