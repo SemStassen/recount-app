@@ -5,7 +5,7 @@ import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 
 export const Route = createFileRoute("/_app/")({
   beforeLoad: async ({ context }) => {
-    const workspaces = await context.app.runtime.runPromise(
+    const workspaces = await context.runtime.runPromise(
       Effect.gen(function* () {
         const client = yield* BackendAtomRpcClient;
 

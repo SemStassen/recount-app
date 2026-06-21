@@ -8,6 +8,10 @@ export {
   ScreenContextQueryError,
 } from "./screen-context.service";
 export type {
+  ScreenContextError,
+  ScreenContextObservation,
   ScreenContextProviderShape,
+  ScreenContextQuery,
   ScreenContextSignal,
+  ScreenContextSummary,
 } from "./screen-context.service";

@@ -21,6 +21,9 @@
     "maple": {
       "repository": "https://github.com/Makisuo/maple",
     },
+    "mattermost": {
+      "repository": "https://github.com/mattermost/mattermost",
+    },
   },
   "mcp": {
     "uidotsh": {

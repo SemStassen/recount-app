@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
       throw notFound();
     }
 
-    const workspaceDb = await context.app.workspaceDatabases.get({
+    const workspaceDb = await context.workspaceDbRegistry.load({
       userId: context.user.id,
       workspaceId: workspace.id,
     });
@@ -26,9 +26,6 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
       workspace,
       workspaceDb,
     };
-  },
-  loader: async ({ context }) => {
-    await context.workspaceDb.preload();
   },
   pendingComponent: () => <div>Loading...</div>,
   component: WorkspaceLayout,

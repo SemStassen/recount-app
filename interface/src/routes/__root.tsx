@@ -29,8 +29,8 @@ import { NotFoundPage } from "./-not-found";
 
 export const Route = createRootRouteWithContext<RecountRouterContext>()({
   beforeLoad: async ({ context }) => {
-    const auth = await context.app.runtime.runPromise(
-      AtomRegistry.getResult(context.app.atomRegistry, sessionAtom, {
+    const auth = await context.runtime.runPromise(
+      AtomRegistry.getResult(context.atomRegistry, sessionAtom, {
         suspendOnWaiting: true,
       }).pipe(Effect.catch(() => Effect.succeed(null)))
     );

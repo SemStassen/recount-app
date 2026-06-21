@@ -1,15 +1,12 @@
-import { RegistryContext } from "@effect/atom-react";
-import { TooltipProvider } from "@recount/ui/tooltip";
-
 import "./global.css";
-import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { HotkeysProvider } from "react-hotkeys-hook";
 
-import { atomRegistry } from "./atoms/registry";
-import { ThemeProvider } from "./components/theme-provider";
-import { router } from "./router";
+import {
+  BootstrapRecountInterface,
+  createRecountInterfaceInstance,
+} from "./bootstrap";
+import type { RecountInterfaceHost } from "./lib/runtime";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
@@ -17,28 +14,18 @@ declare module "@tanstack/react-table" {
   }
 }
 
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router;
-  }
-}
-
-export function renderRecountInterface() {
+export function renderRecountInterface(host: RecountInterfaceHost) {
   const rootElement = document.querySelector("#root");
 
   if (rootElement && !rootElement.innerHTML) {
+    // Create the instance outside React so StrictMode remounts do not build
+    // duplicate Effect runtimes, routers, or local database resources in dev.
+    const instancePromise = createRecountInterfaceInstance(host);
     const root = ReactDOM.createRoot(rootElement);
+
     root.render(
       <StrictMode>
-        <RegistryContext.Provider value={atomRegistry}>
-          <HotkeysProvider>
-            <TooltipProvider delay={100}>
-              <ThemeProvider>
-                <RouterProvider router={router} />
-              </ThemeProvider>
-            </TooltipProvider>
-          </HotkeysProvider>
-        </RegistryContext.Provider>
+        <BootstrapRecountInterface instancePromise={instancePromise} />
       </StrictMode>
     );
   }

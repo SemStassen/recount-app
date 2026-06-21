@@ -1,5 +1,3 @@
-# schema missing: check github
-
 ruleDirs:
   - ast-grep/rules/shared # Rules for all TypeScript code
   - ast-grep/rules/ui # UI component and accessibility patterns

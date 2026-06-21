@@ -3,15 +3,13 @@ import {
   ScreenContextQueryError,
 } from "@recount/interface/screen-context";
 import type {
-  ScreenContextProviderShape,
+  ScreenContextQuery,
   ScreenContextSignal,
 } from "@recount/interface/screen-context";
 import { fetch } from "@tauri-apps/plugin-http";
 import { Effect, Layer } from "effect";
 
 const screenpipeBaseUrl = "http://localhost:3030";
-
-type ScreenContextQuery = Parameters<ScreenContextProviderShape["query"]>[0];
 
 const screenpipeContentTypes: Partial<Record<ScreenContextSignal, string>> = {
   accessibility: "accessibility",
