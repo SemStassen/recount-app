@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-explicit-any */
 import type { Collection } from "@tanstack/react-db";
 
 export type ClientRepositoryCollection<

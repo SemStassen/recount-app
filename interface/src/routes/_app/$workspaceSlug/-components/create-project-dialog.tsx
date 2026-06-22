@@ -18,10 +18,8 @@ import { useRegisterCommands } from "~/features/command-menu";
 import { createSchemaForm } from "~/lib/form";
 import { m } from "~/paraglide/messages";
 
-interface Payload {}
-
 export const createProjectDialogHandle =
-  DialogPrimitive.createHandle<Payload>();
+  DialogPrimitive.createHandle();
 
 export function CreateProjectDialog() {
   useRegisterCommands([
@@ -31,14 +29,14 @@ export function CreateProjectDialog() {
       title: "Create new project",
       perform: async ({ close }) => {
         await close();
-        createProjectDialogHandle.openWithPayload({});
+        createProjectDialogHandle.open(null);
       },
     },
   ]);
 
   return (
     <Dialog handle={createProjectDialogHandle}>
-      {({ payload }) => <CreateProjectDialogContent payload={payload} />}
+      {() => <CreateProjectDialogContent />}
     </Dialog>
   );
 }
@@ -52,11 +50,7 @@ const defaultValues: typeof schema.validator.Encoded = {
   notes: null,
 };
 
-function CreateProjectDialogContent({
-  payload,
-}: {
-  payload: Payload | undefined;
-}) {
+function CreateProjectDialogContent() {
   const workspaceDb = useWorkspaceDb();
   const navigate = useNavigate();
 
@@ -68,8 +62,8 @@ function CreateProjectDialogContent({
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(({ value: payload }) => {
-      const project = workspaceDb.actions.createProject(payload);
+    onSubmit: schema.handleSubmit(({ value: projectInput }) => {
+      const project = workspaceDb.actions.createProject(projectInput);
 
       navigate({
         from: "/$workspaceSlug/",

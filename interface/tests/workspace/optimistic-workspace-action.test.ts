@@ -25,7 +25,7 @@ describe("runElectricReconciledWorkspaceAction", () => {
   it("accepts local mutations synchronously before remote persistence settles", async () => {
     const collection = createTestCollection();
     let transaction: Transaction | undefined;
-    let releaseRemote: (() => void) | undefined;
+    const remotePersistence = Promise.withResolvers<TestRow>();
 
     const accepted = runElectricReconciledWorkspaceAction({
       mutateLocal: () => {
@@ -37,14 +37,11 @@ describe("runElectricReconciledWorkspaceAction", () => {
       onTransaction: (tx) => {
         transaction = tx;
       },
-      persistRemote: () =>
-        new Promise<TestRow>((resolve) => {
-          releaseRemote = () => resolve({ id: "row-1", value: "remote" });
-        }),
+      persistRemote: () => remotePersistence.promise,
       remoteSync: {
         collection: {
           utils: {
-            awaitMatch: async () => true,
+            awaitMatch: () => Promise.resolve(true),
           },
         },
         getIds: (remoteResult) => [remoteResult.id],
@@ -55,7 +52,7 @@ describe("runElectricReconciledWorkspaceAction", () => {
     expect(accepted).toEqual({ id: "row-1", value: "local" });
     expect(collection.get("row-1")?.value).toBe("local");
 
-    releaseRemote?.();
+    remotePersistence.resolve({ id: "row-1", value: "remote" });
     await transaction?.isPersisted.promise;
   });
 
@@ -74,13 +71,11 @@ describe("runElectricReconciledWorkspaceAction", () => {
       onTransaction: (tx) => {
         transaction = tx;
       },
-      persistRemote: async () => {
-        throw remoteError;
-      },
+      persistRemote: () => Promise.reject(remoteError),
       remoteSync: {
         collection: {
           utils: {
-            awaitMatch: async () => true,
+            awaitMatch: () => Promise.resolve(true),
           },
         },
         getIds: (remoteResult: TestRow) => [remoteResult.id],

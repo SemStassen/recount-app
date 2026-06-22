@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+import "vite/client";
 
 declare module "*.module.css" {
   const classes: Record<string, string>;
@@ -37,6 +37,3 @@ declare global {
     readonly env: ImportMetaEnv;
   }
 }
-
-// Required so `declare global` augments globals from a module file.
-export {};

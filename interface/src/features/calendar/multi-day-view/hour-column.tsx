@@ -1,4 +1,4 @@
-import { useDateTimeFormatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time/hooks";
 
 import { HOUR_COLUMN_WIDTH_VAR, HOUR_HEIGHT_VAR } from "../constants";
 

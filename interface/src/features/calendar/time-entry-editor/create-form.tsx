@@ -8,11 +8,8 @@ import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
 
 import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
-import {
-  TimeEntryFieldGroup,
-  timeEntryFields,
-  type TimeEntryFormValues,
-} from "./field-group";
+import { TimeEntryFieldGroup, timeEntryFields } from './field-group';
+import type { TimeEntryFormValues } from './field-group';
 import {
   getCreateTimeEntryFormDefaults,
   getCreateTimeEntryPreview,
@@ -47,7 +44,7 @@ export function CreateTimeEntryForm({
       onMount: ({ formApi }) => publishPreview(formApi.state.values),
       onChange: ({ formApi }) => publishPreview(formApi.state.values),
     },
-    onSubmit: schema.handleSubmit(async ({ value }) => {
+    onSubmit: schema.handleSubmit(({ value }) => {
       workspaceDb.actions.createTimeEntry(value);
       closeEditor(undefined);
     }),

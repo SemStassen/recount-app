@@ -3,13 +3,13 @@ import { Separator } from "@recount/ui/separator";
 
 import { withFieldGroup } from "~/components/form";
 
-export type TimeEntryFormValues = {
+export interface TimeEntryFormValues {
   startedAt: Date;
   stoppedAt: Date | null;
   projectId: string;
   taskId: string | null;
   notes: unknown;
-};
+}
 
 export const timeEntryFields = {
   startedAt: "startedAt",
@@ -40,7 +40,7 @@ export const TimeEntryFieldGroup = withFieldGroup({
       }>;
     }>,
   },
-  render: function Render({ group, projects }) {
+  render: function render({ group, projects }) {
     return (
       <>
         <div className="flex flex-row items-center justify-between gap-2">

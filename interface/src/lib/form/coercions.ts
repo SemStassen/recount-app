@@ -21,5 +21,5 @@ export const optionDateTimeToDate = (
 export const optionToNullable = <T>(value: Option.Option<T>): T | null =>
   Option.match(value, {
     onNone: () => null,
-    onSome: (value) => value,
+    onSome: (someValue) => someValue,
   });

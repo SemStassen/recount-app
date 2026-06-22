@@ -95,7 +95,7 @@ function UpdateTimeEntryFormContent({
     },
     onSubmit: schema.handleSubmit(({ value }) => {
       workspaceDb.actions.updateTimeEntry(timeEntry.id, value);
-      closeEditor();
+      closeEditor(undefined);
     }),
   });
 

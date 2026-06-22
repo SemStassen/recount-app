@@ -24,6 +24,9 @@
     "mattermost": {
       "repository": "https://github.com/mattermost/mattermost",
     },
+    "opencode-beta": {
+      "repository": "https://github.com/anomalyco/opencode/tree/beta"
+    }
   },
   "mcp": {
     "uidotsh": {

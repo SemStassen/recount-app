@@ -40,7 +40,7 @@ import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
 import { cva } from "class-variance-authority";
 import type { PropsWithChildren } from "react";
 
-import { useDateTimeFormatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time/hooks";
 
 import { ColorPicker } from "./color-picker";
 

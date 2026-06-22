@@ -52,7 +52,7 @@ export const openUpdateTimeEntryEditor = Atom.fnSync(
   }
 );
 
-export const closeTimeEntryEditor = Atom.fnSync((_: void, context) => {
+export const closeTimeEntryEditor = Atom.fnSync((_: undefined, context) => {
   context.set(dragSelectionAtom, null);
   context.set(editorAtom, null);
   context.set(editingPreviewAtom, null);
@@ -60,8 +60,7 @@ export const closeTimeEntryEditor = Atom.fnSync((_: void, context) => {
 
 export const visibleDaysAtom = Atom.transform(
   selectedDateAtom,
-  (get, selectedDateAtom) =>
-    getVisibleDays(get(selectedDateAtom), get(daysInViewAtom))
+  (get, dateAtom) => getVisibleDays(get(dateAtom), get(daysInViewAtom))
 );
 
 export const sortedDragSelectionAtom = Atom.map(

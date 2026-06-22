@@ -1,4 +1,4 @@
-import { WorkspaceIntegrationConnectionProvider } from "@recount/core/modules/integration";
+import type { WorkspaceIntegrationConnectionProvider } from "@recount/core/modules/integration";
 import { Avatar, AvatarImage } from "@recount/ui/avatar";
 import { Badge } from "@recount/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@recount/ui/card";

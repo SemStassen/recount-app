@@ -2,7 +2,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { cn } from "@recount/ui/utils";
 import { isSameDay } from "date-fns";
 
-import { useDateTimeFormatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time/hooks";
 
 import { HOUR_COLUMN_WIDTH_VAR } from "../constants";
 import { currentTimeAtom } from "../state/atoms";

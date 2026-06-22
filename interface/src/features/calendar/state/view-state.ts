@@ -9,7 +9,7 @@ export function getVisibleDays(selectedDate: Date, daysInView: number) {
 }
 
 export function getVisibleRangeLabel(visibleDays: Array<Date>) {
-  const firstDay = visibleDays[0];
+  const [firstDay] = visibleDays;
   const lastDay = visibleDays.at(-1);
 
   if (!firstDay || !lastDay) {

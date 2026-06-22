@@ -142,7 +142,7 @@ function RouteComponent() {
           <RichTextEditor
             /* @ts-expect-error: Fix later (: */
             content={project.notes}
-            onChange={(value) => {}}
+            onChange={() => undefined}
             placeholder="Notes..."
           />
           <Separator orientation="horizontal" />

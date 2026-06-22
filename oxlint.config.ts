@@ -4,6 +4,7 @@ import ultraciteReactConfig from "ultracite/oxlint/react";
 
 export default defineConfig({
   extends: [ultraciteCoreConfig, ultraciteReactConfig],
+  ignorePatterns: ["**/src/routeTree.gen.ts"],
   rules: {
     "func-style": [
       "error",

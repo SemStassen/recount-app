@@ -1,13 +1,8 @@
 import { addDays, nextMonday, set } from "date-fns";
 import { describe, expect, test } from "vitest";
 
-import {
-  getCalendarRangeFromSlots,
-  getCalendarSlotFromPoint,
-  getDayTimeEntryFrames,
-  moveTimeRangeToSlot,
-  type CalendarRect,
-} from "../../src/features/calendar/views/calendar-multi-day-view/layout";
+import { getCalendarRangeFromSlots, getCalendarSlotFromPoint, getDayTimeEntryFrames, moveTimeRangeToSlot } from '../../src/features/calendar/views/calendar-multi-day-view/layout';
+import type { CalendarRect } from '../../src/features/calendar/views/calendar-multi-day-view/layout';
 
 const gridRect: CalendarRect = {
   left: 100,

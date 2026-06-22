@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import babel from "@rolldown/plugin-babel";
@@ -10,7 +9,7 @@ import viteReact from "@vitejs/plugin-react";
 import reactCompiler from "babel-plugin-react-compiler";
 import { defineConfig } from "vite";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = import.meta.dirname;
 
 export const createInterfaceViteConfig = () => {
   console.log({ __dirname });
@@ -39,7 +38,7 @@ export const createInterfaceViteConfig = () => {
             }),
             rolldown: {
               filter: {
-                code: /\b[A-Z]|\buse/,
+                code: /\b[A-Z]|\buse/u,
               },
               applyToEnvironmentHook: (env: { config: { consumer: string } }) =>
                 env.config.consumer === "client",

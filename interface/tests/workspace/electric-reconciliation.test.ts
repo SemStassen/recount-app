@@ -23,14 +23,14 @@ const changeMessage = (
 
 const createCollection = (messages: ReadonlyArray<Message<TestRow>>) => ({
   utils: {
-    awaitMatch: async (predicate: (message: Message<TestRow>) => boolean) => {
+    awaitMatch: (predicate: (message: Message<TestRow>) => boolean) => {
       const match = messages.find(predicate);
 
       if (!match) {
         throw new Error("No matching reconciliation message");
       }
 
-      return match;
+      return Promise.resolve(match);
     },
   },
 });

@@ -1,5 +1,5 @@
 import { useRouteContext } from "@tanstack/react-router";
-import { type PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 
 import { WorkspaceDbProvider } from "~/db/workspace/provider";
 

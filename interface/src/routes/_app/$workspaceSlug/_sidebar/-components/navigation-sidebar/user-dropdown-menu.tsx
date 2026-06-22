@@ -15,6 +15,10 @@ import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { signOut } from "~/lib/auth";
 
+async function handleSignOut() {
+  await signOut();
+}
+
 export function UserDropdownMenu() {
   const { user } = useRouteContext({
     from: "/_app/$workspaceSlug",
@@ -27,10 +31,6 @@ export function UserDropdownMenu() {
       .where(({ wm }) => eq(wm.userId, user.id))
       .findOne()
   );
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
 
   return (
     <DropdownMenu>
@@ -67,7 +67,13 @@ export function UserDropdownMenu() {
         <DropdownMenuGroup>
           <DropdownMenuItem
             nativeButton={true}
-            render={<button onClick={handleSignOut} type="button" />}
+            render={
+              <button
+                aria-label="Sign out"
+                onClick={handleSignOut}
+                type="button"
+              />
+            }
           >
             <Icons.SignOut />
             Sign out

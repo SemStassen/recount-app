@@ -8,12 +8,8 @@ import {
   BreadcrumbSeparator,
 } from "@recount/ui/breadcrumb";
 import { cn } from "@recount/ui/utils";
-import {
-  Link,
-  type LinkProps,
-  type RegisteredRouter,
-  type ValidateLinkOptions,
-} from "@tanstack/react-router";
+import { Link } from '@tanstack/react-router';
+import type { LinkProps, RegisteredRouter, ValidateLinkOptions } from '@tanstack/react-router';
 import { Fragment } from "react";
 
 import { isNavigationSidebarOpenAtom } from "~/atoms/ui-atoms";
