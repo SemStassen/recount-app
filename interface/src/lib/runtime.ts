@@ -1,8 +1,9 @@
 import { Effect, Layer, ManagedRuntime } from "effect";
 import { Atom } from "effect/unstable/reactivity";
 
-import type { ScreenContextProvider } from "../screen-context";
-import { ScreenContext, ScreenContextLayer } from "../screen-context";
+import type { ScreenContextProvider } from "~/modules/screen-context";
+import { ScreenContext, ScreenContextLayer } from "~/modules/screen-context";
+
 import { BackendHttpApiClient } from "./api/client";
 import { BackendAtomRpcClient } from "./rpc/atom-client";
 import { TracerLayer } from "./telemetry";
