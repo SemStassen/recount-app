@@ -32,7 +32,7 @@ function VerifyEmailStep({
   const navigate = useNavigate();
   const form = useAppForm({
     defaultValues: {
-      email: email,
+      email,
       otp: "",
     } satisfies typeof schema.validator.Encoded,
     validationLogic: revalidateLogic(),

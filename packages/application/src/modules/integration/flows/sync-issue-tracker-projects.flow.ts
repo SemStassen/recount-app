@@ -84,7 +84,6 @@ export const syncIssueTrackerProjectsFlow = Effect.fn(
         workspaceId: workspace.id,
         data: [
           {
-            id: Option.none(),
             name: externalProject.name,
             color: externalProject.color.pipe(
               Option.map((color) => HexColor.make(color)),

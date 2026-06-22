@@ -8,9 +8,11 @@ import {
   SessionNotFoundError,
   UserNotFoundError,
 } from "./identity-module.service";
-import { SessionRepository } from "./session-repository.service";
-import { UserRepository } from "./user-repository.service";
-import { UserSettingsRepository } from "./user-settings-repository.service";
+import {
+  SessionRepository,
+  UserRepository,
+  UserSettingsRepository,
+} from "./persistence";
 
 export const IdentityModuleLayer = Layer.effect(
   IdentityModule,
@@ -36,7 +38,7 @@ export const IdentityModuleLayer = Layer.effect(
 
           const { entity, changes } = yield* Effect.fromResult(
             sessionTransitions.updateSessionLastActiveWorkspace({
-              session: session,
+              session,
               lastActiveWorkspaceId: params.workspaceId,
             })
           );
@@ -52,8 +54,9 @@ export const IdentityModuleLayer = Layer.effect(
 
       afterCreateUser: Effect.fn("identity.afterCreateUser")(
         function* (userId) {
-          const userSettings =
-            yield* userSettingsTransitions.createUserSettings(userId);
+          const userSettings = yield* Effect.fromResult(
+            userSettingsTransitions.createUserSettings(userId)
+          );
 
           yield* userSettingsRepo.insert(userSettings);
 
@@ -74,7 +77,7 @@ export const IdentityModuleLayer = Layer.effect(
 
         const { entity, changes } = yield* Effect.fromResult(
           userTransitions.updateUser({
-            user: user,
+            user,
             data: params.data,
           })
         );
@@ -107,7 +110,7 @@ export const IdentityModuleLayer = Layer.effect(
 
           const { entity, changes } = yield* Effect.fromResult(
             userSettingsTransitions.updateUserSettings({
-              userSettings: userSettings,
+              userSettings,
               data: params.data,
             })
           );

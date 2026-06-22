@@ -18,12 +18,14 @@ export const Route = createFileRoute("/_auth/sign-up/")({
 
 export type SignUpStep = "chooseMethod" | "enterEmail" | "verifyEmail";
 
+async function handleGoogleSignUp() {
+  await signInWithGoogle();
+}
+
 function SignUpPage() {
   const [currentStep, setCurrentStep] = useState<SignUpStep>("chooseMethod");
   // Used to share state between the 'enterEmail' and 'verifyEmail' steps
   const [email, setEmail] = useState("");
-
-  const handleGoogleSignUp = async () => await signInWithGoogle();
 
   const stepContent: Record<SignUpStep, React.ReactElement> = {
     chooseMethod: (

@@ -1,11 +1,11 @@
-import { Model } from "#internal/effect/index";
+import { SharedModel } from "#internal/effect/index";
 import { SessionId, UserId, WorkspaceId } from "#shared/schemas/index";
 
-export class Session extends Model.Class<Session>("Session")(
+export class Session extends SharedModel.Class<Session>("Session")(
   {
-    id: Model.ServerImmutable(SessionId),
-    userId: Model.ServerImmutable(UserId),
-    lastActiveWorkspaceId: Model.ServerMutableOptional(WorkspaceId),
+    id: SharedModel.ImmutableReadOnly(SessionId),
+    userId: SharedModel.ImmutableReadOnly(UserId),
+    lastActiveWorkspaceId: SharedModel.MutableNullableReadOnly(WorkspaceId),
   },
   {
     identifier: "Session",

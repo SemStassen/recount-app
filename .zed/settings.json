@@ -10,8 +10,7 @@
     "**/.DS_Store",
     "**/Thumbs.db",
     "**/.classpath",
-    "**/.settings",
-    ".better-agents/**"
+    "**/.settings"
   ],
   "lsp": {
     "typescript-language-server": {

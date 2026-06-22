@@ -13,7 +13,7 @@ import { projectsTable, tasksTable } from "./project.schema";
 import { workspaceMembersTable } from "./workspace-member.schema";
 import { workspacesTable } from "./workspace.schema";
 
-export const timeEntriesTable = pgTable(
+export const trackedTimeRowsTable = pgTable(
   "time_entries",
   {
     id: tableId,

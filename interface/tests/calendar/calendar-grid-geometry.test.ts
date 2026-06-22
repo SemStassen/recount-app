@@ -2,12 +2,12 @@ import { addDays, nextMonday, set } from "date-fns";
 import { describe, expect, test } from "vitest";
 
 import {
-  getCalendarRangeFromSlots,
-  getCalendarSlotFromPoint,
   getDayTimeEntryFrames,
+  getRangeFromSlots,
+  getSlotFromPoint,
   moveTimeRangeToSlot,
-  type CalendarRect,
-} from "../../src/features/calendar/views/calendar-multi-day-view/layout";
+} from "../../src/features/calendar/multi-day-view/layout";
+import type { CalendarRect } from "../../src/features/calendar/multi-day-view/layout";
 
 const gridRect: CalendarRect = {
   left: 100,
@@ -32,7 +32,7 @@ function localTime(dayOffset: number, hour: number, minute = 0) {
 
 describe("calendar grid geometry", () => {
   test("resolves a point to the containing slot", () => {
-    const slot = getCalendarSlotFromPoint({
+    const slot = getSlotFromPoint({
       point: { clientX: 120, clientY: 50 + 10 * 64 + 10 },
       gridRect,
       visibleDays,
@@ -45,7 +45,7 @@ describe("calendar grid geometry", () => {
   });
 
   test("clamps points to visible days and hours", () => {
-    const slot = getCalendarSlotFromPoint({
+    const slot = getSlotFromPoint({
       point: { clientX: 900, clientY: 2000 },
       gridRect,
       visibleDays,
@@ -57,7 +57,7 @@ describe("calendar grid geometry", () => {
   });
 
   test("uses scrollTop for content-relative vertical hit-testing", () => {
-    const slot = getCalendarSlotFromPoint({
+    const slot = getSlotFromPoint({
       point: { clientX: 120, clientY: 50 },
       gridRect,
       scrollTop: 8 * 64,
@@ -68,12 +68,12 @@ describe("calendar grid geometry", () => {
   });
 
   test("creates inclusive forward and backward ranges", () => {
-    const firstSlot = getCalendarSlotFromPoint({
+    const firstSlot = getSlotFromPoint({
       point: { clientX: 120, clientY: 50 + 10 * 64 },
       gridRect,
       visibleDays,
     });
-    const secondSlot = getCalendarSlotFromPoint({
+    const secondSlot = getSlotFromPoint({
       point: { clientX: 120, clientY: 50 + 10 * 64 + 40 },
       gridRect,
       visibleDays,
@@ -83,23 +83,23 @@ describe("calendar grid geometry", () => {
       throw new Error("Expected slots");
     }
 
-    expect(getCalendarRangeFromSlots(firstSlot, secondSlot)).toEqual({
+    expect(getRangeFromSlots(firstSlot, secondSlot)).toEqual({
       startedAt: localTime(0, 10),
       stoppedAt: localTime(0, 10, 45),
     });
-    expect(getCalendarRangeFromSlots(secondSlot, firstSlot)).toEqual({
+    expect(getRangeFromSlots(secondSlot, firstSlot)).toEqual({
       startedAt: localTime(0, 10),
       stoppedAt: localTime(0, 10, 45),
     });
   });
 
   test("supports continuous cross-day ranges", () => {
-    const firstSlot = getCalendarSlotFromPoint({
+    const firstSlot = getSlotFromPoint({
       point: { clientX: 120, clientY: 50 + 15 * 64 },
       gridRect,
       visibleDays,
     });
-    const secondSlot = getCalendarSlotFromPoint({
+    const secondSlot = getSlotFromPoint({
       point: { clientX: 600, clientY: 50 + 9 * 64 },
       gridRect,
       visibleDays,
@@ -109,14 +109,14 @@ describe("calendar grid geometry", () => {
       throw new Error("Expected slots");
     }
 
-    expect(getCalendarRangeFromSlots(firstSlot, secondSlot)).toEqual({
+    expect(getRangeFromSlots(firstSlot, secondSlot)).toEqual({
       startedAt: localTime(0, 15),
       stoppedAt: localTime(1, 9, 15),
     });
   });
 
   test("moves a range to a slot while preserving duration", () => {
-    const slot = getCalendarSlotFromPoint({
+    const slot = getSlotFromPoint({
       point: { clientX: 600, clientY: 50 + 23 * 64 + 32 },
       gridRect,
       visibleDays,

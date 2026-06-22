@@ -8,7 +8,6 @@ import { ColorPicker } from "~/components/color-picker";
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 import { m } from "~/paraglide/messages";
 
 import {
@@ -46,8 +45,6 @@ function RouteComponent() {
       .findOne()
   );
 
-  const archiveProject = useWorkspaceMutation("Project.Archive");
-
   useRegisterCommands(
     [
       {
@@ -55,11 +52,7 @@ function RouteComponent() {
         category: "project",
         title: "Archive project",
         perform: ({ close }) => {
-          archiveProject({
-            payload: {
-              id: ProjectId.make(projectId),
-            },
-          });
+          workspaceDb.actions.archiveProject(ProjectId.make(projectId));
           navigate({ to: "/$workspaceSlug/projects" });
           close();
         },
@@ -116,7 +109,9 @@ function RouteComponent() {
             <ColorPicker
               value={project.color}
               onValueChange={(color) => {
-                if (!color || color === project.color) return;
+                if (!color || color === project.color) {
+                  return;
+                }
 
                 workspaceDb.actions.updateProject(project.id, {
                   color: HexColor.make(color),
@@ -144,7 +139,12 @@ function RouteComponent() {
             />
             {/*<h1 className="text-2xl font-semibold">{project.name}</h1>*/}
           </div>
-          <RichTextEditor content={project.notes} onChange={(value) => {}} />
+          <RichTextEditor
+            /* @ts-expect-error: Fix later (: */
+            content={project.notes}
+            onChange={() => undefined}
+            placeholder="Notes..."
+          />
           <Separator orientation="horizontal" />
           <section>
             <h3>Tasks</h3>

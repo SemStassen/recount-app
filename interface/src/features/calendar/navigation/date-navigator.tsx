@@ -4,8 +4,6 @@ import { Calendar } from "@recount/ui/calendar";
 import { Icons } from "@recount/ui/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@recount/ui/popover";
 
-import { atomRegistry } from "~/atoms/registry";
-
 import { WEEK_STARTS_ON } from "../constants";
 import {
   daysInViewAtom,
@@ -41,14 +39,14 @@ export function DateNavigator() {
   };
 
   const goToPreviousPeriod = () => {
-    atomRegistry.update(selectedDateAtom, (selectedDate) =>
-      getPreviousPeriod(selectedDate, atomRegistry.get(daysInViewAtom))
+    setSelectedDate((currentSelectedDate) =>
+      getPreviousPeriod(currentSelectedDate, daysInView)
     );
   };
 
   const goToNextPeriod = () => {
-    atomRegistry.update(selectedDateAtom, (selectedDate) =>
-      getNextPeriod(selectedDate, atomRegistry.get(daysInViewAtom))
+    setSelectedDate((currentSelectedDate) =>
+      getNextPeriod(currentSelectedDate, daysInView)
     );
   };
 

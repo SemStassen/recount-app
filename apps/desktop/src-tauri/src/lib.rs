@@ -9,6 +9,11 @@ struct ScreenpipeState {
     child: Mutex<Option<CommandChild>>,
 }
 
+#[derive(Default)]
+struct ShadowState {
+    child: Mutex<Option<CommandChild>>,
+}
+
 #[tauri::command]
 fn is_screenpipe_running(state: tauri::State<'_, ScreenpipeState>) -> bool {
     state.child.lock().is_ok_and(|child| child.is_some())
@@ -51,9 +56,49 @@ fn stop_screenpipe(state: tauri::State<'_, ScreenpipeState>) -> Result<(), Strin
     child.kill().map_err(|error| error.to_string())
 }
 
+#[tauri::command]
+fn is_shadow_running(state: tauri::State<'_, ShadowState>) -> bool {
+    state.child.lock().is_ok_and(|child| child.is_some())
+}
+
+#[tauri::command]
+fn start_shadow(app: tauri::AppHandle, state: tauri::State<'_, ShadowState>) -> Result<(), String> {
+    let mut child = state.child.lock().map_err(|error| error.to_string())?;
+
+    if child.is_some() {
+        return Ok(());
+    }
+
+    let command = app
+        .shell()
+        .sidecar("shadow")
+        .map_err(|error| error.to_string())?;
+
+    let (_events, shadow_child) = command.spawn().map_err(|error| error.to_string())?;
+    *child = Some(shadow_child);
+
+    Ok(())
+}
+
+#[tauri::command]
+fn stop_shadow(state: tauri::State<'_, ShadowState>) -> Result<(), String> {
+    let Some(child) = state
+        .child
+        .lock()
+        .map_err(|error| error.to_string())?
+        .take()
+    else {
+        return Ok(());
+    };
+
+    child.kill().map_err(|error| error.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = tauri::Builder::default().manage(ScreenpipeState::default());
+    let builder = tauri::Builder::default()
+        .manage(ScreenpipeState::default())
+        .manage(ShadowState::default());
 
     #[cfg(desktop)]
     let builder = builder.plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
@@ -81,12 +126,22 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             is_screenpipe_running,
             start_screenpipe,
-            stop_screenpipe
+            stop_screenpipe,
+            is_shadow_running,
+            start_shadow,
+            stop_shadow
         ])
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
-                let state = window.state::<ScreenpipeState>();
-                if let Ok(mut child) = state.child.lock() {
+                let screenpipe_state = window.state::<ScreenpipeState>();
+                if let Ok(mut child) = screenpipe_state.child.lock() {
+                    if let Some(child) = child.take() {
+                        let _ = child.kill();
+                    }
+                };
+
+                let shadow_state = window.state::<ShadowState>();
+                if let Ok(mut child) = shadow_state.child.lock() {
                     if let Some(child) = child.take() {
                         let _ = child.kill();
                     }

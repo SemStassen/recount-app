@@ -1,10 +1,10 @@
-import type {
-  CreateWorkspaceCommand,
-  CreateWorkspaceResult,
-} from "@recount/core/contracts";
 import { IdentityModule } from "@recount/core/modules/identity";
 import { WorkspaceModule } from "@recount/core/modules/workspace";
 import { WorkspaceMemberModule } from "@recount/core/modules/workspace-member";
+import type {
+  CreateWorkspaceCommand,
+  CreateWorkspaceResult,
+} from "@recount/core/modules/workspace/api";
 import { Database } from "@recount/db";
 import { Effect, Option } from "effect";
 

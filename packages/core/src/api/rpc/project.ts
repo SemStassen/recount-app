@@ -11,7 +11,7 @@ import {
   UnarchiveProjectResult,
   UpdateProjectCommand,
   UpdateProjectResult,
-} from "#api/contracts/index";
+} from "#modules/project/api";
 import {
   ProjectArchivedError,
   ProjectNotFoundError,

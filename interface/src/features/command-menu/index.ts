@@ -1,4 +1,4 @@
-export { defaultCommands } from "./default-commands";
+export { createDefaultCommands } from "./default-commands";
 export { useRegisterCommands } from "./registration";
 export { CommandMenu } from "./ui";
 export type {

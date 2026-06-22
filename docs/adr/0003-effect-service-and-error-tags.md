@@ -1,0 +1,3 @@
+# Effect service and error tags use stable namespaces
+
+Effect service tags are globally unique runtime keys and should use the `@recount/<namespace>/<ServiceName>` form, where `<namespace>` is the owning package, bounded context, or infrastructure area. Effect error tags are serialized, matched, and exposed in diagnostics, so they should use the `<namespace>/<ErrorName>` form without the `@recount` prefix. Domain errors use the bounded-context namespace, such as `workspace-invitation/WorkspaceInvitationNotFoundError`; package-owned infrastructure errors use the package or infrastructure namespace, such as `db/DatabaseError` or `infra/storage/ObjectStorageError`; shared cross-cutting errors should still be namespaced rather than left generic.

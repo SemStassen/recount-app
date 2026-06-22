@@ -8,6 +8,47 @@ import { Icons } from "../icons";
 const buttonClassNames =
   "relative flex size-(--cell-size) text-base sm:text-sm items-center justify-center rounded-lg text-foreground not-in-data-selected:hover:bg-accent disabled:pointer-events-none disabled:opacity-64 [&_svg:not([class*='opacity-'])]:opacity-80 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0";
 
+function CalendarChevron({
+  className: iconClassName,
+  orientation,
+  ...iconProps
+}: {
+  className?: string;
+  orientation?: "left" | "right" | "up" | "down";
+}): React.ReactElement {
+  if (orientation === "left") {
+    return (
+      <Icons.ChevronLeft
+        className={cn(iconClassName, "rtl:rotate-180")}
+        {...iconProps}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  if (orientation === "right") {
+    return (
+      <Icons.ChevronRight
+        className={cn(iconClassName, "rtl:rotate-180")}
+        {...iconProps}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  return (
+    <Icons.ChevronsUpDown
+      className={iconClassName}
+      {...iconProps}
+      aria-hidden="true"
+    />
+  );
+}
+
+const defaultComponents = {
+  Chevron: CalendarChevron,
+};
+
 export function Calendar({
   className,
   classNames,
@@ -49,87 +90,34 @@ export function Calendar({
     weekday:
       "size-(--cell-size) p-0 text-xs font-medium text-muted-foreground/72",
   };
-  const mergedClassNames: typeof defaultClassNames = Object.keys(
-    defaultClassNames
-  ).reduce(
-    (acc, key) => {
-      const userClass = classNames?.[key as keyof typeof classNames];
-      const baseClass =
-        defaultClassNames[key as keyof typeof defaultClassNames];
-
-      acc[key as keyof typeof defaultClassNames] = userClass
-        ? cn(baseClass, userClass)
-        : baseClass;
-
-      return acc;
-    },
-    { ...defaultClassNames } as typeof defaultClassNames
-  );
-
-  const defaultComponents = {
-    Chevron: ({
-      className,
-      orientation,
-      ...props
-    }: {
-      className?: string;
-      orientation?: "left" | "right" | "up" | "down";
-    }): React.ReactElement => {
-      if (orientation === "left") {
-        return (
-          <Icons.ChevronLeft
-            className={cn(className, "rtl:rotate-180")}
-            {...props}
-            aria-hidden="true"
-          />
-        );
-      }
-
-      if (orientation === "right") {
-        return (
-          <Icons.ChevronRight
-            className={cn(className, "rtl:rotate-180")}
-            {...props}
-            aria-hidden="true"
-          />
-        );
-      }
-
-      return (
-        <Icons.ChevronsUpDown
-          className={className}
-          {...props}
-          aria-hidden="true"
-        />
-      );
-    },
-  };
+  const mergedClassNames = Object.fromEntries(
+    Object.entries(defaultClassNames).map(([key, baseClass]) => [
+      key,
+      cn(baseClass, classNames?.[key as keyof typeof classNames]),
+    ])
+  ) as typeof defaultClassNames;
 
   const mergedComponents = {
     ...defaultComponents,
     ...userComponents,
   };
 
-  const dayPickerProps = {
-    className: cn(
-      "w-fit [--cell-size:--spacing(10)] sm:[--cell-size:--spacing(9)]",
-      className
-    ),
-    classNames: mergedClassNames,
-    components: mergedComponents,
-    "data-slot": "calendar",
-    formatters: {
-      formatMonthDropdown: (date: Date) =>
-        date.toLocaleString("default", { month: "short" }),
-    } as React.ComponentProps<typeof DayPicker>["formatters"],
-    mode,
-    showOutsideDays,
-    ...props,
-  };
-
   return (
     <DayPicker
-      {...(dayPickerProps as React.ComponentProps<typeof DayPicker>)}
+      className={cn(
+        "w-fit [--cell-size:--spacing(10)] sm:[--cell-size:--spacing(9)]",
+        className
+      )}
+      classNames={mergedClassNames}
+      components={mergedComponents}
+      data-slot="calendar"
+      formatters={{
+        formatMonthDropdown: (date: Date) =>
+          date.toLocaleString("default", { month: "short" }),
+      }}
+      mode={mode}
+      showOutsideDays={showOutsideDays}
+      {...(props as React.ComponentProps<typeof DayPicker>)}
     />
   );
 }

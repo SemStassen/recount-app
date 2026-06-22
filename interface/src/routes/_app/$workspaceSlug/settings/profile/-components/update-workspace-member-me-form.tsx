@@ -147,8 +147,8 @@ export function UpdateWorkspaceMemberMeForm() {
                   accept={{ "image/*": [] }}
                   noClick={Boolean(field.state.value)}
                   noKeyboard={Boolean(field.state.value)}
-                  onDropAccepted={async (files) => {
-                    const file = files[0];
+                  onDropAccepted={(files) => {
+                    const [file] = files;
 
                     if (!file) {
                       return;

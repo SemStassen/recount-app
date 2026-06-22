@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { chronoParse } from "#utils/chrono";
 import type { ChronoLocale } from "#utils/chrono";
 
-import { Input } from "./input.coss";
-import type { InputProps } from "./input.coss";
+import { Input } from "../input";
+import type { InputProps } from "../input";
 
 export interface InputTimeProps extends Omit<
   InputProps,

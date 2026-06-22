@@ -3,11 +3,11 @@ import { cn } from "@recount/ui/utils";
 
 import type { TimeEntryDragData } from "./types";
 
-type DraggableTimeEntryProps = {
+interface DraggableTimeEntryProps {
   id: string;
   timeRange: TimeEntryDragData["timeRange"];
   children: React.ReactNode;
-};
+}
 
 export function DraggableTimeEntry({
   children,
@@ -16,7 +16,7 @@ export function DraggableTimeEntry({
 }: DraggableTimeEntryProps) {
   const operation = useDragOperation();
   const { ref } = useDraggable({
-    id: id,
+    id,
     data: {
       kind: "time-entry",
       timeRange,

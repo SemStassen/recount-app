@@ -47,6 +47,8 @@ export const WorkspaceInvitationRpcGroupLayer =
           Effect.catchTags({
             RepositoryError: () =>
               Effect.fail(new HttpApiError.InternalServerError()),
+            "db/DatabaseError": () =>
+              Effect.fail(new HttpApiError.InternalServerError()),
           })
         ),
 

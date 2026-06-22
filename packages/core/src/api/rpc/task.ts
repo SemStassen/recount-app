@@ -5,13 +5,13 @@ import { Rpc, RpcGroup } from "effect/unstable/rpc";
 import {
   ArchiveTaskCommand,
   ArchiveTaskResult,
-  CreateTaskCommand,
   CreateTaskResult,
+  CreateTaskRpcCommand,
   UnarchiveTaskCommand,
   UnarchiveTaskResult,
   UpdateTaskCommand,
   UpdateTaskResult,
-} from "#api/contracts/index";
+} from "#modules/project/api";
 import {
   ProjectArchivedError,
   ProjectNotFoundError,
@@ -23,7 +23,7 @@ import { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
 
 export const TaskRpcGroup = RpcGroup.make(
   Rpc.make("Task.Create", {
-    payload: CreateTaskCommand,
+    payload: CreateTaskRpcCommand,
     success: CreateTaskResult,
     error: Schema.Union([
       AuthorizationError,

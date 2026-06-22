@@ -7,36 +7,36 @@ snapshots:
       }
     }
   : labels:
-    - source: |-
-        class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
-          static getToken() {
-            return Effect.flatMap(Auth, (auth) => auth.getToken);
+      - source: |-
+          class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+            static getToken() {
+              return Effect.flatMap(Auth, (auth) => auth.getToken);
+            }
           }
-        }
-      style: primary
-      start: 0
-      end: 149
+        style: primary
+        start: 0
+        end: 149
   ? |
     class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
       static readonly getToken = Effect.flatMap(Auth, (auth) => auth.getToken);
     }
   : labels:
-    - source: |-
-        class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
-          static readonly getToken = Effect.flatMap(Auth, (auth) => auth.getToken);
-        }
-      style: primary
-      start: 0
-      end: 141
+      - source: |-
+          class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+            static readonly getToken = Effect.flatMap(Auth, (auth) => auth.getToken);
+          }
+        style: primary
+        start: 0
+        end: 141
   ? |
     class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
       static readonly runSync = <A>(effect: Effect.Effect<A>) => Effect.runSync(effect);
     }
   : labels:
-    - source: |-
-        class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
-          static readonly runSync = <A>(effect: Effect.Effect<A>) => Effect.runSync(effect);
-        }
-      style: primary
-      start: 0
-      end: 150
+      - source: |-
+          class Auth extends Context.Service<Auth, AuthShape>()("Auth") {
+            static readonly runSync = <A>(effect: Effect.Effect<A>) => Effect.runSync(effect);
+          }
+        style: primary
+        start: 0
+        end: 150

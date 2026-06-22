@@ -1,79 +1,87 @@
+import type { Transaction } from "@tanstack/react-db";
 import { createTransaction } from "@tanstack/react-db";
-import { Exit } from "effect";
 
-interface OptimisticWorkspaceActionParams<
-  Entity extends object,
-  Accepted,
-  RemoteResult,
-  Success,
-> {
-  readonly mutateLocal: () => Accepted;
+import type { AnyBackendReconciliationTarget } from "~/db/synced-collections/electric-reconciliation";
+import { awaitBackendReconciliation } from "~/db/synced-collections/electric-reconciliation";
+
+interface OptimisticWorkspaceActionParams<RemoteResult, Success> {
+  readonly onTransaction?: (transaction: Transaction) => void;
+  readonly mutateLocal: () => Success;
   readonly persistRemote: (params: {
-    readonly transaction: ReturnType<typeof createTransaction<Entity>>;
-    readonly accepted: Accepted;
+    readonly accepted: Success;
   }) => Promise<RemoteResult>;
   readonly awaitRemoteSync: (params: {
-    readonly transaction: ReturnType<typeof createTransaction<Entity>>;
-    readonly accepted: Accepted;
+    readonly accepted: Success;
     readonly remoteResult: RemoteResult;
   }) => Promise<void>;
-  readonly toSuccess: (params: {
-    readonly accepted: Accepted;
-    readonly transaction: ReturnType<typeof createTransaction<Entity>>;
-  }) => Success;
 }
 
-export function runOptimisticWorkspaceAction<
-  Entity extends object,
-  Accepted,
-  RemoteResult,
-  Success,
->(
-  params: OptimisticWorkspaceActionParams<
-    Entity,
-    Accepted,
-    RemoteResult,
-    Success
-  >
+export function runOptimisticWorkspaceTransaction<RemoteResult, Success>(
+  params: OptimisticWorkspaceActionParams<RemoteResult, Success>
 ) {
-  let accepted: Accepted | undefined;
-  const transaction = createTransaction<Entity>({
-    mutationFn: async ({ transaction }) => {
-      if (accepted === undefined) {
+  // Generic optimistic transaction runner: accept local state synchronously,
+  // persist remotely, then wait for caller-defined backend reconciliation before
+  // allowing TanStack DB to drop the optimistic overlay.
+  let accepted: readonly [Success] | undefined;
+  const transaction = createTransaction({
+    mutationFn: async () => {
+      if (!accepted) {
         throw new Error(
           "Optimistic action was persisted before local mutation"
         );
       }
 
+      const [acceptedValue] = accepted;
+
       const remoteResult = await params.persistRemote({
-        transaction,
-        accepted,
+        accepted: acceptedValue,
       });
 
       await params.awaitRemoteSync({
-        transaction,
-        accepted,
+        accepted: acceptedValue,
         remoteResult,
       });
     },
   });
 
-  try {
-    transaction.mutate(() => {
-      accepted = params.mutateLocal();
-    });
+  params.onTransaction?.(transaction);
 
-    if (accepted === undefined) {
-      throw new Error("Optimistic action did not produce a local result");
-    }
+  transaction.mutate(() => {
+    accepted = [params.mutateLocal()];
+  });
 
-    return Exit.succeed(
-      params.toSuccess({
-        accepted,
-        transaction,
-      })
-    );
-  } catch (cause) {
-    return Exit.fail(cause);
+  if (!accepted) {
+    throw new Error("Optimistic action did not produce a local result");
   }
+
+  const [acceptedValue] = accepted;
+
+  return acceptedValue;
+}
+
+interface SyncedWorkspaceActionParams<RemoteResult, Success> {
+  readonly onTransaction?: (transaction: Transaction) => void;
+  readonly mutateLocal: () => Success;
+  readonly persistRemote: (params: {
+    readonly accepted: Success;
+  }) => Promise<RemoteResult>;
+  readonly remoteSync: AnyBackendReconciliationTarget<RemoteResult>;
+}
+
+export function runElectricReconciledWorkspaceAction<RemoteResult, Success>(
+  params: SyncedWorkspaceActionParams<RemoteResult, Success>
+) {
+  // Most workspace writes reconcile through Electric. This wrapper keeps action
+  // code focused on local acceptance and remote persistence, while the generic
+  // helper owns the transaction lifecycle.
+  return runOptimisticWorkspaceTransaction<RemoteResult, Success>({
+    awaitRemoteSync: ({ remoteResult }) =>
+      awaitBackendReconciliation({
+        remoteResult,
+        target: params.remoteSync,
+      }),
+    mutateLocal: params.mutateLocal,
+    onTransaction: params.onTransaction,
+    persistRemote: params.persistRemote,
+  });
 }

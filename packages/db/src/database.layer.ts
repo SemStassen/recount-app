@@ -3,8 +3,12 @@ import * as PgDrizzle from "drizzle-orm/effect-postgres";
 import { Config, Context, Effect, Layer, Redacted } from "effect";
 import { Pool } from "pg";
 
-import { Database, DatabaseError } from "./database.service";
-import type { ActiveConnection, DatabaseShape } from "./database.service";
+import { Database } from "./database.service";
+import type {
+  ActiveConnection,
+  DatabaseError,
+  DatabaseShape,
+} from "./database.service";
 
 class PgPool extends Context.Service<PgPool, Pool>()("@recount/db/PgPool") {}
 

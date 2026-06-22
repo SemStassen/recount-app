@@ -5,7 +5,7 @@ import { Rpc, RpcGroup } from "effect/unstable/rpc";
 import {
   UpdateMeUserSettingsCommand,
   UpdateMeUserSettingsResult,
-} from "#api/contracts/index";
+} from "#modules/identity/api";
 
 import { RpcSessionMiddleware } from "./middleware";
 

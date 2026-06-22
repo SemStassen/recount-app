@@ -12,6 +12,7 @@ import {
   CommandShortcut,
 } from "@recount/ui/command";
 import { Icons } from "@recount/ui/icons";
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -20,9 +21,12 @@ import {
   commandMenuSearchQueryAtom,
   commandsAtom,
 } from "./atoms";
+import { createDefaultCommands } from "./default-commands";
+import { useRegisterCommands } from "./registration";
 import { isCommandDisabled, searchCommands } from "./search";
 import type { Command as CommandItemType, CommandCategory } from "./types";
 
+const BACK_COMMAND_VALUE = "command-menu.back";
 const CATEGORY_ORDER: Array<CommandCategory> = [
   "navigation",
   "project",
@@ -30,43 +34,37 @@ const CATEGORY_ORDER: Array<CommandCategory> = [
   "developer",
 ];
 
-const BACK_COMMAND_VALUE = "command-menu.back";
-
 function getCategoryLabel(category: CommandCategory) {
-  switch (category) {
-    case "developer":
-      return "Developer";
-    case "navigation":
-      return "Navigation";
-    case "project":
-      return "Project";
-    case "settings":
-      return "Settings";
-  }
+  return {
+    developer: "Developer",
+    navigation: "Navigation",
+    project: "Project",
+    settings: "Settings",
+  }[category];
 }
 
-function groupCommands(commands: Array<CommandItemType>) {
-  const grouped = commands.reduce(
-    (acc, command) => {
-      acc[command.category] ??= [];
-      acc[command.category].push(command);
-      return acc;
-    },
-    {} as Record<CommandCategory, Array<CommandItemType>>
-  );
+function groupCommands(commandItems: Array<CommandItemType>) {
+  const grouped = new Map<CommandCategory, Array<CommandItemType>>();
+
+  for (const command of commandItems) {
+    const categoryCommands = grouped.get(command.category) ?? [];
+    categoryCommands.push(command);
+    grouped.set(command.category, categoryCommands);
+  }
 
   return CATEGORY_ORDER.flatMap((category) => {
-    const commands = grouped[category];
+    const categoryCommands = grouped.get(category);
 
-    if (!commands?.length) {
+    if (!categoryCommands?.length) {
       return [];
     }
 
-    return [{ category, commands }];
+    return [{ category, commands: categoryCommands }];
   });
 }
 
 export function CommandMenu() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useAtom(commandMenuOpenAtom);
   const [query, setQuery] = useAtom(commandMenuSearchQueryAtom);
   const commands = useAtomValue(commandsAtom);
@@ -74,6 +72,12 @@ export function CommandMenu() {
     Array<{ title: string; commands: Array<CommandItemType> }>
   >([]);
   const closeResolversRef = useRef<Array<() => void>>([]);
+  const defaultCommands = useMemo(
+    () => createDefaultCommands(navigate),
+    [navigate]
+  );
+
+  useRegisterCommands(defaultCommands, { id: "default-commands" });
 
   useHotkeys("meta+k", () => setIsOpen((open) => !open), {
     preventDefault: true,
@@ -109,6 +113,7 @@ export function CommandMenu() {
 
     handleOpenChange(false);
 
+    // oxlint-disable-next-line promise/avoid-new
     return new Promise<void>((resolve) => {
       closeResolversRef.current.push(resolve);
     });

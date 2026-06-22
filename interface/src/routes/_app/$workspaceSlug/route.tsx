@@ -1,6 +1,5 @@
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 
-import { getWorkspaceDb } from "~/db/workspace/get-workspace-db";
 import { CommandMenu } from "~/features/command-menu";
 
 import { CreateProjectDialog } from "./-components/create-project-dialog";
@@ -18,15 +17,15 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
       throw notFound();
     }
 
-    const workspaceDb = await getWorkspaceDb(workspace.id);
+    const workspaceDb = await context.workspaceDbRegistry.load({
+      userId: context.user.id,
+      workspaceId: workspace.id,
+    });
 
     return {
       workspace,
       workspaceDb,
     };
-  },
-  loader: async ({ context }) => {
-    await context.workspaceDb.preload();
   },
   pendingComponent: () => <div>Loading...</div>,
   component: WorkspaceLayout,
@@ -35,10 +34,8 @@ export const Route = createFileRoute("/_app/$workspaceSlug")({
 function WorkspaceLayout() {
   return (
     <WorkspaceProviders>
-      <div className="isolate h-screen w-screen overflow-hidden overscroll-none bg-background text-foreground">
-        <main className="flex h-full">
-          <Outlet />
-        </main>
+      <div className="grid h-full w-full overflow-hidden">
+        <Outlet />
         <CommandMenu />
         {/* Dialogs */}
         <CreateProjectDialog />

@@ -3,7 +3,7 @@ export { FileUploadRpcGroup } from "./file-upload";
 export { RpcSessionMiddleware, RpcWorkspaceMiddleware } from "./middleware";
 export { ProjectRpcGroup } from "./project";
 export { TaskRpcGroup } from "./task";
-export { TimeEntryRpcGroup } from "./time-entry";
+export { TimeEntryRpcGroup, TimeRpcGroup } from "./time";
 export { UserSettingsRpcGroup } from "./user-settings";
 export { UserRpcGroup } from "./user";
 export { WorkspaceRpcGroup } from "./workspace";

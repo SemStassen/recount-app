@@ -1,7 +1,7 @@
 import type {
   CreateWorkspaceIntegrationConnectionCommand,
   CreateWorkspaceIntegrationConnectionResult,
-} from "@recount/core/contracts";
+} from "@recount/core/modules/integration/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";

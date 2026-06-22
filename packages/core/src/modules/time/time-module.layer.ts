@@ -1,36 +1,39 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
-import type { TimeEntry } from "./domain/time-entry.entity";
-import { TimeEntryAlreadyRunningError } from "./domain/time-entry.errors";
-import * as timeEntryTransitions from "./domain/time-entry.transitions";
-import { TimeEntryRepository } from "./time-entry-repository.service";
+import type { Timer } from "./domain/tracked-time.entity";
+import {
+  TimerNotFoundError,
+  TimerAlreadyRunningError,
+} from "./domain/tracked-time.errors";
+import * as timeEntryTransitions from "./domain/tracked-time.transitions";
+import { TrackedTimeRepository } from "./persistence";
+import { TrackedTimeTargetValidator } from "./ports";
 import { TimeEntryNotFoundError, TimeModule } from "./time-module.service";
 
 export const TimeModuleLayer = Layer.effect(
   TimeModule,
   Effect.gen(function* () {
-    const timeEntryRepo = yield* TimeEntryRepository;
+    const trackedTimeRepo = yield* TrackedTimeRepository;
+    const trackedTimeTargetValidator = yield* TrackedTimeTargetValidator;
 
-    const ensureNoOtherRunningTimeEntry = Effect.fn(
-      "time.ensureNoOtherRunningTimeEntry"
-    )(function* (params: {
-      workspaceId: TimeEntry["workspaceId"];
-      workspaceMemberId: TimeEntry["workspaceMemberId"];
-      excludeTimeEntryId?: TimeEntry["id"];
-    }) {
-      const maybeRunningTimeEntry =
-        yield* timeEntryRepo.findRunningByWorkspaceMember({
+    const ensureNoCurrentTimer = Effect.fn("time.ensureNoCurrentTimer")(
+      function* (params: {
+        workspaceId: Timer["workspaceId"];
+        workspaceMemberId: Timer["workspaceMemberId"];
+      }) {
+        const maybeCurrentTimer = yield* trackedTimeRepo.findCurrentTimer({
           workspaceId: params.workspaceId,
           workspaceMemberId: params.workspaceMemberId,
         });
 
-      if (
-        Option.isSome(maybeRunningTimeEntry) &&
-        maybeRunningTimeEntry.value.id !== params.excludeTimeEntryId
-      ) {
-        return yield* new TimeEntryAlreadyRunningError();
+        if (Option.isSome(maybeCurrentTimer)) {
+          return yield* new TimerAlreadyRunningError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
+        }
       }
-    });
+    );
 
     return {
       createTimeEntries: Effect.fn("time.createTimeEntries")(
@@ -39,46 +42,37 @@ export const TimeModuleLayer = Layer.effect(
             return [];
           }
 
-          const now = yield* DateTime.now;
           const timeEntries = yield* Effect.forEach(params.data, (data) =>
             Effect.fromResult(
               timeEntryTransitions.createTimeEntry({
                 workspaceId: params.workspaceId,
                 workspaceMemberId: params.workspaceMemberId,
                 data,
-                now,
               })
             )
           );
 
-          const runningEntries = timeEntries.filter((e) => e.isRunning());
+          yield* Effect.forEach(timeEntries, (timeEntry) =>
+            trackedTimeTargetValidator.validate({
+              workspaceId: timeEntry.workspaceId,
+              projectId: timeEntry.projectId,
+              taskId: timeEntry.taskId,
+            })
+          );
 
-          if (runningEntries.length > 1) {
-            return yield* new TimeEntryAlreadyRunningError();
-          }
-
-          if (runningEntries.length === 1) {
-            yield* ensureNoOtherRunningTimeEntry({
-              workspaceId: params.workspaceId,
-              workspaceMemberId: params.workspaceMemberId,
-            });
-          }
-
-          const persistedTimeEntries =
-            yield* timeEntryRepo.insertMany(timeEntries);
-
-          return persistedTimeEntries;
+          return yield* trackedTimeRepo.insertTimeEntries(timeEntries);
         }
       ),
       updateTimeEntry: Effect.fn("time.updateTimeEntry")(function* (params) {
-        const timeEntry = yield* timeEntryRepo
-          .findById({ workspaceId: params.workspaceId, id: params.id })
+        const timeEntry = yield* trackedTimeRepo
+          .findTimeEntry({ workspaceId: params.workspaceId, id: params.id })
           .pipe(
             Effect.flatMap(
               Option.match({
                 onNone: () =>
                   Effect.fail(
                     new TimeEntryNotFoundError({
+                      workspaceId: params.workspaceId,
                       timeEntryId: params.id,
                     })
                   ),
@@ -94,21 +88,121 @@ export const TimeModuleLayer = Layer.effect(
           })
         );
 
-        if (entity.isRunning()) {
-          yield* ensureNoOtherRunningTimeEntry({
+        yield* trackedTimeTargetValidator.validate({
+          workspaceId: entity.workspaceId,
+          projectId: entity.projectId,
+          taskId: entity.taskId,
+        });
+
+        return yield* trackedTimeRepo.updateTimeEntry({
+          id: timeEntry.id,
+          workspaceId: timeEntry.workspaceId,
+          data: changes,
+        });
+      }),
+      startTimer: Effect.fn("time.startTimer")(function* (params) {
+        const now = yield* DateTime.now;
+
+        yield* ensureNoCurrentTimer({
+          workspaceId: params.workspaceId,
+          workspaceMemberId: params.workspaceMemberId,
+        });
+
+        const timer = yield* Effect.fromResult(
+          timeEntryTransitions.startTimer({
             workspaceId: params.workspaceId,
-            workspaceMemberId: entity.workspaceMemberId,
-            excludeTimeEntryId: entity.id,
+            workspaceMemberId: params.workspaceMemberId,
+            data: {
+              ...params.data,
+              startedAt: params.data.startedAt ?? now,
+            },
+          })
+        );
+
+        yield* trackedTimeTargetValidator.validate({
+          workspaceId: timer.workspaceId,
+          projectId: timer.projectId,
+          taskId: timer.taskId,
+        });
+
+        return yield* trackedTimeRepo.insertCurrentTimer(timer);
+      }),
+      updateTimer: Effect.fn("time.updateTimer")(function* (params) {
+        const currentTimer = yield* trackedTimeRepo.findCurrentTimer({
+          workspaceId: params.workspaceId,
+          workspaceMemberId: params.workspaceMemberId,
+        });
+
+        if (Option.isNone(currentTimer)) {
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
           });
         }
 
-        const persistedTimeEntry = yield* timeEntryRepo.update({
-          id: entity.id,
+        const { entity, changes } = yield* Effect.fromResult(
+          timeEntryTransitions.updateTimer({
+            timer: currentTimer.value,
+            data: params.data,
+          })
+        );
+
+        yield* trackedTimeTargetValidator.validate({
           workspaceId: entity.workspaceId,
-          update: changes,
+          projectId: entity.projectId,
+          taskId: entity.taskId,
         });
 
-        return persistedTimeEntry;
+        const persistedTimer = yield* trackedTimeRepo.updateCurrentTimer({
+          workspaceId: params.workspaceId,
+          workspaceMemberId: params.workspaceMemberId,
+          data: changes,
+        });
+
+        if (Option.isNone(persistedTimer)) {
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
+        }
+
+        return persistedTimer.value;
+      }),
+      stopTimer: Effect.fn("time.stopTimer")(function* (params) {
+        const now = yield* DateTime.now;
+        const currentTimer = yield* trackedTimeRepo.findCurrentTimer({
+          workspaceId: params.workspaceId,
+          workspaceMemberId: params.workspaceMemberId,
+        });
+
+        if (Option.isNone(currentTimer)) {
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
+        }
+
+        const { entity } = yield* Effect.fromResult(
+          timeEntryTransitions.stopTimer({
+            timer: currentTimer.value,
+            stoppedAt: params.data.stoppedAt ?? now,
+          })
+        );
+
+        const persistedTimeEntry = yield* trackedTimeRepo.completeCurrentTimer({
+          workspaceId: params.workspaceId,
+          workspaceMemberId: params.workspaceMemberId,
+          timeEntry: entity,
+        });
+
+        if (Option.isNone(persistedTimeEntry)) {
+          return yield* new TimerNotFoundError({
+            workspaceId: params.workspaceId,
+            workspaceMemberId: params.workspaceMemberId,
+          });
+        }
+
+        return persistedTimeEntry.value;
       }),
       hardDeleteTimeEntries: Effect.fn("time.hardDeleteTimeEntries")(
         function* (params) {
@@ -116,7 +210,7 @@ export const TimeModuleLayer = Layer.effect(
             return;
           }
 
-          yield* timeEntryRepo.hardDeleteMany({
+          yield* trackedTimeRepo.hardDeleteMany({
             workspaceId: params.workspaceId,
             ids: params.ids,
           });

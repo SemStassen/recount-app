@@ -4,8 +4,9 @@ import * as React from "react";
 import { cn } from "#utils/cn";
 
 import { Icons } from "../icons";
+import { Input } from "../input";
+import type { InputProps } from "../input";
 import { ScrollArea } from "../scroll-area";
-import { Input } from "./input.coss";
 
 export const ComboboxContext: React.Context<{
   chipsRef: React.RefObject<Element | null> | null;
@@ -67,13 +68,11 @@ export function ComboboxInput({
   showTrigger?: boolean;
   showClear?: boolean;
   startAddon?: React.ReactNode;
-  size?: "sm" | "default" | "lg" | number;
+  size?: InputProps["size"];
   ref?: React.Ref<HTMLInputElement>;
   triggerProps?: ComboboxPrimitive.Trigger.Props;
   clearProps?: ComboboxPrimitive.Clear.Props;
 }): React.ReactElement {
-  const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number;
-
   return (
     <ComboboxPrimitive.InputGroup
       className="relative not-has-[>*.w-full]:w-fit w-full text-foreground has-disabled:opacity-64"
@@ -92,18 +91,14 @@ export function ComboboxInput({
         className={cn(
           startAddon &&
             "data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7.5)-1px)] *:data-[slot=combobox-input]:ps-[calc(--spacing(8.5)-1px)] sm:data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7)-1px)] sm:*:data-[slot=combobox-input]:ps-[calc(--spacing(8)-1px)]",
-          sizeValue === "sm"
+          size === "sm"
             ? "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-6.5"
             : "has-[+[data-slot=combobox-trigger],+[data-slot=combobox-clear]]:*:data-[slot=combobox-input]:pe-7",
           className
         )}
         data-slot="combobox-input"
         render={
-          <Input
-            className="has-disabled:opacity-100"
-            nativeInput
-            size={sizeValue}
-          />
+          <Input className="has-disabled:opacity-100" nativeInput size={size} />
         }
         {...props}
       />
@@ -111,7 +106,7 @@ export function ComboboxInput({
         <ComboboxTrigger
           className={cn(
             "absolute top-1/2 inline-flex size-8 shrink-0 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-80 outline-none transition-opacity pointer-coarse:after:absolute pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:opacity-100 has-[+[data-slot=combobox-clear]]:hidden sm:size-7 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-            sizeValue === "sm" ? "end-0" : "end-0.5"
+            size === "sm" ? "end-0" : "end-0.5"
           )}
           {...triggerProps}
         >
@@ -124,7 +119,7 @@ export function ComboboxInput({
         <ComboboxClear
           className={cn(
             "absolute top-1/2 inline-flex size-8 shrink-0 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md border border-transparent opacity-80 outline-none transition-opacity pointer-coarse:after:absolute pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11 hover:opacity-100 has-[+[data-slot=combobox-clear]]:hidden sm:size-7 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-            sizeValue === "sm" ? "end-0" : "end-0.5"
+            size === "sm" ? "end-0" : "end-0.5"
           )}
           {...clearProps}
         >

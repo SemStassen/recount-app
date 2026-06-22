@@ -1,3 +1,5 @@
+// ast-grep-ignore: no-console-log
+
 import type { Plugin } from "vite";
 
 interface StartupMessageOptions {

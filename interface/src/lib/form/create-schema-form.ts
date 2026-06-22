@@ -15,7 +15,7 @@ export function createSchemaForm<T, E>(schema: Schema.Codec<T, E>) {
 
   const decodeToResult = (value: unknown) =>
     Schema.decodeUnknownEffect(schema)(value).pipe(
-      Effect.mapError((error) => error.message),
+      Effect.mapError(({ message }) => message),
       Effect.result,
       Effect.runPromise
     );

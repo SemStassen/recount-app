@@ -1,9 +1,12 @@
-export { TimeEntry } from "./domain/time-entry.entity";
+export { Timer, TimeEntry } from "./domain/tracked-time.entity";
 
 export {
-  TimeEntryAlreadyRunningError,
+  TimerNotFoundError,
+  TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
-} from "./domain/time-entry.errors";
-export { TimeEntryRepository } from "./time-entry-repository.service";
+  TargetProjectNotFoundError,
+  TargetTaskNotFoundError,
+  TargetTaskProjectMismatchError,
+} from "./domain/tracked-time.errors";
 export { TimeModuleLayer } from "./time-module.layer";
 export { TimeEntryNotFoundError, TimeModule } from "./time-module.service";

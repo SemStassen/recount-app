@@ -1,4 +1,5 @@
-import { Project, ProjectRepository } from "@recount/core/modules/project";
+import { Project } from "@recount/core/modules/project";
+import { ProjectRepository } from "@recount/core/modules/project/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq, inArray } from "drizzle-orm";

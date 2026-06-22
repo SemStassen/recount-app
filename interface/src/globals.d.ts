@@ -1,4 +1,9 @@
-/// <reference types="vite/client" />
+import "vite/client";
+
+declare module "*.module.css" {
+  const classes: Record<string, string>;
+  export default classes;
+}
 
 declare global {
   const __PLATFORM__: "web" | "desktop";
@@ -32,6 +37,3 @@ declare global {
     readonly env: ImportMetaEnv;
   }
 }
-
-// Required so `declare global` augments globals from a module file.
-export {};

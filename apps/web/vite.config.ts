@@ -25,6 +25,7 @@ export default mergeConfig(
     },
     build: {
       outDir: "../dist",
+      emptyOutDir: true,
     },
     plugins: [
       startupMessage({

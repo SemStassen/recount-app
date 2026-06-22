@@ -1,4 +1,5 @@
-import { DateTime, Option, Result } from "effect";
+import type { DateTime } from "effect";
+import { Option, Result } from "effect";
 
 import { HexColor, ProjectId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
@@ -20,10 +21,7 @@ export const createProject = (params: {
   const { id, ...rest } = params.data;
 
   const project = Project.make({
-    id:
-      id === undefined
-        ? ProjectId.make(generateUUID())
-        : Option.getOrElse(id, () => ProjectId.make(generateUUID())),
+    id: id ?? ProjectId.make(generateUUID()),
     workspaceId: params.workspaceId,
     ...rest,
     color: rest.color ?? HexColor.make("#000000"),

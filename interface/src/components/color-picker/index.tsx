@@ -1,6 +1,6 @@
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
-import { Popover, PopoverPopup, PopoverTrigger } from "@recount/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@recount/ui/popover";
 import { Separator } from "@recount/ui/separator";
 import { useState } from "react";
 import { HexColorPicker } from "react-colorful";
@@ -67,7 +67,7 @@ export function ColorPicker({ value, onValueChange }: ColorPickerProps) {
           </Button>
         }
       />
-      <PopoverPopup align="start">
+      <PopoverContent align="start">
         <div className="flex flex-col gap-2">
           <div className="flex flex-row gap-2" aria-label="Colors">
             {colors.map((color) => {
@@ -100,7 +100,7 @@ export function ColorPicker({ value, onValueChange }: ColorPickerProps) {
             />
           </div>
         </div>
-      </PopoverPopup>
+      </PopoverContent>
     </Popover>
   );
 }

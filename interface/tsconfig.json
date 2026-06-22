@@ -1,11 +1,15 @@
 {
   "extends": "@recount/config/base.tsconfig.json",
-  "include": ["src", "src/globals.d.ts", "vite.config.ts"],
+  "include": ["src"],
   "exclude": ["dist"],
   "compilerOptions": {
     "paths": {
       "~/*": ["./src/*"]
     },
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "outDir": "node_modules/.ts-dist",
     "exactOptionalPropertyTypes": false
   }
 }

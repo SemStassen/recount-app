@@ -11,7 +11,7 @@ function getCommandSearchText(command: Command) {
     command.category,
     ...(command.keywords ?? []),
   ]
-    .filter((part): part is string => Boolean(part))
+    .filter(Boolean)
     .join(" ")
     .toLowerCase();
 }
@@ -26,7 +26,7 @@ export function searchCommands(
   options: CommandSearchOptions = {}
 ) {
   const normalizedQuery = normalizeSearchValue(query);
-  const terms = normalizedQuery.split(/\s+/).filter(Boolean);
+  const terms = normalizedQuery.split(/\s+/u).filter(Boolean);
 
   return commands.filter((command) => {
     if (!(options.includeDisabled ?? false) && isCommandDisabled(command)) {

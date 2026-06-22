@@ -4,12 +4,7 @@ import { Icons } from "@recount/ui/icons";
 
 import { PageTopBar } from "~/routes/_app/$workspaceSlug/_sidebar/-components/page";
 
-import {
-  DAY_HEADER_HEIGHT_VAR,
-  HEADER_HEIGHT_VAR,
-  HOUR_COLUMN_WIDTH_VAR,
-  HOUR_HEIGHT_VAR,
-} from "./constants";
+import { HOUR_COLUMN_WIDTH_VAR, HOUR_HEIGHT_VAR } from "./constants";
 import { DndProvider } from "./dnd/dnd-provider";
 import { MultiDayView } from "./multi-day-view";
 import { DateNavigator } from "./navigation/date-navigator";
@@ -22,13 +17,11 @@ function Calendar() {
   const openCreateEditor = useAtomSet(openCreateTimeEntryEditor);
 
   return (
-    <div className="flex flex-row flex-1">
+    <div className="flex h-full flex-row overflow-hidden">
       <div
-        className="min-w-0 flex-1 overflow-hidden"
+        className="flex min-w-0 flex-1 flex-col overflow-hidden"
         style={
           {
-            [HEADER_HEIGHT_VAR]: "48px",
-            [DAY_HEADER_HEIGHT_VAR]: "40px",
             [HOUR_COLUMN_WIDTH_VAR]: "72px",
             [HOUR_HEIGHT_VAR]: "64px",
           } as React.CSSProperties
@@ -56,9 +49,11 @@ function Calendar() {
             </>
           }
         />
-        <DndProvider>
-          <MultiDayView />
-        </DndProvider>
+        <div className="min-h-0 flex-1">
+          <DndProvider>
+            <MultiDayView />
+          </DndProvider>
+        </div>
       </div>
       <TimeEntryEditor />
     </div>

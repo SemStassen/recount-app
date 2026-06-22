@@ -33,7 +33,7 @@ export interface DateTimeSettingsInput {
 
 export function parseTimeZone(value: string): TimeZone | null {
   try {
-    new Intl.DateTimeFormat("en", { timeZone: value });
+    Intl.DateTimeFormat("en", { timeZone: value }).resolvedOptions();
     return value;
   } catch {
     return null;

@@ -18,21 +18,20 @@ import {
   LAST_VISIBLE_HOUR,
 } from "../constants";
 import type { TimeRange } from "../state/time-range";
-import type { TimeEntry } from "./types";
 
-export type CalendarRect = {
+export interface CalendarRect {
   left: number;
   top: number;
   width: number;
   height: number;
-};
+}
 
-export type Slot = {
+export interface Slot {
   day: Date;
   index: number;
   start: Date;
   end: Date;
-};
+}
 
 export function getSlotFromPoint({
   point,
@@ -99,11 +98,13 @@ export function moveTimeRangeToSlot(
   };
 }
 
-function groupTimeEntries(timeEntries: Array<TimeEntry>) {
+function groupTimeEntries<TEntry extends TimeRange>(
+  timeEntries: Array<TEntry>
+) {
   const sortedTimeEntries = timeEntries.toSorted(
     (a, b) => a.startedAt.getTime() - b.startedAt.getTime()
   );
-  const groups: Array<Array<TimeEntry>> = [];
+  const groups: Array<Array<TEntry>> = [];
 
   for (const timeEntry of sortedTimeEntries) {
     let placed = false;
@@ -129,18 +130,18 @@ function groupTimeEntries(timeEntries: Array<TimeEntry>) {
   return groups;
 }
 
-type TimeEntryFrame = {
-  timeEntry: TimeEntry;
+interface TimeEntryFrame<TEntry extends TimeRange> {
+  timeEntry: TEntry;
   overlap?: { index: number; count: number };
-};
+}
 
-export function getDayTimeEntryFrames({
+export function getDayTimeEntryFrames<TEntry extends TimeRange>({
   day,
   timeEntries,
 }: {
   day: Date;
-  timeEntries: Array<TimeEntry>;
-}): Array<TimeEntryFrame> {
+  timeEntries: Array<TEntry>;
+}): Array<TimeEntryFrame<TEntry>> {
   const dayTimeEntries = timeEntries.filter(
     (timeEntry) =>
       isSameDay(timeEntry.startedAt, day) || isSameDay(timeEntry.stoppedAt, day)
@@ -177,7 +178,7 @@ export function getDayTimeEntryFrames({
 }
 
 function getTimeEntryPositionStyle(
-  timeEntry: Pick<TimeEntry, "startedAt" | "stoppedAt">,
+  timeEntry: TimeRange,
   day: Date,
   groupIndex: number,
   groupSize: number
@@ -205,7 +206,7 @@ export function getTimeEntryFrameStyle({
   overlap,
 }: {
   day: Date;
-  timeRange: Pick<TimeEntry, "startedAt" | "stoppedAt">;
+  timeRange: TimeRange;
   overlap?: { index: number; count: number };
 }) {
   const style: CSSProperties = {
@@ -226,10 +227,7 @@ export function getTimeEntryFrameStyle({
   return style;
 }
 
-function getTimeEntryHeight(
-  timeEntry: Pick<TimeEntry, "startedAt" | "stoppedAt">,
-  day: Date
-) {
+function getTimeEntryHeight(timeEntry: TimeRange, day: Date) {
   const dayStart = startOfDay(day);
   const dayEnd = endOfDay(day);
   const startedAt =

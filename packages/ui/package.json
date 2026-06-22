@@ -1,10 +1,10 @@
 {
   "name": "@recount/ui",
   "private": true,
+  "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
     "format": "oxfmt --write .",
-    "lint": "oxlint -A import/no-namespace -c ../../.oxlintrc.json .",
+    "lint": "oxlint -A import/no-namespace .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -19,7 +19,6 @@
     "react-day-picker": "^9.9.0",
     "react-dom": "catalog:frontend",
     "react-dropzone": "^15.0.0",
-    "react-resizable-panels": "^4.11.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
@@ -27,7 +26,7 @@
     "@types/react": "catalog:dev",
     "@types/react-dom": "catalog:dev",
     "tw-animate-css": "^1.3.8",
-    "tailwindcss": "^4.0.15",
+    "tailwindcss": "^4.3.1",
     "typescript": "catalog:dev"
   },
   "imports": {
@@ -48,7 +47,7 @@
     "./combobox": "./src/components/old/combobox.coss.tsx",
     "./command": "./src/components/old/command.coss.tsx",
     "./context-menu": "./src/components/context-menu.tsx",
-    "./dialog": "./src/components/old/dialog.coss.tsx",
+    "./dialog": "./src/components/dialog.tsx",
     "./dropzone": "./src/components/old/dropzone.kibo.tsx",
     "./empty": "./src/components/old/empty.coss.tsx",
     "./field": "./src/components/old/field.coss.tsx",
@@ -59,12 +58,12 @@
     "./input-group": "./src/components/old/input-group.coss.tsx",
     "./input-otp": "./src/components/old/input-otp.coss.tsx",
     "./input-time": "./src/components/old/input-time.tsx",
-    "./input": "./src/components/old/input.coss.tsx",
+    "./input": "./src/components/input.tsx",
     "./kbd": "./src/components/old/kbd.coss.tsx",
     "./label": "./src/components/old/label.coss.tsx",
     "./list": "./src/components/old/list.tsx",
     "./menu": "./src/components/old/menu.coss.tsx",
-    "./popover": "./src/components/old/popover.coss.tsx",
+    "./popover": "./src/components/popover.tsx",
     "./resizable": "./src/components/old/resizable.9ui.tsx",
     "./rich-editor": "./src/components/old/rich-editor.tsx",
     "./scroll-area": "./src/components/scroll-area.tsx",

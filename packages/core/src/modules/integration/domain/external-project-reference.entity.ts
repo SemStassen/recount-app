@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Model } from "#internal/effect/index";
+import { SharedModel } from "#internal/effect/index";
 import {
   ProjectId,
   ExternalProjectReferenceId,
@@ -10,19 +10,21 @@ import {
 
 import { WorkspaceIntegrationConnectionProvider } from "./workspace-integration-connection.entity";
 
-export class ExternalProjectReference extends Model.Class<ExternalProjectReference>(
+export class ExternalProjectReference extends SharedModel.Class<ExternalProjectReference>(
   "ExternalProjectReference"
 )(
   {
-    id: Model.ServerImmutable(ExternalProjectReferenceId),
-    workspaceId: Model.ServerImmutable(WorkspaceId),
-    workspaceIntegrationConnectionId: Model.ServerImmutable(
+    id: SharedModel.ImmutableReadOnly(ExternalProjectReferenceId),
+    workspaceId: SharedModel.ImmutableReadOnly(WorkspaceId),
+    workspaceIntegrationConnectionId: SharedModel.ImmutableReadOnly(
       WorkspaceIntegrationConnectionId
     ),
-    projectId: Model.ServerImmutable(ProjectId),
-    provider: Model.ServerImmutable(WorkspaceIntegrationConnectionProvider),
-    externalId: Model.ServerImmutable(Schema.NonEmptyString),
-    createdAt: Model.ServerImmutable(Schema.DateTimeUtcFromDate),
+    projectId: SharedModel.ImmutableReadOnly(ProjectId),
+    provider: SharedModel.ImmutableReadOnly(
+      WorkspaceIntegrationConnectionProvider
+    ),
+    externalId: SharedModel.ImmutableReadOnly(Schema.NonEmptyString),
+    createdAt: SharedModel.ImmutableReadOnly(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "ExternalProjectReference",

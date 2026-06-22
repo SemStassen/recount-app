@@ -63,7 +63,7 @@ export interface RichTextEditorProps
   extends
     Omit<React.ComponentProps<"div">, "content">,
     VariantProps<typeof textareaVariants> {
-  content: JSONContent;
+  content: JSONContent | null;
   onChange: (c: JSONContent) => void;
   placeholder: string;
 }

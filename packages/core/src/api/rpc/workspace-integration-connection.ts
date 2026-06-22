@@ -5,7 +5,7 @@ import { Rpc, RpcGroup } from "effect/unstable/rpc";
 import {
   CreateWorkspaceIntegrationConnectionCommand,
   CreateWorkspaceIntegrationConnectionResult,
-} from "#api/contracts/index";
+} from "#modules/integration/api";
 import { WorkspaceIntegrationConnectionProviderAlreadyExistsError } from "#modules/integration/index";
 import { AuthorizationError } from "#shared/authorization/index";
 

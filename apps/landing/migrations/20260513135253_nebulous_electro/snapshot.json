@@ -2,9 +2,7 @@
   "version": "7",
   "dialect": "sqlite",
   "id": "1d337e7b-dfea-44a3-a61b-b8441a4f81b8",
-  "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
       "name": "waitlist",
@@ -91,9 +89,7 @@
       "table": "waitlist"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "waitlist_pk",
       "table": "waitlist",

@@ -290,12 +290,14 @@ export interface ContextMenuCheckboxItemContentProps
   indicatorIcon?: React.ReactNode;
 }
 
+const defaultCheckboxIndicatorIcon = <Icons.Check className="size-4" />;
+
 export function ContextMenuCheckboxItemContent({
   className,
   children,
   checked,
   indicatorPlacement = "start",
-  indicatorIcon = <Icons.Check className="size-4" />,
+  indicatorIcon = defaultCheckboxIndicatorIcon,
   ...props
 }: ContextMenuCheckboxItemContentProps): React.ReactElement {
   return (
@@ -342,11 +344,15 @@ export interface ContextMenuRadioItemContentProps
   indicatorIcon?: React.ReactNode;
 }
 
+const defaultRadioIndicatorIcon = (
+  <Icons.Circle className="size-2.5 fill-current" />
+);
+
 export function ContextMenuRadioItemContent({
   children,
   className,
   indicatorPlacement = "start",
-  indicatorIcon = <Icons.Circle className="size-2.5 fill-current" />,
+  indicatorIcon = defaultRadioIndicatorIcon,
   ...props
 }: ContextMenuRadioItemContentProps): React.ReactElement {
   return (

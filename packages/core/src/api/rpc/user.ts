@@ -2,7 +2,7 @@ import { Schema } from "effect";
 import { HttpApiError } from "effect/unstable/httpapi";
 import { Rpc, RpcGroup } from "effect/unstable/rpc";
 
-import { UpdateMeUserCommand, UpdateMeUserResult } from "#api/contracts/index";
+import { UpdateMeUserCommand, UpdateMeUserResult } from "#modules/identity/api";
 import { UserNotFoundError } from "#modules/identity/identity-module.service";
 
 import { RpcSessionMiddleware } from "./middleware";

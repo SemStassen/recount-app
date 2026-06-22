@@ -1,12 +1,12 @@
+import { useAtomSet } from "@effect/atom-react";
 import { User } from "@recount/core/modules/identity";
 import { defaultValidationLogic } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { Effect, Schema } from "effect";
+import { Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { createSchemaForm } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
-import { appRuntime } from "~/lib/runtime";
 
 export const Route = createFileRoute("/_app/_onboarding/profile/")({
   component: RouteComponent,
@@ -19,6 +19,11 @@ const schema = createSchemaForm(
 );
 
 function RouteComponent() {
+  const updateUserMe = useAtomSet(
+    BackendAtomRpcClient.mutation("User.UpdateMe"),
+    { mode: "promiseExit" }
+  );
+
   const form = useAppForm({
     formId: "profile",
     defaultValues: {
@@ -30,15 +35,11 @@ function RouteComponent() {
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      await appRuntime.runPromise(
-        Effect.gen(function* () {
-          const client = yield* BackendAtomRpcClient;
-
-          yield* client("User.UpdateMe", {
-            fullName: value.fullName,
-          });
-        })
-      );
+      await updateUserMe({
+        payload: {
+          fullName: value.fullName,
+        },
+      });
     }),
   });
 

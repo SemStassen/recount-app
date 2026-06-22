@@ -1,23 +1,23 @@
 import { snakeCamelMapper } from "@electric-sql/client";
-import { ProjectModuleLayer } from "@recount/core/modules/project";
 import { WORKSPACE_ID_HEADER } from "@recount/core/shared/headers";
-import { WorkspaceId } from "@recount/core/shared/schemas";
+import type { UserId, WorkspaceId } from "@recount/core/shared/schemas";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import {
   createCollection,
   createLiveQueryCollection,
-  eq,
+  isNull,
   not,
 } from "@tanstack/react-db";
-import { Layer, ManagedRuntime, Option } from "effect";
+import type { Collection } from "@tanstack/react-db";
 
+import type { TimeEntryViewRow, TimerViewRow } from "~/db/synced-collections";
+import { workspaceSyncedCollections } from "~/db/synced-collections";
 import { authFetch } from "~/lib/auth";
-import { appRuntimeLayer } from "~/lib/runtime";
-import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
-import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
+import type { AppRuntimeLayer } from "~/lib/runtime";
 
-import { workspaceShapes } from "../sync-shapes";
 import { createProjectActions } from "./project-actions";
+import { createTimeEntryActions } from "./tracked-time-actions";
+import { createWorkspaceRuntime } from "./workspace-runtime";
 
 export type WorkspaceDb = Awaited<ReturnType<typeof openWorkspaceDb>>;
 
@@ -25,7 +25,13 @@ const fetchWithPreconnect = fetch as typeof fetch & {
   preconnect?: typeof fetch;
 };
 
-export async function openWorkspaceDb(workspaceId: string) {
+/* Should stay async for persistence later */
+/* oxlint-disable-next-line require-await */
+export async function openWorkspaceDb(
+  workspaceId: WorkspaceId,
+  userId: UserId,
+  runtimeLayer: AppRuntimeLayer
+) {
   const abortController = new AbortController();
   const workspaceFetchClient: typeof fetch = Object.assign(
     (url: RequestInfo | URL, options?: RequestInit) =>
@@ -44,19 +50,19 @@ export async function openWorkspaceDb(workspaceId: string) {
 
   const createCollectionId = (collectionId: string) =>
     `workspace:${workspaceId}:${collectionId}`;
-  const brandedWorkspaceId = WorkspaceId.make(workspaceId);
 
   const workspaceMembersCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId(workspaceShapes.workspaceMembers.name),
-      schema: workspaceShapes.workspaceMembers.schema,
-      getKey: workspaceShapes.workspaceMembers.getKey,
+      id: createCollectionId(workspaceSyncedCollections.workspaceMembers.name),
+      getKey: workspaceSyncedCollections.workspaceMembers.getKey,
+      schema: workspaceSyncedCollections.workspaceMembers.schema,
       shapeOptions: {
-        url: workspaceShapes.workspaceMembers.url,
         columnMapper: snakeCamelMapper(),
-        transformer: workspaceShapes.workspaceMembers.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
+        transformer:
+          workspaceSyncedCollections.workspaceMembers.decodeElectricRow,
+        url: workspaceSyncedCollections.workspaceMembers.url,
       },
     })
   );
@@ -64,127 +70,157 @@ export async function openWorkspaceDb(workspaceId: string) {
   const workspaceIntegrationConnectionsCollection = createCollection(
     electricCollectionOptions({
       id: createCollectionId(
-        workspaceShapes.workspaceIntegrationConnections.name
+        workspaceSyncedCollections.workspaceIntegrationConnections.name
       ),
-      schema: workspaceShapes.workspaceIntegrationConnections.schema,
-      getKey: workspaceShapes.workspaceIntegrationConnections.getKey,
+      getKey: workspaceSyncedCollections.workspaceIntegrationConnections.getKey,
+      schema: workspaceSyncedCollections.workspaceIntegrationConnections.schema,
       shapeOptions: {
-        url: workspaceShapes.workspaceIntegrationConnections.url,
         columnMapper: snakeCamelMapper(),
-        transformer: workspaceShapes.workspaceIntegrationConnections.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
+        transformer:
+          workspaceSyncedCollections.workspaceIntegrationConnections
+            .decodeElectricRow,
+        url: workspaceSyncedCollections.workspaceIntegrationConnections.url,
       },
     })
   );
 
   const allProjectsCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId(workspaceShapes.projects.name),
-      schema: workspaceShapes.projects.schema,
-      getKey: workspaceShapes.projects.getKey,
+      id: createCollectionId(workspaceSyncedCollections.projects.name),
+      getKey: workspaceSyncedCollections.projects.getKey,
+      schema: workspaceSyncedCollections.projects.schema,
       shapeOptions: {
-        url: workspaceShapes.projects.url,
         columnMapper: snakeCamelMapper(),
-        transformer: workspaceShapes.projects.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
+        transformer: workspaceSyncedCollections.projects.decodeElectricRow,
+        url: workspaceSyncedCollections.projects.url,
       },
     })
   );
 
   const activeProjectsCollection = createLiveQueryCollection((q) =>
-    q
-      .from({ p: allProjectsCollection })
-      .where(({ p }) => eq(p.archivedAt, Option.none()))
+    q.from({ p: allProjectsCollection }).where(({ p }) => isNull(p.archivedAt))
   );
 
   const archivedProjectsCollection = createLiveQueryCollection((q) =>
     q
       .from({ p: allProjectsCollection })
-      .where(({ p }) => not(eq(p.archivedAt, Option.none())))
+      .where(({ p }) => not(isNull(p.archivedAt)))
   );
 
   const allTasksCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId(workspaceShapes.tasks.name),
-      schema: workspaceShapes.tasks.schema,
-      getKey: workspaceShapes.tasks.getKey,
+      id: createCollectionId(workspaceSyncedCollections.tasks.name),
+      getKey: workspaceSyncedCollections.tasks.getKey,
+      schema: workspaceSyncedCollections.tasks.schema,
       shapeOptions: {
-        url: workspaceShapes.tasks.url,
         columnMapper: snakeCamelMapper(),
-        transformer: workspaceShapes.tasks.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
+        transformer: workspaceSyncedCollections.tasks.decodeElectricRow,
+        url: workspaceSyncedCollections.tasks.url,
       },
     })
   );
 
   const activeTasksCollection = createLiveQueryCollection((q) =>
-    q
-      .from({ t: allTasksCollection })
-      .where(({ t }) => eq(t.archivedAt, Option.none()))
+    q.from({ t: allTasksCollection }).where(({ t }) => isNull(t.archivedAt))
   );
 
   const archivedTasksCollection = createLiveQueryCollection((q) =>
     q
       .from({ t: allTasksCollection })
-      .where(({ t }) => not(eq(t.archivedAt, Option.none())))
+      .where(({ t }) => not(isNull(t.archivedAt)))
   );
 
-  const timeEntriesCollection = createCollection(
+  const allTrackedTimeCollection = createCollection(
     electricCollectionOptions({
-      id: createCollectionId(workspaceShapes.timeEntries.name),
-      schema: workspaceShapes.timeEntries.schema,
-      getKey: workspaceShapes.timeEntries.getKey,
+      id: createCollectionId(workspaceSyncedCollections.timeEntries.name),
+      getKey: workspaceSyncedCollections.timeEntries.getKey,
+      schema: workspaceSyncedCollections.timeEntries.schema,
       shapeOptions: {
-        url: workspaceShapes.timeEntries.url,
         columnMapper: snakeCamelMapper(),
-        transformer: workspaceShapes.timeEntries.decodeRow,
         fetchClient: workspaceFetchClient,
         signal: abortController.signal,
+        transformer: workspaceSyncedCollections.timeEntries.decodeElectricRow,
+        url: workspaceSyncedCollections.timeEntries.url,
       },
     })
   );
 
-  const projectRepositoryLayer = createClientProjectRepositoryLayer(
-    allProjectsCollection
-  );
-  const taskRepositoryLayer =
-    createClientTaskRepositoryLayer(allTasksCollection);
-  const workspaceRuntime = ManagedRuntime.make(
-    Layer.mergeAll(
-      appRuntimeLayer,
-      ProjectModuleLayer.pipe(
-        Layer.provide(projectRepositoryLayer),
-        Layer.provide(taskRepositoryLayer)
-      )
-    )
-  );
+  /**
+   * TanStack DB cannot express that this live query narrows
+   * TrackedTimeCollectionRow by stoppedAt, so keep this cast at view boundary.
+   */
+  const timersCollection = createLiveQueryCollection((q) =>
+    q
+      .from({ trackedTime: allTrackedTimeCollection })
+      .where(({ trackedTime }) => isNull(trackedTime.stoppedAt))
+  ) as unknown as Collection<
+    TimerViewRow,
+    string | number,
+    Record<string, never>
+  >;
 
-  const projectActions = createProjectActions({
-    workspaceId: brandedWorkspaceId,
-    workspaceRuntime,
+  /**
+   * TanStack DB cannot express that this live query narrows
+   * TrackedTimeCollectionRow by stoppedAt, so keep this cast at view boundary.
+   */
+  const timeEntriesCollection = createLiveQueryCollection((q) =>
+    q
+      .from({ trackedTime: allTrackedTimeCollection })
+      .where(({ trackedTime }) => not(isNull(trackedTime.stoppedAt)))
+  ) as unknown as Collection<
+    TimeEntryViewRow,
+    string | number,
+    Record<string, never>
+  >;
+
+  const workspaceRuntime = createWorkspaceRuntime({
+    runtimeLayer,
     allProjectsCollection,
     allTasksCollection,
+    timeEntriesCollection: allTrackedTimeCollection,
+  });
+
+  const projectActions = createProjectActions({
+    allProjectsCollection,
+    allTasksCollection,
+    workspaceId,
+    workspaceRuntime,
+  });
+  const timeEntryActions = createTimeEntryActions({
+    timeEntriesCollection: allTrackedTimeCollection,
+    userId,
+    workspaceId,
+    workspaceMembersCollection,
+    workspaceRuntime,
   });
 
   let preloadPromise: Promise<void> | null = null;
 
   return {
-    actions: projectActions,
+    actions: {
+      ...projectActions,
+      ...timeEntryActions,
+    },
     collections: {
-      workspaceMembersCollection,
-      workspaceIntegrationConnectionsCollection,
-      allProjectsCollection,
       activeProjectsCollection,
-      archivedProjectsCollection,
-      allTasksCollection,
       activeTasksCollection,
+      allProjectsCollection,
+      allTasksCollection,
+      allTrackedTimeCollection,
+      archivedProjectsCollection,
       archivedTasksCollection,
       timeEntriesCollection,
+      timersCollection,
+      workspaceIntegrationConnectionsCollection,
+      workspaceMembersCollection,
     },
-    preload: async () => {
+    preload: () => {
       if (!preloadPromise) {
         preloadPromise = Promise.all([
           workspaceMembersCollection.preload(),
@@ -195,7 +231,10 @@ export async function openWorkspaceDb(workspaceId: string) {
           allTasksCollection.preload(),
           activeTasksCollection.preload(),
           archivedTasksCollection.preload(),
+          allTrackedTimeCollection.preload(),
+          timersCollection.preload(),
           timeEntriesCollection.preload(),
+          // oxlint-disable-next-line prefer-await-to-then no-empty-function
         ]).then(() => {});
       }
 
@@ -214,6 +253,8 @@ export async function openWorkspaceDb(workspaceId: string) {
         allTasksCollection.cleanup(),
         activeTasksCollection.cleanup(),
         archivedTasksCollection.cleanup(),
+        allTrackedTimeCollection.cleanup(),
+        timersCollection.cleanup(),
         timeEntriesCollection.cleanup(),
       ]);
     },

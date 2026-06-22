@@ -2,11 +2,11 @@ import { DateTime, Effect, Layer, Option } from "effect";
 
 import type { WorkspaceInvitation } from "./domain/workspace-invitation.entity";
 import * as workspaceInvitationTransitions from "./domain/workspace-invitation.transitions";
+import { WorkspaceInvitationRepository } from "./persistence";
 import {
   WorkspaceInvitationModule,
   WorkspaceInvitationNotFoundError,
 } from "./workspace-invitation-module.service";
-import { WorkspaceInvitationRepository } from "./workspace-invitation-repository.service";
 
 export const WorkspaceInvitationModuleLayer = Layer.effect(
   WorkspaceInvitationModule,
@@ -46,7 +46,7 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
           const { changes, entity } = yield* Effect.fromResult(
             workspaceInvitationTransitions.renewWorkspaceInvitation({
               workspaceInvitation: maybeActivePendingWorkspaceInvitation.value,
-              now: now,
+              now,
             })
           ).pipe(
             Effect.catch(() =>
@@ -105,8 +105,8 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
         const now = yield* DateTime.now;
         const { changes, entity } = yield* Effect.fromResult(
           workspaceInvitationTransitions.cancelWorkspaceInvitation({
-            workspaceInvitation: workspaceInvitation,
-            now: now,
+            workspaceInvitation,
+            now,
           })
         );
 
@@ -129,9 +129,9 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
 
         const { changes, entity } = yield* Effect.fromResult(
           workspaceInvitationTransitions.acceptWorkspaceInvitation({
-            workspaceInvitation: workspaceInvitation,
+            workspaceInvitation,
             email: params.email,
-            now: now,
+            now,
           })
         );
 
@@ -154,9 +154,9 @@ export const WorkspaceInvitationModuleLayer = Layer.effect(
 
         const { changes, entity } = yield* Effect.fromResult(
           workspaceInvitationTransitions.rejectWorkspaceInvitation({
-            workspaceInvitation: workspaceInvitation,
+            workspaceInvitation,
             email: params.email,
-            now: now,
+            now,
           })
         );
 

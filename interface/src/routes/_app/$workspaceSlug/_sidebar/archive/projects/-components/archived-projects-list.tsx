@@ -1,4 +1,3 @@
-import type { Project } from "@recount/core/modules/project";
 import type { ProjectId } from "@recount/core/shared/schemas";
 import { Button } from "@recount/ui/button";
 import {
@@ -28,13 +27,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Exit } from "effect";
 import { useMemo, useRef } from "react";
 
+import type { ProjectCollectionRow } from "~/db/synced-collections";
 import { useWorkspaceDb } from "~/db/workspace/context";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
-const columnHelper = createColumnHelper<Project>();
+const columnHelper = createColumnHelper<ProjectCollectionRow>();
 
 const createColumns = () => [
   columnHelper.accessor("color", {
@@ -63,53 +61,45 @@ export function ArchivedProjectsList() {
     q.from({ p: workspaceDb.collections.archivedProjectsCollection })
   );
 
-  const unarchiveProject = useWorkspaceMutation("Project.Unarchive");
+  const handleUnarchiveProject = (projectId: ProjectId) => {
+    try {
+      workspaceDb.actions.unarchiveProject(projectId);
+    } catch {
+      toastManager.add({
+        type: "error",
+        title: "Something went wrong",
+      });
+      return;
+    }
 
-  const handleUnarchiveProject = async (projectId: ProjectId) => {
-    const exit = await unarchiveProject({
-      payload: {
-        id: projectId,
-      },
-    });
+    const toastId = `project-unarchive-${projectId}`;
 
-    Exit.match(exit, {
-      onSuccess: () => {
-        const toastId = `project-unarchive-${projectId}`;
-
-        toastManager.add({
-          id: toastId,
-          type: "success",
-          title: "Project restored",
-          description: (
-            <Button
-              variant="ghost"
-              render={
-                <Link
-                  to="/$workspaceSlug/projects/$projectId"
-                  from="/$workspaceSlug"
-                  params={{ projectId }}
-                  onClick={() => toastManager.close(toastId)}
-                >
-                  View project
-                </Link>
-              }
-            />
-          ),
-        });
-      },
-      onFailure: () => {
-        toastManager.add({
-          type: "error",
-          title: "Something went wrong",
-        });
-      },
+    toastManager.add({
+      id: toastId,
+      type: "success",
+      title: "Project restored",
+      description: (
+        <Button
+          variant="ghost"
+          render={
+            <Link
+              to="/$workspaceSlug/projects/$projectId"
+              from="/$workspaceSlug"
+              params={{ projectId }}
+              onClick={() => toastManager.close(toastId)}
+            >
+              View project
+            </Link>
+          }
+        />
+      ),
     });
   };
 
   const columns = useMemo(() => createColumns(), []);
 
   const table = useReactTable({
-    data: projects ?? [],
+    data: projects,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -131,7 +121,7 @@ export function ArchivedProjectsList() {
     .map((col) => (col.columnDef.meta?.grow ? "1fr" : `${col.getSize()}px`))
     .join(" ");
 
-  return projects && projects.length > 0 ? (
+  return projects.length > 0 ? (
     <List style={{ gridTemplateColumns }}>
       <ListHeader>
         {table.getHeaderGroups().map((headerGroup) => (

@@ -1,17 +1,15 @@
 import {
   SessionNotFoundError,
-  SessionRepository,
   UserNotFoundError,
-  UserRepository,
 } from "@recount/core/modules/identity";
 import {
-  WorkspaceRepository,
-  WorkspaceNotFoundError,
-} from "@recount/core/modules/workspace";
-import {
-  WorkspaceMemberRepository,
-  WorkspaceMemberNotFoundError,
-} from "@recount/core/modules/workspace-member";
+  SessionRepository,
+  UserRepository,
+} from "@recount/core/modules/identity/persistence";
+import { WorkspaceNotFoundError } from "@recount/core/modules/workspace";
+import { WorkspaceMemberNotFoundError } from "@recount/core/modules/workspace-member";
+import { WorkspaceMemberRepository } from "@recount/core/modules/workspace-member/persistence";
+import { WorkspaceRepository } from "@recount/core/modules/workspace/persistence";
 import type {
   SessionContextShape,
   WorkspaceContextShape,

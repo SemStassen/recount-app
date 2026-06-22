@@ -1,5 +1,3 @@
-export const HEADER_HEIGHT_VAR = "--calendar-header-height";
-export const DAY_HEADER_HEIGHT_VAR = "--calendar-day-header-height";
 export const HOUR_COLUMN_WIDTH_VAR = "--calendar-hour-column-width";
 export const HOUR_HEIGHT_VAR = "--calendar-hour-height";
 

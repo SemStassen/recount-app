@@ -1,7 +1,5 @@
-import {
-  WorkspaceMember,
-  WorkspaceMemberRepository,
-} from "@recount/core/modules/workspace-member";
+import { WorkspaceMember } from "@recount/core/modules/workspace-member";
+import { WorkspaceMemberRepository } from "@recount/core/modules/workspace-member/persistence";
 import { RepositoryError } from "@recount/core/shared/repository";
 import { Database, schema } from "@recount/db";
 import { and, eq } from "drizzle-orm";

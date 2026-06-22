@@ -38,7 +38,9 @@ function upsertReplayClassName(toast: {
   updateKey?: number;
 }): string | undefined {
   const k = toast.updateKey ?? 0;
-  if (k <= 0) return undefined;
+  if (k <= 0) {
+    return undefined;
+  }
   const isEven = k % 2 === 0;
   if (toast.type === "error") {
     return isEven ? "animate-toast-error-even" : "animate-toast-error-odd";
@@ -180,7 +182,7 @@ function AnchoredToasts({
             : null;
           const tooltipStyle =
             (toast.data as { tooltipStyle?: boolean })?.tooltipStyle ?? false;
-          const positionerProps = toast.positionerProps;
+          const { positionerProps } = toast;
           if (!positionerProps?.anchor) {
             return null;
           }

@@ -1,18 +1,20 @@
 import { Schema } from "effect";
 
-import { Model } from "#internal/effect/index";
+import { SharedModel } from "#internal/effect/index";
 import { UserId, UserSettingsId } from "#shared/schemas/index";
 
-export class UserSettings extends Model.Class<UserSettings>("UserSettings")(
+export class UserSettings extends SharedModel.Class<UserSettings>(
+  "UserSettings"
+)(
   {
-    id: Model.ServerImmutable(UserSettingsId),
-    userId: Model.ServerImmutable(UserId),
+    id: SharedModel.ImmutableReadOnly(UserSettingsId),
+    userId: SharedModel.ImmutableReadOnly(UserId),
     // ⚠️ Changing will require a DB migration
-    dateFormat: Model.ServerMutableClientMutable(
+    dateFormat: SharedModel.MutableCreateUpdate(
       Schema.Literals(["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"])
     ),
     // ⚠️ Changing will require a DB migration
-    timeFormat: Model.ServerMutableClientMutable(
+    timeFormat: SharedModel.MutableCreateUpdate(
       Schema.Literals(["12h", "24h"])
     ),
   },

@@ -1,4 +1,5 @@
-import { DateTime, Option, Result } from "effect";
+import type { DateTime } from "effect";
+import { Option, Result } from "effect";
 
 import { TaskId } from "#shared/schemas/index";
 import { generateUUID } from "#shared/utils/index";
@@ -18,7 +19,7 @@ export const createTask = (params: {
     const { id, projectId: _resolvedProjectId, ...rest } = params.data;
 
     return Task.make({
-      id: Option.getOrElse(id, () => TaskId.make(generateUUID())),
+      id: id ?? TaskId.make(generateUUID()),
       workspaceId: params.project.workspaceId,
       archivedAt: Option.none(),
       projectId: params.project.id,

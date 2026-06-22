@@ -5,7 +5,7 @@ import { Rpc, RpcGroup } from "effect/unstable/rpc";
 import {
   SetLastActiveWorkspaceCommand,
   SetLastActiveWorkspaceResult,
-} from "#api/contracts/index";
+} from "#modules/identity/api";
 import { Session, User } from "#modules/identity/index";
 import { WorkspaceMemberNotFoundError } from "#modules/workspace-member/workspace-member-module.service";
 
@@ -29,6 +29,7 @@ export const AuthRpcGroup = RpcGroup.make(
     success: SetLastActiveWorkspaceResult,
     error: Schema.Union([
       WorkspaceMemberNotFoundError,
+      HttpApiError.Unauthorized,
       HttpApiError.InternalServerError,
     ]),
   }).middleware(RpcSessionMiddleware)

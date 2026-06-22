@@ -5,42 +5,42 @@
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
     "format": "oxfmt --write .",
     "lint": "oxlint .",
     "test": "vitest run --config ./vitest.config.ts",
-    "typecheck": "tsc --noEmit",
-    "paraglide:compile": "npx @inlang/paraglide-js compile --project ../project.inlang --outdir ./src/paraglide"
+    "typecheck": "tsc -b",
+    "paraglide:compile": "bunx @inlang/paraglide-js compile --project ../project.inlang --outdir ./src/paraglide"
   },
   "dependencies": {
     "@base-ui/react": "catalog:frontend",
     "@dnd-kit/dom": "^0.4.0",
     "@dnd-kit/react": "^0.4.0",
     "@effect/atom-react": "catalog:",
-    "@electric-sql/client": "^1.5.19",
-    "@inlang/paraglide-js": "^2.18.0",
+    "@electric-sql/client": "^1.5.20",
+    "@inlang/paraglide-js": "^2.18.2",
     "@recount/core": "workspace:*",
     "@recount/editor": "workspace:*",
     "@recount/ui": "workspace:*",
     "@rolldown/plugin-babel": "catalog:dev",
     "@t3-oss/env-core": "^0.13.8",
     "@tailwindcss/vite": "catalog:dev",
+    "@tanstack/ai-react": "^0.15.8",
     "@tanstack/devtools-vite": "^0.7.0",
     "@tanstack/electric-db-collection": "^0.3.5",
     "@tanstack/react-db": "^0.1.85",
     "@tanstack/react-devtools": "^0.10.5",
     "@tanstack/react-form": "catalog:frontend",
-    "@tanstack/react-form-devtools": "^0.2.28",
-    "@tanstack/react-router": "^1.170.8",
+    "@tanstack/react-form-devtools": "^0.2.29",
+    "@tanstack/react-router": "^1.170.10",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/react-table": "^8.21.3",
-    "@tanstack/react-virtual": "^3.13.26",
-    "@tanstack/router-plugin": "^1.168.11",
+    "@tanstack/react-virtual": "^3.14.2",
+    "@tanstack/router-plugin": "^1.168.13",
     "@vitejs/plugin-react": "catalog:dev",
     "babel-plugin-react-compiler": "catalog:dev",
     "better-auth": "catalog:",
     "class-variance-authority": "catalog:frontend",
-    "date-fns": "^4.3.0",
+    "date-fns": "^4.4.0",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "motion": "catalog:frontend",
@@ -48,8 +48,7 @@
     "react-colorful": "^5.7.0",
     "react-dom": "catalog:frontend",
     "react-hotkeys-hook": "^5.1.0",
-    "vite": "catalog:dev",
-    "zod": "^4.4.1"
+    "vite": "catalog:dev"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",
@@ -60,6 +59,7 @@
   },
   "exports": {
     ".": "./src/exports.ts",
+    "./screen-context": "./src/screen-context/index.ts",
     "./vite": "./vite.config.ts"
   }
 }

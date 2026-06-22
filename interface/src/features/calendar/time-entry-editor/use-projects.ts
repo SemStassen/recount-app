@@ -2,14 +2,14 @@ import { eq, toArray, useLiveQuery } from "@tanstack/react-db";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 
-export type TimeEntryFormProject = {
+export interface TimeEntryFormProject {
   id: string;
   name: string;
   tasks: Array<{
     id: string;
     name: string;
   }>;
-};
+}
 
 export function useTimeEntryFormProjects() {
   const workspaceDb = useWorkspaceDb();

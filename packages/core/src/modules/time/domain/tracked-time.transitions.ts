@@ -1,0 +1,128 @@
+import { DateTime, Option, Result } from "effect";
+
+import { TimerId, TimeEntryId } from "#shared/schemas/index";
+import { generateUUID } from "#shared/utils/index";
+
+import { Timer, TimeEntry } from "./tracked-time.entity";
+import { TimeEntryStoppedAtBeforeStartedAtError } from "./tracked-time.errors";
+
+const ensureValidDateRange = (
+  startedAt: DateTime.Utc,
+  stoppedAt: DateTime.Utc
+): Result.Result<void, TimeEntryStoppedAtBeforeStartedAtError> =>
+  DateTime.isGreaterThanOrEqualTo(stoppedAt, startedAt)
+    ? Result.succeed(undefined)
+    : Result.fail(new TimeEntryStoppedAtBeforeStartedAtError());
+
+export const createTimeEntry = (params: {
+  workspaceId: TimeEntry["workspaceId"];
+  workspaceMemberId: TimeEntry["workspaceMemberId"];
+  data: typeof TimeEntry.jsonCreate.Type;
+}): Result.Result<TimeEntry, TimeEntryStoppedAtBeforeStartedAtError> =>
+  Result.gen(function* () {
+    const { id, ...rest } = params.data;
+
+    const createdTimeEntry = TimeEntry.make({
+      id: id ?? TimeEntryId.make(generateUUID()),
+      workspaceId: params.workspaceId,
+      workspaceMemberId: params.workspaceMemberId,
+      taskId: Option.none(),
+      notes: Option.none(),
+      ...rest,
+    });
+
+    yield* ensureValidDateRange(
+      createdTimeEntry.startedAt,
+      createdTimeEntry.stoppedAt
+    );
+
+    return createdTimeEntry;
+  });
+
+export const updateTimeEntry = (params: {
+  timeEntry: TimeEntry;
+  data: typeof TimeEntry.jsonUpdate.Type;
+}): Result.Result<
+  { entity: TimeEntry; changes: typeof TimeEntry.jsonUpdate.Type },
+  TimeEntryStoppedAtBeforeStartedAtError
+> =>
+  Result.gen(function* () {
+    const updatedTimeEntry = TimeEntry.make({
+      ...params.timeEntry,
+      ...params.data,
+    });
+
+    yield* ensureValidDateRange(
+      updatedTimeEntry.startedAt,
+      updatedTimeEntry.stoppedAt
+    );
+
+    return {
+      entity: updatedTimeEntry,
+      changes: params.data,
+    };
+  });
+
+export const startTimer = (params: {
+  workspaceId: Timer["workspaceId"];
+  workspaceMemberId: Timer["workspaceMemberId"];
+  data: typeof Timer.jsonCreate.Type & {
+    startedAt: DateTime.Utc;
+  };
+}): Result.Result<Timer, never> =>
+  Result.succeed(
+    (() => {
+      const { id, ...data } = params.data;
+
+      return Timer.make({
+        id: id ?? TimerId.make(generateUUID()),
+        taskId: Option.none(),
+        notes: Option.none(),
+        workspaceId: params.workspaceId,
+        workspaceMemberId: params.workspaceMemberId,
+        ...data,
+      });
+    })()
+  );
+
+export const updateTimer = (params: {
+  timer: Timer;
+  data: typeof Timer.jsonUpdate.Type;
+}): Result.Result<
+  {
+    entity: Timer;
+    changes: typeof Timer.jsonUpdate.Type;
+  },
+  never
+> =>
+  Result.succeed({
+    entity: Timer.make({
+      ...params.timer,
+      ...params.data,
+    }),
+    changes: params.data,
+  });
+
+export const stopTimer = (params: {
+  timer: Timer;
+  stoppedAt: DateTime.Utc;
+}): Result.Result<
+  { entity: TimeEntry; changes: typeof TimeEntry.jsonUpdate.Type },
+  TimeEntryStoppedAtBeforeStartedAtError
+> =>
+  Result.gen(function* () {
+    const timeEntry = TimeEntry.make({
+      ...params.timer,
+      id: TimeEntryId.make(params.timer.id),
+      stoppedAt: params.stoppedAt,
+    });
+
+    yield* ensureValidDateRange(timeEntry.startedAt, timeEntry.stoppedAt);
+
+    return {
+      entity: timeEntry,
+      changes: {
+        stoppedAt: params.stoppedAt,
+      },
+    };
+  });

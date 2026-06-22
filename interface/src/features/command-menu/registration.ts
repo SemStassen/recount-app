@@ -1,6 +1,7 @@
+import { useAtomSet } from "@effect/atom-react";
 import { useEffect, useId } from "react";
 
-import { registerCommands } from "./atoms";
+import { commandRegistryAtom } from "./atoms";
 import type { Command, CommandRegistrationId } from "./types";
 
 export function useRegisterCommands(
@@ -9,8 +10,19 @@ export function useRegisterCommands(
 ) {
   const generatedId = useId();
   const registrationId = options?.id ?? generatedId;
+  const setCommandRegistry = useAtomSet(commandRegistryAtom);
 
   useEffect(() => {
-    return registerCommands(registrationId, commands);
-  }, [registrationId, commands]);
+    setCommandRegistry((registry) => ({
+      ...registry,
+      [registrationId]: commands,
+    }));
+
+    return () => {
+      setCommandRegistry((registry) => {
+        const { [registrationId]: _commands, ...nextRegistry } = registry;
+        return nextRegistry;
+      });
+    };
+  }, [registrationId, commands, setCommandRegistry]);
 }

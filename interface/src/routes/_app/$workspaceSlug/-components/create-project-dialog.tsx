@@ -1,17 +1,16 @@
 import { Project } from "@recount/core/modules/project";
 import {
   Dialog,
+  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogPanel,
-  DialogPopup,
   DialogPrimitive,
   DialogTitle,
 } from "@recount/ui/dialog";
 import { Form, FormPrimitive } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
-import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
@@ -19,10 +18,7 @@ import { useRegisterCommands } from "~/features/command-menu";
 import { createSchemaForm } from "~/lib/form";
 import { m } from "~/paraglide/messages";
 
-interface Payload {}
-
-export const createProjectDialogHandle =
-  DialogPrimitive.createHandle<Payload>();
+export const createProjectDialogHandle = DialogPrimitive.createHandle();
 
 export function CreateProjectDialog() {
   useRegisterCommands([
@@ -32,14 +28,14 @@ export function CreateProjectDialog() {
       title: "Create new project",
       perform: async ({ close }) => {
         await close();
-        createProjectDialogHandle.openWithPayload({});
+        createProjectDialogHandle.open(null);
       },
     },
   ]);
 
   return (
     <Dialog handle={createProjectDialogHandle}>
-      {({ payload }) => <CreateProjectDialogContent payload={payload} />}
+      {() => <CreateProjectDialogContent />}
     </Dialog>
   );
 }
@@ -53,11 +49,7 @@ const defaultValues: typeof schema.validator.Encoded = {
   notes: null,
 };
 
-function CreateProjectDialogContent({
-  payload,
-}: {
-  payload: Payload | undefined;
-}) {
+function CreateProjectDialogContent() {
   const workspaceDb = useWorkspaceDb();
   const navigate = useNavigate();
 
@@ -69,28 +61,23 @@ function CreateProjectDialogContent({
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(({ value: payload }) => {
-      const result = workspaceDb.actions.createProject(payload);
+    onSubmit: schema.handleSubmit(({ value: projectInput }) => {
+      const project = workspaceDb.actions.createProject(projectInput);
 
-      Exit.match(result, {
-        onFailure: () => {},
-        onSuccess: ({ id }) => {
-          navigate({
-            from: "/$workspaceSlug/",
-            to: "/$workspaceSlug/projects/$projectId",
-            params: {
-              projectId: id,
-            },
-          });
-
-          createProjectDialogHandle.close();
+      navigate({
+        from: "/$workspaceSlug/",
+        to: "/$workspaceSlug/projects/$projectId",
+        params: {
+          projectId: project.id,
         },
       });
+
+      createProjectDialogHandle.close();
     }),
   });
 
   return (
-    <DialogPopup
+    <DialogContent
       render={
         <FormPrimitive
           onSubmit={(e) => {
@@ -140,6 +127,9 @@ function CreateProjectDialogContent({
                   <field.EditorField
                     direction="vertical"
                     label={{ children: m.project_form_notes_label() }}
+                    editor={{
+                      placeholder: "Notes...",
+                    }}
                   />
                 )}
                 name="notes"
@@ -153,6 +143,6 @@ function CreateProjectDialogContent({
           <form.SubmitButton>{m.project_create_submit()}</form.SubmitButton>
         </form.AppForm>
       </DialogFooter>
-    </DialogPopup>
+    </DialogContent>
   );
 }

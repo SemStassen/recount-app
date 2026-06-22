@@ -1,6 +1,6 @@
 import { useAtomValue } from "@effect/atom-react";
 
-import { useDateTimeFormatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time/hooks";
 
 import { currentTimeAtom } from "../state/atoms";
 import { getCurrentTimePosition } from "./layout";

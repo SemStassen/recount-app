@@ -5,7 +5,6 @@ import { isSameDay } from "date-fns";
 
 import { useWorkspaceDb } from "~/db/workspace/context";
 
-import { DAY_HEADER_HEIGHT_VAR, HEADER_HEIGHT_VAR } from "../constants";
 import {
   currentTimeAtom,
   editingPreviewAtom,
@@ -22,7 +21,6 @@ function MultiDayView() {
   const preview = useAtomValue(editingPreviewAtom);
   const workspaceDb = useWorkspaceDb();
   const timeEntries = useTimeEntries({
-    currentTime,
     replacingTimeEntryId: preview?.replacingTimeEntryId,
   });
   const showCurrentTimeLine = weekdays.some((day) =>
@@ -34,14 +32,9 @@ function MultiDayView() {
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex h-full flex-col overflow-hidden">
       <Header weekdays={weekdays} />
-      <ScrollArea
-        className="[&>div]:overscroll-y-none"
-        style={{
-          height: `calc(100vh - var(${HEADER_HEIGHT_VAR}) - var(${DAY_HEADER_HEIGHT_VAR}))`,
-        }}
-      >
+      <ScrollArea className="min-h-0 flex-1 [&>div]:overscroll-y-none">
         <div className="flex">
           <HourColumn />
           <Grid

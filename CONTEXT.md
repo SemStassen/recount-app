@@ -2,6 +2,16 @@
 
 Recount is a workspace-based time tracking product where workspace members record time against projects and optional tasks, with optional links to external tools.
 
+## Contexts
+
+- [Recount](./CONTEXT.md) describes workspace-wide product language.
+- [Project](./packages/core/src/modules/project/CONTEXT.md) describes workspace-scoped work containers and task subdivisions.
+- [Time](./packages/core/src/modules/time/CONTEXT.md) describes tracked time, timers, and time entries.
+- [Workspace Member](./packages/core/src/modules/workspace-member/CONTEXT.md) describes a user's participation in one workspace.
+- [Workspace Invitation](./packages/core/src/modules/workspace-invitation/CONTEXT.md) describes invitations for email addresses to become workspace members.
+- [Integrations](./packages/integrations/CONTEXT.md) describes external providers, provider objects, linking, import, and sync.
+- [Interface Workspace State](./interface/src/db/workspace/CONTEXT.md) describes local workspace state, optimistic workspace data, and backend reconciliation.
+
 ## Language
 
 **User**:
@@ -24,20 +34,24 @@ _Avoid_: Job, client, initiative
 An optional project-scoped subdivision of work that time can be tracked against.
 _Avoid_: Todo, issue
 
+**Tracked Time**:
+A work interval recorded by a workspace member against a project and optional task.
+_Avoid_: Time record, time log, timesheet row
+
 **Time Entry**:
-A single interval of work tracked by a workspace member against a project.
-_Avoid_: Timer, timesheet row, log
+Completed tracked time recorded by a workspace member against a project.
+_Avoid_: Timer, running time entry, timesheet row, log
 
-**Running Time Entry**:
-A time entry that has started but has not stopped.
-_Avoid_: Timer
+**Timer**:
+Active tracked time for a workspace member's current work interval.
+_Avoid_: Running Time Entry, Time Entry
 
-**Duration**:
-The elapsed length of a stopped time entry.
-_Avoid_: Hours, billable time
+**Tracked Time Target**:
+The project and optional task that tracked time is recorded against.
+_Avoid_: Work item, target entity
 
 **Archived**:
-A lifecycle state that removes a project or task from active use until it is restored, without deleting historical time entries.
+A lifecycle state that removes an object from active use until it is restored, without deleting historical records that reference it.
 _Avoid_: Deleted, inactive
 
 **Removed Workspace Member**:
@@ -68,29 +82,22 @@ _Avoid_: Integration, synced object
 The region where a workspace's data is stored.
 _Avoid_: Server region, locale
 
+**Partial Update**:
+A request to change only the supplied fields of an existing Recount object.
+_Avoid_: Full replacement, overwrite, merge
+
 ## Relationships
 
 - A **User** can be a **Workspace Member** in zero or more **Workspaces**, at most once per **Workspace**
 - A **Workspace Member** belongs to exactly one **Workspace**
 - A **Workspace Member** belongs to exactly one **User**
 - A **Workspace Member** has workspace-specific presentation such as display name and avatar
-- A **Workspace** contains its own projects, tasks, time entries, workspace members, invitations, and integration connections
+- A **Workspace** contains its own projects, tasks, timers, time entries, workspace members, invitations, and integration connections
 - A **Project** belongs to exactly one **Workspace**
 - A **Time Entry** is recorded against exactly one **Project**
 - A **Task** belongs to exactly one **Project**
-- A **Task** belongs to the same **Workspace** as its **Project**
-- A **Time Entry** may be recorded against one **Task**
-- A **Time Entry** with a **Task** is recorded against that task's **Project**
-- A **Time Entry** belongs to exactly one **Workspace Member**
-- A stopped **Time Entry** stops after it starts
-- A stopped **Time Entry** has one **Duration**
-- A **Running Time Entry** does not have a final **Duration**
-- A **Workspace Member** can have at most one **Running Time Entry** in a **Workspace**
-- Starting a **Running Time Entry** fails if the **Workspace Member** already has one running in the workspace
-- Stopped **Time Entries** for the same **Workspace Member** may overlap
-- Overlapping **Time Entries** count as separate tracked durations, not unique elapsed clock time
 - An **Archived** project or task can still be referenced by historical **Time Entries**
-- A **Removed Workspace Member** can still be referenced by historical **Time Entries**
+- A **Removed Workspace Member** can still be referenced by historical records
 - A **Workspace Invitation** belongs to exactly one **Workspace**
 - A **Workspace Invitation** can result in one **Workspace Member**
 - A **Workspace** can have at most one pending **Workspace Invitation** per email address
@@ -101,14 +108,14 @@ _Avoid_: Server region, locale
 - An **Integration Connection** uses exactly one **Integration Provider**
 - A **Workspace** should have at most one **Integration Connection** per **Integration Provider**
 - An **External Reference** links one Recount object to one object from an **Integration Provider**
-- An **External Reference** can remain after an **Integration Connection** is disconnected
 - A **Workspace** has exactly one **Data Residency Region**, chosen at creation
 - Workspace-owned objects must not reference objects owned by another **Workspace**
+- Omitted fields in a **Partial Update** must remain unchanged
 
 ## Example dialogue
 
 > **Dev:** "When a user starts a timer for a Linear issue, do we create a todo in Recount?"
-> **Domain expert:** "No. A **Workspace Member** starts a **Running Time Entry** against a **Project** and optionally a **Task**. If that task maps to Linear, it has an **External Reference**; Linear owns the todo state."
+> **Domain expert:** "No. A **Workspace Member** starts a **Timer** against a **Project** and optionally a **Task**. Stopping the **Timer** creates a **Time Entry**. If that task maps to Linear, it has an **External Reference**; Linear owns the todo state."
 
 ## Flagged ambiguities
 
@@ -117,16 +124,10 @@ _Avoid_: Server region, locale
 - "organization" must not be used as a synonym for **Workspace**.
 - "team" is reserved for a future grouping within a **Workspace** and must not be used as a synonym for **Workspace**.
 - "task" in Recount is not a todo item; external tools own todo state such as status, assignee, priority, and due date.
-- "timer" describes active tracking behavior, not the persisted **Time Entry**.
 - "timesheet" must not be used unless Recount introduces a submission or approval period for time entries.
-- "archived" does not mean deleted; archived projects and tasks remain part of historical time records.
+- "archived" does not mean deleted; archived objects remain part of historical records.
 - "deleted" and "soft-deleted" are implementation language for workspace members; use **Removed Workspace Member** in product discussions.
 - **Workspace Role** values and lifecycle rules are unresolved, including ownership transfer, last-owner constraints, and what standard members can do.
 - **Workspace Invitation** lifecycle rules are unresolved, including expiry, rejection, cancellation, resending, and what acceptance creates.
 - **Workspace** deletion lifecycle is unresolved, including whether deletion is reversible and what happens to members, projects, time entries, integration connections, and external references.
-- **Integration Connection** scope may expand beyond workspaces later; current connections are workspace-scoped.
-- **External References** identify provider objects, not the specific **Integration Connection** that created them.
-- Disconnecting an **Integration Connection** stops access, import, and sync but should not delete **External References** by default.
-- External object **Linking** vs **Importing** is unresolved; a Recount object may be manually linked to a provider object or created from one during import.
-- Integration **Import** and **Sync** vocabulary is unresolved; import likely creates or updates Recount objects from external provider objects, while sync likely keeps already-linked objects aligned over time.
 - **Client** is future vocabulary for project-related billing/reporting concerns and must not be used as a synonym for **Project**.

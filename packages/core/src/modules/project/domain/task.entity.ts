@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Model } from "#internal/effect/index";
+import { SharedModel } from "#internal/effect/index";
 import {
   NonEmptyTrimmedString,
   ProjectId,
@@ -8,15 +8,15 @@ import {
   WorkspaceId,
 } from "#shared/schemas/index";
 
-export class Task extends Model.Class<Task>("Task")(
+export class Task extends SharedModel.Class<Task>("Task")(
   {
-    id: Model.ServerImmutableClientImmutableCreateOptional(TaskId),
-    workspaceId: Model.ServerImmutable(WorkspaceId),
-    projectId: Model.ServerMutableClientImmutable(ProjectId),
-    name: Model.ServerMutableClientMutable(
+    id: SharedModel.ImmutableCreateOptional(TaskId),
+    workspaceId: SharedModel.ImmutableReadOnly(WorkspaceId),
+    projectId: SharedModel.MutableCreate(ProjectId),
+    name: SharedModel.MutableCreateUpdate(
       NonEmptyTrimmedString.check(Schema.isMaxLength(255))
     ),
-    archivedAt: Model.ServerMutableOptional(Schema.DateTimeUtcFromDate),
+    archivedAt: SharedModel.MutableNullableReadOnly(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "Task",

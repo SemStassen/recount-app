@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
     "format": "oxfmt --write .",
     "lint": "oxlint .",
     "typecheck": "tsc --noEmit"
@@ -14,7 +13,8 @@
     "@recount/db": "workspace:*",
     "@recount/notifications": "workspace:*",
     "better-auth": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",

@@ -2,17 +2,22 @@ import { Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type { RepositoryError } from "#shared/repository/index";
-import { TimeEntryId } from "#shared/schemas/index";
+import { TimeEntryId, WorkspaceId } from "#shared/schemas/index";
 
-import type { TimeEntry } from "./domain/time-entry.entity";
+import type { Timer, TimeEntry } from "./domain/tracked-time.entity";
 import type {
-  TimeEntryAlreadyRunningError,
+  TimerNotFoundError,
+  TimerAlreadyRunningError,
   TimeEntryStoppedAtBeforeStartedAtError,
-} from "./domain/time-entry.errors";
+  TargetProjectNotFoundError,
+  TargetTaskNotFoundError,
+  TargetTaskProjectMismatchError,
+} from "./domain/tracked-time.errors";
 
 export class TimeEntryNotFoundError extends Schema.TaggedErrorClass<TimeEntryNotFoundError>()(
   "time/TimeEntryNotFoundError",
   {
+    workspaceId: WorkspaceId,
     timeEntryId: TimeEntryId,
   }
 ) {}
@@ -25,7 +30,9 @@ interface TimeModuleShape {
   }) => Effect.Effect<
     ReadonlyArray<TimeEntry>,
     | TimeEntryStoppedAtBeforeStartedAtError
-    | TimeEntryAlreadyRunningError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
     | RepositoryError
   >;
   readonly updateTimeEntry: (params: {
@@ -36,7 +43,45 @@ interface TimeModuleShape {
     TimeEntry,
     | TimeEntryNotFoundError
     | TimeEntryStoppedAtBeforeStartedAtError
-    | TimeEntryAlreadyRunningError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
+    | RepositoryError
+  >;
+  readonly startTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+    data: typeof Timer.jsonCreate.Type;
+  }) => Effect.Effect<
+    Timer,
+    | TimerAlreadyRunningError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
+    | RepositoryError
+  >;
+  readonly updateTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+    data: typeof Timer.jsonUpdate.Type;
+  }) => Effect.Effect<
+    Timer,
+    | TimerNotFoundError
+    | TargetProjectNotFoundError
+    | TargetTaskNotFoundError
+    | TargetTaskProjectMismatchError
+    | RepositoryError
+  >;
+  readonly stopTimer: (params: {
+    workspaceId: Timer["workspaceId"];
+    workspaceMemberId: Timer["workspaceMemberId"];
+    data: {
+      stoppedAt?: TimeEntry["stoppedAt"];
+    };
+  }) => Effect.Effect<
+    TimeEntry,
+    | TimerNotFoundError
+    | TimeEntryStoppedAtBeforeStartedAtError
     | RepositoryError
   >;
   readonly hardDeleteTimeEntries: (params: {

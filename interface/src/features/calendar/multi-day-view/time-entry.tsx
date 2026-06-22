@@ -1,6 +1,6 @@
 import { cn } from "@recount/ui/utils";
 
-import { useDateTimeFormatter } from "~/lib/utils/date-time";
+import { useDateTimeFormatter } from "~/lib/utils/date-time/hooks";
 
 import type { TimeRange } from "../state/time-range";
 import { getTimeEntryFrameStyle } from "./layout";

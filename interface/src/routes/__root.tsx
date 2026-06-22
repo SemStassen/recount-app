@@ -11,23 +11,26 @@ import {
 import { AnchoredToastProvider, ToastProvider } from "@recount/ui/toast";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
-import { createRootRoute, HeadContent, Outlet } from "@tanstack/react-router";
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  Outlet,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Duration, Effect } from "effect";
 import { AsyncResult, Atom, AtomRegistry } from "effect/unstable/reactivity";
 
 import { sessionAtom } from "~/atoms/auth.atoms";
-import { atomRegistry } from "~/atoms/registry";
 import { BackendAtomHttpApiClient } from "~/lib/api/atom-client";
 import { env } from "~/lib/env";
-import { appRuntime } from "~/lib/runtime";
+import type { RecountRouterContext } from "~/router";
 
 import { NotFoundPage } from "./-not-found";
 
-export const Route = createRootRoute({
-  beforeLoad: async () => {
-    const auth = await appRuntime.runPromise(
-      AtomRegistry.getResult(atomRegistry, sessionAtom, {
+export const Route = createRootRouteWithContext<RecountRouterContext>()({
+  beforeLoad: async ({ context }) => {
+    const auth = await context.runtime.runPromise(
+      AtomRegistry.getResult(context.atomRegistry, sessionAtom, {
         suspendOnWaiting: true,
       }).pipe(Effect.catch(() => Effect.succeed(null)))
     );

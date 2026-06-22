@@ -2,15 +2,23 @@ import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
 import { DraggableTimeEntry } from "../dnd/draggable-time-entry";
 import type { EditingPreview } from "../state/atoms";
+import type { TimeRange } from "../state/time-range";
 import { TimeEntryContent, TimeEntryFrame } from "./time-entry";
-import type { TimeEntry } from "./types";
 
-type TimeEntryPreviewProps = {
+interface PreviewTimeEntry extends TimeRange {
+  id: string;
+  project: null | {
+    name: string;
+    color: string;
+  };
+}
+
+interface TimeEntryPreviewProps {
   currentTime: Date;
   day: Date;
   preview: EditingPreview;
   projects: Array<{ id: string; name: string; color: string }>;
-};
+}
 
 export function TimeEntryPreview({
   currentTime,
@@ -54,7 +62,7 @@ function getPreviewTimeEntry({
   day,
   preview,
   projects,
-}: TimeEntryPreviewProps): TimeEntry | null {
+}: TimeEntryPreviewProps): PreviewTimeEntry | null {
   if (!preview) {
     return null;
   }
@@ -71,14 +79,16 @@ function getPreviewTimeEntry({
     return null;
   }
 
-  const project = projects.find((project) => project.id === preview.projectId);
+  const previewProject = projects.find(
+    (project) => project.id === preview.projectId
+  );
 
   return {
     id: "preview",
-    project: project
+    project: previewProject
       ? {
-          name: project.name,
-          color: project.color,
+          name: previewProject.name,
+          color: previewProject.color,
         }
       : null,
     startedAt: preview.startedAt,

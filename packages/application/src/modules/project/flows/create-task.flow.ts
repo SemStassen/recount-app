@@ -1,14 +1,12 @@
-import type {
-  CreateTaskCommand,
-  CreateTaskResult,
-} from "@recount/core/contracts";
+import type { Task } from "@recount/core/modules/project";
 import { ProjectModule } from "@recount/core/modules/project";
+import type { CreateTaskResult } from "@recount/core/modules/project/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
 
 export const createTaskFlow = Effect.fn("flows.createTaskFlow")(function* (
-  request: typeof CreateTaskCommand.Type
+  request: typeof Task.jsonCreate.Type
 ) {
   const appContext = yield* ApplicationContext;
   const projectModule = yield* ProjectModule;

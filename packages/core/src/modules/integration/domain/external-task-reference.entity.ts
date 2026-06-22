@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Model } from "#internal/effect/index";
+import { SharedModel } from "#internal/effect/index";
 import {
   TaskId,
   ExternalTaskReferenceId,
@@ -10,19 +10,21 @@ import {
 
 import { WorkspaceIntegrationConnectionProvider } from "./workspace-integration-connection.entity";
 
-export class ExternalTaskReference extends Model.Class<ExternalTaskReference>(
+export class ExternalTaskReference extends SharedModel.Class<ExternalTaskReference>(
   "ExternalTaskReference"
 )(
   {
-    id: Model.ServerImmutable(ExternalTaskReferenceId),
-    workspaceId: Model.ServerImmutable(WorkspaceId),
-    workspaceIntegrationConnectionId: Model.ServerImmutable(
+    id: SharedModel.ImmutableReadOnly(ExternalTaskReferenceId),
+    workspaceId: SharedModel.ImmutableReadOnly(WorkspaceId),
+    workspaceIntegrationConnectionId: SharedModel.ImmutableReadOnly(
       WorkspaceIntegrationConnectionId
     ),
-    taskId: Model.ServerImmutable(TaskId),
-    provider: Model.ServerImmutable(WorkspaceIntegrationConnectionProvider),
-    externalId: Model.ServerImmutable(Schema.NonEmptyString),
-    createdAt: Model.ServerImmutable(Schema.DateTimeUtcFromDate),
+    taskId: SharedModel.ImmutableReadOnly(TaskId),
+    provider: SharedModel.ImmutableReadOnly(
+      WorkspaceIntegrationConnectionProvider
+    ),
+    externalId: SharedModel.ImmutableReadOnly(Schema.NonEmptyString),
+    createdAt: SharedModel.ImmutableReadOnly(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "ExternalTaskReference",

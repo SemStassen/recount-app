@@ -1,14 +1,12 @@
-import type {
-  CreateTimeEntryCommand,
-  CreateTimeEntryResult,
-} from "@recount/core/contracts";
+import type { TimeEntry } from "@recount/core/modules/time";
 import { TimeModule } from "@recount/core/modules/time";
+import type { CreateTimeEntryResult } from "@recount/core/modules/time/api";
 import { Effect } from "effect";
 
 import { ApplicationContext } from "#shared/application-context";
 
 export const createTimeEntryFlow = Effect.fn("flows.createTimeEntryFlow")(
-  function* (request: typeof CreateTimeEntryCommand.Type) {
+  function* (request: typeof TimeEntry.jsonCreate.Type) {
     const appContext = yield* ApplicationContext;
     const timeModule = yield* TimeModule;
 

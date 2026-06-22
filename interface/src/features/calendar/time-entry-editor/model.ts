@@ -1,18 +1,10 @@
 import type { TimeEntryId } from "@recount/core/shared/schemas";
-import { DateTime, Option } from "effect";
+
+import type { TimeEntryViewRow } from "~/db/synced-collections";
 
 import type { EditingPreview } from "../state/atoms";
 import type { TimeRange } from "../state/time-range";
 import type { TimeEntryFormValues } from "./field-group";
-
-type StoredTimeEntry = {
-  id: TimeEntryId;
-  startedAt: DateTime.DateTime;
-  stoppedAt: Option.Option<DateTime.DateTime>;
-  projectId: string;
-  taskId: Option.Option<string>;
-  notes: Option.Option<unknown>;
-};
 
 const createTimeEntryFormDefaults: TimeEntryFormValues = {
   startedAt: new Date(),
@@ -37,19 +29,14 @@ export function getUpdateTimeEntryFormDefaults({
   timeEntry,
 }: {
   initialRange?: TimeRange;
-  timeEntry: StoredTimeEntry;
+  timeEntry: TimeEntryViewRow;
 }): TimeEntryFormValues {
   return {
-    startedAt: initialRange?.startedAt ?? DateTime.toDate(timeEntry.startedAt),
-    stoppedAt:
-      initialRange?.stoppedAt ??
-      Option.match(timeEntry.stoppedAt, {
-        onNone: () => null,
-        onSome: DateTime.toDate,
-      }),
+    startedAt: initialRange?.startedAt ?? timeEntry.startedAt,
+    stoppedAt: initialRange?.stoppedAt ?? timeEntry.stoppedAt,
     projectId: timeEntry.projectId,
-    taskId: Option.getOrNull(timeEntry.taskId),
-    notes: Option.getOrNull(timeEntry.notes),
+    taskId: timeEntry.taskId,
+    notes: timeEntry.notes,
   };
 }
 

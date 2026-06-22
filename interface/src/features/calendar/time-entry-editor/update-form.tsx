@@ -7,24 +7,19 @@ import { revalidateLogic } from "@tanstack/react-form";
 import { useEffect } from "react";
 
 import { useAppForm } from "~/components/form";
+import type { TimeEntryViewRow } from "~/db/synced-collections";
 import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
-import {
-  TimeEntryFieldGroup,
-  timeEntryFields,
-  type TimeEntryFormValues,
-} from "./field-group";
+import { TimeEntryFieldGroup, timeEntryFields } from "./field-group";
+import type { TimeEntryFormValues } from "./field-group";
 import {
   getUpdateTimeEntryFormDefaults,
   getUpdateTimeEntryPreview,
 } from "./model";
-import {
-  type TimeEntryFormProject,
-  useTimeEntryFormProjects,
-} from "./use-projects";
+import { useTimeEntryFormProjects } from "./use-projects";
+import type { TimeEntryFormProject } from "./use-projects";
 
 const schema = createSchemaForm(TimeEntry.jsonUpdate);
 
@@ -39,15 +34,17 @@ export function UpdateTimeEntryForm({
   const { data: timeEntry, isLoading } = useLiveQuery(
     (q) =>
       q
-        .from({ timeEntry: workspaceDb.collections.timeEntriesCollection })
-        .where(({ timeEntry }) => eq(timeEntry.id, timeEntryId))
+        .from({ te: workspaceDb.collections.timeEntriesCollection })
+        .where(({ te }) => eq(te.id, timeEntryId))
         .findOne(),
     [timeEntryId]
   );
 
   const { data: projects = [] } = useTimeEntryFormProjects();
 
-  if (isLoading || !timeEntry) return null;
+  if (isLoading || !timeEntry || timeEntry.stoppedAt === null) {
+    return null;
+  }
 
   return (
     <UpdateTimeEntryFormContent
@@ -66,9 +63,9 @@ function UpdateTimeEntryFormContent({
 }: {
   initialRange?: { startedAt: Date; stoppedAt: Date };
   projects: Array<TimeEntryFormProject>;
-  timeEntry: typeof TimeEntry.json.Type;
+  timeEntry: TimeEntryViewRow;
 }) {
-  const updateTimeEntry = useWorkspaceMutation("TimeEntry.Update");
+  const workspaceDb = useWorkspaceDb();
   const setPreview = useAtomSet(editingPreviewAtom);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
   const initialStartedAtMs = initialRange?.startedAt.getTime();
@@ -96,13 +93,8 @@ function UpdateTimeEntryFormContent({
       onMount: ({ formApi }) => publishPreview(formApi.state.values),
       onChange: ({ formApi }) => publishPreview(formApi.state.values),
     },
-    onSubmit: schema.handleSubmit(async ({ value }) => {
-      await updateTimeEntry({
-        payload: {
-          timeEntryId: timeEntry.id,
-          data: value,
-        },
-      });
+    onSubmit: schema.handleSubmit(({ value }) => {
+      workspaceDb.actions.updateTimeEntry(timeEntry.id, value);
       closeEditor(undefined);
     }),
   });

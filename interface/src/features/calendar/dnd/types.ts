@@ -1,7 +1,7 @@
 export const GRID_DROPPABLE_ID = "calendar-grid";
 export const SELECTION_DRAGGABLE_ID = "calendar-selection";
 
-export type TimeEntryDragData = {
+export interface TimeEntryDragData {
   kind: "time-entry";
   timeRange: {
     startedAt: Date;
@@ -11,4 +11,4 @@ export type TimeEntryDragData = {
       color: string;
     };
   };
-};
+}

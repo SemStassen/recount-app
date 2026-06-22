@@ -1,7 +1,8 @@
+// ast-grep-ignore: no-direct-fs-import, no-bare-new-error, no-console-log
+
 import { chmod, copyFile, mkdir } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import path from "node:path";
 
 const require = createRequire(import.meta.url);
 
@@ -29,17 +30,17 @@ if (!packageName || !targetTriple) {
 
 const packageJsonPath = require.resolve(`${packageName}/package.json`);
 const binaryExtension = process.platform === "win32" ? ".exe" : "";
-const sourcePath = join(
-  dirname(packageJsonPath),
+const sourcePath = path.join(
+  path.dirname(packageJsonPath),
   "bin",
-  `screenpipe${binaryExtension}`,
+  `screenpipe${binaryExtension}`
 );
 
-const scriptDir = dirname(fileURLToPath(import.meta.url));
-const binariesDir = join(scriptDir, "..", "src-tauri", "binaries");
-const destinationPath = join(
+const scriptDir = import.meta.dirname;
+const binariesDir = path.join(scriptDir, "..", "src-tauri", "binaries");
+const destinationPath = path.join(
   binariesDir,
-  `screenpipe-${targetTriple}${binaryExtension}`,
+  `screenpipe-${targetTriple}${binaryExtension}`
 );
 
 await mkdir(binariesDir, { recursive: true });

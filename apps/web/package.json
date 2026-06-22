@@ -4,12 +4,10 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo",
     "dev": "vite dev",
     "format": "oxfmt --write .",
     "lint": "oxlint .",
-    "typecheck": "tsc --noEmit",
-    "machine-translate": "inlang machine translate --project project.inlang"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@recount/interface": "workspace:*",

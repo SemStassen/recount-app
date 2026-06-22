@@ -4,15 +4,12 @@ import { Form } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
 
 import { useAppForm } from "~/components/form";
+import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
-import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
 
 import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
-import {
-  TimeEntryFieldGroup,
-  timeEntryFields,
-  type TimeEntryFormValues,
-} from "./field-group";
+import { TimeEntryFieldGroup, timeEntryFields } from "./field-group";
+import type { TimeEntryFormValues } from "./field-group";
 import {
   getCreateTimeEntryFormDefaults,
   getCreateTimeEntryPreview,
@@ -28,9 +25,9 @@ export function CreateTimeEntryForm({
 }) {
   const setPreview = useAtomSet(editingPreviewAtom);
   const closeEditor = useAtomSet(closeTimeEntryEditor);
+  const workspaceDb = useWorkspaceDb();
   const { data: projects = [] } = useTimeEntryFormProjects();
 
-  const createTimeEntry = useWorkspaceMutation("TimeEntry.Create");
   const publishPreview = (values: TimeEntryFormValues) => {
     setPreview(getCreateTimeEntryPreview(values));
   };
@@ -47,8 +44,8 @@ export function CreateTimeEntryForm({
       onMount: ({ formApi }) => publishPreview(formApi.state.values),
       onChange: ({ formApi }) => publishPreview(formApi.state.values),
     },
-    onSubmit: schema.handleSubmit(async ({ value }) => {
-      await createTimeEntry({ payload: value });
+    onSubmit: schema.handleSubmit(({ value }) => {
+      workspaceDb.actions.createTimeEntry(value);
       closeEditor(undefined);
     }),
   });

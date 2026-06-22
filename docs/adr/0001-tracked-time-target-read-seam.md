@@ -1,0 +1,3 @@
+# Tracked Time Target starts as a read seam
+
+We introduced **Tracked Time Target** as the project and optional task that tracked time is recorded against, but we are not yet reshaping **Timer** and **Time Entry** to carry it as a domain value. For now, **TimeModule** will depend on a narrow read seam that validates whether the supplied project and optional task are available for **Tracked Time**; this keeps the change small while moving cross-module invariants behind the **TimeModule** interface. The seam is real because both the backend adapter and the client **Local Workspace State** adapter must satisfy it. If **Tracked Time Target** gains more behaviour, we should deepen it into a domain value so target invariants become structural rather than procedural.

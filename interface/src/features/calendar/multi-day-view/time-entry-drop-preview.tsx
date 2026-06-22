@@ -1,14 +1,18 @@
 import { isSameDay } from "date-fns";
 
+import type { TimeRange } from "../state/time-range";
 import { TimeEntryFrame } from "./time-entry";
-import type { TimeEntry } from "./types";
+
+interface TimeEntryDropPreviewValue extends TimeRange {
+  id: string;
+}
 
 export function TimeEntryDropPreview({
   day,
   timeEntry,
 }: {
   day: Date;
-  timeEntry: TimeEntry | null;
+  timeEntry: TimeEntryDropPreviewValue | null;
 }) {
   if (
     !timeEntry ||

@@ -17,7 +17,10 @@ import {
   ProjectRepositoryLayer,
   TaskRepositoryLayer,
 } from "@recount/application/modules/project";
-import { TimeEntryRepositoryLayer } from "@recount/application/modules/time";
+import {
+  TrackedTimeRepositoryLayer,
+  TrackedTimeTargetValidatorLayer,
+} from "@recount/application/modules/time";
 import { WorkspaceRepositoryLayer } from "@recount/application/modules/workspace";
 import { WorkspaceInvitationRepositoryLayer } from "@recount/application/modules/workspace-invitation";
 import { WorkspaceMemberRepositoryLayer } from "@recount/application/modules/workspace-member";
@@ -57,17 +60,22 @@ import { HttpApiRoutesLayer } from "./http";
 import { BetterAuthRoutesLayer } from "./routes/better-auth";
 import { AllRpcsGroup, AllRpcsGroupLayer } from "./rpc";
 
-const PersistenceServicesLayer = Layer.mergeAll(
+const RepositoryServicesLayer = Layer.mergeAll(
   ProjectRepositoryLayer,
   SessionRepositoryLayer,
   TaskRepositoryLayer,
-  TimeEntryRepositoryLayer,
+  TrackedTimeRepositoryLayer,
   UserSettingsRepositoryLayer,
   UserRepositoryLayer,
   WorkspaceIntegrationConnectionRepositoryLayer,
   WorkspaceInvitationRepositoryLayer,
   WorkspaceMemberRepositoryLayer,
   WorkspaceRepositoryLayer
+);
+
+const PersistenceServicesLayer = Layer.mergeAll(
+  RepositoryServicesLayer,
+  TrackedTimeTargetValidatorLayer.pipe(Layer.provide(RepositoryServicesLayer))
 ).pipe(Layer.provideMerge(DatabaseLayer));
 
 const InfrastructureServicesLayer = Layer.mergeAll(
@@ -101,13 +109,22 @@ const BetterAuthLayer = BetterAuth.layer.pipe(
 
 const RequestContextLayer = RequestContextResolver.layer.pipe(
   Layer.provide(BetterAuthLayer),
-  Layer.provide(PersistenceServicesLayer)
+  Layer.provideMerge(PersistenceServicesLayer)
 );
 
 const MiddlewareServicesLayer = Layer.mergeAll(
   RpcSessionMiddlewareLayer,
   RpcWorkspaceMiddlewareLayer
 ).pipe(Layer.provide(RequestContextLayer));
+
+const ApplicationServicesLayer = Layer.mergeAll(
+  InfrastructureServicesLayer,
+  ApplicationContextLayer,
+  DomainServicesLayer,
+  BetterAuthLayer,
+  RequestContextLayer,
+  MiddlewareServicesLayer
+);
 
 const RpcRouteLayer = RpcServer.layerHttp({
   group: AllRpcsGroup,
@@ -143,7 +160,9 @@ const CorsLayer = HttpRouter.middleware(
 
 const HttpTracingLayer = Layer.succeed(
   HttpMiddleware.TracerDisabledWhen,
-  (request) => request.method === "OPTIONS"
+  (request) =>
+    request.method === "OPTIONS" &&
+    request.headers["access-control-request-method"] !== undefined
 );
 
 const HttpRoutesLayer = Layer.mergeAll(
@@ -152,15 +171,6 @@ const HttpRoutesLayer = Layer.mergeAll(
   RpcRouteLayer,
   BetterAuthRoutesLayer
 ).pipe(Layer.provide(CorsLayer));
-
-const ApplicationServicesLayer = Layer.mergeAll(
-  InfrastructureServicesLayer,
-  ApplicationContextLayer,
-  DomainServicesLayer,
-  BetterAuthLayer,
-  RequestContextLayer,
-  MiddlewareServicesLayer
-);
 
 const ObservabilityLayer = makeObservabilityLayer({
   serviceName: "recount-backend",

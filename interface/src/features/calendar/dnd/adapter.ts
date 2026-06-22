@@ -1,17 +1,16 @@
 import type { TimeEntryId } from "@recount/core/shared/schemas";
 
-import type { TimeEntry } from "../multi-day-view/types";
 import type { TimeEntryDragData } from "./types";
 
-type DragSource = {
+interface DragSource {
   id?: unknown;
   data: unknown;
-};
+}
 
-type DraggedTimeEntry = {
+interface DraggedTimeEntry {
   timeEntryId: TimeEntryId;
-  timeRange: Pick<TimeEntry, "startedAt" | "stoppedAt" | "project">;
-};
+  timeRange: TimeEntryDragData["timeRange"];
+}
 
 export function getDraggedTimeEntry(
   source: DragSource | null | undefined

@@ -1,18 +1,22 @@
+import { useAtomSet } from "@effect/atom-react";
 import { UserSettings } from "@recount/core/modules/identity";
 import { Form } from "@recount/ui/form";
 import { useLiveQuery } from "@tanstack/react-db";
 import { defaultValidationLogic } from "@tanstack/react-form";
-import { Effect } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useUserDb } from "~/db/user/context";
 import { createSchemaForm } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
-import { appRuntime } from "~/lib/runtime";
 
 const schema = createSchemaForm(UserSettings.jsonUpdate);
 
 export function UpdatePreferencesForm() {
+  const updateUserSettingsMe = useAtomSet(
+    BackendAtomRpcClient.mutation("UserSettings.UpdateMe"),
+    { mode: "promiseExit" }
+  );
+
   const userDb = useUserDb();
   const { data: currentUserSettings } = useLiveQuery((q) =>
     q.from({ us: userDb.collections.userSettingsCollection }).findOne()
@@ -35,16 +39,12 @@ export function UpdatePreferencesForm() {
       onSubmitAsync: schema.submitValidator,
     },
     onSubmit: schema.handleSubmit(async ({ value }) => {
-      await appRuntime.runPromise(
-        Effect.gen(function* () {
-          const client = yield* BackendAtomRpcClient;
-
-          yield* client("UserSettings.UpdateMe", {
-            dateFormat: value.dateFormat,
-            timeFormat: value.timeFormat,
-          });
-        })
-      );
+      await updateUserSettingsMe({
+        payload: {
+          dateFormat: value.dateFormat,
+          timeFormat: value.timeFormat,
+        },
+      });
     }),
   });
 

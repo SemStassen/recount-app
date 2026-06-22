@@ -4,11 +4,12 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules dist .turbo tsconfig.tsbuildinfo && cargo clean --manifest-path src-tauri/Cargo.toml",
     "prepare:screenpipe": "bun run scripts/prepare-screenpipe-sidecar.ts",
-    "dev": "bun run prepare:screenpipe && tauri dev",
+    "prepare:shadow": "bun run scripts/prepare-shadow-sidecar.ts",
+    "prepare:sidecars": "bun run prepare:screenpipe && bun run prepare:shadow",
+    "dev": "bun run prepare:sidecars && tauri dev",
     "dev:vite": "vite dev",
-    "build": "bun run prepare:screenpipe && vite build",
+    "build": "bun run prepare:sidecars && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
   },
@@ -21,9 +22,10 @@
     "@tauri-apps/plugin-os": "~2.3.1",
     "@tauri-apps/plugin-shell": "^2.3.2",
     "@tauri-apps/plugin-stronghold": "^2.3.1",
+    "effect": "catalog:",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
-    "screenpipe": "^0.3.341"
+    "screenpipe": "0.4.15"
   },
   "devDependencies": {
     "@recount/config": "workspace:*",
@@ -32,9 +34,9 @@
     "vite": "catalog:dev"
   },
   "optionalDependencies": {
-    "@screenpipe/cli-darwin-arm64": "0.3.341",
-    "@screenpipe/cli-darwin-x64": "0.3.341",
-    "@screenpipe/cli-linux-x64": "0.3.341",
-    "@screenpipe/cli-win32-x64": "0.3.341"
+    "@screenpipe/cli-darwin-arm64": "0.4.15",
+    "@screenpipe/cli-darwin-x64": "0.4.15",
+    "@screenpipe/cli-linux-x64": "0.4.15",
+    "@screenpipe/cli-win32-x64": "0.4.15"
   }
 }

@@ -5,4 +5,3 @@ export {
   WorkspaceNotFoundError,
   WorkspaceSlugAlreadyExistsError,
 } from "./workspace-module.service";
-export { WorkspaceRepository } from "./workspace-repository.service";

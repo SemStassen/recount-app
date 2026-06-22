@@ -1,4 +1,4 @@
-export type TimeRange = {
+export interface TimeRange {
   startedAt: Date;
   stoppedAt: Date;
-};
+}

@@ -15,14 +15,14 @@ const electricConfig = Config.all({
   sourceSecret: Config.string("ELECTRIC_SOURCE_SECRET").pipe(Config.option),
 });
 
-type ElectricShapeParams = {
+interface ElectricShapeParams {
   where?: string;
   params?: Record<number, string>;
-};
+}
 
-type ElectricShapeInput = {
+interface ElectricShapeInput {
   where?: SQL;
-};
+}
 
 export const electricColumn = (column: { name: string }) =>
   sql.identifier(column.name);
@@ -41,7 +41,7 @@ export const electricShapeParams = (
     .from(table)
     .where(whereExpr)
     .toSQL();
-  const where = query.replace(/^select .* from .* where\s+/i, "");
+  const where = query.replace(/^select .* from .* where\s+/iu, "");
 
   return {
     where,
@@ -119,9 +119,11 @@ export const createElectricProxyHandler =
         });
       }
 
+      const responseBody = response.body;
+
       return HttpServerResponse.stream(
         Stream.fromReadableStream({
-          evaluate: () => response.body!,
+          evaluate: () => responseBody,
           onError: (e) => new Cause.UnknownError(e),
         }),
         {

@@ -5,4 +5,3 @@ export {
   WorkspaceMemberModule,
   WorkspaceMemberNotFoundError,
 } from "./workspace-member-module.service";
-export { WorkspaceMemberRepository } from "./workspace-member-repository.service";

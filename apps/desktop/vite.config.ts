@@ -41,6 +41,8 @@ export default mergeConfig(
       __PLATFORM__: JSON.stringify("desktop"),
     },
     build: {
+      outDir: "../dist",
+      emptyOutDir: true,
       // Tauri uses Chromium on Windows and WebKit on macOS and Linux
       target:
         process.env.TAURI_ENV_PLATFORM === "windows" ? "chrome105" : "safari13",

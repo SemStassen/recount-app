@@ -1,0 +1,3 @@
+# Production code and tests live separately
+
+Tests should live in explicit `tests/` directories, not colocated beside production files as `*.test.ts` siblings. Module-local test directories such as `src/modules/time/tests/` are the default for Module contracts, transition tests, and adapter conformance tests because they preserve locality. Root-level `tests/` should be reserved for cross-package end-to-end journeys that exercise the app as a system. This keeps production files easier to navigate, avoids mixed implementation/test folders, and gives reusable contract test support a clear home. Existing colocated tests and existing package-level `test/` directories should move to `tests/` when touched rather than forcing an immediate repository-wide migration.

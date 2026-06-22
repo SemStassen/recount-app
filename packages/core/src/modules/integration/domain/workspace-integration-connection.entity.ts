@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Model } from "#internal/effect/index";
+import { SharedModel } from "#internal/effect/index";
 import {
   EncryptedApiKey,
   PlainApiKey,
@@ -15,29 +15,30 @@ export const WorkspaceIntegrationConnectionProvider = Schema.Literals([
   "linear",
 ]).pipe(Schema.brand("WorkspaceIntegrationConnectionProvider"));
 
-export class WorkspaceIntegrationConnection extends Model.Class<WorkspaceIntegrationConnection>(
+export class WorkspaceIntegrationConnection extends SharedModel.Class<WorkspaceIntegrationConnection>(
   "WorkspaceIntegrationConnection"
 )(
   {
-    id: Model.ServerImmutable(WorkspaceIntegrationConnectionId),
-    workspaceId: Model.ServerImmutable(WorkspaceId),
-    createdByWorkspaceMemberId: Model.ServerImmutable(WorkspaceMemberId),
-    provider: Model.ServerImmutableClientImmutable(
+    id: SharedModel.ImmutableReadOnly(WorkspaceIntegrationConnectionId),
+    workspaceId: SharedModel.ImmutableReadOnly(WorkspaceId),
+    createdByWorkspaceMemberId:
+      SharedModel.ImmutableReadOnly(WorkspaceMemberId),
+    provider: SharedModel.ImmutableCreate(
       WorkspaceIntegrationConnectionProvider
     ),
-    apiKey: Model.Field({
+    apiKey: SharedModel.Field({
       select: EncryptedApiKey,
       insert: EncryptedApiKey,
       update: Schema.optionalKey(EncryptedApiKey),
       jsonCreate: PlainApiKey,
       jsonUpdate: Schema.optionalKey(PlainApiKey),
     }),
-    _metadata: Model.ServerMutableOptional(
+    _metadata: SharedModel.MutableNullableReadOnly(
       Schema.Struct({
         lastSyncedAt: Schema.optionalKey(Schema.DateTimeUtcFromDate),
       })
     ),
-    createdAt: Model.ServerImmutable(Schema.DateTimeUtcFromDate),
+    createdAt: SharedModel.ImmutableReadOnly(Schema.DateTimeUtcFromDate),
   },
   {
     identifier: "WorkspaceIntegrationConnection",

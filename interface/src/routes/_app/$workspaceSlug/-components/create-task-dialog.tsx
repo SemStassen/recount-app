@@ -2,10 +2,10 @@ import { Task } from "@recount/core/modules/project";
 import { ProjectId, TaskId } from "@recount/core/shared/schemas";
 import {
   Dialog,
+  DialogContent,
   DialogFooter,
   DialogHeader,
   DialogPanel,
-  DialogPopup,
   DialogPrimitive,
   DialogTitle,
 } from "@recount/ui/dialog";
@@ -13,7 +13,6 @@ import { Form, FormPrimitive } from "@recount/ui/form";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { revalidateLogic } from "@tanstack/react-form";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { Exit } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { useWorkspaceDb } from "~/db/workspace/context";
@@ -45,14 +44,18 @@ export function CreateTaskDialog() {
 
   return (
     <Dialog handle={createTaskDialogHandle}>
-      {({ payload }) => <CreateTaskDialogPopup payload={payload} />}
+      {({ payload }) => <CreateTaskDialogContent payload={payload} />}
     </Dialog>
   );
 }
 
 const schema = createSchemaForm(Task.jsonCreate);
 
-function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
+function CreateTaskDialogContent({
+  payload,
+}: {
+  payload: Payload | undefined;
+}) {
   const navigate = useNavigate();
 
   const workspaceDb = useWorkspaceDb();
@@ -79,23 +82,18 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
       onDynamic: schema.validator,
       onSubmitAsync: schema.submitValidator,
     },
-    onSubmit: schema.handleSubmit(({ value: payload }) => {
-      const result = workspaceDb.actions.createTask(payload);
+    onSubmit: schema.handleSubmit(({ value }) => {
+      const task = workspaceDb.actions.createTask(value);
 
-      Exit.match(result, {
-        onFailure: () => {},
-        onSuccess: ({ id }) => {
-          navigate({
-            from: "/$workspaceSlug/",
-            to: "/$workspaceSlug/tasks/$taskId",
-            params: {
-              taskId: id,
-            },
-          });
-
-          createTaskDialogHandle.close();
+      navigate({
+        from: "/$workspaceSlug/",
+        to: "/$workspaceSlug/tasks/$taskId",
+        params: {
+          taskId: task.id,
         },
       });
+
+      createTaskDialogHandle.close();
     }),
   });
 
@@ -104,7 +102,7 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
   }
 
   return (
-    <DialogPopup
+    <DialogContent
       render={
         <FormPrimitive
           onSubmit={(e) => {
@@ -153,7 +151,7 @@ function CreateTaskDialogPopup({ payload }: { payload: Payload | undefined }) {
           <form.SubmitButton>Create task</form.SubmitButton>
         </form.AppForm>
       </DialogFooter>
-    </DialogPopup>
+    </DialogContent>
   );
 }
 
