@@ -9,10 +9,8 @@ import { useEffect } from "react";
 import { useAppForm } from "~/components/form";
 import type { TimeEntryViewRow } from "~/db/synced-collections";
 import { createSchemaForm } from "~/lib/form";
-import {
-  type TimeEntryFormProject,
-  useTimeEntryFormProjects,
-} from "~/modules/project";
+import { useTimeEntryFormProjects } from "~/modules/project";
+import type { TimeEntryFormProject } from "~/modules/project";
 import { useWorkspaceDb } from "~/modules/workspace";
 
 import { closeTimeEntryEditor, editingPreviewAtom } from "../../state/editor";

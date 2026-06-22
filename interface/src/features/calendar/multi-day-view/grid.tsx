@@ -5,10 +5,9 @@ import { useRef, useState } from "react";
 
 import {
   closeTimeEntryEditor,
-  type EditingPreview,
   openUpdateTimeEntryEditor,
-  type TimeRange,
 } from "~/modules/time";
+import type { EditingPreview, TimeRange } from "~/modules/time";
 
 import { getDraggedTimeEntry } from "../dnd/adapter";
 import { GRID_DROPPABLE_ID, SELECTION_DRAGGABLE_ID } from "../dnd/types";
