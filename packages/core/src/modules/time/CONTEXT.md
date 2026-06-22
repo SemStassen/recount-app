@@ -30,7 +30,7 @@ _Avoid_: Hours, billable time
 - **Tracked Time** is either a **Timer** or a **Time Entry**
 - A **Tracked Time Target** has exactly one **Project** and may have one **Task**
 - A **Time Entry** belongs to exactly one **Workspace Member**
-- Updating **Tracked Time** validates the effective **Tracked Time Target** after applying the **Partial Update**
+- Updating **Tracked Time** validates the effective **Tracked Time Target** after applying a **Partial Update** that changes the **Project** or **Task**
 - Changing the **Task** of **Tracked Time** does not implicitly change its **Project**
 - A **Time Entry** stops at or after it starts
 - A **Time Entry** has one **Duration**
