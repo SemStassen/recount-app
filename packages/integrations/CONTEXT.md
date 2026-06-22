@@ -24,6 +24,17 @@ _Avoid_: Linking, sync
 Keeping already-linked Recount objects aligned with external provider objects over time.
 _Avoid_: Import, one-time fetch
 
+## Relationships
+
+- An **Integration Provider** owns external provider objects such as **External Projects** and **External Tasks**
+- An **Integration Connection** gives Recount access to one **Integration Provider**
+- **External Projects** and **External Tasks** remain provider-owned even when Recount displays or stores references to them
+- An **External Reference** links one Recount object to one provider-owned object
+- **Linking** creates or records an **External Reference** for an existing Recount object
+- **Importing** creates or updates Recount objects from provider-owned objects
+- **Sync** applies after **Linking** or **Importing** has established an external relationship
+- Disconnecting an **Integration Connection** stops provider access without deleting Recount objects by default
+
 ## Flagged ambiguities
 
 - **Integration Connection** scope may expand beyond workspaces later; current connections are workspace-scoped.

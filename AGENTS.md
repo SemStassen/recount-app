@@ -24,7 +24,7 @@ Triage uses the default five-label vocabulary. See `docs/agents/triage-labels.md
 
 ### Domain docs
 
-This repo uses a single-context domain documentation layout. See `docs/agents/domain.md`.
+This repo uses root and nested `CONTEXT.md` files for domain documentation. See `docs/agents/domain.md`.
 
 ## Repository Shape
 
@@ -40,7 +40,7 @@ This repo uses a single-context domain documentation layout. See `docs/agents/do
 - `bun run dev:desktop` swaps web for `@recount/desktop`; `bun run dev:all` starts web and desktop together.
 - `bun run build` first runs `interface`'s `paraglide:compile` script, then `turbo build`.
 - `bun run lint` is `turbo lint`; `bun run lint:ast` is `ast-grep scan`; `bun run typecheck` is `turbo typecheck`; `bun run format` is `oxfmt --write .`.
-- There is no root `test` script and no Turbo `test` task; use Vitest directly, for example `bunx vitest run` or `bunx vitest run packages/db/test/database.layer.test.ts`. The interface package also has `bun run test` with `interface/vitest.config.ts`.
+- The root `test` script intentionally fails as a guardrail; use Vitest directly, for example `bunx vitest run` or `bunx vitest run packages/db/test/database.layer.test.ts`. The interface package also has `bun run test` with `interface/vitest.config.ts`.
 - Scope package checks with Turbo filters, for example `bunx turbo run typecheck --filter=@recount/interface`.
 - `bun run clean` removes `node_modules` as well as Turbo outputs; do not run it as a routine build cleanup.
 - `lefthook.yml` installs active pre-commit formatting/ast-grep hooks and pre-push lint/typecheck hooks.

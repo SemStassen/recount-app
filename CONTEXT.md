@@ -2,6 +2,16 @@
 
 Recount is a workspace-based time tracking product where workspace members record time against projects and optional tasks, with optional links to external tools.
 
+## Contexts
+
+- [Recount](./CONTEXT.md) describes workspace-wide product language.
+- [Project](./packages/core/src/modules/project/CONTEXT.md) describes workspace-scoped work containers and task subdivisions.
+- [Time](./packages/core/src/modules/time/CONTEXT.md) describes tracked time, timers, and time entries.
+- [Workspace Member](./packages/core/src/modules/workspace-member/CONTEXT.md) describes a user's participation in one workspace.
+- [Workspace Invitation](./packages/core/src/modules/workspace-invitation/CONTEXT.md) describes invitations for email addresses to become workspace members.
+- [Integrations](./packages/integrations/CONTEXT.md) describes external providers, provider objects, linking, import, and sync.
+- [Interface Workspace State](./interface/src/db/workspace/CONTEXT.md) describes local workspace state, optimistic workspace data, and backend reconciliation.
+
 ## Language
 
 **User**:
