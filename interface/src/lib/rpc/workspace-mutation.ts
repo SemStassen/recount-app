@@ -24,13 +24,12 @@ export function useWorkspaceMutation<const Name extends WorkspaceMutationName>(
     mode: "promiseExit",
   }) as PromiseExit<typeof mutation>;
 
-  return ((request) => 
+  return ((request) =>
     command({
       ...request,
       headers: {
         ...request.headers,
         [WORKSPACE_ID_HEADER]: workspace.id,
       },
-    })
-  ) as PromiseExit<typeof mutation>;
+    })) as PromiseExit<typeof mutation>;
 }

@@ -18,8 +18,7 @@ import { useRegisterCommands } from "~/features/command-menu";
 import { createSchemaForm } from "~/lib/form";
 import { m } from "~/paraglide/messages";
 
-export const createProjectDialogHandle =
-  DialogPrimitive.createHandle();
+export const createProjectDialogHandle = DialogPrimitive.createHandle();
 
 export function CreateProjectDialog() {
   useRegisterCommands([

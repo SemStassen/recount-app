@@ -15,6 +15,7 @@
     "lint:ast": "ast-grep scan",
     "lint:ast:test": "ast-grep test",
     "prepare": "lefthook install",
+    "test": "echo 'do not run tests from root; use bunx vitest run or a package test script' && exit 1",
     "typecheck": "turbo typecheck",
     "ultracite:check": "ultracite check",
     "ultracite:fix": "ultracite fix",

@@ -10,7 +10,9 @@ function getCommandSearchText(command: Command) {
     command.subtitle,
     command.category,
     ...(command.keywords ?? []),
-  ].filter(Boolean).join(" ")
+  ]
+    .filter(Boolean)
+    .join(" ")
     .toLowerCase();
 }
 

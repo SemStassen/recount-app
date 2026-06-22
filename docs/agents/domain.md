@@ -28,6 +28,17 @@ When your output names a domain concept (in an issue title, a refactor proposal,
 
 If the concept you need isn't in the glossary yet, that's a signal: either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/grill-with-docs`).
 
+## Maintain the context shape
+
+When updating `CONTEXT.md` files, preserve the project glossary structure:
+
+- `## Language` defines canonical terms, each with a short definition and `_Avoid_` alternatives when useful.
+- `## Relationships` records durable facts between domain terms, especially ownership, lifecycle, and cross-workspace boundaries.
+- `## Example dialogue` captures a concrete ambiguity when it would prevent future terminology drift.
+- `## Flagged ambiguities` lists unresolved decisions, reserved vocabulary, and terms that are easy to misuse.
+
+Nested `CONTEXT.md` files should narrow the same structure to their module or bounded context instead of repeating the full root glossary.
+
 ## Flag ADR conflicts
 
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:

@@ -1,7 +1,15 @@
 pre-commit:
   jobs:
     - name: format
-      run: bun run format
+      run: bun x oxfmt --write {staged_files}
+      glob:
+        - "**/*.js"
+        - "**/*.jsx"
+        - "**/*.ts"
+        - "**/*.tsx"
+        - "**/*.json"
+        - "**/*.jsonc"
+      stage_fixed: true
 
     - name: lint:ast
       run: bun run lint:ast
