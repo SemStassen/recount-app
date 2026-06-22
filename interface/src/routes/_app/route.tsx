@@ -1,8 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AtomRegistry } from "effect/unstable/reactivity";
 
-import { workspacesAtom } from "~/atoms/auth.atoms";
-import { userDbRegistry } from "~/db/user/user-db-registry";
+import { userDbRegistry, workspacesAtom } from "~/modules/session";
 
 import { AppProviders } from "./-app-providers";
 

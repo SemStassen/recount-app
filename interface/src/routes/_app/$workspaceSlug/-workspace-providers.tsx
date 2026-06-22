@@ -1,7 +1,7 @@
 import { useRouteContext } from "@tanstack/react-router";
 import type { PropsWithChildren } from "react";
 
-import { WorkspaceDbProvider } from "~/db/workspace/provider";
+import { WorkspaceDbProvider } from "~/modules/workspace";
 
 export function WorkspaceProviders({ children }: PropsWithChildren) {
   const { workspaceDb } = useRouteContext({

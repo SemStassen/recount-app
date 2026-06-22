@@ -10,6 +10,7 @@ import {
 import type { CSSProperties } from "react";
 
 import { clamp } from "~/lib/utils/math";
+import type { TimeRange } from "~/modules/time";
 
 import {
   SLOT_DURATION_MINUTES,
@@ -17,7 +18,6 @@ import {
   FIRST_VISIBLE_HOUR,
   LAST_VISIBLE_HOUR,
 } from "../constants";
-import type { TimeRange } from "../state/time-range";
 
 export interface CalendarRect {
   left: number;

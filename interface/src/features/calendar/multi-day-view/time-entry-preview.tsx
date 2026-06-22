@@ -1,8 +1,8 @@
 import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
+import type { EditingPreview, TimeRange } from "~/modules/time";
+
 import { DraggableTimeEntry } from "../dnd/draggable-time-entry";
-import type { EditingPreview } from "../state/atoms";
-import type { TimeRange } from "../state/time-range";
 import { TimeEntryContent, TimeEntryFrame } from "./time-entry";
 
 interface PreviewTimeEntry extends TimeRange {

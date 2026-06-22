@@ -2,6 +2,7 @@ import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { createProjectDialogHandle, ProjectsList } from "~/modules/project";
 import { m } from "~/paraglide/messages";
 
 import {
@@ -10,8 +11,6 @@ import {
   PageTopBar,
   PageTopBarBreadcrumbs,
 } from "../-components/page";
-import { createProjectDialogHandle } from "../../-components/create-project-dialog";
-import { ProjectsList } from "./-components/projects-list";
 
 export const Route = createFileRoute("/_app/$workspaceSlug/_sidebar/projects/")(
   {

@@ -15,9 +15,9 @@ import { revalidateLogic } from "@tanstack/react-form";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 
 import { useAppForm } from "~/components/form";
-import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
 import { createSchemaForm } from "~/lib/form";
+import { useWorkspaceDb } from "~/modules/workspace";
 
 interface Payload {
   defaultProjectId?: ProjectId;

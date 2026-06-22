@@ -27,11 +27,15 @@ It should call `WorkspaceDb.actions`.
 
 ### Structure
 
-- `openUserDb()` is a plain TypeScript factory
-- `openWorkspaceDb()` is a plain TypeScript factory
+- `openUserDb()` is a plain TypeScript factory owned by the session module
+- `openWorkspaceDb()` is a plain TypeScript factory owned by the workspace module
 - `UserDbProvider` owns the current user DB instance
 - `WorkspaceDbProvider` owns the current workspace DB instance
 - React context exposes the active DB instances
+
+The top-level `interface/src/db` folder is shared sync infrastructure. DB
+lifetimes are owned by modules: session owns `UserDb`, and workspace owns
+`WorkspaceDb`.
 
 ### Rules
 
@@ -77,7 +81,7 @@ server-authoritative instead of optimistic.
 
 ### Workspace action implementation rules
 
-`interface/src/db/workspace/*-actions.ts` should be thin adapters:
+`interface/src/modules/workspace/db/*-actions.ts` should be thin adapters:
 
 - call `runSyncedWorkspaceAction(...)`
 - use `params.workspaceRuntime.runSync(...)` for `mutateLocal`

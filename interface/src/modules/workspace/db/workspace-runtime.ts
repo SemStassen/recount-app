@@ -4,14 +4,6 @@ import type { TimeModule } from "@recount/core/modules/time";
 import { TimeModuleLayer } from "@recount/core/modules/time";
 import { Layer, ManagedRuntime } from "effect";
 
-import type { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
-import type { AppRuntimeLayer } from "~/lib/runtime";
-import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
-import type { ClientRepositoryCollection } from "~/lib/services/client-repository-collection";
-import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
-import { createClientTrackedTimeRepositoryLayer } from "~/lib/services/client-tracked-time-repository.layer";
-import { createClientTrackedTimeTargetValidatorLayer } from "~/lib/services/client-tracked-time-target-validator.layer";
-
 import type {
   ProjectCollectionInsert,
   ProjectCollectionRow,
@@ -19,7 +11,14 @@ import type {
   TaskCollectionRow,
   TrackedTimeCollectionInsert,
   TrackedTimeCollectionRow,
-} from "../synced-collections";
+} from "~/db/synced-collections";
+import type { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import type { AppRuntimeLayer } from "~/lib/runtime";
+import { createClientProjectRepositoryLayer } from "~/lib/services/client-project-repository.layer";
+import type { ClientRepositoryCollection } from "~/lib/services/client-repository-collection";
+import { createClientTaskRepositoryLayer } from "~/lib/services/client-task-repository.layer";
+import { createClientTrackedTimeRepositoryLayer } from "~/lib/services/client-tracked-time-repository.layer";
+import { createClientTrackedTimeTargetValidatorLayer } from "~/lib/services/client-tracked-time-target-validator.layer";
 
 type WorkspaceProjectCollection = ClientRepositoryCollection<
   ProjectCollectionRow,

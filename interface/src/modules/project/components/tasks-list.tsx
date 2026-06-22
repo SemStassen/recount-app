@@ -35,7 +35,7 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
 
-import { createTaskDialogHandle } from "~/routes/_app/$workspaceSlug/-components/create-task-dialog";
+import { createTaskDialogHandle } from "./create-task-dialog";
 
 type TaskListItem = Pick<Task, "id" | "name">;
 

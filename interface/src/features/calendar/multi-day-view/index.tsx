@@ -3,17 +3,13 @@ import { ScrollArea } from "@recount/ui/scroll-area";
 import { useLiveQuery } from "@tanstack/react-db";
 import { isSameDay } from "date-fns";
 
-import { useWorkspaceDb } from "~/db/workspace/context";
+import { editingPreviewAtom, useTimeEntries } from "~/modules/time";
+import { useWorkspaceDb } from "~/modules/workspace";
 
-import {
-  currentTimeAtom,
-  editingPreviewAtom,
-  visibleDaysAtom,
-} from "../state/atoms";
+import { currentTimeAtom, visibleDaysAtom } from "../state/atoms";
 import { Grid } from "./grid";
 import { Header } from "./header";
 import { HourColumn } from "./hour-column";
-import { useTimeEntries } from "./use-time-entries";
 
 function MultiDayView() {
   const weekdays = useAtomValue(visibleDaysAtom);

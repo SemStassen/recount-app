@@ -2,8 +2,8 @@ import type { TimeEntryId } from "@recount/core/shared/schemas";
 
 import type { TimeEntryViewRow } from "~/db/synced-collections";
 
-import type { EditingPreview } from "../state/atoms";
-import type { TimeRange } from "../state/time-range";
+import type { EditingPreview } from "../../state/editor";
+import type { TimeRange } from "../../types";
 import type { TimeEntryFormValues } from "./field-group";
 
 const createTimeEntryFormDefaults: TimeEntryFormValues = {

@@ -1,6 +1,6 @@
 import { eq, toArray, useLiveQuery } from "@tanstack/react-db";
 
-import { useWorkspaceDb } from "~/db/workspace/context";
+import { useWorkspaceDb } from "~/modules/workspace";
 
 export interface TimeEntryFormProject {
   id: string;

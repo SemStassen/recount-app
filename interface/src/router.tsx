@@ -1,8 +1,8 @@
 import { createRouter } from "@tanstack/react-router";
 
 import type { AppAtomRegistry } from "./atoms/registry";
-import type { WorkspaceDbRegistry } from "./db/workspace/workspace-db-registry";
 import type { AppRuntime } from "./lib/runtime";
+import type { WorkspaceDbRegistry } from "./modules/workspace";
 import { ErrorPage } from "./routes/-error";
 import { NotFoundPage } from "./routes/-not-found";
 import { routeTree } from "./routeTree.gen";

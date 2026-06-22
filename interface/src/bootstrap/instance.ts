@@ -1,7 +1,7 @@
 import { makeAppAtomRegistry } from "../atoms/registry";
-import { makeWorkspaceDbRegistry } from "../db/workspace/workspace-db-registry";
 import type { RecountInterfaceHost } from "../lib/runtime";
 import { bootstrapAppRuntime } from "../lib/runtime";
+import { makeWorkspaceDbRegistry } from "../modules/workspace";
 import { createRecountRouter } from "../router";
 import type { RecountRouterContext } from "../router";
 

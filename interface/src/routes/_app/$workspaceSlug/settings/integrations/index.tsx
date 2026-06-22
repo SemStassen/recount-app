@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@recount/ui/card";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { useWorkspaceDb } from "~/db/workspace/context";
+import { useWorkspaceDb } from "~/modules/workspace";
 
 export const Route = createFileRoute(
   "/_app/$workspaceSlug/settings/integrations/"

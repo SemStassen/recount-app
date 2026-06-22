@@ -5,9 +5,9 @@ import { useLiveQuery } from "@tanstack/react-db";
 import { defaultValidationLogic } from "@tanstack/react-form";
 
 import { useAppForm } from "~/components/form";
-import { useUserDb } from "~/db/user/context";
 import { createSchemaForm } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
+import { useUserDb } from "~/modules/session";
 
 const schema = createSchemaForm(UserSettings.jsonUpdate);
 

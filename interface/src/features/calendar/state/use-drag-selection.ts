@@ -1,7 +1,9 @@
 import { useAtom, useAtomSet } from "@effect/atom-react";
 
-import { dragSelectionAtom, openCreateTimeEntryEditor } from "./atoms";
-import type { TimeRange } from "./time-range";
+import { openCreateTimeEntryEditor } from "~/modules/time";
+import type { TimeRange } from "~/modules/time";
+
+import { dragSelectionAtom } from "./atoms";
 
 export function useDragSelection() {
   const [dragSelection, setDragSelection] = useAtom(dragSelectionAtom);

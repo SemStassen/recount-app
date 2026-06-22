@@ -4,17 +4,17 @@ import { Form } from "@recount/ui/form";
 import { revalidateLogic } from "@tanstack/react-form";
 
 import { useAppForm } from "~/components/form";
-import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
+import { useTimeEntryFormProjects } from "~/modules/project";
+import { useWorkspaceDb } from "~/modules/workspace";
 
-import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
+import { closeTimeEntryEditor, editingPreviewAtom } from "../../state/editor";
 import { TimeEntryFieldGroup, timeEntryFields } from "./field-group";
 import type { TimeEntryFormValues } from "./field-group";
 import {
   getCreateTimeEntryFormDefaults,
   getCreateTimeEntryPreview,
 } from "./model";
-import { useTimeEntryFormProjects } from "./use-projects";
 
 const schema = createSchemaForm(TimeEntry.jsonCreate);
 

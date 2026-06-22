@@ -8,18 +8,20 @@ import { useEffect } from "react";
 
 import { useAppForm } from "~/components/form";
 import type { TimeEntryViewRow } from "~/db/synced-collections";
-import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm } from "~/lib/form";
+import {
+  type TimeEntryFormProject,
+  useTimeEntryFormProjects,
+} from "~/modules/project";
+import { useWorkspaceDb } from "~/modules/workspace";
 
-import { editingPreviewAtom, closeTimeEntryEditor } from "../state/atoms";
+import { closeTimeEntryEditor, editingPreviewAtom } from "../../state/editor";
 import { TimeEntryFieldGroup, timeEntryFields } from "./field-group";
 import type { TimeEntryFormValues } from "./field-group";
 import {
   getUpdateTimeEntryFormDefaults,
   getUpdateTimeEntryPreview,
 } from "./model";
-import { useTimeEntryFormProjects } from "./use-projects";
-import type { TimeEntryFormProject } from "./use-projects";
 
 const schema = createSchemaForm(TimeEntry.jsonUpdate);
 

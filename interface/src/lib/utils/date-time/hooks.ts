@@ -1,6 +1,6 @@
 import { useLiveQuery } from "@tanstack/react-db";
 
-import { useUserDb } from "~/db/user/context";
+import { useUserDb } from "~/modules/session";
 
 import { createDateTimeFormatter } from "./core";
 import type { DateTimeFormatter } from "./core";

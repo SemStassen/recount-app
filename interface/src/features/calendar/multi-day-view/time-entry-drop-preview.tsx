@@ -1,6 +1,7 @@
 import { isSameDay } from "date-fns";
 
-import type { TimeRange } from "../state/time-range";
+import type { TimeRange } from "~/modules/time";
+
 import { TimeEntryFrame } from "./time-entry";
 
 interface TimeEntryDropPreviewValue extends TimeRange {

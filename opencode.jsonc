@@ -3,30 +3,36 @@
   "model": "openai/gpt-5.5",
   "autoupdate": true,
   "references": {
-    "effect": {
-      "repository": "github.com/Effect-TS/effect-smol",
-    },
-    "plane": {
-      "repository": "github.com/makeplane/plane",
-    },
+    // Repo usage
     "screenpipe": {
       "repository": "https://github.com/screenpipe/screenpipe",
     },
     "shadow": {
       "repository": "https://github.com/ghostwright/shadow",
     },
-    "ghost-os": {
-      "repository": "https://github.com/ghostwright/ghost-os",
-    },
-    "maple": {
-      "repository": "https://github.com/Makisuo/maple",
-    },
-    "mattermost": {
-      "repository": "https://github.com/mattermost/mattermost",
+    // Effect
+    "effect": {
+      "repository": "github.com/Effect-TS/effect-smol",
     },
     "opencode-beta": {
       "repository": "https://github.com/anomalyco/opencode",
       "branch": "beta",
+    },
+    "hazel": {
+      "repository": "https://github.com/HazelChat/hazel",
+    },
+    "maple": {
+      "repository": "https://github.com/Makisuo/maple",
+    },
+    // Patterns
+    "plane": {
+      "repository": "github.com/makeplane/plane",
+    },
+    "twenty": {
+      "repository": "https://github.com/twentyhq/twenty",
+    },
+    "mattermost": {
+      "repository": "https://github.com/mattermost/mattermost",
     },
   },
   "mcp": {

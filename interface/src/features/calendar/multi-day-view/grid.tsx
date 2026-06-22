@@ -3,14 +3,15 @@ import { useAtomSet } from "@effect/atom-react";
 import { cn } from "@recount/ui/utils";
 import { useRef, useState } from "react";
 
-import { getDraggedTimeEntry } from "../dnd/adapter";
-import { GRID_DROPPABLE_ID, SELECTION_DRAGGABLE_ID } from "../dnd/types";
 import {
   closeTimeEntryEditor,
+  type EditingPreview,
   openUpdateTimeEntryEditor,
-} from "../state/atoms";
-import type { EditingPreview } from "../state/atoms";
-import type { TimeRange } from "../state/time-range";
+  type TimeRange,
+} from "~/modules/time";
+
+import { getDraggedTimeEntry } from "../dnd/adapter";
+import { GRID_DROPPABLE_ID, SELECTION_DRAGGABLE_ID } from "../dnd/types";
 import { useDragSelection } from "../state/use-drag-selection";
 import { CurrentTimeLine } from "./current-time-line";
 import { DayColumn } from "./day-column";

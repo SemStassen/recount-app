@@ -2,8 +2,8 @@ import { TaskId } from "@recount/core/shared/schemas";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 
-import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
+import { useWorkspaceDb } from "~/modules/workspace";
 import { m } from "~/paraglide/messages";
 
 import {

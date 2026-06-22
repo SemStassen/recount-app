@@ -2,6 +2,16 @@
 
 The Interface Workspace State context describes how the frontend presents local workspace data before backend confirmation.
 
+## Module boundary
+
+The workspace module owns the workspace-scoped frontend runtime:
+
+- `WorkspaceDb` lifecycle, provider, and React hook
+- workspace-scoped optimistic actions
+- workspace runtime wiring for local repository parity
+
+Shared sync infrastructure, Electric collection helpers, and user-scoped local data stay outside this module under `interface/src/db`. This keeps the two local DB scopes explicit: `UserDb` is session-scoped, while `WorkspaceDb` is active-workspace-scoped.
+
 ## Language
 
 **Local Workspace State**:

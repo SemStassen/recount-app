@@ -2,6 +2,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { Button } from "@recount/ui/button";
 import { Icons } from "@recount/ui/icons";
 
+import { openCreateTimeEntryEditor, TimeEntryEditor } from "~/modules/time";
 import { PageTopBar } from "~/routes/_app/$workspaceSlug/_sidebar/-components/page";
 
 import { HOUR_COLUMN_WIDTH_VAR, HOUR_HEIGHT_VAR } from "./constants";
@@ -10,8 +11,6 @@ import { MultiDayView } from "./multi-day-view";
 import { DateNavigator } from "./navigation/date-navigator";
 import { OptionsDropdown } from "./navigation/options-dropdown";
 import { TodayButton } from "./navigation/today-button";
-import { openCreateTimeEntryEditor } from "./state/atoms";
-import { TimeEntryEditor } from "./time-entry-editor";
 
 function Calendar() {
   const openCreateEditor = useAtomSet(openCreateTimeEntryEditor);

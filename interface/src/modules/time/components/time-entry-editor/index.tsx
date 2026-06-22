@@ -7,7 +7,7 @@ import {
   SidebarHeader,
 } from "~/components/sidebar";
 
-import { editorAtom, closeTimeEntryEditor } from "../state/atoms";
+import { editorAtom, closeTimeEntryEditor } from "../../state/editor";
 import { CreateTimeEntryForm } from "./create-form";
 import { UpdateTimeEntryForm } from "./update-form";
 

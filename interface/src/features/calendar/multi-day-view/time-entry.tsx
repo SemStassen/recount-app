@@ -1,8 +1,8 @@
 import { cn } from "@recount/ui/utils";
 
 import { useDateTimeFormatter } from "~/lib/utils/date-time/hooks";
+import type { TimeRange } from "~/modules/time";
 
-import type { TimeRange } from "../state/time-range";
 import { getTimeEntryFrameStyle } from "./layout";
 
 interface TimeEntryFrameProps extends React.ComponentProps<"div"> {

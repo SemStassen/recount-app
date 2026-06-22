@@ -1,9 +1,8 @@
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 
 import { CommandMenu } from "~/features/command-menu";
+import { CreateProjectDialog, CreateTaskDialog } from "~/modules/project";
 
-import { CreateProjectDialog } from "./-components/create-project-dialog";
-import { CreateTaskDialog } from "./-components/create-task-dialog";
 import { DebugSheet } from "./-components/debug-sheet";
 import { WorkspaceProviders } from "./-workspace-providers";
 

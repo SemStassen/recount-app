@@ -20,10 +20,10 @@ import { Exit, Schema } from "effect";
 
 import { useAppForm } from "~/components/form";
 import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
-import { useWorkspaceDb } from "~/db/workspace/context";
 import { createSchemaForm, optionalFromEmptyString } from "~/lib/form";
 import { BackendAtomRpcClient } from "~/lib/rpc/atom-client";
 import { useWorkspaceMutation } from "~/lib/rpc/workspace-mutation";
+import { useWorkspaceDb } from "~/modules/workspace";
 
 const profileFormSchema = createSchemaForm(
   Schema.Struct({

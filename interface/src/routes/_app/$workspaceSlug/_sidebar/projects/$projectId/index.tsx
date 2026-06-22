@@ -6,8 +6,9 @@ import { createFileRoute, notFound, rootRouteId } from "@tanstack/react-router";
 
 import { ColorPicker } from "~/components/color-picker";
 import { useAppForm } from "~/components/form";
-import { useWorkspaceDb } from "~/db/workspace/context";
 import { useRegisterCommands } from "~/features/command-menu";
+import { TasksList } from "~/modules/project";
+import { useWorkspaceDb } from "~/modules/workspace";
 import { m } from "~/paraglide/messages";
 
 import {
@@ -17,7 +18,6 @@ import {
   PageTopBar,
   PageTopBarBreadcrumbs,
 } from "../../-components/page";
-import { TasksList } from "./-components/tasks-list";
 
 export const Route = createFileRoute(
   "/_app/$workspaceSlug/_sidebar/projects/$projectId/"

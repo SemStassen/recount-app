@@ -1,6 +1,7 @@
 import type { TimeEntryId } from "@recount/core/shared/schemas";
 
-import type { TimeRange } from "../state/time-range";
+import type { TimeRange } from "~/modules/time";
+
 import type { Slot } from "./layout";
 import { getRangeFromSlots, moveTimeRangeToSlot } from "./layout";
 

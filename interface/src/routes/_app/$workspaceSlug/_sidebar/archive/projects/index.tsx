@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { ArchivedProjectsList } from "~/modules/project";
+
 import {
   Page,
   PageMain,
   PageTopBar,
   PageTopBarBreadcrumbs,
 } from "../../-components/page";
-import { ArchivedProjectsList } from "./-components/archived-projects-list";
 
 export const Route = createFileRoute(
   "/_app/$workspaceSlug/_sidebar/archive/projects/"

@@ -20,9 +20,9 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Duration, Effect } from "effect";
 import { AsyncResult, Atom, AtomRegistry } from "effect/unstable/reactivity";
 
-import { sessionAtom } from "~/atoms/auth.atoms";
 import { BackendAtomHttpApiClient } from "~/lib/api/atom-client";
 import { env } from "~/lib/env";
+import { sessionAtom } from "~/modules/session";
 import type { RecountRouterContext } from "~/router";
 
 import { NotFoundPage } from "./-not-found";

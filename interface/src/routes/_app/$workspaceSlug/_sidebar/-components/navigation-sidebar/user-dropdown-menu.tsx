@@ -12,8 +12,8 @@ import { eq, useLiveQuery } from "@tanstack/react-db";
 import { Link, useRouteContext } from "@tanstack/react-router";
 
 import { WorkspaceMemberAvatar } from "~/components/workspace-member-avatar";
-import { useWorkspaceDb } from "~/db/workspace/context";
 import { signOut } from "~/lib/auth";
+import { useWorkspaceDb } from "~/modules/workspace";
 
 async function handleSignOut() {
   await signOut();

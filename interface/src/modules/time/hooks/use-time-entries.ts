@@ -1,7 +1,7 @@
 import type { TimeEntryId } from "@recount/core/shared/schemas";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 
-import { useWorkspaceDb } from "~/db/workspace/context";
+import { useWorkspaceDb } from "~/modules/workspace";
 
 export function useTimeEntries({
   replacingTimeEntryId,

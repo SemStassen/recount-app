@@ -1,7 +1,7 @@
 import { useRouteContext } from "@tanstack/react-router";
 import type { PropsWithChildren } from "react";
 
-import { UserDbProvider } from "~/db/user/provider";
+import { UserDbProvider } from "~/modules/session";
 
 function AppProviders({ children }: PropsWithChildren) {
   const { userDb } = useRouteContext({ from: "/_app" });

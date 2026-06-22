@@ -4,17 +4,9 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@recount/ui/context-menu";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@recount/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@recount/ui/empty";
 import { Icons } from "@recount/ui/icons";
 import {
   List,
@@ -38,9 +30,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMemo, useRef } from "react";
 
 import type { ProjectCollectionRow } from "~/db/synced-collections";
-import { useWorkspaceDb } from "~/db/workspace/context";
-
-import { createProjectDialogHandle } from "../../../-components/create-project-dialog";
+import { useWorkspaceDb } from "~/modules/workspace";
 
 const columnHelper = createColumnHelper<ProjectCollectionRow>();
 
@@ -63,23 +53,17 @@ const createColumns = () => [
     enableSorting: true,
     meta: { grow: true },
   }),
-  columnHelper.accessor("isBillable", {
-    header: "Billable",
-    size: 80,
-    cell: (info) => (info.getValue() ? "Yes" : "No"),
-    enableSorting: true,
-  }),
 ];
 
-export function ProjectsList() {
+export function ArchivedProjectsList() {
   const workspaceDb = useWorkspaceDb();
   const { data: projects } = useLiveQuery((q) =>
-    q.from({ p: workspaceDb.collections.activeProjectsCollection })
+    q.from({ p: workspaceDb.collections.archivedProjectsCollection })
   );
 
-  const handleArchiveProject = (projectId: ProjectId) => {
+  const handleUnarchiveProject = (projectId: ProjectId) => {
     try {
-      workspaceDb.actions.archiveProject(projectId);
+      workspaceDb.actions.unarchiveProject(projectId);
     } catch {
       toastManager.add({
         type: "error",
@@ -88,22 +72,23 @@ export function ProjectsList() {
       return;
     }
 
-    const toastId = `project-archive-${projectId}`;
+    const toastId = `project-unarchive-${projectId}`;
 
     toastManager.add({
       id: toastId,
       type: "success",
-      title: "Project archived",
+      title: "Project restored",
       description: (
         <Button
           variant="ghost"
           render={
             <Link
-              to="/$workspaceSlug/archive/projects"
+              to="/$workspaceSlug/projects/$projectId"
               from="/$workspaceSlug"
+              params={{ projectId }}
               onClick={() => toastManager.close(toastId)}
             >
-              View archive
+              View project
             </Link>
           }
         />
@@ -167,15 +152,6 @@ export function ProjectsList() {
               <ContextMenuTrigger
                 render={
                   <ListRow
-                    render={
-                      <Link
-                        to="/$workspaceSlug/projects/$projectId"
-                        from="/$workspaceSlug"
-                        params={{
-                          projectId: row.original.id,
-                        }}
-                      />
-                    }
                     style={{
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${
@@ -196,23 +172,9 @@ export function ProjectsList() {
               />
               <ContextMenuContent>
                 <ContextMenuItem
-                  render={
-                    <Link
-                      from="/$workspaceSlug"
-                      to="/$workspaceSlug/projects/$projectId"
-                      params={{
-                        projectId: row.original.id,
-                      }}
-                    >
-                      Open project...
-                    </Link>
-                  }
-                />
-                <ContextMenuSeparator />
-                <ContextMenuItem
-                  onClick={() => handleArchiveProject(row.original.id)}
+                  onClick={() => handleUnarchiveProject(row.original.id)}
                 >
-                  Archive
+                  Unarchive
                 </ContextMenuItem>
               </ContextMenuContent>
             </ContextMenu>
@@ -227,16 +189,7 @@ export function ProjectsList() {
           <Icons.Folder size={36} />
         </EmptyMedia>
         <EmptyTitle>No projects found</EmptyTitle>
-        <EmptyDescription>Create a project to get started</EmptyDescription>
       </EmptyHeader>
-      <EmptyContent>
-        <Button
-          variant="outline"
-          onClick={() => createProjectDialogHandle.open(null)}
-        >
-          New project
-        </Button>
-      </EmptyContent>
     </Empty>
   );
 }

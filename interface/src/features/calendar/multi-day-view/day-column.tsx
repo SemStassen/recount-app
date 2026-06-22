@@ -1,10 +1,13 @@
 import { useAtomSet } from "@effect/atom-react";
 import type { TimeEntryId } from "@recount/core/shared/schemas";
 
+import {
+  type EditingPreview,
+  openUpdateTimeEntryEditor,
+  type TimeRange,
+} from "~/modules/time";
+
 import { DraggableTimeEntry } from "../dnd/draggable-time-entry";
-import type { EditingPreview } from "../state/atoms";
-import { openUpdateTimeEntryEditor } from "../state/atoms";
-import type { TimeRange } from "../state/time-range";
 import { DragSelectionHighlight } from "./drag-selection-highlight";
 import { getDayTimeEntryFrames } from "./layout";
 import { TimeEntryContent, TimeEntryFrame } from "./time-entry";
