@@ -2,6 +2,7 @@
   "extends": "@recount/config/base.tsconfig.json",
   "include": ["src", "alchemy.ts", "../../interface/src/globals.d.ts"],
   "exclude": ["dist"],
+  "references": [{ "path": "../../interface" }],
   "compilerOptions": {
     "paths": {
       "~/*": ["./src/*"]

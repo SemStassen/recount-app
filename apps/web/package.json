@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "format": "oxfmt --write .",
     "lint": "oxlint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@recount/interface": "workspace:*",

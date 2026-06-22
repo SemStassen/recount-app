@@ -6,6 +6,10 @@
     "paths": {
       "~/*": ["./src/*"]
     },
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "outDir": "node_modules/.ts-dist",
     "exactOptionalPropertyTypes": false
   }
 }
